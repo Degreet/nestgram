@@ -1,6 +1,10 @@
 # What is Nestgram?
 
-Nestgram - The library for working with Telegram Bot API on TypeScript, similar to the Nest framework. Now in development.
+Nestgram - Framework for working with Telegram Bot API on TypeScript like Nest.js
+
+# Guide
+
+https://degreetpro.gitbook.io/nestgram/
 
 # Found a bug or have questions?
 
