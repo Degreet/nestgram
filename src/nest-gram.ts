@@ -57,9 +57,11 @@ export class NestGram {
     services = services.map((Service: any): typeof ServiceClass => new Service());
 
     controllers.forEach((Controller: any): void => {
-      const controller: ControllerClass & { __proto__: any } = new Controller(...services);
-      let methodKeys: (string | symbol)[] = Reflect.ownKeys(controller.__proto__);
+      const controller: ControllerClass & { __proto__: any; api?: Api } = new Controller(
+        ...services,
+      );
 
+      let methodKeys: (string | symbol)[] = Reflect.ownKeys(controller.__proto__);
       methodKeys = methodKeys.filter((key: string | symbol): boolean => typeof key === 'string');
       methodKeys = methodKeys.filter((key: string): boolean => key !== 'constructor');
 
@@ -73,6 +75,9 @@ export class NestGram {
           middlewares,
         });
       });
+
+      const needApi: boolean | undefined = Reflect.getMetadata('getApi', controller, 'api');
+      if (needApi) controller.api = this.api;
     });
   }
 

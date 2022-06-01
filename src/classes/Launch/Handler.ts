@@ -45,7 +45,9 @@ export class Handler {
 
       const message: IMessage | undefined = Filter.getMessage(update);
       const args: ArgsTypes = [update, message, message?.text, answer, message?.entities];
-      const handlerMethod: HandlerMethod = handler.controller[handler.methodKey];
+      const handlerMethod: HandlerMethod = handler.controller[handler.methodKey].bind(
+        handler.controller,
+      );
 
       if (!['AsyncFunction', 'Function'].includes(handlerMethod.constructor.name)) return;
       let resultMessageToSend: MessageCreator | ContentTypes;
