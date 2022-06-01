@@ -107,7 +107,7 @@ export class NestGram {
     if (!this.token) throw error(`You can't run bot without token`);
 
     // fetch bot info
-    this.info = await this.api.call<IUser>(this.token, 'getMe');
+    this.info = await this.api.getMe();
 
     if (this.runConfig.runType === 'polling') {
       // delete webhook

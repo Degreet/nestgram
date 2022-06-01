@@ -1,6 +1,6 @@
 import { setupArguments } from './setup-arguments';
 import { Middleware } from './middleware.decorator';
-import { ListenMiddleware } from '../../classes/ListenMiddleware';
+import { ListenMiddleware } from '../../classes/Helpers/ListenMiddleware';
 import { MessageEntityTypes } from '../../types';
 import { MessageSubtypes } from '../../types/listen-middlewares.types';
 

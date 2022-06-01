@@ -10,6 +10,7 @@ import {
   Keyboard,
   IWebhookConfig,
   IDeleteWebhookConfig,
+  IUser,
 } from '..';
 
 import { Media } from './Media';
@@ -39,7 +40,7 @@ export class Api {
     }
   }
 
-  private callApi<T = any, K = any>(method: string, config?: K): Promise<T> {
+  public callApi<T = any, K = any>(method: string, config?: K): Promise<T> {
     if (!this.token) throw error(`You can't call .${method} without token`);
     return this.call<T, K>(this.token, method, config);
   }
@@ -59,6 +60,13 @@ export class Api {
     });
 
     return formData;
+  }
+
+  /**
+   * Returns info about the bot
+   * */
+  getMe(): Promise<IUser> {
+    return this.callApi<IUser>('getMe');
   }
 
   /**

@@ -7,8 +7,9 @@ import {
   MiddlewareFunction,
   Filter,
   MessageEntityTypes,
-} from '..';
-import { MessageSubtypes } from '../types/listen-middlewares.types';
+} from '../..';
+
+import { MessageSubtypes } from '../../types/listen-middlewares.types';
 
 export class ListenMiddleware {
   static command(commandText: string): MiddlewareFunction {
