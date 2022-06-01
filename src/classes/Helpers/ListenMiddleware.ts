@@ -83,4 +83,12 @@ export class ListenMiddleware {
       next();
     };
   }
+
+  static click(buttonId: string): MiddlewareFunction {
+    return function use(update: IUpdate, answer: Answer, next: NextFunction, fail: NextFunction) {
+      if (!update.callback_query) return fail();
+      if (update.callback_query.data !== buttonId) return fail();
+      next();
+    };
+  }
 }

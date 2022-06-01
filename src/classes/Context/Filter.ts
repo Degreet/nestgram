@@ -17,7 +17,11 @@ export class Filter {
    * */
   public static getMessage(update: IUpdate): IMessage | undefined {
     return (
-      update.message || update.edited_message || update.channel_post || update.edited_channel_post
+      update.message ||
+      update.edited_message ||
+      update.channel_post ||
+      update.edited_channel_post ||
+      update.callback_query?.message
     );
   }
 

@@ -63,3 +63,11 @@ export const OnPostEdit = (): MethodDecorator => buildUpdateDecorator('message',
  * */
 export const OnEntity = (entity?: MessageEntityTypes): MethodDecorator =>
   buildUpdateDecorator('entity', entity);
+
+/**
+ * Listen for a user that click on button with some id
+ * @param buttonId The id of the button you want to track.
+ * @see https://core.telegram.org/bots/api#callbackquery
+ * */
+export const OnClick = (buttonId: string): MethodDecorator =>
+  buildUpdateDecorator('click', buttonId);
