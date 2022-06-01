@@ -44,7 +44,17 @@ export class Handler {
       if (this.logging) log('blue', 'Calling handler for update', `(${update.update_id})`.grey);
 
       const message: IMessage | undefined = Filter.getMessage(update);
-      const args: ArgsTypes = [update, message, message?.text, answer, message?.entities];
+      const commandParams: string[] = Filter.getCommandParams(update);
+
+      const args: ArgsTypes = [
+        update,
+        message,
+        message?.text,
+        answer,
+        message?.entities,
+        commandParams,
+      ];
+
       const handlerMethod: HandlerMethod = handler.controller[handler.methodKey].bind(
         handler.controller,
       );

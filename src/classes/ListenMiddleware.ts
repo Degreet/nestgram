@@ -1,4 +1,13 @@
-import { IMessage, NextFunction, Answer, IUpdate, IMessageEntity, MiddlewareFunction } from '..';
+import {
+  IMessage,
+  NextFunction,
+  Answer,
+  IUpdate,
+  IMessageEntity,
+  MiddlewareFunction,
+  Filter,
+  MessageEntityTypes,
+} from '..';
 import { MessageSubtypes } from '../types/listen-middlewares.types';
 
 export class ListenMiddleware {
@@ -10,11 +19,12 @@ export class ListenMiddleware {
       fail: NextFunction,
     ): any {
       const message: IMessage | undefined = update.message;
-      if (!message) return fail();
+      if (!message || !message.text) return fail();
 
-      if (!message.text) return fail();
-      if (message.text !== `/${commandText}`) return fail();
+      const entity: IMessageEntity | undefined = Filter.getEntity(update, 'bot_command');
+      if (!entity) return fail();
 
+      if (message.text.slice(entity.offset, entity.length) !== `/${commandText}`) return fail();
       next();
     };
   }
@@ -36,7 +46,7 @@ export class ListenMiddleware {
     };
   }
 
-  static entity(entityType?: string): MiddlewareFunction {
+  static entity(entityType?: MessageEntityTypes): MiddlewareFunction {
     return function use(
       update: IUpdate,
       answer: Answer,
@@ -47,8 +57,7 @@ export class ListenMiddleware {
       if (!message) return fail();
 
       if (!message.text) return fail();
-      if (!message.entities?.find((entity: IMessageEntity): boolean => entity.type === entityType))
-        return fail();
+      if (!Filter.getEntity(update, entityType)) return fail();
 
       next();
     };

@@ -60,3 +60,8 @@ export const Update = () => buildArgumentDecorator('update');
  * Message entities
  * */
 export const Entities = () => buildArgumentDecorator('entities');
+
+/**
+ * Command params
+ * */
+export const CommandParams = () => buildArgumentDecorator('commandParams');

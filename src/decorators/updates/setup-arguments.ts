@@ -1,6 +1,13 @@
 import { IMessageEntity } from '../../types';
 
-const argsProcedure: string[] = ['update', 'message', 'text', 'answer', 'entities'];
+const argsProcedure: string[] = [
+  'update',
+  'message',
+  'text',
+  'answer',
+  'entities',
+  'commandParams',
+];
 
 export function setupArguments(
   target: any,

@@ -15,6 +15,7 @@ export type ArgsTypes = [
   string | undefined, // message text
   Answer, // answer
   IMessageEntity[] | undefined, // message entities
+  string[], // command params
 ];
 
 export type ContentTypes = Media | string | undefined | null;
