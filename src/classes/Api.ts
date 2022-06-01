@@ -8,6 +8,8 @@ import {
   IOptions,
   MessageCreator,
   Keyboard,
+  IWebhookConfig,
+  IDeleteWebhookConfig,
 } from '..';
 
 import { Media } from './Media';
@@ -57,6 +59,22 @@ export class Api {
     });
 
     return formData;
+  }
+
+  /**
+   * Set ups a webhook
+   * @param config Webhook config
+   * */
+  setWebhook(config: IWebhookConfig): Promise<boolean> {
+    return this.callApi<boolean, IWebhookConfig>('setWebhook', config);
+  }
+
+  /**
+   * Deletes a webhook
+   * @param config Delete webhook config
+   * */
+  deleteWebhook(config?: IDeleteWebhookConfig): Promise<boolean> {
+    return this.callApi<boolean, IDeleteWebhookConfig>('deleteWebhook', config);
   }
 
   /**

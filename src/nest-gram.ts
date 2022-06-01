@@ -1,34 +1,50 @@
-import { IConfig, IUser, ControllerClass, ServiceClass, IHandler, MiddlewareFunction } from '.';
+import {
+  MiddlewareFunction,
+  ControllerClass,
+  ServiceClass,
+  ConfigTypes,
+  IRunConfig,
+  IHandler,
+  IUser,
+} from '.';
+
 import { clear, error, log } from './logger';
+import { Api } from './classes';
 
 import { Polling } from './classes/Launch/Polling';
-import { Api } from './classes';
+import { Webhook } from './classes/Launch/Webhook';
+
+// clear console
+clear();
 
 export class NestGram {
   handlers: IHandler[] = [];
   info: IUser;
 
   api: Api = new Api(this.token);
-  polling: Polling;
+  polling?: Polling;
+  webhook?: Webhook;
 
   /**
    * Creates new bot
    * @param token Token for running bot that you can get in {@link https://t.me/BotFather}
-   * @param config Config for getting updates {@link IConfig}
    * @param module Entry module
-   * @param logging Toggle on logging on new updates
+   * @param config Config for getting updates {@link ConfigTypes}
+   * @param runConfig Run config {@link IRunConfig}
    * */
   constructor(
     private readonly token: string,
     private readonly module?: any,
-    private readonly config?: IConfig,
-    private readonly logging?: true,
+    private readonly config?: ConfigTypes,
+    private readonly runConfig: IRunConfig = { port: 80, runType: 'polling', logging: true },
   ) {
-    // clear console
-    clear();
-
     // log if logging is on
-    if (logging) log('blue', 'Bot initialized');
+    if (runConfig.logging) log('blue', 'Bot initialized');
+
+    // setup default values
+    if (!runConfig.port) runConfig.port = 80;
+    if (!runConfig.runType) runConfig.runType = 'polling';
+    if (typeof runConfig.logging !== 'boolean') runConfig.logging = true;
 
     // if user set module call entry
     if (module) this.setupEntry(module);
@@ -71,7 +87,7 @@ export class NestGram {
     this.setupModule(Module);
 
     // log that module configured if logging is on
-    if (this.logging) log('blue', 'Entry module configured');
+    if (this.runConfig.logging) log('blue', 'Entry module configured');
   }
 
   /**
@@ -80,7 +96,7 @@ export class NestGram {
    * */
   async start(): Promise<string> {
     // log that bot starting if logging is on
-    if (this.logging) log('blue', 'Starting bot...');
+    if (this.runConfig.logging) log('blue', 'Starting bot...');
 
     // return error if user didn't set token
     if (!this.token) throw error(`You can't run bot without token`);
@@ -88,9 +104,27 @@ export class NestGram {
     // fetch bot info
     this.info = await this.api.call<IUser>(this.token, 'getMe');
 
-    // start polling for handling updates
-    this.polling = new Polling(this.token, this.handlers, this.config, this.logging);
-    this.polling.start();
+    if (this.runConfig.runType === 'polling') {
+      // delete webhook
+      await this.api.deleteWebhook(this.runConfig);
+
+      // start polling for handling updates
+      this.polling = new Polling(this.token, this.handlers, this.config, this.runConfig.logging);
+      this.polling.start();
+    } else if (this.runConfig.runType === 'webhook') {
+      // return an error if the user has not provided a webhook url
+      if (!('url' in this.config))
+        throw error('If you want to use webhooks, you need to pass webhook url in config');
+
+      // start server and save webhook
+      this.webhook = new Webhook(
+        this.token,
+        this.handlers,
+        this.config,
+        80,
+        this.runConfig.logging,
+      );
+    }
 
     // log that bot started
     log('green', 'Bot started on', `@${this.info.username}`.gray);

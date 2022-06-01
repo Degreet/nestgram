@@ -10,7 +10,7 @@ export function setupArguments(
   const method: any = descriptor.value;
 
   descriptor.value = function (): void {
-    const data: any = Reflect.getOwnMetadata('gotIndex', target, propertyName);
+    const data: any = Reflect.getOwnMetadata('gotIndex', target, propertyName) || {};
     const startArguments: IArguments = { ...arguments };
 
     Object.values(data)

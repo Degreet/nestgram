@@ -66,7 +66,7 @@ export class Handler {
       return this.handleMiddleware(index + 1, update, answer);
     };
 
-    log('blue', 'Calling first middleware/handler', `(${update.update_id})`.grey);
+    if (this.logging) log('blue', 'Calling first middleware/handler', `(${update.update_id})`.grey);
 
     handler.middlewares[0](
       update,
@@ -85,6 +85,10 @@ export class Handler {
   }
 
   async handleUpdate(update: IUpdate): Promise<void> {
+    // log got new update
+    if (this.logging) log('blue', 'Got new update!', `(${update.update_id})`.grey);
+
+    // handle update
     const answer: Answer = new Answer(this.token, update);
     const handler = this.handlers[0];
     if (handler) this.handleMiddleware(0, update, answer);
