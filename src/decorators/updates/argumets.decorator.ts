@@ -70,3 +70,13 @@ export const CommandParams = () => buildArgumentDecorator('commandParams');
  * Params received from middlewares
  * */
 export const Params = () => buildArgumentDecorator('params');
+
+/**
+ * Who sent the message
+ * */
+export const Sender = () => buildArgumentDecorator('sender');
+
+/**
+ * User id who sent the message
+ * */
+export const UserId = () => buildArgumentDecorator('userId');

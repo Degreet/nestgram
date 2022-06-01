@@ -8,6 +8,8 @@ const argsProcedure: string[] = [
   'entities',
   'commandParams',
   'params',
+  'sender',
+  'userId',
 ];
 
 export function setupArguments(

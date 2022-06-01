@@ -21,7 +21,7 @@ export class Handler {
     private readonly logging?: true,
   ) {}
 
-  getNextFunction(
+  private getNextFunction(
     update: IUpdate,
     answer: Answer,
     params: any,
@@ -53,7 +53,7 @@ export class Handler {
     };
   }
 
-  handleMiddleware(index: number, update: IUpdate, answer: Answer) {
+  private handleMiddleware(index: number, update: IUpdate, answer: Answer) {
     const handler = this.handlers[index];
     if (!handler) return;
 
@@ -73,6 +73,8 @@ export class Handler {
         message?.entities,
         commandParams,
         params,
+        message?.from,
+        message?.from?.id,
       ];
 
       const handlerMethod: HandlerMethod = handler.controller[handler.methodKey].bind(
