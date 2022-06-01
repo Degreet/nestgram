@@ -6,6 +6,7 @@ import { IModule, ModuleClass } from '../../types';
  * */
 export function Module(options: IModule = {}): Function {
   return function (target: ModuleClass): ModuleClass {
+    if (options.middlewares) Reflect.defineMetadata('middlewares', options.middlewares, target);
     if (options.controllers) Reflect.defineMetadata('controllers', options.controllers, target);
     if (options.services) Reflect.defineMetadata('services', options.services, target);
     if (options.imports) Reflect.defineMetadata('imports', options.imports, target);

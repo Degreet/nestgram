@@ -61,6 +61,9 @@ export class NestGram {
         ...services,
       );
 
+      const globalMiddlewares: MiddlewareFunction[] =
+        Reflect.getMetadata('middlewares', Module) || [];
+
       let methodKeys: (string | symbol)[] = Reflect.ownKeys(controller.__proto__);
       methodKeys = methodKeys.filter((key: string | symbol): boolean => typeof key === 'string');
       methodKeys = methodKeys.filter((key: string): boolean => key !== 'constructor');
@@ -72,7 +75,7 @@ export class NestGram {
         this.handlers.push({
           controller,
           methodKey,
-          middlewares,
+          middlewares: [...globalMiddlewares, ...middlewares],
         });
       });
 

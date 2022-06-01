@@ -105,6 +105,7 @@ export class Handler {
     handler.middlewares[0](
       update,
       answer,
+      params,
       this.getNextFunction(
         update,
         answer,

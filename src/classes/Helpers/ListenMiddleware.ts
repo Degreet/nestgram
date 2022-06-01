@@ -16,6 +16,7 @@ export class ListenMiddleware {
     return function use(
       update: IUpdate,
       answer: Answer,
+      params: any,
       next: NextFunction,
       fail: NextFunction,
     ): any {
@@ -34,6 +35,7 @@ export class ListenMiddleware {
     return function use(
       update: IUpdate,
       answer: Answer,
+      params: any,
       next: NextFunction,
       fail: NextFunction,
     ): void {
@@ -51,6 +53,7 @@ export class ListenMiddleware {
     return function use(
       update: IUpdate,
       answer: Answer,
+      params: any,
       next: NextFunction,
       fail: NextFunction,
     ): void {
@@ -68,6 +71,7 @@ export class ListenMiddleware {
     return function use(
       update: IUpdate,
       answer: Answer,
+      params: any,
       next: NextFunction,
       fail: NextFunction,
     ): void {
@@ -85,7 +89,13 @@ export class ListenMiddleware {
   }
 
   static click(buttonId: string): MiddlewareFunction {
-    return function use(update: IUpdate, answer: Answer, next: NextFunction, fail: NextFunction) {
+    return function use(
+      update: IUpdate,
+      answer: Answer,
+      params: any,
+      next: NextFunction,
+      fail: NextFunction,
+    ) {
       if (!update.callback_query) return fail();
       if (update.callback_query.data !== buttonId) return fail();
       next();

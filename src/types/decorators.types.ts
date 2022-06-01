@@ -1,3 +1,5 @@
+import { MiddlewareFunction } from './middleware.types';
+
 export type DecoratorMethod = (
   target: any,
   key: string,
@@ -5,6 +7,7 @@ export type DecoratorMethod = (
 ) => PropertyDescriptor;
 
 export interface IModule {
+  middlewares?: MiddlewareFunction[];
   controllers?: ControllerClass[];
   services?: ServiceClass[];
   imports?: any[];
