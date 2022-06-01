@@ -65,3 +65,8 @@ export const Entities = () => buildArgumentDecorator('entities');
  * Command params
  * */
 export const CommandParams = () => buildArgumentDecorator('commandParams');
+
+/**
+ * Params received from middlewares
+ * */
+export const Params = () => buildArgumentDecorator('params');

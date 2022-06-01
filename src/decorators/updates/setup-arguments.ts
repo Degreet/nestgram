@@ -7,6 +7,7 @@ const argsProcedure: string[] = [
   'answer',
   'entities',
   'commandParams',
+  'params',
 ];
 
 export function setupArguments(

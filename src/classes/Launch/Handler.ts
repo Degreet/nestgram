@@ -24,21 +24,40 @@ export class Handler {
   getNextFunction(
     update: IUpdate,
     answer: Answer,
+    params: any,
     middlewares: MiddlewareFunction[],
     index: number,
+    handler: NextFunction,
+    failFunction: NextFunction,
   ): NextFunction | null {
     const nextFunction: MiddlewareFunction = middlewares[++index];
-    if (!nextFunction) return null;
 
     return () => {
       if (this.logging) log('blue', 'Calling next middleware', `(${update.update_id})`.grey);
-      return nextFunction(update, answer, this.getNextFunction(update, answer, middlewares, index));
+
+      return (nextFunction || handler)(
+        update,
+        answer,
+        params,
+        this.getNextFunction(
+          update,
+          answer,
+          params,
+          middlewares,
+          index,
+          handler,
+          failFunction.bind(null, index),
+        ),
+        failFunction.bind(null, index),
+      );
     };
   }
 
   handleMiddleware(index: number, update: IUpdate, answer: Answer) {
     const handler = this.handlers[index];
     if (!handler) return;
+
+    const params: any = {};
 
     const baseNextFunction: NextFunction = async (): Promise<void> => {
       if (this.logging) log('blue', 'Calling handler for update', `(${update.update_id})`.grey);
@@ -53,6 +72,7 @@ export class Handler {
         answer,
         message?.entities,
         commandParams,
+        params,
       ];
 
       const handlerMethod: HandlerMethod = handler.controller[handler.methodKey].bind(
@@ -64,7 +84,7 @@ export class Handler {
 
       try {
         resultMessageToSend = await handlerMethod(...args);
-      } catch (e) {
+      } catch {
         resultMessageToSend = handlerMethod(...args);
       }
 
@@ -72,10 +92,10 @@ export class Handler {
       await answer.send(resultMessageToSend);
     };
 
-    const failNextFunction: NextFunction = (): void => {
+    const failNextFunction: NextFunction = (i: number = index): void => {
       if (this.logging)
         log('blue', 'Middleware called fail function', `(${update.update_id})`.grey);
-      return this.handleMiddleware(index + 1, update, answer);
+      return this.handleMiddleware(i + 1, update, answer);
     };
 
     if (this.logging) log('blue', 'Calling first middleware/handler', `(${update.update_id})`.grey);
@@ -83,7 +103,15 @@ export class Handler {
     handler.middlewares[0](
       update,
       answer,
-      this.getNextFunction(update, answer, handler.middlewares, 0) || baseNextFunction,
+      this.getNextFunction(
+        update,
+        answer,
+        params,
+        handler.middlewares,
+        0,
+        baseNextFunction,
+        failNextFunction,
+      ) || baseNextFunction,
       failNextFunction,
     );
 
