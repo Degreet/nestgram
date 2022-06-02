@@ -26,3 +26,14 @@ export interface ISendPhotoOptions extends ISendOptions {
   caption?: string;
   caption_entities?: IMessageEntity[];
 }
+
+export interface IAnswerCallbackQueryOptions {
+  text?: string;
+  show_alert?: boolean;
+  url?: string;
+  cache_time?: number;
+}
+
+export interface IAnswerCallbackQueryFetchOptions extends IAnswerCallbackQueryOptions {
+  callback_query_id: string;
+}

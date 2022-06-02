@@ -1,1 +1,1 @@
-export type SendTypes = 'send';
+export type SendTypes = 'send' | 'alert' | 'toast';

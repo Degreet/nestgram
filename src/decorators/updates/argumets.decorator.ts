@@ -1,3 +1,5 @@
+import { MessageEntityTypes } from '../../types';
+
 function defineArgumentMetadata(
   target: any,
   propertyKey: string,
@@ -27,7 +29,7 @@ function buildArgumentDecorator(gotIndexName: string): ParameterDecorator {
  * Entity from sent message
  * @param entity Entity type that you want to get
  * */
-export function Entity(entity: string) {
+export function Entity(entity: MessageEntityTypes) {
   return function (target: any, propertyKey: string, parameterIndex: number): any {
     Reflect.defineMetadata('gotEntityType', entity, target, propertyKey);
     defineArgumentMetadata(target, propertyKey, parameterIndex, entity, 'gotEntityTypes');

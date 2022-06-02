@@ -1,10 +1,11 @@
 import { Keyboard } from '../Keyboard/Keyboard';
-import { ContentTypes } from '../../types';
+import { ContentTypes, SendTypes } from '../../types';
 import { error } from '../../logger';
 import { Media } from '../Media';
 
 export class MessageCreator {
   type: 'photo' | 'text';
+  sendType: SendTypes;
 
   constructor(
     public readonly content: ContentTypes,

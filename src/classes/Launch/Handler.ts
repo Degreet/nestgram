@@ -11,6 +11,7 @@ import {
 
 import { Answer } from '../Context/Answer';
 import { Filter } from '../Context/Filter';
+
 import { MessageCreator } from '../Message';
 import { log } from '../../logger';
 
@@ -26,11 +27,12 @@ export class Handler {
     answer: Answer,
     params: any,
     middlewares: MiddlewareFunction[],
-    index: number,
+    middlewareIndex: number,
+    handlerIndex: number,
     handler: NextFunction,
     failFunction: NextFunction,
   ): NextFunction | null {
-    const nextFunction: MiddlewareFunction = middlewares[++index];
+    const nextFunction: MiddlewareFunction = middlewares[++middlewareIndex];
 
     return () => {
       if (this.logging) log('blue', 'Calling next middleware', `(${update.update_id})`.grey);
@@ -44,16 +46,22 @@ export class Handler {
           answer,
           params,
           middlewares,
-          index,
+          middlewareIndex,
+          handlerIndex,
           handler,
-          failFunction.bind(null, index),
+          failFunction.bind(null, middlewareIndex, handlerIndex),
         ),
-        failFunction.bind(null, index),
+        failFunction.bind(null, middlewareIndex, handlerIndex),
       );
     };
   }
 
-  private handleMiddleware(index: number, update: IUpdate, answer: Answer) {
+  private handleMiddleware(
+    index: number,
+    update: IUpdate,
+    answer: Answer,
+    middlewareIndex: number = 0,
+  ) {
     const handler = this.handlers[index];
     if (!handler) return;
 
@@ -91,18 +99,38 @@ export class Handler {
       }
 
       if (!resultMessageToSend) return;
-      await answer.send(resultMessageToSend);
+      let sendMethodKey: string = 'send';
+      const answerCallArgs: any[] = [];
+
+      if (resultMessageToSend instanceof MessageCreator) {
+        if (['alert', 'toast'].includes(resultMessageToSend.sendType)) {
+          sendMethodKey = resultMessageToSend.sendType;
+          answerCallArgs.push(resultMessageToSend.content, resultMessageToSend.options);
+        } else {
+          answerCallArgs.push(resultMessageToSend);
+        }
+      }
+
+      await answer[sendMethodKey](...answerCallArgs);
     };
 
-    const failNextFunction: NextFunction = (i: number = index): void => {
+    const failNextFunction: NextFunction = (
+      middlewareIndex?: number,
+      handlerIndex?: number,
+    ): void => {
       if (this.logging)
         log('blue', 'Middleware called fail function', `(${update.update_id})`.grey);
-      return this.handleMiddleware(i + 1, update, answer);
+
+      if (handler.middlewares[middlewareIndex]) {
+        return this.handleMiddleware(handlerIndex, update, answer, middlewareIndex);
+      }
+
+      return this.handleMiddleware(handlerIndex + 1, update, answer, 0);
     };
 
     if (this.logging) log('blue', 'Calling first middleware/handler', `(${update.update_id})`.grey);
 
-    handler.middlewares[0](
+    handler.middlewares[middlewareIndex](
       update,
       answer,
       params,
@@ -111,11 +139,12 @@ export class Handler {
         answer,
         params,
         handler.middlewares,
-        0,
+        middlewareIndex,
+        index,
         baseNextFunction,
         failNextFunction,
       ) || baseNextFunction,
-      failNextFunction,
+      failNextFunction.bind(null, middlewareIndex + 1, index),
     );
 
     const isContinue: boolean | undefined = Reflect.getMetadata(

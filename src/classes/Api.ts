@@ -11,6 +11,8 @@ import {
   IWebhookConfig,
   IDeleteWebhookConfig,
   IUser,
+  IAnswerCallbackQueryOptions,
+  IAnswerCallbackQueryFetchOptions,
 } from '..';
 
 import { Media } from './Media';
@@ -146,5 +148,51 @@ export class Api {
         ...moreOptions,
       }),
     );
+  }
+
+  /**
+   * Answers to the callback query (inline button click)
+   * @param callback_query_id Callback query id
+   * @param moreOptions More options {@link IAnswerCallbackQueryOptions}
+   * @see https://core.telegram.org/bots/api#answercallbackquery
+   * */
+  answerCallbackQuery(
+    callback_query_id: string,
+    moreOptions: IAnswerCallbackQueryOptions = {},
+  ): Promise<boolean> {
+    return this.callApi<boolean, IAnswerCallbackQueryFetchOptions>('answerCallbackQuery', {
+      callback_query_id,
+      ...moreOptions,
+    });
+  }
+
+  /**
+   * Alert
+   * @param callback_query_id Callback query id
+   * @param text Alert text
+   * @param moreOptions More options {@link IAnswerCallbackQueryOptions}
+   * @see https://core.telegram.org/bots/api#answercallbackquery
+   * */
+  alert(
+    callback_query_id: string,
+    text: string,
+    moreOptions: IAnswerCallbackQueryOptions = {},
+  ): Promise<boolean> {
+    return this.answerCallbackQuery(callback_query_id, { text, show_alert: true });
+  }
+
+  /**
+   * Toast
+   * @param callback_query_id Callback query id
+   * @param text Toast text
+   * @param moreOptions More options {@link IAnswerCallbackQueryOptions}
+   * @see https://core.telegram.org/bots/api#answercallbackquery
+   * */
+  toast(
+    callback_query_id: string,
+    text: string,
+    moreOptions: IAnswerCallbackQueryOptions = {},
+  ): Promise<boolean> {
+    return this.answerCallbackQuery(callback_query_id, { text, show_alert: false });
   }
 }

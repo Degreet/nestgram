@@ -1,4 +1,11 @@
-import { ISendOptions, IMessage, IUpdate, ContentTypes, Keyboard } from '../..';
+import {
+  ISendOptions,
+  IMessage,
+  IUpdate,
+  ContentTypes,
+  Keyboard,
+  IAnswerCallbackQueryOptions,
+} from '../..';
 import { MessageCreator } from '../Message';
 import { error } from '../../logger';
 import { Filter } from './Filter';
@@ -23,5 +30,29 @@ export class Answer {
     const chatId: number | string | undefined = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
     return this.api.send(chatId, content, keyboard, moreOptions);
+  }
+
+  /**
+   * Alert
+   * @param text Alert text
+   * @param moreOptions More options {@link IAnswerCallbackQueryOptions}
+   * @see https://core.telegram.org/bots/api#answercallbackquery
+   * */
+  alert(text: string, moreOptions: IAnswerCallbackQueryOptions = {}): Promise<boolean> {
+    const queryId: string | undefined = Filter.getCallbackQueryId(this.update);
+    if (!queryId) throw error(`Can't find queryId from update`);
+    return this.api.alert(queryId, text, moreOptions);
+  }
+
+  /**
+   * Toast
+   * @param text Toast text
+   * @param moreOptions More options {@link IAnswerCallbackQueryOptions}
+   * @see https://core.telegram.org/bots/api#answercallbackquery
+   * */
+  toast(text: string, moreOptions: IAnswerCallbackQueryOptions = {}): Promise<boolean> {
+    const queryId: string | undefined = Filter.getCallbackQueryId(this.update);
+    if (!queryId) throw error(`Can't find queryId from update`);
+    return this.api.toast(queryId, text, moreOptions);
   }
 }
