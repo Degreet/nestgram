@@ -1,3 +1,5 @@
+import { KeyboardTypes } from '../enums';
+
 export interface IWebAppButton {
   url?: string;
 }
@@ -11,4 +13,10 @@ export interface IButton {
   switch_inline_query?: string;
   web_app?: IWebAppButton;
   pay?: boolean;
+}
+
+export interface IKeyboardLayout {
+  name: string;
+  rows: IButton[][];
+  type: KeyboardTypes;
 }

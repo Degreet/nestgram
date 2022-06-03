@@ -1,7 +1,8 @@
-import { KeyboardTypes, IButton } from '../..';
-import { error } from '../../logger';
+import { KeyboardTypes, IButton, IKeyboardLayout } from '../..';
+import { keyboardStore } from './KeyboardStore';
+import { error, warn } from '../../logger';
 
-export class Keyboard {
+export class Keyboard<T = any> {
   unresolvedButtons: IButton[] = [];
   rows: IButton[][] = [];
 
@@ -141,6 +142,45 @@ export class Keyboard {
     } else {
       this.rows.push(btns);
     }
+
+    return this;
+  }
+
+  /**
+   * Saves rows as layout
+   * @param layoutName Layout name
+   * */
+  save(layoutName: string) {
+    this.row();
+    keyboardStore.layouts.push({ name: layoutName, rows: this.rows, type: this.keyboardType });
+    return this;
+  }
+
+  /**
+   * Extracts rows from the layout
+   * @param layoutName Layout name
+   * */
+  use(layoutName: string) {
+    const layout: IKeyboardLayout | undefined = keyboardStore.layouts.find(
+      (layout: IKeyboardLayout): boolean => layout.name === layoutName,
+    );
+
+    if (!layout) {
+      warn(`Can't find layout with name`, layoutName.grey);
+      return this;
+    } else if (layout.type !== this.keyboardType) {
+      warn(
+        `Can't use layout with name`,
+        layoutName.grey,
+        `because it has a different keyboard type`,
+      );
+
+      return this;
+    }
+
+    layout.rows.forEach((row: IButton[]): void => {
+      this.unresolvedButtons.push(...row);
+    });
 
     return this;
   }

@@ -13,7 +13,7 @@ import { Answer } from '../Context/Answer';
 import { Filter } from '../Context/Filter';
 
 import { MessageCreator } from '../Message';
-import { log } from '../../logger';
+import { info } from '../../logger';
 
 export class Handler {
   constructor(
@@ -35,7 +35,7 @@ export class Handler {
     const nextFunction: MiddlewareFunction = middlewares[++middlewareIndex];
 
     return () => {
-      if (this.logging) log('blue', 'Calling next middleware', `(${update.update_id})`.grey);
+      if (this.logging) info('Calling next middleware', `(${update.update_id})`.grey);
 
       return (nextFunction || handler)(
         update,
@@ -68,7 +68,7 @@ export class Handler {
     const params: any = {};
 
     const baseNextFunction: NextFunction = async (): Promise<void> => {
-      if (this.logging) log('blue', 'Calling handler for update', `(${update.update_id})`.grey);
+      if (this.logging) info('Calling handler for update', `(${update.update_id})`.grey);
 
       const message: IMessage | undefined = Filter.getMessage(update);
       const commandParams: string[] = Filter.getCommandParams(update);
@@ -118,8 +118,7 @@ export class Handler {
       middlewareIndex?: number,
       handlerIndex?: number,
     ): void => {
-      if (this.logging)
-        log('blue', 'Middleware called fail function', `(${update.update_id})`.grey);
+      if (this.logging) info('Middleware called fail function', `(${update.update_id})`.grey);
 
       if (handler.middlewares[middlewareIndex]) {
         return this.handleMiddleware(handlerIndex, update, answer, middlewareIndex);
@@ -128,7 +127,7 @@ export class Handler {
       return this.handleMiddleware(handlerIndex + 1, update, answer, 0);
     };
 
-    if (this.logging) log('blue', 'Calling first middleware/handler', `(${update.update_id})`.grey);
+    if (this.logging) info('Calling first middleware/handler', `(${update.update_id})`.grey);
 
     handler.middlewares[middlewareIndex](
       update,
@@ -158,7 +157,7 @@ export class Handler {
 
   async handleUpdate(update: IUpdate): Promise<void> {
     // log got new update
-    if (this.logging) log('blue', 'Got new update!', `(${update.update_id})`.grey);
+    if (this.logging) info('Got new update!', `(${update.update_id})`.grey);
 
     // handle update
     const answer: Answer = new Answer(this.token, update);

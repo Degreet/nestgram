@@ -8,7 +8,7 @@ import {
   IUser,
 } from '.';
 
-import { clear, error, log } from './logger';
+import { clear, error, info, success } from './logger';
 import { Api } from './classes';
 
 import { Polling } from './classes/Launch/Polling';
@@ -39,7 +39,7 @@ export class NestGram {
     private readonly runConfig: IRunConfig = { port: 80, runType: 'polling', logging: true },
   ) {
     // log if logging is on
-    if (runConfig.logging) log('blue', 'Bot initialized');
+    if (runConfig.logging) info('Bot initialized');
 
     // setup default values
     if (!runConfig.port) runConfig.port = 80;
@@ -95,7 +95,7 @@ export class NestGram {
     this.setupModule(Module);
 
     // log that module configured if logging is on
-    if (this.runConfig.logging) log('blue', 'Entry module configured');
+    if (this.runConfig.logging) info('Entry module configured');
   }
 
   /**
@@ -104,7 +104,7 @@ export class NestGram {
    * */
   async start(): Promise<string> {
     // log that bot starting if logging is on
-    if (this.runConfig.logging) log('blue', 'Starting bot...');
+    if (this.runConfig.logging) info('Starting bot...');
 
     // return error if user didn't set token
     if (!this.token) throw error(`You can't run bot without token`);
@@ -135,7 +135,7 @@ export class NestGram {
     }
 
     // log that bot started
-    log('green', 'Bot started on', `@${this.info.username}`.gray);
+    success('Bot started on', `@${this.info.username}`.gray);
 
     // return bot.username
     return this.info.username;
