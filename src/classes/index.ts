@@ -5,3 +5,5 @@ export * from './Keyboard/Keyboard';
 export * from './Message';
 export * from './Media';
 export * from './Api';
+
+export * from './Mongo/NestSchema';

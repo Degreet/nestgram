@@ -6,21 +6,20 @@ export type DecoratorMethod = (
   descriptor: PropertyDescriptor,
 ) => PropertyDescriptor;
 
-export interface IModule {
-  middlewares?: MiddlewareFunction[];
-  controllers?: ControllerClass[];
-  services?: ServiceClass[];
-  imports?: any[];
-}
+export type ModuleFunction = () => Promise<any[] | void> | any[] | void;
 
 export declare class ControllerClass {
   constructor(...services: ServiceClass[]);
 }
 
-export declare class ServiceClass {}
+export declare class ServiceClass {
+  constructor(...args: any[]);
+}
 
-export declare class ModuleClass implements IModule {
+export declare class ModuleClass {
+  middlewares?: MiddlewareFunction[];
   controllers?: ControllerClass[];
+  modules?: ModuleFunction[];
   services?: ServiceClass[];
-  imports?: IModule[];
+  imports?: any[];
 }

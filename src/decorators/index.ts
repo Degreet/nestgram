@@ -9,4 +9,7 @@ export * from './updates/argumets.decorator';
 export * from './updates/middleware.decorator';
 export * from './updates/continue.decorator';
 
-export * from './properties/api.decorator';
+export * from './mongo/schema.decorator';
+export * from './mongo/prop.decorator';
+
+export * from './api/api.decorator';

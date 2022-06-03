@@ -6,6 +6,7 @@ import {
   IRunConfig,
   IHandler,
   IUser,
+  ModuleFunction,
 } from '.';
 
 import { clear, error, info, success } from './logger';
@@ -50,16 +51,40 @@ export class NestGram {
     if (module) this.setupEntry(module);
   }
 
-  private setupImports(Module: any): void {
+  private async setupImports(Module: any): Promise<void> {
     const controllers: ControllerClass[] = Reflect.getMetadata('controllers', Module);
+    const modules: ModuleFunction[] = Reflect.getMetadata('modules', Module) || [];
+    const compiledModules: any[] = [];
+
+    for (const module of modules) {
+      let result: any[] | void;
+      let err: any;
+
+      try {
+        result = await module();
+      } catch (e: any) {
+        // @ts-ignore
+        result = module();
+        err = e;
+        console.log(1, err);
+      }
+
+      if (result) {
+        try {
+          compiledModules.push(...result);
+        } catch (e: any) {
+          throw new Error(err);
+        }
+      }
+    }
 
     let services: ServiceClass[] = Reflect.getMetadata('services', Module);
-    services = services.map((Service: any): typeof ServiceClass => new Service());
+    services = services.map((Service: any): typeof ServiceClass => {
+      return new Service(...compiledModules);
+    });
 
     controllers.forEach((Controller: any): void => {
-      const controller: ControllerClass & { __proto__: any; api?: Api } = new Controller(
-        ...services,
-      );
+      const controller: ControllerClass & { __proto__: any } = new Controller(...services);
 
       const globalMiddlewares: MiddlewareFunction[] =
         Reflect.getMetadata('middlewares', Module) || [];
@@ -80,7 +105,7 @@ export class NestGram {
       });
 
       const needApi: boolean | undefined = Reflect.getMetadata('getApi', controller, 'api');
-      if (needApi) controller.api = this.api;
+      if (needApi) controller['api'] = this.api;
     });
   }
 
