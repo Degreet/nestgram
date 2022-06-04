@@ -4,11 +4,16 @@
   "version": "1.3.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "author": "Degreet <degreetpro@gmail.com>",
+  "homepage": "https://degreetpro.gitbook.io/nestgram/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Degreet/nestgram.git"
+  },
   "files": [
     "dist/**/*"
   ],
   "license": "MIT",
-  "author": "Degreet <degreetpro@gmail.com>",
   "keywords": [
     "nest",
     "telegram",
