@@ -150,7 +150,7 @@ export class Keyboard<T = any> {
    * Saves rows as layout
    * @param layoutName Layout name
    * */
-  save(layoutName: string) {
+  save(layoutName: string): Keyboard {
     this.row();
     keyboardStore.layouts.push({ name: layoutName, rows: this.rows, type: this.keyboardType });
     return this;
@@ -160,7 +160,7 @@ export class Keyboard<T = any> {
    * Extracts rows from the layout
    * @param layoutName Layout name
    * */
-  use(layoutName: string) {
+  use(layoutName: string): Keyboard {
     const layout: IKeyboardLayout | undefined = keyboardStore.layouts.find(
       (layout: IKeyboardLayout): boolean => layout.name === layoutName,
     );
