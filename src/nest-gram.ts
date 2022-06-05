@@ -66,7 +66,6 @@ export class NestGram {
         // @ts-ignore
         result = module();
         err = e;
-        console.log(1, err);
       }
 
       if (result) {

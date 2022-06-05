@@ -109,6 +109,8 @@ export class Handler {
         } else {
           answerCallArgs.push(resultMessageToSend);
         }
+      } else {
+        answerCallArgs.push(resultMessageToSend);
       }
 
       await answer[sendMethodKey](...answerCallArgs);
