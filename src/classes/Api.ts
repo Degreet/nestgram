@@ -21,6 +21,8 @@ import {
   Audio,
   ISendAudioOptions,
   ISendAudioFetchOptions,
+  IFile,
+  IGetFileFetchOptions,
 } from '..';
 
 import { Media } from './Media';
@@ -272,5 +274,14 @@ export class Api {
     moreOptions: IAnswerCallbackQueryOptions = {},
   ): Promise<boolean> {
     return this.answerCallbackQuery(callback_query_id, { text, show_alert: false });
+  }
+
+  /**
+   * Returns info about the file
+   * @param fileId File id that you want to get
+   * @return {@link IFile}
+   * */
+  getFile(fileId: string): Promise<IFile> {
+    return this.callApi<IFile, IGetFileFetchOptions>('getFile', { file_id: fileId });
   }
 }

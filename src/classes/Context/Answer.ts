@@ -5,7 +5,9 @@ import {
   ContentTypes,
   Keyboard,
   IAnswerCallbackQueryOptions,
+  IFile,
 } from '../..';
+
 import { MessageCreator } from '../Message';
 import { error } from '../../logger';
 import { Filter } from './Filter';
@@ -54,5 +56,14 @@ export class Answer {
     const queryId: string | undefined = Filter.getCallbackQueryId(this.update);
     if (!queryId) throw error(`Can't find queryId from update`);
     return this.api.toast(queryId, text, moreOptions);
+  }
+
+  /**
+   * Returns info about the file
+   * @param fileId File id that you want to get
+   * @return {@link IFile}
+   * */
+  getFile(fileId: string): Promise<IFile> {
+    return this.api.getFile(fileId);
   }
 }

@@ -66,3 +66,14 @@ export interface IAnswerCallbackQueryFetchOptions extends IAnswerCallbackQueryOp
 export interface IDefaultSendMediaConfig {
   thumb?: Thumb | null;
 }
+
+export interface IFile {
+  file_id: string;
+  file_unique_id: string;
+  file_size?: number;
+  file_path?: string;
+}
+
+export interface IGetFileFetchOptions {
+  file_id: string;
+}
