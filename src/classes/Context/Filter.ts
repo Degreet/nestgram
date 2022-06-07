@@ -42,7 +42,7 @@ export class Filter {
     update: IUpdate,
     entityType: MessageEntityTypes,
   ): IMessageEntity | undefined {
-    return Filter.getMessage(update).entities.find(
+    return Filter.getMessage(update).entities?.find(
       (entity: IMessageEntity) => entity.type === entityType,
     );
   }

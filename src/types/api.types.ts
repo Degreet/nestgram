@@ -36,9 +36,20 @@ export interface ISendVideoOptions extends ISendPhotoOptions {
   height?: number;
 }
 
+export interface ISendAudioOptions extends ISendPhotoOptions {
+  duration?: number;
+  performer?: string;
+  title?: string;
+}
+
 export interface ISendVideoFetchOptions extends ISendVideoOptions {
   chat_id: number | string;
   video?: string | any; // configures in form data
+}
+
+export interface ISendAudioFetchOptions extends ISendAudioOptions {
+  chat_id: number | string;
+  audio?: string | any; // configures in form data
 }
 
 export interface IAnswerCallbackQueryOptions {

@@ -16,6 +16,11 @@ import {
   IDefaultSendMediaConfig,
   ISendVideoFetchOptions,
   ISendVideoOptions,
+  Video,
+  Photo,
+  Audio,
+  ISendAudioOptions,
+  ISendAudioFetchOptions,
 } from '..';
 
 import { Media } from './Media';
@@ -120,10 +125,12 @@ export class Api {
     }
 
     if (content instanceof Media) {
-      if (content.fileType === 'photo')
+      if (content.fileType === 'photo' && content instanceof Photo)
         return this.sendPhoto(chatId, content, keyboard, moreOptions);
-      else if (content.fileType === 'video')
+      else if (content.fileType === 'video' && content instanceof Video)
         return this.sendVideo(chatId, content, keyboard, moreOptions);
+      else if (content.fileType === 'audio' && content instanceof Audio)
+        return this.sendAudio(chatId, content, keyboard, moreOptions);
       else
         throw error(
           "Media file type is not defined. Don't use Media class, use Photo, Video class instead",
@@ -145,12 +152,12 @@ export class Api {
    * @param chatId Chat ID where you want to send message. It can be chat of group/channel or ID of user
    * @param photo Photo that you want to send (you can create it using Photo class {@link Photo})
    * @param keyboard Pass Keyboard class if you want to add keyboard to the message
-   * @param moreOptions More options {@link ISendOptions}
+   * @param moreOptions More options {@link ISendPhotoOptions}
    * @see https://core.telegram.org/bots/api#sendphoto
    * */
   sendPhoto(
     chatId: string | number,
-    photo: Media,
+    photo: Photo,
     keyboard: Keyboard | null = null,
     moreOptions: ISendPhotoOptions = {},
   ): Promise<IMessage> {
@@ -169,14 +176,14 @@ export class Api {
   /**
    * Sends a video to the chat
    * @param chatId Chat ID where you want to send message. It can be chat of group/channel or ID of user
-   * @param video Video that you want to send (you can create it using Photo class {@link Video})
+   * @param video Video that you want to send (you can create it using Video class {@link Video})
    * @param keyboard Pass Keyboard class if you want to add keyboard to the message
-   * @param moreOptions More options {@link ISendOptions}
+   * @param moreOptions More options {@link ISendVideoOptions}
    * @see https://core.telegram.org/bots/api#sendvideo
    * */
   sendVideo(
     chatId: string | number,
-    video: Media,
+    video: Video,
     keyboard: Keyboard | null = null,
     moreOptions: ISendVideoOptions = {},
   ): Promise<IMessage> {
@@ -188,8 +195,34 @@ export class Api {
         chat_id: chatId,
         parse_mode: 'HTML',
         thumb: video.thumb,
-        width: 1920,
-        height: 1080,
+        ...video.resolution,
+        ...moreOptions,
+      }),
+    );
+  }
+
+  /**
+   * Sends an audio to the chat
+   * @param chatId Chat ID where you want to send message. It can be chat of group/channel or ID of user
+   * @param audio Audio that you want to send (you can create it using Audio class {@link Audio})
+   * @param keyboard Pass Keyboard class if you want to add keyboard to the message
+   * @param moreOptions More options {@link ISendAudioOptions}
+   * @see https://core.telegram.org/bots/api#sendaudio
+   * */
+  sendAudio(
+    chatId: string | number,
+    audio: Audio,
+    keyboard: Keyboard | null = null,
+    moreOptions: ISendAudioOptions = {},
+  ): Promise<IMessage> {
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+
+    return this.callApi<IMessage, FormData>(
+      'sendAudio',
+      this.buildFormData<ISendAudioFetchOptions>('audio', audio, {
+        chat_id: chatId,
+        parse_mode: 'HTML',
+        thumb: audio.thumb,
         ...moreOptions,
       }),
     );
