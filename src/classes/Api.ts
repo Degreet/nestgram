@@ -13,6 +13,9 @@ import {
   IUser,
   IAnswerCallbackQueryOptions,
   IAnswerCallbackQueryFetchOptions,
+  IDefaultSendMediaConfig,
+  ISendVideoFetchOptions,
+  ISendVideoOptions,
 } from '..';
 
 import { Media } from './Media';
@@ -34,6 +37,7 @@ export class Api {
     try {
       const { data } = await axios.post(`https://api.telegram.org/bot${token}/${method}`, config, {
         headers,
+        maxBodyLength: Infinity,
       });
 
       return data.result;
@@ -47,17 +51,26 @@ export class Api {
     return this.call<T, K>(this.token, method, config);
   }
 
-  private buildFormData<K = any>(fromMediaKey: string, media: Media, config: K): FormData {
-    const formData: FormData = new FormData();
-
+  private static appendMediaToFormData(formData: FormData, key: string, media: Media) {
     if (media.passType === 'path') {
-      formData.append(fromMediaKey, fs.createReadStream(media.media));
+      formData.append(key, fs.createReadStream(media.media));
     } else {
-      formData.append(fromMediaKey, media.media);
+      formData.append(key, media.media);
     }
+  }
+
+  private buildFormData<K extends IDefaultSendMediaConfig>(
+    fromMediaKey: string,
+    media: Media,
+    config: K,
+  ): FormData {
+    const formData: FormData = new FormData();
+    Api.appendMediaToFormData(formData, fromMediaKey, media);
+    if (config.thumb) Api.appendMediaToFormData(formData, 'thumb', config.thumb);
 
     Object.keys(config).forEach((key: string): void => {
       const data: K[keyof K] = config[key as keyof typeof config];
+      if (!data) return;
       formData.append(key, typeof data === 'object' ? JSON.stringify(data) : data);
     });
 
@@ -106,12 +119,18 @@ export class Api {
       content = content.content;
     }
 
-    if (content instanceof Media) return this.sendPhoto(chatId, content, keyboard, moreOptions);
-
-    if (keyboard) {
-      keyboard.row();
-      moreOptions.reply_markup = { [keyboard.keyboardType]: keyboard.rows };
+    if (content instanceof Media) {
+      if (content.fileType === 'photo')
+        return this.sendPhoto(chatId, content, keyboard, moreOptions);
+      else if (content.fileType === 'video')
+        return this.sendVideo(chatId, content, keyboard, moreOptions);
+      else
+        throw error(
+          "Media file type is not defined. Don't use Media class, use Photo, Video class instead",
+        );
     }
+
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
 
     return this.callApi<IMessage, ISendFetchOptions>('sendMessage', {
       text: content,
@@ -127,7 +146,7 @@ export class Api {
    * @param photo Photo that you want to send (you can create it using Photo class {@link Photo})
    * @param keyboard Pass Keyboard class if you want to add keyboard to the message
    * @param moreOptions More options {@link ISendOptions}
-   * @see https://core.telegram.org/bots/api#sendmessage
+   * @see https://core.telegram.org/bots/api#sendphoto
    * */
   sendPhoto(
     chatId: string | number,
@@ -135,16 +154,42 @@ export class Api {
     keyboard: Keyboard | null = null,
     moreOptions: ISendPhotoOptions = {},
   ): Promise<IMessage> {
-    if (keyboard) {
-      keyboard.row();
-      moreOptions.reply_markup = { [keyboard.keyboardType]: keyboard.rows };
-    }
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
 
     return this.callApi<IMessage, FormData>(
       'sendPhoto',
       this.buildFormData<ISendPhotoFetchOptions>('photo', photo, {
         chat_id: chatId,
         parse_mode: 'HTML',
+        ...moreOptions,
+      }),
+    );
+  }
+
+  /**
+   * Sends a video to the chat
+   * @param chatId Chat ID where you want to send message. It can be chat of group/channel or ID of user
+   * @param video Video that you want to send (you can create it using Photo class {@link Video})
+   * @param keyboard Pass Keyboard class if you want to add keyboard to the message
+   * @param moreOptions More options {@link ISendOptions}
+   * @see https://core.telegram.org/bots/api#sendvideo
+   * */
+  sendVideo(
+    chatId: string | number,
+    video: Media,
+    keyboard: Keyboard | null = null,
+    moreOptions: ISendVideoOptions = {},
+  ): Promise<IMessage> {
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+
+    return this.callApi<IMessage, FormData>(
+      'sendVideo',
+      this.buildFormData<ISendVideoFetchOptions>('video', video, {
+        chat_id: chatId,
+        parse_mode: 'HTML',
+        thumb: video.thumb,
+        width: 1920,
+        height: 1080,
         ...moreOptions,
       }),
     );

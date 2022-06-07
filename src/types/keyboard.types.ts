@@ -1,5 +1,11 @@
 import { KeyboardTypes } from '../enums';
 
+export interface ReplyMarkup {
+  inline_keyboard?: IButton[][];
+  keyboard?: IButton[][];
+  placeholder?: string;
+}
+
 export interface IWebAppButton {
   url?: string;
 }

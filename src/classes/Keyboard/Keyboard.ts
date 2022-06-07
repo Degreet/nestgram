@@ -1,4 +1,4 @@
-import { KeyboardTypes, IButton, IKeyboardLayout } from '../..';
+import { KeyboardTypes, IButton, IKeyboardLayout, ReplyMarkup } from '../..';
 import { keyboardStore } from './KeyboardStore';
 import { error, warn } from '../../logger';
 
@@ -183,5 +183,10 @@ export class Keyboard<T = any> {
     });
 
     return this;
+  }
+
+  buildMarkup(): ReplyMarkup {
+    this.row();
+    return { [this.keyboardType]: this.rows, placeholder: this.placeholder };
   }
 }

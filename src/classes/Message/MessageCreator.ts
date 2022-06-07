@@ -1,10 +1,10 @@
 import { Keyboard } from '../Keyboard/Keyboard';
-import { ContentTypes, SendTypes } from '../../types';
+import { ContentTypes, MediaFileTypes, SendTypes } from '../../types';
 import { error } from '../../logger';
 import { Media } from '../Media';
 
 export class MessageCreator {
-  type: 'photo' | 'text';
+  type: MediaFileTypes | 'text';
   sendType: SendTypes;
 
   constructor(
@@ -21,12 +21,8 @@ export class MessageCreator {
       this.type = 'text';
     }
 
-    if (keyboard) {
-      keyboard.row();
-      options.reply_markup = {
-        [keyboard.keyboardType]: keyboard.rows,
-        placeholder: keyboard.placeholder,
-      };
-    }
+    if (keyboard) options.reply_markup = keyboard.buildMarkup();
   }
+
+  setThumb() {}
 }

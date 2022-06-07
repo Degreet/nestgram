@@ -1,6 +1,8 @@
 import { IMessageEntity } from './update.types';
+import { ReplyMarkup } from './keyboard.types';
+import { Thumb } from '../classes';
 
-export type IOptions = ISendOptions | ISendPhotoOptions;
+export type IOptions = ISendOptions | ISendPhotoOptions | ISendVideoOptions;
 
 export interface ISendFetchOptions extends ISendOptions {
   chat_id: number | string;
@@ -14,7 +16,7 @@ export interface ISendOptions {
   protect_content?: boolean;
   reply_to_message_id?: number;
   allow_sending_without_reply?: boolean;
-  reply_markup?: any;
+  reply_markup?: ReplyMarkup;
 }
 
 export interface ISendPhotoFetchOptions extends ISendPhotoOptions {
@@ -22,9 +24,21 @@ export interface ISendPhotoFetchOptions extends ISendPhotoOptions {
   photo?: string | any; // configures in form data
 }
 
-export interface ISendPhotoOptions extends ISendOptions {
+export interface ISendPhotoOptions extends ISendOptions, IDefaultSendMediaConfig {
   caption?: string;
   caption_entities?: IMessageEntity[];
+}
+
+export interface ISendVideoOptions extends ISendPhotoOptions {
+  supports_streaming?: boolean;
+  duration?: number;
+  width?: number;
+  height?: number;
+}
+
+export interface ISendVideoFetchOptions extends ISendVideoOptions {
+  chat_id: number | string;
+  video?: string | any; // configures in form data
 }
 
 export interface IAnswerCallbackQueryOptions {
@@ -36,4 +50,8 @@ export interface IAnswerCallbackQueryOptions {
 
 export interface IAnswerCallbackQueryFetchOptions extends IAnswerCallbackQueryOptions {
   callback_query_id: string;
+}
+
+export interface IDefaultSendMediaConfig {
+  thumb?: Thumb | null;
 }
