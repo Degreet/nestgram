@@ -1,7 +1,7 @@
 import { setupArguments } from './setup-arguments';
 import { Middleware } from './middleware.decorator';
 import { ListenMiddleware } from '../../classes/Helpers/ListenMiddleware';
-import { MessageEntityTypes } from '../../types';
+import { MediaFileTypes, MessageEntityTypes } from '../../types';
 import { MessageSubtypes } from '../../types/listen-middlewares.types';
 
 export function buildUpdateDecorator(
@@ -71,3 +71,35 @@ export const OnEntity = (entity?: MessageEntityTypes): MethodDecorator =>
  * */
 export const OnClick = (buttonId: string): MethodDecorator =>
   buildUpdateDecorator('click', buttonId);
+
+/**
+ * Listen for a user that send some media file (e.g. photo, video, audio)
+ * @param media Media type that you want to listen
+ * @see https://core.telegram.org/bots/api#message
+ * */
+export const OnMedia = (media?: MediaFileTypes): MethodDecorator =>
+  buildUpdateDecorator('media', media);
+
+/**
+ * Listen for a user that send a photo
+ * @see https://core.telegram.org/bots/api#photosize
+ * */
+export const OnPhoto = (): MethodDecorator => buildUpdateDecorator('media', 'photo');
+
+/**
+ * Listen for a user that send a video
+ * @see https://core.telegram.org/bots/api#video
+ * */
+export const OnVideo = (): MethodDecorator => buildUpdateDecorator('media', 'video');
+
+/**
+ * Listen for a user that send an audio
+ * @see https://core.telegram.org/bots/api#audio
+ * */
+export const OnAudio = (): MethodDecorator => buildUpdateDecorator('media', 'audio');
+
+/**
+ * Listen for an update
+ * @see https://core.telegram.org/bots/api#update
+ * */
+export const OnUpdate = (): MethodDecorator => buildUpdateDecorator('update');

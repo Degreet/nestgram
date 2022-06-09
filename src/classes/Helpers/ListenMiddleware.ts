@@ -7,11 +7,18 @@ import {
   MiddlewareFunction,
   Filter,
   MessageEntityTypes,
+  MediaFileTypes,
 } from '../..';
 
 import { MessageSubtypes } from '../../types/listen-middlewares.types';
 
 export class ListenMiddleware {
+  static update(): MiddlewareFunction {
+    return function use(update: IUpdate, answer: Answer, params: any, next: NextFunction): any {
+      next();
+    };
+  }
+
   static command(commandText: string): MiddlewareFunction {
     return function use(
       update: IUpdate,
@@ -67,7 +74,7 @@ export class ListenMiddleware {
     };
   }
 
-  static message(subtype: MessageSubtypes): MiddlewareFunction {
+  static message(subtype?: MessageSubtypes): MiddlewareFunction {
     return function use(
       update: IUpdate,
       answer: Answer,
@@ -98,6 +105,27 @@ export class ListenMiddleware {
     ) {
       if (!update.callback_query) return fail();
       if (update.callback_query.data !== buttonId) return fail();
+      next();
+    };
+  }
+
+  static media(type?: MediaFileTypes): MiddlewareFunction {
+    return function use(
+      update: IUpdate,
+      answer: Answer,
+      params: any,
+      next: NextFunction,
+      fail: NextFunction,
+    ): void {
+      const msg: IMessage | undefined = update.message;
+      if (!msg) return fail();
+
+      if (type) {
+        if (!msg[type]) return fail();
+      } else {
+        if (!msg.audio && !msg.video && !msg.photo) return fail();
+      }
+
       next();
     };
   }
