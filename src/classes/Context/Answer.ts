@@ -62,6 +62,7 @@ export class Answer {
    * Returns info about the file
    * @param fileId File id that you want to get
    * @return {@link IFile}
+   * @see https://core.telegram.org/bots/api#getfile
    * */
   getFile(fileId: string): Promise<IFile> {
     return this.api.getFile(fileId);

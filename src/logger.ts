@@ -2,7 +2,7 @@
 import 'colors';
 
 export function log(typeColor: string, ...contents: any[]): void {
-  console.log('[NestGram]'[typeColor], ...contents);
+  console.log(`[NestGram, ${new Date().toISOString()}]`[typeColor], ...contents);
 }
 
 export function info(...contents: any[]): void {
