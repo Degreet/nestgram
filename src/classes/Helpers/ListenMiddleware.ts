@@ -19,7 +19,7 @@ export class ListenMiddleware {
     };
   }
 
-  static command(commandText: string): MiddlewareFunction {
+  static command(commandText?: string): MiddlewareFunction {
     return function use(
       update: IUpdate,
       answer: Answer,
@@ -33,6 +33,7 @@ export class ListenMiddleware {
       const entity: IMessageEntity | undefined = Filter.getEntity(update, 'bot_command');
       if (!entity) return fail();
 
+      if (!commandText) return next();
       if (message.text.slice(entity.offset, entity.length) !== `/${commandText}`) return fail();
       next();
     };

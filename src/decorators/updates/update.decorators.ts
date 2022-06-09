@@ -21,7 +21,7 @@ export function buildUpdateDecorator(
  * @see https://core.telegram.org/bots/api#message
  * @see https://core.telegram.org/bots/api#messageentity
  * */
-export const OnCommand = (commandText: string): MethodDecorator =>
+export const OnCommand = (commandText?: string): MethodDecorator =>
   buildUpdateDecorator('command', commandText);
 
 /**
