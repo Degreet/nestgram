@@ -67,8 +67,7 @@ export interface IDefaultSendMediaConfig {
   thumb?: Thumb | null;
 }
 
-export interface IFile {
-  file_id: string;
+export interface IFile extends IGetFileFetchOptions {
   file_unique_id: string;
   file_size?: number;
   file_path?: string;

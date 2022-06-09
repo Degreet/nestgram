@@ -74,11 +74,11 @@ export interface IMessage {
   text?: string;
   entities?: IMessageEntity[];
   animation?: any; //!
-  audio?: any; //!
+  audio?: IAudio;
   document?: any; //!
-  photo?: any[]; //!
+  photo?: IPhotoSize[];
   sticker?: any; //!
-  video?: any; //!
+  video?: IVideo;
   video_note?: any; //!
   voice?: any; //!
   caption?: string;
@@ -112,4 +112,35 @@ export interface IMessage {
   video_chat_participants_invited?: any; //!
   web_app_data?: any; //!
   reply_markup?: ReplyMarkup; //!
+}
+
+interface IDefaultFileOptions {
+  file_id: string;
+  file_unique_id: string;
+}
+
+export interface IAudio extends IDefaultFileOptions {
+  duration: number;
+  performer?: string;
+  title?: string;
+  file_name?: string;
+  mime_type?: string;
+  file_size?: number;
+  thumb?: IPhotoSize;
+}
+
+export interface IPhotoSize extends IDefaultFileOptions {
+  width: number;
+  height: number;
+  file_size?: number;
+}
+
+export interface IVideo extends IDefaultFileOptions {
+  width: number;
+  height: number;
+  duration: number;
+  thumb?: IPhotoSize[];
+  file_name?: string;
+  mime_type?: string;
+  file_size?: string;
 }
