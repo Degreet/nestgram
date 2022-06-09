@@ -23,6 +23,8 @@ import {
   ISendAudioFetchOptions,
   IFile,
   IGetFileFetchOptions,
+  IForwardMessageOptions,
+  IForwardMessageFetchOptions,
 } from '..';
 
 import { Media } from './Media';
@@ -283,5 +285,27 @@ export class Api {
    * */
   getFile(fileId: string): Promise<IFile> {
     return this.callApi<IFile, IGetFileFetchOptions>('getFile', { file_id: fileId });
+  }
+
+  /**
+   * Forwards message
+   * @param msgId Id of the message you want to forward
+   * @param fromChatId Chat id from you want to forward a message
+   * @param toChatId Chat id you want to forward to
+   * @param moreOptions More options {@link IForwardMessageOptions}
+   * @see https://core.telegram.org/bots/api#forwardmessage
+   * */
+  forward(
+    msgId: number,
+    fromChatId: number | string,
+    toChatId: number | string,
+    moreOptions: IForwardMessageOptions,
+  ): Promise<IMessage> {
+    return this.callApi<IMessage, IForwardMessageFetchOptions>('forwardMessage', {
+      chat_id: toChatId,
+      from_chat_id: fromChatId,
+      message_id: msgId,
+      ...moreOptions,
+    });
   }
 }

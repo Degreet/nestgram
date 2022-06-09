@@ -103,3 +103,9 @@ export const OnAudio = (): MethodDecorator => buildUpdateDecorator('media', 'aud
  * @see https://core.telegram.org/bots/api#update
  * */
 export const OnUpdate = (): MethodDecorator => buildUpdateDecorator('update');
+
+/**
+ * Listen for a user that forwards a message
+ * @see https://core.telegram.org/bots/api#message
+ * */
+export const OnForward = (): MethodDecorator => buildUpdateDecorator('forward');

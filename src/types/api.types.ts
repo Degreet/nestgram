@@ -76,3 +76,14 @@ export interface IFile extends IGetFileFetchOptions {
 export interface IGetFileFetchOptions {
   file_id: string;
 }
+
+export interface IForwardMessageOptions {
+  disable_notification?: boolean;
+  protect_content?: boolean;
+}
+
+export interface IForwardMessageFetchOptions extends IForwardMessageOptions {
+  chat_id: string | number;
+  from_chat_id: string | number;
+  message_id: number;
+}

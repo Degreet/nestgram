@@ -13,6 +13,14 @@ export class Filter {
 
   /**
    * @param update Update {@link IUpdate}
+   * @return message id
+   * */
+  public static getMsgId(update: IUpdate): number | undefined {
+    return Filter.getMessage(update)?.message_id;
+  }
+
+  /**
+   * @param update Update {@link IUpdate}
    * @return callback query id
    * */
   public static getCallbackQueryId(update: IUpdate): string | undefined {

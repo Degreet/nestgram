@@ -6,6 +6,7 @@ import {
   Keyboard,
   IAnswerCallbackQueryOptions,
   IFile,
+  IForwardMessageOptions,
 } from '../..';
 
 import { MessageCreator } from '../Message';
@@ -69,6 +70,22 @@ export class Answer {
    * */
   getFile(fileId: string): Promise<IFile> {
     return this.api.getFile(fileId);
+  }
+
+  /**
+   * Forwards got message
+   * @param toChatId Chat id you want to forward to
+   * @param moreOptions More options {@link IForwardMessageOptions}
+   * @see https://core.telegram.org/bots/api#forwardmessage
+   * */
+  forward(toChatId: number | string, moreOptions?: IForwardMessageOptions) {
+    const chatId: number | string | undefined = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+
+    const msgId: number | undefined = Filter.getMsgId(this.update);
+    if (!msgId) throw error(`Can't find msgId from update`);
+
+    return this.api.forward(msgId, chatId, toChatId, moreOptions);
   }
 
   /**
