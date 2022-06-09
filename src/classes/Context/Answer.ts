@@ -13,6 +13,9 @@ import { error } from '../../logger';
 import { Filter } from './Filter';
 import { Api } from '../Api';
 
+import axios, { AxiosResponse } from 'axios';
+import * as fs from 'fs';
+
 export class Answer {
   api: Api = new Api(this.token);
   constructor(private readonly token: string, private readonly update: IUpdate) {}
@@ -66,5 +69,37 @@ export class Answer {
    * */
   getFile(fileId: string): Promise<IFile> {
     return this.api.getFile(fileId);
+  }
+
+  /**
+   * Saves any media was sent
+   * @param path Path where you want to save the media file
+   * @return true if saved success
+   * */
+  async saveFile(path: string): Promise<boolean> {
+    const msg: IMessage = this.update.message;
+    if (!msg) return false;
+
+    const fileId: string | undefined =
+      msg.audio?.file_id ||
+      msg.video?.file_id ||
+      (msg.photo && msg.photo[msg.photo.length - 1]?.file_id);
+
+    if (!fileId) return false;
+    const fileInfo: IFile = await this.getFile(fileId);
+
+    try {
+      axios({
+        method: 'GET',
+        url: `https://api.telegram.org/file/bot${this.token}/${fileInfo.file_path}`,
+        responseType: 'stream',
+      }).then((response: AxiosResponse): void => {
+        response.data.pipe(fs.createWriteStream(path));
+      });
+
+      return true;
+    } catch {
+      return false;
+    }
   }
 }

@@ -53,7 +53,7 @@ export class Filter {
    * */
   public static getCommandParams(update: IUpdate): string[] {
     const message: IMessage | undefined = Filter.getMessage(update);
-    if (!message) return [];
+    if (!message || !message.text) return [];
 
     const match: RegExpMatchArray = message.text.match(Filter.commandParamsRegExp);
     if (!match) return [];
