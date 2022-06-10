@@ -110,7 +110,11 @@ export class Handler {
           sendMethodKey = 'forward';
           answerCallArgs.push(resultMessageToSend.toChatId, resultMessageToSend.options);
         } else if (resultMessageToSend instanceof MessageSend) {
-          answerCallArgs.push(resultMessageToSend.content, resultMessageToSend.options);
+          answerCallArgs.push(
+            resultMessageToSend.content,
+            resultMessageToSend.keyboard,
+            resultMessageToSend.options,
+          );
         } else {
           answerCallArgs.push(resultMessageToSend);
         }

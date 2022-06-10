@@ -25,6 +25,9 @@ import {
   IGetFileFetchOptions,
   IForwardMessageOptions,
   IForwardMessageFetchOptions,
+  MessageSend,
+  Alert,
+  Toast,
 } from '..';
 
 import { Media } from './Media';
@@ -125,7 +128,12 @@ export class Api {
   ): Promise<IMessage> {
     if (content instanceof MessageCreator) {
       moreOptions = { ...moreOptions, ...content.options };
-      content = content.content;
+
+      if (content instanceof MessageSend) {
+        content = content.content;
+      } else if (content instanceof Alert || content instanceof Toast) {
+        content = content.text;
+      }
     }
 
     if (content instanceof Media) {
@@ -142,6 +150,7 @@ export class Api {
     }
 
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+    if (!(typeof content === 'string')) return;
 
     return this.callApi<IMessage, ISendFetchOptions>('sendMessage', {
       text: content,
