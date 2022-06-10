@@ -5,3 +5,4 @@ export * from './Alert';
 export * from './Toast';
 
 export * from './Forward';
+export * from './Copy';

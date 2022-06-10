@@ -28,6 +28,9 @@ import {
   MessageSend,
   Alert,
   Toast,
+  ICopyMessageOptions,
+  ICopyMessageFetchOptions,
+  IMessageId,
 } from '..';
 
 import { Media } from './Media';
@@ -297,7 +300,7 @@ export class Api {
   }
 
   /**
-   * Forwards message
+   * Forwards a message
    * @param msgId Id of the message you want to forward
    * @param fromChatId Chat id from you want to forward a message
    * @param toChatId Chat id you want to forward to
@@ -308,12 +311,38 @@ export class Api {
     msgId: number,
     fromChatId: number | string,
     toChatId: number | string,
-    moreOptions: IForwardMessageOptions,
+    moreOptions: IForwardMessageOptions = {},
   ): Promise<IMessage> {
     return this.callApi<IMessage, IForwardMessageFetchOptions>('forwardMessage', {
       chat_id: toChatId,
       from_chat_id: fromChatId,
       message_id: msgId,
+      ...moreOptions,
+    });
+  }
+
+  /**
+   * Copies a message
+   * @param msgId Id of the message you want to copy
+   * @param fromChatId Chat id from you want to copy a message
+   * @param toChatId Chat id you want to copy to
+   * @param keyboard Pass Keyboard class if you want to add keyboard to the message
+   * @param moreOptions More options {@link ICopyMessageOptions}
+   * @see https://core.telegram.org/bots/api#copymessage
+   * */
+  copy(
+    msgId: number,
+    fromChatId: number | string,
+    toChatId: number | string,
+    keyboard: Keyboard | null = null,
+    moreOptions: ICopyMessageOptions = {},
+  ): Promise<IMessageId> {
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+
+    return this.callApi<IMessageId, ICopyMessageFetchOptions>('copyMessage', {
+      message_id: msgId,
+      from_chat_id: fromChatId,
+      chat_id: toChatId,
       ...moreOptions,
     });
   }

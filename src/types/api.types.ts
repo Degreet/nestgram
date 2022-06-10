@@ -3,6 +3,7 @@ import { ReplyMarkup } from './keyboard.types';
 import { Thumb } from '../classes';
 
 export type IOptions = ISendOptions | ISendPhotoOptions | ISendVideoOptions;
+export type ParseModes = 'HTML' | 'Markdown' | 'MarkdownV2';
 
 export interface ISendFetchOptions extends ISendOptions {
   chat_id: number | string;
@@ -10,7 +11,7 @@ export interface ISendFetchOptions extends ISendOptions {
 }
 
 export interface ISendOptions {
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModes;
   entities?: IMessageEntity[];
   disable_notification?: boolean;
   protect_content?: boolean;
@@ -82,8 +83,25 @@ export interface IForwardMessageOptions {
   protect_content?: boolean;
 }
 
-export interface IForwardMessageFetchOptions extends IForwardMessageOptions {
+export interface IForwardMessageFetchOptions extends IForwardMessageOptions, IMessageId {
   chat_id: string | number;
   from_chat_id: string | number;
+}
+
+export interface ICopyMessageOptions extends ISendPhotoOptions {
+  parse_mode?: ParseModes;
+  disable_notification?: boolean;
+  protect_content?: boolean;
+  reply_to_message_id?: number;
+  allow_sending_without_reply?: boolean;
+  reply_markup?: ReplyMarkup;
+}
+
+export interface ICopyMessageFetchOptions extends ICopyMessageOptions, IMessageId {
+  chat_id: number | string;
+  from_chat_id: number | string;
+}
+
+export interface IMessageId {
   message_id: number;
 }

@@ -7,6 +7,7 @@ import {
   IAnswerCallbackQueryOptions,
   IFile,
   IForwardMessageOptions,
+  ICopyMessageOptions,
 } from '../..';
 
 import { MessageCreator } from '../Message';
@@ -86,6 +87,23 @@ export class Answer {
     if (!msgId) throw error(`Can't find msgId from update`);
 
     return this.api.forward(msgId, chatId, toChatId, moreOptions);
+  }
+
+  /**
+   * Copies got message
+   * @param toChatId Chat id you want to copy to
+   * @param keyboard Pass Keyboard class if you want to add keyboard to the message
+   * @param moreOptions More options {@link ICopyMessageOptions}
+   * @see https://core.telegram.org/bots/api#copymessage
+   * */
+  copy(toChatId: number | string, keyboard?: Keyboard | null, moreOptions?: ICopyMessageOptions) {
+    const chatId: number | string | undefined = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+
+    const msgId: number | undefined = Filter.getMsgId(this.update);
+    if (!msgId) throw error(`Can't find msgId from update`);
+
+    return this.api.copy(msgId, chatId, toChatId, keyboard, moreOptions);
   }
 
   /**
