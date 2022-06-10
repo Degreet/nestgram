@@ -3,3 +3,5 @@ export * from './MessageSend';
 
 export * from './Alert';
 export * from './Toast';
+
+export * from './Forward';

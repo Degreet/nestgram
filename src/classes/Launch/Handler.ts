@@ -12,7 +12,7 @@ import {
 import { Answer } from '../Context/Answer';
 import { Filter } from '../Context/Filter';
 
-import { MessageCreator } from '../Message';
+import { MessageCreator, Forward } from '../Message';
 import { info } from '../../logger';
 
 export class Handler {
@@ -106,6 +106,12 @@ export class Handler {
         if (['alert', 'toast'].includes(resultMessageToSend.sendType)) {
           sendMethodKey = resultMessageToSend.sendType;
           answerCallArgs.push(resultMessageToSend.content, resultMessageToSend.options);
+        } else if (
+          resultMessageToSend.sendType === 'forward' &&
+          resultMessageToSend instanceof Forward
+        ) {
+          sendMethodKey = 'forward';
+          answerCallArgs.push(resultMessageToSend.toChatId, resultMessageToSend.options);
         } else {
           answerCallArgs.push(resultMessageToSend);
         }

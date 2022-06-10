@@ -1,6 +1,5 @@
 import { MessageCreator } from './MessageCreator';
-import { SendTypes } from '../../types/message-creator.types';
-import { ContentTypes, ISendOptions } from '../../types';
+import { ContentTypes, ISendOptions, SendTypes } from '../../types';
 import { Keyboard } from '../Keyboard/Keyboard';
 
 export class MessageSend extends MessageCreator {
