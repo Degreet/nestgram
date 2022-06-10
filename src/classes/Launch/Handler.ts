@@ -12,7 +12,7 @@ import {
 import { Answer } from '../Context/Answer';
 import { Filter } from '../Context/Filter';
 
-import { MessageCreator, Forward } from '../Message';
+import { MessageCreator, Forward, Alert, Toast, MessageSend } from '../Message';
 import { info } from '../../logger';
 
 export class Handler {
@@ -103,15 +103,14 @@ export class Handler {
       const answerCallArgs: any[] = [];
 
       if (resultMessageToSend instanceof MessageCreator) {
-        if (['alert', 'toast'].includes(resultMessageToSend.sendType)) {
+        if (resultMessageToSend instanceof Alert || resultMessageToSend instanceof Toast) {
           sendMethodKey = resultMessageToSend.sendType;
-          answerCallArgs.push(resultMessageToSend.content, resultMessageToSend.options);
-        } else if (
-          resultMessageToSend.sendType === 'forward' &&
-          resultMessageToSend instanceof Forward
-        ) {
+          answerCallArgs.push(resultMessageToSend.text, resultMessageToSend.options);
+        } else if (resultMessageToSend instanceof Forward) {
           sendMethodKey = 'forward';
           answerCallArgs.push(resultMessageToSend.toChatId, resultMessageToSend.options);
+        } else if (resultMessageToSend instanceof MessageSend) {
+          answerCallArgs.push(resultMessageToSend.content, resultMessageToSend.options);
         } else {
           answerCallArgs.push(resultMessageToSend);
         }

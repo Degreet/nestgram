@@ -1,8 +1,9 @@
 import { MessageCreator } from './MessageCreator';
-import { IAnswerCallbackQueryOptions, SendTypes } from '../../types';
+import { IAnswerCallbackQueryOptions, MessageCreatorTypes, SendTypes } from '../../types';
 
 export class Alert extends MessageCreator {
   sendType: SendTypes = 'alert';
+  type: MessageCreatorTypes = 'text';
 
   /**
    * Alert on inline button click
@@ -13,6 +14,6 @@ export class Alert extends MessageCreator {
     public readonly text: string,
     public readonly options: IAnswerCallbackQueryOptions = {},
   ) {
-    super(text, null, options);
+    super(options);
   }
 }

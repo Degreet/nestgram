@@ -1,9 +1,10 @@
 import { MessageCreator } from './MessageCreator';
-import { ContentTypes, ISendOptions, SendTypes } from '../../types';
+import { ContentTypes, ISendOptions, MessageCreatorTypes, SendTypes } from '../../types';
 import { Keyboard } from '../Keyboard/Keyboard';
 
 export class MessageSend extends MessageCreator {
   sendType: SendTypes = 'send';
+  type: MessageCreatorTypes = 'text';
 
   /**
    * Creates a wrapper for send message
@@ -16,6 +17,7 @@ export class MessageSend extends MessageCreator {
     public readonly keyboard: Keyboard | null = null,
     public readonly options: ISendOptions = {},
   ) {
-    super(content, keyboard, options);
+    super(options);
+    if (keyboard) options.reply_markup = keyboard.buildMarkup();
   }
 }

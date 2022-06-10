@@ -1,8 +1,9 @@
 import { MessageCreator } from './MessageCreator';
-import { IForwardMessageOptions, SendTypes } from '../../types';
+import { IForwardMessageOptions, MessageCreatorTypes, SendTypes } from '../../types';
 
 export class Forward extends MessageCreator {
   sendType: SendTypes = 'forward';
+  type: MessageCreatorTypes = 'text';
 
   /**
    * Creates a wrapper for forward message
@@ -13,6 +14,6 @@ export class Forward extends MessageCreator {
     public readonly toChatId: number | string,
     public readonly options: IForwardMessageOptions = {},
   ) {
-    super(null, null, options);
+    super(options);
   }
 }
