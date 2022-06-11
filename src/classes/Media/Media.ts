@@ -1,8 +1,7 @@
-import { MediaFileTypes, MediaPassTypes } from '../../types';
+import { MediaPassTypes } from '../../types';
 import { Thumb } from './Thumb';
 
 export class Media {
-  fileType: MediaFileTypes;
   thumb?: Thumb;
 
   /**

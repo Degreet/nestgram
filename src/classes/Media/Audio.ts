@@ -1,6 +1,3 @@
 import { Media } from './Media';
-import { MediaFileTypes } from '../../types';
 
-export class Audio extends Media {
-  fileType: MediaFileTypes = 'audio';
-}
+export class Audio extends Media {}

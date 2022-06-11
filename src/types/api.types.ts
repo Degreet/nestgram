@@ -37,6 +37,13 @@ export interface ISendVideoOptions extends ISendPhotoOptions {
   height?: number;
 }
 
+export interface ISendDocumentOptions extends ISendPhotoOptions {}
+
+export interface ISendDocumentFetchOptions extends ISendDocumentOptions {
+  chat_id: number | string;
+  document?: string | any; // configures in form data
+}
+
 export interface ISendAudioOptions extends ISendPhotoOptions {
   duration?: number;
   performer?: string;

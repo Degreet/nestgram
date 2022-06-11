@@ -31,6 +31,9 @@ import {
   ICopyMessageOptions,
   ICopyMessageFetchOptions,
   IMessageId,
+  Document,
+  ISendDocumentOptions,
+  ISendDocumentFetchOptions,
 } from '..';
 
 import { Media } from './Media';
@@ -140,12 +143,13 @@ export class Api {
     }
 
     if (content instanceof Media) {
-      if (content.fileType === 'photo' && content instanceof Photo)
-        return this.sendPhoto(chatId, content, keyboard, moreOptions);
-      else if (content.fileType === 'video' && content instanceof Video)
+      if (content instanceof Photo) return this.sendPhoto(chatId, content, keyboard, moreOptions);
+      else if (content instanceof Video)
         return this.sendVideo(chatId, content, keyboard, moreOptions);
-      else if (content.fileType === 'audio' && content instanceof Audio)
+      else if (content instanceof Audio)
         return this.sendAudio(chatId, content, keyboard, moreOptions);
+      else if (content instanceof Document)
+        return this.sendDocument(chatId, content, keyboard, moreOptions);
       else
         throw error(
           "Media file type is not defined. Don't use Media class, use Photo, Video class instead",
@@ -239,6 +243,33 @@ export class Api {
         chat_id: chatId,
         parse_mode: 'HTML',
         thumb: audio.thumb,
+        ...moreOptions,
+      }),
+    );
+  }
+
+  /**
+   * Sends a document to the chat
+   * @param chatId Chat ID where you want to send message. It can be chat of group/channel or ID of user
+   * @param document Document that you want to send (you can create it using {@link Document}) class
+   * @param keyboard Pass Keyboard class if you want to add keyboard to the message
+   * @param moreOptions More options {@link ISendDocumentOptions}
+   * @see https://core.telegram.org/bots/api#senddocument
+   * */
+  sendDocument(
+    chatId: string | number,
+    document: Document,
+    keyboard: Keyboard | null = null,
+    moreOptions: ISendDocumentOptions = {},
+  ): Promise<IMessage> {
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+
+    return this.callApi<IMessage, FormData>(
+      'sendDocument',
+      this.buildFormData<ISendDocumentFetchOptions>('document', document, {
+        chat_id: chatId,
+        parse_mode: 'HTML',
+        thumb: document.thumb,
         ...moreOptions,
       }),
     );

@@ -1,8 +1,7 @@
 import { Media } from './Media';
-import { IResolution, MediaFileTypes } from '../../types';
+import { IResolution } from '../../types';
 
 export class Video extends Media {
-  fileType: MediaFileTypes = 'video';
   resolution: IResolution = { width: 1920, height: 1080 };
 
   /**
