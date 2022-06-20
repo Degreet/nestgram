@@ -14,6 +14,7 @@ import { Filter } from '../Context/Filter';
 
 import { MessageCreator, Forward, Alert, Toast, MessageSend, Copy } from '../Message';
 import { info } from '../../logger';
+import { fileLogger } from '../Helpers/FileLogger';
 
 export class Handler {
   constructor(
@@ -176,7 +177,10 @@ export class Handler {
 
   async handleUpdate(update: IUpdate): Promise<void> {
     // log got new update
-    if (this.logging) info('Got new update!', `(${update.update_id})`.grey);
+    if (this.logging) {
+      info('Got new update!', `(${update.update_id})`.grey);
+      fileLogger.saveLog(update);
+    }
 
     // handle update
     const answer: Answer = new Answer(this.token, update);

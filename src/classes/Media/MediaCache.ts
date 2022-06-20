@@ -25,7 +25,6 @@ export class MediaCache {
       await fs.writeFile(this.mediaKeeperFilePath, '{}');
     }
 
-    console.log(5);
     this.file = editJsonFile(this.mediaKeeperFilePath, { autosave: true });
   }
 
