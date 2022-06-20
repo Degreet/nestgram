@@ -34,6 +34,7 @@ import {
   Document,
   ISendDocumentOptions,
   ISendDocumentFetchOptions,
+  MediaFileTypes,
 } from '..';
 
 import { Media } from './Media';
@@ -42,6 +43,7 @@ import { error } from '../logger';
 import * as FormData from 'form-data';
 import axios from 'axios';
 import * as fs from 'fs';
+import { mediaCache } from './Media/MediaCache';
 
 export class Api {
   constructor(private readonly token?: string) {}
@@ -69,8 +71,10 @@ export class Api {
     return this.call<T, K>(this.token, method, config);
   }
 
-  private static appendMediaToFormData(formData: FormData, key: string, media: Media) {
-    if (media.passType === 'path') {
+  private static appendMediaToFormData(formData: FormData, key: string, media: string | Media) {
+    if (typeof media === 'string') {
+      formData.append(key, media);
+    } else if (media.passType === 'path') {
       formData.append(key, fs.createReadStream(media.media));
     } else {
       formData.append(key, media.media);
@@ -83,8 +87,20 @@ export class Api {
     config: K,
   ): FormData {
     const formData: FormData = new FormData();
-    Api.appendMediaToFormData(formData, fromMediaKey, media);
-    if (config.thumb) Api.appendMediaToFormData(formData, 'thumb', config.thumb);
+
+    Api.appendMediaToFormData(
+      formData,
+      fromMediaKey,
+      mediaCache.getMediaFileId(media.media) || media,
+    );
+
+    if (config.thumb) {
+      Api.appendMediaToFormData(
+        formData,
+        'thumb',
+        mediaCache.getMediaFileId(config.thumb.media) || config.thumb,
+      );
+    }
 
     Object.keys(config).forEach((key: string): void => {
       const data: K[keyof K] = config[key as keyof typeof config];
@@ -93,6 +109,21 @@ export class Api {
     });
 
     return formData;
+  }
+
+  private static saveMediaFileId(
+    path: string,
+    mediaKey: MediaFileTypes,
+    message: IMessage,
+  ): IMessage {
+    if (!mediaCache.getMediaFileId(path)) {
+      let mediaFileInfo: any & { file_id: string } = message[mediaKey];
+
+      if (mediaKey === 'photo') mediaFileInfo = message[mediaKey][message[mediaKey].length - 1];
+
+      mediaCache.saveMediaFileId(path, mediaFileInfo.file_id);
+    }
+    return message;
   }
 
   /**
@@ -175,7 +206,7 @@ export class Api {
    * @param moreOptions More options {@link ISendPhotoOptions}
    * @see https://core.telegram.org/bots/api#sendphoto
    * */
-  sendPhoto(
+  async sendPhoto(
     chatId: string | number,
     photo: Photo,
     keyboard: Keyboard | null = null,
@@ -183,13 +214,17 @@ export class Api {
   ): Promise<IMessage> {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
 
-    return this.callApi<IMessage, FormData>(
-      'sendPhoto',
-      this.buildFormData<ISendPhotoFetchOptions>('photo', photo, {
-        chat_id: chatId,
-        parse_mode: 'HTML',
-        ...moreOptions,
-      }),
+    return Api.saveMediaFileId(
+      photo.media,
+      'photo',
+      await this.callApi<IMessage, FormData>(
+        'sendPhoto',
+        this.buildFormData<ISendPhotoFetchOptions>('photo', photo, {
+          chat_id: chatId,
+          parse_mode: 'HTML',
+          ...moreOptions,
+        }),
+      ),
     );
   }
 
