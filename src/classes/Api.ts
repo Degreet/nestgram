@@ -35,6 +35,8 @@ import {
   ISendDocumentOptions,
   ISendDocumentFetchOptions,
   MediaFileTypes,
+  ISendAnimationFetchOptions,
+  ISendAnimationOptions,
 } from '..';
 
 import { Media } from './Media';
@@ -44,6 +46,7 @@ import * as FormData from 'form-data';
 import axios from 'axios';
 import * as fs from 'fs';
 import { mediaCache } from './Media/MediaCache';
+import { Animation } from './Media/Animation';
 
 export class Api {
   constructor(private readonly token?: string) {}
@@ -181,6 +184,8 @@ export class Api {
         return this.sendAudio(chatId, content, keyboard, moreOptions);
       else if (content instanceof Document)
         return this.sendDocument(chatId, content, keyboard, moreOptions);
+      else if (content instanceof Animation)
+        return this.sendAnimation(chatId, content, keyboard, moreOptions);
       else
         throw error(
           "Media file type is not defined. Don't use Media class, use Photo, Video class instead",
@@ -305,6 +310,33 @@ export class Api {
         chat_id: chatId,
         parse_mode: 'HTML',
         thumb: document.thumb,
+        ...moreOptions,
+      }),
+    );
+  }
+
+  /**
+   * Sends an animation to the chat
+   * @param chatId Chat ID where you want to send message. It can be chat of group/channel or ID of user
+   * @param animation Animation that you want to send (you can create it using {@link Animation}) class
+   * @param keyboard Pass Keyboard class if you want to add keyboard to the message
+   * @param moreOptions More options {@link ISendAnimationOptions}
+   * @see https://core.telegram.org/bots/api#sendanimation
+   * */
+  sendAnimation(
+    chatId: string | number,
+    animation: Animation,
+    keyboard: Keyboard | null = null,
+    moreOptions: ISendAnimationOptions = {},
+  ): Promise<IMessage> {
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+
+    return this.callApi<IMessage, FormData>(
+      'sendDocument',
+      this.buildFormData<ISendAnimationFetchOptions>('animation', animation, {
+        chat_id: chatId,
+        parse_mode: 'HTML',
+        thumb: animation.thumb,
         ...moreOptions,
       }),
     );

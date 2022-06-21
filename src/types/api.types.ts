@@ -55,6 +55,17 @@ export interface ISendVideoFetchOptions extends ISendVideoOptions {
   video?: string | any; // configures in form data
 }
 
+export interface ISendAnimationFetchOptions extends ISendAnimationOptions {
+  chat_id: number | string;
+  animation?: string | any; // configures in form data
+}
+
+export interface ISendAnimationOptions extends ISendPhotoOptions {
+  duration?: number;
+  width?: number;
+  height?: number;
+}
+
 export interface ISendAudioFetchOptions extends ISendAudioOptions {
   chat_id: number | string;
   audio?: string | any; // configures in form data
