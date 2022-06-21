@@ -37,6 +37,9 @@ import {
   MediaFileTypes,
   ISendAnimationFetchOptions,
   ISendAnimationOptions,
+  Voice,
+  ISendVoiceFetchOptions,
+  ISendVoiceOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -185,6 +188,8 @@ export class Api {
         return this.sendDocument(chatId, content, keyboard, moreOptions);
       else if (content instanceof Animation)
         return this.sendAnimation(chatId, content, keyboard, moreOptions);
+      else if (content instanceof Voice)
+        return this.sendVoice(chatId, content, keyboard, moreOptions);
       else
         throw error(
           "Media file type is not defined. Don't use Media class, use Photo, Video class instead",
@@ -288,6 +293,32 @@ export class Api {
   }
 
   /**
+   * Sends a voice message to the chat
+   * @param chatId Chat ID where you want to send message. It can be chat of group/channel or ID of user
+   * @param voice Voice that you want to send (you can create it using Audio class {@link Voice})
+   * @param keyboard Pass Keyboard class if you want to add keyboard to the message
+   * @param moreOptions More options {@link ISendVoiceOptions}
+   * @see https://core.telegram.org/bots/api#sendaudio
+   * */
+  sendVoice(
+    chatId: string | number,
+    voice: Voice,
+    keyboard: Keyboard | null = null,
+    moreOptions: ISendVoiceOptions = {},
+  ): Promise<IMessage> {
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+
+    return this.callApi<IMessage, FormData>(
+      'sendVoice',
+      this.buildFormData<ISendVoiceFetchOptions>('voice', voice, {
+        chat_id: chatId,
+        parse_mode: 'HTML',
+        ...moreOptions,
+      }),
+    );
+  }
+
+  /**
    * Sends a document to the chat
    * @param chatId Chat ID where you want to send message. It can be chat of group/channel or ID of user
    * @param document Document that you want to send (you can create it using {@link Document}) class
@@ -331,11 +362,12 @@ export class Api {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
 
     return this.callApi<IMessage, FormData>(
-      'sendDocument',
+      'sendAnimation',
       this.buildFormData<ISendAnimationFetchOptions>('animation', animation, {
         chat_id: chatId,
         parse_mode: 'HTML',
         thumb: animation.thumb,
+        ...animation.resolution,
         ...moreOptions,
       }),
     );
