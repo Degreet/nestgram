@@ -39,14 +39,13 @@ import {
   ISendAnimationOptions,
 } from '..';
 
-import { Media } from './Media';
+import { mediaCache } from './Media/MediaCache';
+import { Media, Animation } from './Media';
 import { error } from '../logger';
 
-import * as FormData from 'form-data';
 import axios from 'axios';
+import * as FormData from 'form-data';
 import * as fs from 'fs';
-import { mediaCache } from './Media/MediaCache';
-import { Animation } from './Media/Animation';
 
 export class Api {
   constructor(private readonly token?: string) {}
