@@ -11,9 +11,7 @@ export interface ISendFetchOptions extends ISendOptions {
   text: string;
 }
 
-export interface ISendOptions {
-  parse_mode?: ParseModes;
-  entities?: IMessageEntity[];
+export interface IDefaultOptions {
   disable_notification?: boolean;
   protect_content?: boolean;
   reply_to_message_id?: number;
@@ -21,16 +19,14 @@ export interface ISendOptions {
   reply_markup?: ReplyMarkup;
 }
 
+export interface ISendOptions extends IDefaultOptions {
+  parse_mode?: ParseModes;
+  entities?: IMessageEntity[];
+}
+
 export interface ISendMediaGroupFetchOptions extends ISendMediaGroupOptions {
   chat_id: number | string;
   media: InputMediaTypes[];
-}
-
-export interface ISendMediaGroupOptions {
-  disable_notification?: boolean;
-  protect_content?: boolean;
-  reply_to_message_id?: number;
-  allow_sending_without_reply?: boolean;
 }
 
 export interface ISendPhotoFetchOptions extends ISendPhotoOptions {
@@ -64,8 +60,6 @@ export interface ISendVideoNoteFetchOptions extends ISendVideoNoteOptions {
   chat_id: number | string;
   video_note?: string | any; // configures in form data
 }
-
-export interface ISendDocumentOptions extends ISendPhotoOptions {}
 
 export interface ISendDocumentFetchOptions extends ISendDocumentOptions {
   chat_id: number | string;
@@ -155,3 +149,19 @@ export interface ICopyMessageFetchOptions extends ICopyMessageOptions, IMessageI
 export interface IMessageId {
   message_id: number;
 }
+
+export interface ISendLocationFetchOptions extends ISendLocationOptions {
+  chat_id: number | string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface ISendLocationOptions extends IDefaultOptions {
+  horizontal_accuracy?: number;
+  live_period?: number;
+  heading?: number;
+  proximity_alert_radius?: number;
+}
+
+export interface ISendMediaGroupOptions extends IDefaultOptions {}
+export interface ISendDocumentOptions extends ISendPhotoOptions {}

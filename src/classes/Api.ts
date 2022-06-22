@@ -25,6 +25,8 @@ import {
   ISendDocumentFetchOptions,
   ISendDocumentOptions,
   ISendFetchOptions,
+  ISendLocationFetchOptions,
+  ISendLocationOptions,
   ISendMediaGroupFetchOptions,
   ISendMediaGroupOptions,
   ISendOptions,
@@ -47,6 +49,7 @@ import {
   Toast,
   Video,
   Voice,
+  Location,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -193,6 +196,8 @@ export class Api {
         content = content.content;
       } else if (content instanceof Alert || content instanceof Toast) {
         content = content.text;
+      } else if (content instanceof Location) {
+        return this.sendLocation(chatId, content.latitude, content.longitude, moreOptions);
       }
     }
 
@@ -495,6 +500,28 @@ export class Api {
     }
 
     return sentMessages;
+  }
+
+  /**
+   * Sends a location to the chat
+   * @param chatId Chat ID where you want to send message. It can be id of group/channel or ID of user
+   * @param latitude Latitude of the location
+   * @param longitude Longitude of the location
+   * @param moreOptions Message options {@link ISendLocationOptions}
+   * @see https://core.telegram.org/bots/api#sendlocation
+   * */
+  sendLocation(
+    chatId: number | string,
+    latitude: number,
+    longitude: number,
+    moreOptions: ISendLocationOptions = {},
+  ): Promise<IMessage> {
+    return this.callApi<IMessage, ISendLocationFetchOptions>('sendLocation', {
+      chat_id: chatId,
+      latitude,
+      longitude,
+      ...moreOptions,
+    });
   }
 
   /**
