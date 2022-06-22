@@ -33,7 +33,7 @@ export class Answer {
     content: MessageCreator | ContentTypes,
     keyboard: Keyboard | null = null,
     moreOptions: ISendOptions = {},
-  ): Promise<IMessage> {
+  ): Promise<IMessage | IMessage[]> {
     const chatId: number | string | undefined = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
     return this.api.send(chatId, content, keyboard, moreOptions);

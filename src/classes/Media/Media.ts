@@ -1,15 +1,21 @@
-import { MediaPassTypes } from '../../types';
+import { MediaFileTypes, MediaPassTypes } from '../../types';
 import { Thumb } from './Thumb';
 
 export class Media {
+  type: MediaFileTypes;
   thumb?: Thumb;
 
   /**
    * Creates media content (e.g. photo, video, document)
    * @param passType Type how you want to pass media file, url or path
    * @param media Media that you want to send, url or path to a file
+   * @param options Options for MediaGroup
    * */
-  constructor(public readonly passType: MediaPassTypes, public media: string) {}
+  constructor(
+    public readonly passType: MediaPassTypes,
+    public media: string,
+    public readonly options?: any,
+  ) {}
 
   /**
    * Set thumb for file

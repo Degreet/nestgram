@@ -1,51 +1,56 @@
 import {
-  ISendFetchOptions,
-  ISendOptions,
-  IMessage,
-  ContentTypes,
-  ISendPhotoFetchOptions,
-  ISendPhotoOptions,
-  IOptions,
-  MessageCreator,
-  Keyboard,
-  IWebhookConfig,
-  IDeleteWebhookConfig,
-  IUser,
-  IAnswerCallbackQueryOptions,
-  IAnswerCallbackQueryFetchOptions,
-  IDefaultSendMediaConfig,
-  ISendVideoFetchOptions,
-  ISendVideoOptions,
-  Video,
-  Photo,
-  Audio,
-  ISendAudioOptions,
-  ISendAudioFetchOptions,
-  IFile,
-  IGetFileFetchOptions,
-  IForwardMessageOptions,
-  IForwardMessageFetchOptions,
-  MessageSend,
   Alert,
-  Toast,
-  ICopyMessageOptions,
-  ICopyMessageFetchOptions,
-  IMessageId,
+  Audio,
+  ContentTypes,
   Document,
-  ISendDocumentOptions,
-  ISendDocumentFetchOptions,
-  MediaFileTypes,
+  IAnswerCallbackQueryFetchOptions,
+  IAnswerCallbackQueryOptions,
+  ICopyMessageFetchOptions,
+  ICopyMessageOptions,
+  IDefaultSendMediaConfig,
+  IDeleteWebhookConfig,
+  IFile,
+  IForwardMessageFetchOptions,
+  IForwardMessageOptions,
+  IGetFileFetchOptions,
+  IMessage,
+  IMessageId,
+  InputMediaTypes,
+  InputSupportedMedia,
+  IOptions,
   ISendAnimationFetchOptions,
   ISendAnimationOptions,
-  Voice,
+  ISendAudioFetchOptions,
+  ISendAudioOptions,
+  ISendDocumentFetchOptions,
+  ISendDocumentOptions,
+  ISendFetchOptions,
+  ISendMediaGroupFetchOptions,
+  ISendMediaGroupOptions,
+  ISendOptions,
+  ISendPhotoFetchOptions,
+  ISendPhotoOptions,
+  ISendVideoFetchOptions,
+  ISendVideoNoteFetchOptions,
+  ISendVideoNoteOptions,
+  ISendVideoOptions,
   ISendVoiceFetchOptions,
   ISendVoiceOptions,
-  ISendVideoNoteOptions,
-  ISendVideoNoteFetchOptions,
+  IUser,
+  IWebhookConfig,
+  Keyboard,
+  MediaFileTypes,
+  MediaGroup,
+  MessageCreator,
+  MessageSend,
+  Photo,
+  Toast,
+  Video,
+  Voice,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
-import { Media, Animation, VideoNote } from './Media';
+import { Animation, Media, VideoNote } from './Media';
 import { error } from '../logger';
 
 import axios from 'axios';
@@ -118,6 +123,18 @@ export class Api {
     return formData;
   }
 
+  private buildAttachFormData<K>(config: K): FormData {
+    const formData: FormData = new FormData();
+
+    Object.keys(config).forEach((key: string): void => {
+      const data: K[keyof K] = config[key as keyof typeof config];
+      if (!data) return;
+      formData.append(key, typeof data === 'object' ? JSON.stringify(data) : data);
+    });
+
+    return formData;
+  }
+
   private static saveMediaFileId(
     path: string,
     mediaKey: MediaFileTypes,
@@ -168,7 +185,7 @@ export class Api {
     content: MessageCreator | ContentTypes,
     keyboard: Keyboard | null = null,
     moreOptions: IOptions = {},
-  ): Promise<IMessage> {
+  ): Promise<IMessage | IMessage[]> {
     if (content instanceof MessageCreator) {
       moreOptions = { ...moreOptions, ...content.options };
 
@@ -193,6 +210,8 @@ export class Api {
         return this.sendDocument(chatId, content, keyboard, moreOptions);
       else if (content instanceof Voice)
         return this.sendVoice(chatId, content, keyboard, moreOptions);
+      else if (content instanceof MediaGroup)
+        return this.sendMediaGroup(chatId, content.mediaGroup, moreOptions);
       else
         throw error(
           "Media file type is not defined. Don't use Media class, use Photo, Video class instead",
@@ -425,6 +444,57 @@ export class Api {
         }),
       ),
     );
+  }
+
+  /**
+   * Sends a media group to the chat
+   * @param chatId Chat ID where you want to send message. It can be id of group/channel or ID of user
+   * @param mediaGroup Media group that you want to send (you can create it using {@link MediaGroup}) class
+   * @param moreOptions More options {@link ISendMediaGroupOptions}
+   * @see https://core.telegram.org/bots/api#sendmediagroup
+   * */
+  async sendMediaGroup(
+    chatId: string | number,
+    mediaGroup: InputSupportedMedia[],
+    moreOptions: ISendMediaGroupOptions = {},
+  ): Promise<IMessage[]> {
+    const formData: FormData = this.buildAttachFormData<ISendMediaGroupFetchOptions>({
+      chat_id: chatId,
+      media: mediaGroup.map((media: InputSupportedMedia, index: number): InputMediaTypes => {
+        return {
+          type: media.type,
+          media: mediaCache.getMediaFileId(media.media) || `attach://${index}`,
+          ...(media.thumb
+            ? { thumb: mediaCache.getMediaFileId(media.thumb.media) || `attach://${index}_thumb` }
+            : {}),
+          ...(media instanceof Video ? media.resolution : {}),
+          ...(media.options || {}),
+        };
+      }),
+      ...moreOptions,
+    });
+
+    mediaGroup.forEach((media: InputSupportedMedia, index: number): void => {
+      if (!mediaCache.getMediaFileId(media.media))
+        Api.appendMediaToFormData(formData, index.toString(), media);
+
+      if (media.thumb) {
+        if (!mediaCache.getMediaFileId(media.thumb.media))
+          Api.appendMediaToFormData(formData, `${index.toString()}_thumb`, media.thumb);
+      }
+    });
+
+    const sentMessages: IMessage[] = await this.callApi<IMessage[], FormData>(
+      'sendMediaGroup',
+      formData,
+    );
+
+    for (const sentMessage of sentMessages) {
+      const media: Media = mediaGroup[sentMessages.indexOf(sentMessage)];
+      Api.saveMediaFileId(media.media, media.type, sentMessage);
+    }
+
+    return sentMessages;
   }
 
   /**

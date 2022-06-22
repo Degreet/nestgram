@@ -9,3 +9,4 @@ export * from './VideoNote';
 
 export * from './Document';
 export * from './Animation';
+export * from './MediaGroup';

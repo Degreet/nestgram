@@ -1,6 +1,7 @@
 import { IMessageEntity } from './update.types';
 import { ReplyMarkup } from './keyboard.types';
 import { Thumb } from '../classes';
+import { InputMediaTypes } from './media.types';
 
 export type IOptions = ISendOptions | ISendPhotoOptions | ISendVideoOptions;
 export type ParseModes = 'HTML' | 'Markdown' | 'MarkdownV2';
@@ -18,6 +19,18 @@ export interface ISendOptions {
   reply_to_message_id?: number;
   allow_sending_without_reply?: boolean;
   reply_markup?: ReplyMarkup;
+}
+
+export interface ISendMediaGroupFetchOptions extends ISendMediaGroupOptions {
+  chat_id: number | string;
+  media: InputMediaTypes[];
+}
+
+export interface ISendMediaGroupOptions {
+  disable_notification?: boolean;
+  protect_content?: boolean;
+  reply_to_message_id?: number;
+  allow_sending_without_reply?: boolean;
 }
 
 export interface ISendPhotoFetchOptions extends ISendPhotoOptions {
