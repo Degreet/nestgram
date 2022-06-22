@@ -73,14 +73,14 @@ export interface IMessage {
   author_signature?: string;
   text?: string;
   entities?: IMessageEntity[];
-  animation?: any; //!
+  animation?: IAnimation;
   audio?: IAudio;
-  document?: any; //!
+  document?: IDocument;
   photo?: IPhotoSize[];
   sticker?: any; //!
   video?: IVideo;
-  video_note?: any; //!
-  voice?: any; //!
+  video_note?: IVideoNote;
+  voice?: IVoice;
   caption?: string;
   caption_entities?: IMessageEntity[];
   contact?: any; //!
@@ -119,13 +119,27 @@ interface IDefaultFileOptions {
   file_unique_id: string;
 }
 
-export interface IAudio extends IDefaultFileOptions {
-  duration: number;
-  performer?: string;
-  title?: string;
+interface IBasicFileOptions {
   file_name?: string;
   mime_type?: string;
   file_size?: number;
+}
+
+export interface IAudio extends IDefaultFileOptions, IBasicFileOptions {
+  duration: number;
+  performer?: string;
+  title?: string;
+  thumb?: IPhotoSize;
+}
+
+export interface IAnimation extends IDefaultFileOptions, IBasicFileOptions {
+  width: number;
+  height: number;
+  duration: number;
+  thumb?: IPhotoSize;
+}
+
+export interface IDocument extends IDefaultFileOptions, IBasicFileOptions {
   thumb?: IPhotoSize;
 }
 
@@ -135,12 +149,19 @@ export interface IPhotoSize extends IDefaultFileOptions {
   file_size?: number;
 }
 
-export interface IVideo extends IDefaultFileOptions {
+export interface IVideo extends IDefaultFileOptions, IBasicFileOptions {
   width: number;
   height: number;
   duration: number;
   thumb?: IPhotoSize[];
-  file_name?: string;
-  mime_type?: string;
-  file_size?: string;
+}
+
+export interface IVideoNote extends IDefaultFileOptions, IBasicFileOptions {
+  length: number;
+  duration: number;
+  thumb?: IPhotoSize[];
+}
+
+export interface IVoice extends IDefaultFileOptions, IBasicFileOptions {
+  duration: number;
 }

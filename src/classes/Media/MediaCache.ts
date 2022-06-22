@@ -33,7 +33,8 @@ export class MediaCache {
   }
 
   getMediaFileId(path: string): string | undefined {
-    return this.file.get(path);
+    // @ts-ignore
+    return this.file.data[path];
   }
 }
 

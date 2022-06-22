@@ -138,7 +138,16 @@ export class ListenMiddleware {
       if (type) {
         if (!msg[type]) return fail();
       } else {
-        if (!msg.audio && !msg.video && !msg.photo) return fail();
+        if (
+          !msg.audio &&
+          !msg.video &&
+          !msg.photo &&
+          !msg.video_note &&
+          !msg.voice &&
+          !msg.document &&
+          !msg.animation
+        )
+          return fail();
       }
 
       next();

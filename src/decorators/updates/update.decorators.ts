@@ -99,6 +99,30 @@ export const OnVideo = (): MethodDecorator => buildUpdateDecorator('media', 'vid
 export const OnAudio = (): MethodDecorator => buildUpdateDecorator('media', 'audio');
 
 /**
+ * Listen for a user that send a video note
+ * @see https://core.telegram.org/bots/api#videonote
+ * */
+export const OnVideoNote = (): MethodDecorator => buildUpdateDecorator('media', 'video_note');
+
+/**
+ * Listen for a user that send a voice message
+ * @see https://core.telegram.org/bots/api#voice
+ * */
+export const OnVoice = (): MethodDecorator => buildUpdateDecorator('media', 'voice');
+
+/**
+ * Listen for a user that send an animation
+ * @see https://core.telegram.org/bots/api#animation
+ * */
+export const OnAnimation = (): MethodDecorator => buildUpdateDecorator('media', 'animation');
+
+/**
+ * Listen for a user that send a document
+ * @see https://core.telegram.org/bots/api#document
+ * */
+export const OnDocument = (): MethodDecorator => buildUpdateDecorator('media', 'document');
+
+/**
  * Listen for an update
  * @see https://core.telegram.org/bots/api#update
  * */
