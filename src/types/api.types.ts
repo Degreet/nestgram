@@ -37,16 +37,26 @@ export interface ISendVideoOptions extends ISendPhotoOptions {
   height?: number;
 }
 
+export interface ISendVideoFetchOptions extends ISendVideoOptions {
+  chat_id: number | string;
+  video?: string | any; // configures in form data
+}
+
+export interface ISendVideoNoteOptions extends ISendPhotoOptions {
+  duration?: number;
+  length?: number;
+}
+
+export interface ISendVideoNoteFetchOptions extends ISendVideoNoteOptions {
+  chat_id: number | string;
+  video_note?: string | any; // configures in form data
+}
+
 export interface ISendDocumentOptions extends ISendPhotoOptions {}
 
 export interface ISendDocumentFetchOptions extends ISendDocumentOptions {
   chat_id: number | string;
   document?: string | any; // configures in form data
-}
-
-export interface ISendVideoFetchOptions extends ISendVideoOptions {
-  chat_id: number | string;
-  video?: string | any; // configures in form data
 }
 
 export interface ISendAnimationFetchOptions extends ISendAnimationOptions {

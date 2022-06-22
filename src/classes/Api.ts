@@ -40,10 +40,12 @@ import {
   Voice,
   ISendVoiceFetchOptions,
   ISendVoiceOptions,
+  ISendVideoNoteOptions,
+  ISendVideoNoteFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
-import { Media, Animation } from './Media';
+import { Media, Animation, VideoNote } from './Media';
 import { error } from '../logger';
 
 import axios from 'axios';
@@ -123,11 +125,10 @@ export class Api {
   ): IMessage {
     if (!mediaCache.getMediaFileId(path)) {
       let mediaFileInfo: any & { file_id: string } = message[mediaKey];
-
       if (mediaKey === 'photo') mediaFileInfo = message[mediaKey][message[mediaKey].length - 1];
-
       mediaCache.saveMediaFileId(path, mediaFileInfo.file_id);
     }
+
     return message;
   }
 
@@ -156,7 +157,7 @@ export class Api {
 
   /**
    * Sends a message to the chat
-   * @param chatId Chat ID where you want to send message. It can be chat of group/channel or ID of user
+   * @param chatId Chat ID where you want to send message. It can be id of group/channel or ID of user
    * @param content Message data that you want to send, some media (e.g. Photo/Message class) or string for text message
    * @param keyboard Pass Keyboard class if you want to add keyboard to the message
    * @param moreOptions More options {@link ISendOptions}
@@ -180,14 +181,16 @@ export class Api {
 
     if (content instanceof Media) {
       if (content instanceof Photo) return this.sendPhoto(chatId, content, keyboard, moreOptions);
+      else if (content instanceof Animation)
+        return this.sendAnimation(chatId, content, keyboard, moreOptions);
       else if (content instanceof Video)
         return this.sendVideo(chatId, content, keyboard, moreOptions);
+      else if (content instanceof VideoNote)
+        return this.sendVideoNote(chatId, content, keyboard, moreOptions);
       else if (content instanceof Audio)
         return this.sendAudio(chatId, content, keyboard, moreOptions);
       else if (content instanceof Document)
         return this.sendDocument(chatId, content, keyboard, moreOptions);
-      else if (content instanceof Animation)
-        return this.sendAnimation(chatId, content, keyboard, moreOptions);
       else if (content instanceof Voice)
         return this.sendVoice(chatId, content, keyboard, moreOptions);
       else
@@ -209,7 +212,7 @@ export class Api {
 
   /**
    * Sends a photo to the chat
-   * @param chatId Chat ID where you want to send message. It can be chat of group/channel or ID of user
+   * @param chatId Chat ID where you want to send message. It can be id of group/channel or ID of user
    * @param photo Photo that you want to send (you can create it using Photo class {@link Photo})
    * @param keyboard Pass Keyboard class if you want to add keyboard to the message
    * @param moreOptions More options {@link ISendPhotoOptions}
@@ -239,13 +242,13 @@ export class Api {
 
   /**
    * Sends a video to the chat
-   * @param chatId Chat ID where you want to send message. It can be chat of group/channel or ID of user
+   * @param chatId Chat ID where you want to send message. It can be id of group/channel or ID of user
    * @param video Video that you want to send (you can create it using Video class {@link Video})
    * @param keyboard Pass Keyboard class if you want to add keyboard to the message
    * @param moreOptions More options {@link ISendVideoOptions}
    * @see https://core.telegram.org/bots/api#sendvideo
    * */
-  sendVideo(
+  async sendVideo(
     chatId: string | number,
     video: Video,
     keyboard: Keyboard | null = null,
@@ -253,27 +256,62 @@ export class Api {
   ): Promise<IMessage> {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
 
-    return this.callApi<IMessage, FormData>(
-      'sendVideo',
-      this.buildFormData<ISendVideoFetchOptions>('video', video, {
-        chat_id: chatId,
-        parse_mode: 'HTML',
-        thumb: video.thumb,
-        ...video.resolution,
-        ...moreOptions,
-      }),
+    return Api.saveMediaFileId(
+      video.media,
+      'video',
+      await this.callApi<IMessage, FormData>(
+        'sendVideo',
+        this.buildFormData<ISendVideoFetchOptions>('video', video, {
+          chat_id: chatId,
+          parse_mode: 'HTML',
+          thumb: video.thumb,
+          ...video.resolution,
+          ...moreOptions,
+        }),
+      ),
+    );
+  }
+
+  /**
+   * Sends a video note to the chat
+   * @param chatId Chat ID where you want to send message. It can be id of group/channel or ID of user
+   * @param videoNote Video note that you want to send (you can create it using Video class {@link VideoNote})
+   * @param keyboard Pass Keyboard class if you want to add keyboard to the message
+   * @param moreOptions More options {@link ISendVideoNoteOptions}
+   * @see https://core.telegram.org/bots/api#sendvideonote
+   * */
+  async sendVideoNote(
+    chatId: string | number,
+    videoNote: VideoNote,
+    keyboard: Keyboard | null = null,
+    moreOptions: ISendVideoNoteOptions = {},
+  ): Promise<IMessage> {
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+
+    return Api.saveMediaFileId(
+      videoNote.media,
+      'video_note',
+      await this.callApi<IMessage, FormData>(
+        'sendVideoNote',
+        this.buildFormData<ISendVideoNoteFetchOptions>('video_note', videoNote, {
+          chat_id: chatId,
+          parse_mode: 'HTML',
+          thumb: videoNote.thumb,
+          ...moreOptions,
+        }),
+      ),
     );
   }
 
   /**
    * Sends an audio to the chat
-   * @param chatId Chat ID where you want to send message. It can be chat of group/channel or ID of user
+   * @param chatId Chat ID where you want to send message. It can be id of group/channel or ID of user
    * @param audio Audio that you want to send (you can create it using Audio class {@link Audio})
    * @param keyboard Pass Keyboard class if you want to add keyboard to the message
    * @param moreOptions More options {@link ISendAudioOptions}
    * @see https://core.telegram.org/bots/api#sendaudio
    * */
-  sendAudio(
+  async sendAudio(
     chatId: string | number,
     audio: Audio,
     keyboard: Keyboard | null = null,
@@ -281,26 +319,30 @@ export class Api {
   ): Promise<IMessage> {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
 
-    return this.callApi<IMessage, FormData>(
-      'sendAudio',
-      this.buildFormData<ISendAudioFetchOptions>('audio', audio, {
-        chat_id: chatId,
-        parse_mode: 'HTML',
-        thumb: audio.thumb,
-        ...moreOptions,
-      }),
+    return Api.saveMediaFileId(
+      audio.media,
+      'audio',
+      await this.callApi<IMessage, FormData>(
+        'sendAudio',
+        this.buildFormData<ISendAudioFetchOptions>('audio', audio, {
+          chat_id: chatId,
+          parse_mode: 'HTML',
+          thumb: audio.thumb,
+          ...moreOptions,
+        }),
+      ),
     );
   }
 
   /**
    * Sends a voice message to the chat
-   * @param chatId Chat ID where you want to send message. It can be chat of group/channel or ID of user
+   * @param chatId Chat ID where you want to send message. It can be id of group/channel or ID of user
    * @param voice Voice that you want to send (you can create it using Audio class {@link Voice})
    * @param keyboard Pass Keyboard class if you want to add keyboard to the message
    * @param moreOptions More options {@link ISendVoiceOptions}
    * @see https://core.telegram.org/bots/api#sendaudio
    * */
-  sendVoice(
+  async sendVoice(
     chatId: string | number,
     voice: Voice,
     keyboard: Keyboard | null = null,
@@ -308,25 +350,29 @@ export class Api {
   ): Promise<IMessage> {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
 
-    return this.callApi<IMessage, FormData>(
-      'sendVoice',
-      this.buildFormData<ISendVoiceFetchOptions>('voice', voice, {
-        chat_id: chatId,
-        parse_mode: 'HTML',
-        ...moreOptions,
-      }),
+    return Api.saveMediaFileId(
+      voice.media,
+      'voice',
+      await this.callApi<IMessage, FormData>(
+        'sendVoice',
+        this.buildFormData<ISendVoiceFetchOptions>('voice', voice, {
+          chat_id: chatId,
+          parse_mode: 'HTML',
+          ...moreOptions,
+        }),
+      ),
     );
   }
 
   /**
    * Sends a document to the chat
-   * @param chatId Chat ID where you want to send message. It can be chat of group/channel or ID of user
+   * @param chatId Chat ID where you want to send message. It can be id of group/channel or ID of user
    * @param document Document that you want to send (you can create it using {@link Document}) class
    * @param keyboard Pass Keyboard class if you want to add keyboard to the message
    * @param moreOptions More options {@link ISendDocumentOptions}
    * @see https://core.telegram.org/bots/api#senddocument
    * */
-  sendDocument(
+  async sendDocument(
     chatId: string | number,
     document: Document,
     keyboard: Keyboard | null = null,
@@ -334,26 +380,30 @@ export class Api {
   ): Promise<IMessage> {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
 
-    return this.callApi<IMessage, FormData>(
-      'sendDocument',
-      this.buildFormData<ISendDocumentFetchOptions>('document', document, {
-        chat_id: chatId,
-        parse_mode: 'HTML',
-        thumb: document.thumb,
-        ...moreOptions,
-      }),
+    return Api.saveMediaFileId(
+      document.media,
+      'document',
+      await this.callApi<IMessage, FormData>(
+        'sendDocument',
+        this.buildFormData<ISendDocumentFetchOptions>('document', document, {
+          chat_id: chatId,
+          parse_mode: 'HTML',
+          thumb: document.thumb,
+          ...moreOptions,
+        }),
+      ),
     );
   }
 
   /**
    * Sends an animation to the chat
-   * @param chatId Chat ID where you want to send message. It can be chat of group/channel or ID of user
+   * @param chatId Chat ID where you want to send message. It can be id of group/channel or ID of user
    * @param animation Animation that you want to send (you can create it using {@link Animation}) class
    * @param keyboard Pass Keyboard class if you want to add keyboard to the message
    * @param moreOptions More options {@link ISendAnimationOptions}
    * @see https://core.telegram.org/bots/api#sendanimation
    * */
-  sendAnimation(
+  async sendAnimation(
     chatId: string | number,
     animation: Animation,
     keyboard: Keyboard | null = null,
@@ -361,15 +411,19 @@ export class Api {
   ): Promise<IMessage> {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
 
-    return this.callApi<IMessage, FormData>(
-      'sendAnimation',
-      this.buildFormData<ISendAnimationFetchOptions>('animation', animation, {
-        chat_id: chatId,
-        parse_mode: 'HTML',
-        thumb: animation.thumb,
-        ...animation.resolution,
-        ...moreOptions,
-      }),
+    return Api.saveMediaFileId(
+      animation.media,
+      'animation',
+      await this.callApi<IMessage, FormData>(
+        'sendAnimation',
+        this.buildFormData<ISendAnimationFetchOptions>('animation', animation, {
+          chat_id: chatId,
+          parse_mode: 'HTML',
+          thumb: animation.thumb,
+          ...animation.resolution,
+          ...moreOptions,
+        }),
+      ),
     );
   }
 
