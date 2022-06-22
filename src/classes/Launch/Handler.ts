@@ -13,14 +13,18 @@ import { Answer } from '../Context/Answer';
 import { Filter } from '../Context/Filter';
 
 import { MessageCreator, Forward, Alert, Toast, MessageSend, Copy } from '../Message';
+import { FileLogger } from '../Helpers/FileLogger';
 import { info } from '../../logger';
-import { fileLogger } from '../Helpers/FileLogger';
 
 export class Handler {
+  fileLogger: FileLogger = new FileLogger(this.fileLoggingLimit);
+
   constructor(
     private readonly token: string,
     private readonly handlers: IHandler[],
-    private readonly logging?: true,
+    private readonly logging?: boolean,
+    private readonly fileLogging?: boolean,
+    private readonly fileLoggingLimit?: number,
   ) {}
 
   private getNextFunction(
@@ -179,7 +183,7 @@ export class Handler {
     // log got new update
     if (this.logging) {
       info('Got new update!', `(${update.update_id})`.grey);
-      fileLogger.saveLog(update);
+      if (this.fileLogging) this.fileLogger.saveLog(update);
     }
 
     // handle update

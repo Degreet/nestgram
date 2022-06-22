@@ -37,7 +37,13 @@ export class NestGram {
     private readonly token: string,
     private readonly module?: any,
     private readonly config?: ConfigTypes,
-    private readonly runConfig: IRunConfig = { port: 80, runType: 'polling', logging: true },
+    private readonly runConfig: IRunConfig = {
+      port: 80,
+      runType: 'polling',
+      logging: true,
+      fileLogging: true,
+      fileLoggingLimit: 20,
+    },
   ) {
     // log if logging is on
     if (runConfig.logging) info('Bot initialized');
@@ -45,7 +51,9 @@ export class NestGram {
     // setup default values
     if (!runConfig.port) runConfig.port = 80;
     if (!runConfig.runType) runConfig.runType = 'polling';
+    if (!runConfig.fileLoggingLimit) runConfig.fileLoggingLimit = 20;
     if (typeof runConfig.logging !== 'boolean') runConfig.logging = true;
+    if (typeof runConfig.fileLogging !== 'boolean') runConfig.fileLogging = true;
 
     // if user set module call entry
     if (module) this.setupEntry(module);
@@ -140,8 +148,17 @@ export class NestGram {
       // delete webhook
       await this.api.deleteWebhook(this.runConfig);
 
-      // start polling for handling updates
-      this.polling = new Polling(this.token, this.handlers, this.config, this.runConfig.logging);
+      // create polling for handling updates
+      this.polling = new Polling(
+        this.token,
+        this.handlers,
+        this.config,
+        this.runConfig.logging,
+        this.runConfig.fileLogging,
+        this.runConfig.fileLoggingLimit,
+      );
+
+      // start polling
       this.polling.start();
     } else if (this.runConfig.runType === 'webhook') {
       // return an error if the user has not provided a webhook url
@@ -149,7 +166,14 @@ export class NestGram {
         throw error('If you want to use webhooks, you need to pass webhook url in config');
 
       // start server and save webhook
-      this.webhook = new Webhook(this.token, this.handlers, this.config, this.runConfig.logging);
+      this.webhook = new Webhook(
+        this.token,
+        this.handlers,
+        this.config,
+        this.runConfig.logging,
+        this.runConfig.fileLogging,
+        this.runConfig.fileLoggingLimit,
+      );
     }
 
     // log that bot started

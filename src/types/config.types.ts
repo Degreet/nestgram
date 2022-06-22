@@ -33,8 +33,10 @@ export interface IWebhookConfig extends IGlobalRunnerConfig, IGlobalWebhookConfi
 
 export interface IRunConfig extends IGlobalWebhookConfig {
   runType?: RunTypes;
-  logging?: true;
+  logging?: boolean;
   port?: number;
+  fileLogging?: boolean;
+  fileLoggingLimit?: number;
 }
 
 export interface IDeleteWebhookConfig extends IGlobalWebhookConfig {}

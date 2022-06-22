@@ -6,7 +6,7 @@ export class FileLogger {
   nestgramInfoDirPath: string = path.resolve(process.cwd(), 'nestgram');
   logsFilePath: string = path.resolve(this.nestgramInfoDirPath, 'logs.md');
 
-  constructor() {
+  constructor(private readonly limit: number) {
     this.setupLogsFile();
   }
 
@@ -29,13 +29,15 @@ export class FileLogger {
     const oldLogsFileText: string = (await fs.readFile(this.logsFilePath)).toString();
     const updateText = JSON.stringify(update, null, 2);
 
+    const titleLines: string[] = oldLogsFileText
+      .split('\n')
+      .filter((line: string): boolean => line.startsWith('#'));
+
     let newLogsFileText: string;
     newLogsFileText = `# ${update.update_id} (${date})`;
     newLogsFileText += `\n\n${updateText}`;
-    newLogsFileText += `\n\n${oldLogsFileText || ''}`;
+    if (titleLines.length < this.limit) newLogsFileText += `\n\n${oldLogsFileText || ''}`;
 
     await fs.writeFile(this.logsFilePath, newLogsFileText);
   }
 }
-
-export const fileLogger = new FileLogger();

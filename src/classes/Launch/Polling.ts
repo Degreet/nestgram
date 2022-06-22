@@ -5,13 +5,21 @@ import { Api } from '../Api';
 
 export class Polling {
   api: Api = new Api(this.token);
-  handler: Handler = new Handler(this.token, this.handlers, this.logging);
+  handler: Handler = new Handler(
+    this.token,
+    this.handlers,
+    this.logging,
+    this.fileLogging,
+    this.fileLoggingLimit,
+  );
 
   constructor(
     private readonly token: string,
     private readonly handlers: IHandler[],
     private readonly config?: IPollingConfig | null,
-    private readonly logging?: true,
+    private readonly logging?: boolean,
+    private readonly fileLogging?: boolean,
+    private readonly fileLoggingLimit?: number,
   ) {
     if (!this.token) throw error(`You can't run bot without token`);
   }
