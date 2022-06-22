@@ -1,5 +1,6 @@
 export type RunTypes = 'polling' | 'webhook';
 export type ConfigTypes = IPollingConfig | IWebhookConfig;
+export type WebhookPorts = 443 | 80 | 88 | 8443;
 
 interface IGlobalRunnerConfig {
   allowed_updates?: string[];
@@ -24,8 +25,10 @@ export interface IPollingConfig extends IGlobalRunnerConfig {
 export interface IWebhookConfig extends IGlobalRunnerConfig, IGlobalWebhookConfig {
   url: string;
   certificate?: any;
+  port: WebhookPorts;
   ip_address?: string;
   max_connections?: number;
+  secret_token?: string;
 }
 
 export interface IRunConfig extends IGlobalWebhookConfig {

@@ -149,13 +149,7 @@ export class NestGram {
         throw error('If you want to use webhooks, you need to pass webhook url in config');
 
       // start server and save webhook
-      this.webhook = new Webhook(
-        this.token,
-        this.handlers,
-        this.config,
-        80,
-        this.runConfig.logging,
-      );
+      this.webhook = new Webhook(this.token, this.handlers, this.config, this.runConfig.logging);
     }
 
     // log that bot started

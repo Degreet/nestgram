@@ -15,7 +15,6 @@ export class Webhook {
     private readonly token: string,
     private readonly handlers: IHandler[],
     private readonly config?: IWebhookConfig | null,
-    private readonly port: number = 80,
     private readonly logging?: true,
   ) {
     if (!this.token) throw error(`You can't run bot without token`);
@@ -40,6 +39,6 @@ export class Webhook {
           throw error(e);
         }
       })
-      .listen(port);
+      .listen(config.port || 80);
   }
 }
