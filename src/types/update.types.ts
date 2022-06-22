@@ -88,7 +88,7 @@ export interface IMessage {
   game?: any; //!
   poll?: any; //!
   venue?: any; //!
-  location?: any; //!
+  location?: ILocation;
   new_chat_members?: IUser[];
   left_chat_member?: IUser;
   new_chat_title?: string;
@@ -164,4 +164,13 @@ export interface IVideoNote extends IDefaultFileOptions, IBasicFileOptions {
 
 export interface IVoice extends IDefaultFileOptions, IBasicFileOptions {
   duration: number;
+}
+
+export interface ILocation {
+  longitude: number;
+  latitude: number;
+  horizontal_accuracy?: number;
+  live_period?: number;
+  heading?: number;
+  proximity_alert_radius?: number;
 }

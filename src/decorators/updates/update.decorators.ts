@@ -123,6 +123,12 @@ export const OnAnimation = (): MethodDecorator => buildUpdateDecorator('media', 
 export const OnDocument = (): MethodDecorator => buildUpdateDecorator('media', 'document');
 
 /**
+ * Listen for a location
+ * @see https://core.telegram.org/bots/api#location
+ * */
+export const OnLocation = (): MethodDecorator => buildUpdateDecorator('location');
+
+/**
  * Listen for an update
  * @see https://core.telegram.org/bots/api#update
  * */

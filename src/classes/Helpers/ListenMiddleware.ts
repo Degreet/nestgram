@@ -33,6 +33,20 @@ export class ListenMiddleware {
     };
   }
 
+  static location(): MiddlewareFunction {
+    return function use(
+      update: IUpdate,
+      answer: Answer,
+      params: any,
+      next: NextFunction,
+      fail: NextFunction,
+    ): any {
+      if (!update.message) return fail();
+      else if (!update.message.location) return fail();
+      next();
+    };
+  }
+
   static command(commandText?: string): MiddlewareFunction {
     return function use(
       update: IUpdate,
