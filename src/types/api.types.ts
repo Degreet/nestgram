@@ -173,5 +173,25 @@ export interface IStopMessageLiveLocationOptions {
   reply_markup?: IInlineKeyboard;
 }
 
+export interface ISendVenueFetchOptions extends ISendVenueOptions {
+  chat_id: string | number;
+  latitude: number;
+  longitude: number;
+  title: string;
+  address: string;
+}
+
+export interface ISendVenueOptions {
+  foursquare_id?: string;
+  foursquare_type?: string;
+  google_place_id?: string;
+  google_place_type?: string;
+  disable_notification?: boolean;
+  protect_content?: boolean;
+  reply_to_message_id?: number;
+  allow_sending_without_reply?: boolean;
+  reply_markup?: IReplyMarkup;
+}
+
 export interface ISendMediaGroupOptions extends IDefaultOptions {}
 export interface ISendDocumentOptions extends ISendPhotoOptions {}

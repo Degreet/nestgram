@@ -52,6 +52,9 @@ import {
   Location,
   IStopMessageLiveLocationOptions,
   IStopMessageLiveLocationFetchOptions,
+  ISendVenueOptions,
+  ISendVenueFetchOptions,
+  Venue,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -198,8 +201,6 @@ export class Api {
         content = content.content;
       } else if (content instanceof Alert || content instanceof Toast) {
         content = content.text;
-      } else if (content instanceof Location) {
-        return this.sendLocation(chatId, content.latitude, content.longitude, moreOptions);
       }
     }
 
@@ -219,6 +220,24 @@ export class Api {
         return this.sendVoice(chatId, content, keyboard, moreOptions);
       else if (content instanceof MediaGroup)
         return this.sendMediaGroup(chatId, content.mediaGroup, moreOptions);
+      else if (content instanceof Location)
+        return this.sendLocation(
+          chatId,
+          content.latitude,
+          content.longitude,
+          keyboard,
+          moreOptions,
+        );
+      else if (content instanceof Venue)
+        return this.sendVenue(
+          chatId,
+          content.latitude,
+          content.longitude,
+          content.title,
+          content.address,
+          keyboard,
+          moreOptions,
+        );
       else
         throw error(
           "Media file type is not defined. Don't use Media class, use Photo, Video class instead",
@@ -498,6 +517,7 @@ export class Api {
 
     for (const sentMessage of sentMessages) {
       const media: Media = mediaGroup[sentMessages.indexOf(sentMessage)];
+      // @ts-ignore
       Api.saveMediaFileId(media.media, media.type, sentMessage);
     }
 
@@ -509,6 +529,7 @@ export class Api {
    * @param chatId Chat ID where you want to send message. It can be id of group/channel or ID of user
    * @param latitude Latitude of the location
    * @param longitude Longitude of the location
+   * @param keyboard Pass Keyboard class if you want to add keyboard to the message
    * @param moreOptions Message options {@link ISendLocationOptions}
    * @see https://core.telegram.org/bots/api#sendlocation
    * */
@@ -516,12 +537,47 @@ export class Api {
     chatId: number | string,
     latitude: number,
     longitude: number,
+    keyboard: Keyboard | null = null,
     moreOptions: ISendLocationOptions = {},
   ): Promise<IMessage> {
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+
     return this.callApi<IMessage, ISendLocationFetchOptions>('sendLocation', {
       chat_id: chatId,
       latitude,
       longitude,
+      ...moreOptions,
+    });
+  }
+
+  /**
+   * Sends a venue to the chat
+   * @param chatId Chat ID where you want to send venue. It can be id of group/channel or ID of user
+   * @param latitude Latitude of the location
+   * @param longitude Longitude of the location
+   * @param title Venue title
+   * @param address Venue address
+   * @param keyboard Pass Keyboard class if you want to add keyboard to the message
+   * @param moreOptions Message options {@link ISendVenueOptions}
+   * @see https://core.telegram.org/bots/api#sendvenue
+   * */
+  sendVenue(
+    chatId: number | string,
+    latitude: number,
+    longitude: number,
+    title: string,
+    address: string,
+    keyboard: Keyboard | null = null,
+    moreOptions: ISendVenueOptions = {},
+  ): Promise<IMessage> {
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+
+    return this.callApi<IMessage, ISendVenueFetchOptions>('sendVenue', {
+      chat_id: chatId,
+      latitude,
+      longitude,
+      title,
+      address,
       ...moreOptions,
     });
   }

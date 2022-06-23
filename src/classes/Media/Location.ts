@@ -1,11 +1,11 @@
-import { MessageCreator } from './MessageCreator';
-import { ISendLocationOptions, SendTypes } from '../../types';
+import { ISendLocationOptions, MediaSendTypes } from '../../types';
+import { Media } from './Media';
 
-export class Location extends MessageCreator {
-  sendType: SendTypes = 'location';
+export class Location extends Media {
+  type: MediaSendTypes = 'location';
 
   /**
-   * Alert on inline button click
+   * Send location
    * @param latitude Latitude of the location
    * @param longitude Longitude of the location
    * @param options Message options {@link ISendLocationOptions}
@@ -16,6 +16,6 @@ export class Location extends MessageCreator {
     public readonly longitude: number,
     public readonly options: ISendLocationOptions = {},
   ) {
-    super(options);
+    super('path', 'none', options);
   }
 }
