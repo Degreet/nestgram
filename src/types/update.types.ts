@@ -87,7 +87,7 @@ export interface IMessage {
   dice?: any; //!
   game?: any; //!
   poll?: any; //!
-  venue?: any; //!
+  venue?: IVenue;
   location?: ILocation;
   new_chat_members?: IUser[];
   left_chat_member?: IUser;
@@ -173,4 +173,14 @@ export interface ILocation {
   live_period?: number;
   heading?: number;
   proximity_alert_radius?: number;
+}
+
+export interface IVenue {
+  location: ILocation;
+  title: string;
+  address: string;
+  foursquare_id?: string;
+  foursquare_type?: string;
+  google_place_id?: string;
+  google_place_type?: string;
 }

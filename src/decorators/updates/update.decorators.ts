@@ -129,6 +129,12 @@ export const OnDocument = (): MethodDecorator => buildUpdateDecorator('media', '
 export const OnLocation = (): MethodDecorator => buildUpdateDecorator('location');
 
 /**
+ * Listen for a venue
+ * @see https://core.telegram.org/bots/api#venue
+ * */
+export const OnVenue = (): MethodDecorator => buildUpdateDecorator('venue');
+
+/**
  * Listen for an update
  * @see https://core.telegram.org/bots/api#update
  * */
