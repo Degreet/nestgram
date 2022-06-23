@@ -1,5 +1,5 @@
 import { IChat, IUser } from './chat.types';
-import { ReplyMarkup } from './keyboard.types';
+import { IReplyMarkup } from './keyboard.types';
 
 export type MessageEntityTypes =
   | 'mention'
@@ -111,7 +111,7 @@ export interface IMessage {
   video_chat_ended?: any; //!
   video_chat_participants_invited?: any; //!
   web_app_data?: any; //!
-  reply_markup?: ReplyMarkup; //!
+  reply_markup?: IReplyMarkup; //!
 }
 
 interface IDefaultFileOptions {

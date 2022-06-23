@@ -1,5 +1,5 @@
 import { IMessageEntity } from './update.types';
-import { ReplyMarkup } from './keyboard.types';
+import { IInlineKeyboard, IReplyMarkup } from './keyboard.types';
 import { Thumb } from '../classes';
 import { InputMediaTypes } from './media.types';
 
@@ -16,7 +16,7 @@ export interface IDefaultOptions {
   protect_content?: boolean;
   reply_to_message_id?: number;
   allow_sending_without_reply?: boolean;
-  reply_markup?: ReplyMarkup;
+  reply_markup?: IReplyMarkup;
 }
 
 export interface ISendOptions extends IDefaultOptions {
@@ -138,7 +138,7 @@ export interface ICopyMessageOptions extends ISendPhotoOptions {
   protect_content?: boolean;
   reply_to_message_id?: number;
   allow_sending_without_reply?: boolean;
-  reply_markup?: ReplyMarkup;
+  reply_markup?: IReplyMarkup;
 }
 
 export interface ICopyMessageFetchOptions extends ICopyMessageOptions, IMessageId {
@@ -161,6 +161,16 @@ export interface ISendLocationOptions extends IDefaultOptions {
   live_period?: number;
   heading?: number;
   proximity_alert_radius?: number;
+}
+
+export interface IStopMessageLiveLocationFetchOptions {
+  chat_id?: number | string;
+  message_id?: number;
+}
+
+export interface IStopMessageLiveLocationOptions {
+  inline_message_id?: number;
+  reply_markup?: IInlineKeyboard;
 }
 
 export interface ISendMediaGroupOptions extends IDefaultOptions {}

@@ -1,8 +1,16 @@
 import { KeyboardTypes } from '../enums';
 
-export interface ReplyMarkup {
+export interface IReplyMarkup extends IInlineKeyboard, IKeyboard, IPlaceholder {}
+
+export interface IInlineKeyboard {
   inline_keyboard?: IButton[][];
+}
+
+export interface IKeyboard {
   keyboard?: IButton[][];
+}
+
+export interface IPlaceholder {
   placeholder?: string;
 }
 

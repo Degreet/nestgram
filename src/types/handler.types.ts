@@ -1,7 +1,7 @@
 import { ControllerClass } from './decorators.types';
 import { MiddlewareFunction } from './middleware.types';
 import { IMessage, IMessageEntity, IUpdate } from './update.types';
-import { Answer, Media, MessageCreator } from '../classes';
+import { Answer, Location, Media, MessageCreator } from '../classes';
 import { IUser } from './chat.types';
 
 export interface IHandler {
@@ -22,7 +22,7 @@ export type ArgsTypes = [
   number | undefined, // user id
 ];
 
-export type ContentTypes = Media | string | undefined | null;
+export type ContentTypes = Media | Location | string | undefined | null;
 
 export type HandlerMethod = ((...args: ArgsTypes) => MessageCreator | ContentTypes) & {
   prototype: { name: 'AsyncFunction' | 'Function' };

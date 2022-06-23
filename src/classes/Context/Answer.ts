@@ -8,6 +8,7 @@ import {
   IFile,
   IForwardMessageOptions,
   ICopyMessageOptions,
+  IStopMessageLiveLocationOptions,
 } from '../..';
 
 import { MessageCreator } from '../Message';
@@ -37,6 +38,25 @@ export class Answer {
     const chatId: number | string | undefined = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
     return this.api.send(chatId, content, keyboard, moreOptions);
+  }
+
+  /**
+   * Stops message live location
+   * @param keyboard Pass Keyboard class if you want to add keyboard to the message
+   * @param moreOptions More options {@link IStopMessageLiveLocationOptions}
+   * @see https://core.telegram.org/bots/api#editmessagelivelocation
+   * */
+  stopLiveLocation(
+    keyboard: Keyboard | null = null,
+    moreOptions: IStopMessageLiveLocationOptions = {},
+  ): Promise<IMessage | true> {
+    const chatId: number | string | undefined = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+
+    const msgId: number | string | undefined = Filter.getMsgId(this.update);
+    if (!msgId) throw error(`Can't find msgId from update`);
+
+    return this.api.stopLiveLocation(chatId, msgId, keyboard, moreOptions);
   }
 
   /**

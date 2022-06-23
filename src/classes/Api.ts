@@ -50,6 +50,8 @@ import {
   Video,
   Voice,
   Location,
+  IStopMessageLiveLocationOptions,
+  IStopMessageLiveLocationFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -625,5 +627,31 @@ export class Api {
       chat_id: toChatId,
       ...moreOptions,
     });
+  }
+
+  /**
+   * Stops message live location
+   * @param chatId Chat id
+   * @param msgId Id of the live location message you want to stop
+   * @param keyboard Pass Keyboard class if you want to add keyboard to the message
+   * @param moreOptions More options {@link IStopMessageLiveLocationOptions}
+   * @see https://core.telegram.org/bots/api#editmessagelivelocation
+   * */
+  stopLiveLocation(
+    chatId: number | string | null,
+    msgId: number | null,
+    keyboard: Keyboard | null = null,
+    moreOptions: IStopMessageLiveLocationOptions = {},
+  ): Promise<IMessage | true> {
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+
+    return this.callApi<IMessage | true, IStopMessageLiveLocationFetchOptions>(
+      'stopMessageLiveLocation',
+      {
+        chat_id: chatId,
+        message_id: msgId,
+        ...moreOptions,
+      },
+    );
   }
 }
