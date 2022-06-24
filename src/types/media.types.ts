@@ -12,7 +12,7 @@ export type MediaFileTypes =
   | 'voice'
   | 'video_note';
 
-export type MediaSendTypes = 'location' | 'venue';
+export type MediaSendTypes = 'location' | 'venue' | 'contact';
 
 export type InputMediaTypes =
   | IInputMediaAudio

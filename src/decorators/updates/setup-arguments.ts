@@ -10,6 +10,9 @@ const argsProcedure: string[] = [
   'params',
   'sender',
   'userId',
+  'location',
+  'contact',
+  'venue',
 ];
 
 export function setupArguments(

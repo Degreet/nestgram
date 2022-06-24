@@ -1,6 +1,6 @@
 import { ControllerClass } from './decorators.types';
 import { MiddlewareFunction } from './middleware.types';
-import { IMessage, IMessageEntity, IUpdate } from './update.types';
+import { IContact, ILocation, IMessage, IMessageEntity, IUpdate, IVenue } from './update.types';
 import { Answer, Media, MessageCreator } from '../classes';
 import { IUser } from './chat.types';
 
@@ -20,6 +20,9 @@ export type ArgsTypes = [
   any, // params
   IUser | undefined, // sender
   number | undefined, // user id
+  ILocation, // location
+  IContact, // contact
+  IVenue, // venue
 ];
 
 export type ContentTypes = Media | string | undefined | null;

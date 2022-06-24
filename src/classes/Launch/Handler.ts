@@ -88,6 +88,9 @@ export class Handler {
         params,
         message?.from,
         message?.from?.id,
+        message?.location,
+        message?.contact,
+        message?.venue,
       ];
 
       const handlerMethod: HandlerMethod = handler.controller[handler.methodKey].bind(

@@ -1,7 +1,9 @@
 import { Media } from './Media';
-import { ISendContactOptions } from '../../types';
+import { ISendContactOptions, MediaSendTypes } from '../../types';
 
 export class Contact extends Media {
+  type: MediaSendTypes = 'contact';
+
   /**
    * Send contact
    * @param phone Contact phone

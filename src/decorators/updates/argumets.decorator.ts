@@ -49,22 +49,22 @@ export const Text = () => buildArgumentDecorator('text');
 export const Answ = () => buildArgumentDecorator('answer');
 
 /**
- * Message sent by user
+ * Message sent by user {@link IMessage}
  * */
 export const Message = () => buildArgumentDecorator('message');
 
 /**
- * Received update
+ * Received update {@link IUpdate}
  * */
 export const Update = () => buildArgumentDecorator('update');
 
 /**
- * Message entities
+ * Message entities (array of {@link IMessageEntity})
  * */
 export const Entities = () => buildArgumentDecorator('entities');
 
 /**
- * Command params
+ * Command params (array of string)
  * */
 export const CommandParams = () => buildArgumentDecorator('commandParams');
 
@@ -74,11 +74,26 @@ export const CommandParams = () => buildArgumentDecorator('commandParams');
 export const Params = () => buildArgumentDecorator('params');
 
 /**
- * Who sent the message
+ * Who sent the message {@link IUser}
  * */
 export const Sender = () => buildArgumentDecorator('sender');
 
 /**
- * User id who sent the message
+ * User id who sent the message (number)
  * */
 export const UserId = () => buildArgumentDecorator('userId');
+
+/**
+ * Location that user sent
+ * */
+export const ReceivedLocation = () => buildArgumentDecorator('location');
+
+/**
+ * Contact that user sent
+ * */
+export const ReceivedContact = () => buildArgumentDecorator('contact');
+
+/**
+ * Venue that user sent
+ * */
+export const ReceivedVenue = () => buildArgumentDecorator('venue');
