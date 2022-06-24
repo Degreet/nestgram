@@ -135,6 +135,12 @@ export const OnLocation = (): MethodDecorator => buildUpdateDecorator('location'
 export const OnVenue = (): MethodDecorator => buildUpdateDecorator('venue');
 
 /**
+ * Listen for a contact
+ * @see https://core.telegram.org/bots/api#contact
+ * */
+export const OnContact = (): MethodDecorator => buildUpdateDecorator('contact');
+
+/**
  * Listen for an update
  * @see https://core.telegram.org/bots/api#update
  * */

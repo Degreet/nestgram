@@ -83,7 +83,7 @@ export interface IMessage {
   voice?: IVoice;
   caption?: string;
   caption_entities?: IMessageEntity[];
-  contact?: any; //!
+  contact?: IContact;
   dice?: any; //!
   game?: any; //!
   poll?: any; //!
@@ -183,4 +183,12 @@ export interface IVenue {
   foursquare_type?: string;
   google_place_id?: string;
   google_place_type?: string;
+}
+
+export interface IContact {
+  phone_number: string;
+  first_name: string;
+  last_name?: string;
+  user_id?: number;
+  vcard?: string;
 }
