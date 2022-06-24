@@ -55,6 +55,9 @@ import {
   ISendVenueOptions,
   ISendVenueFetchOptions,
   Venue,
+  Contact,
+  ISendContactOptions,
+  ISendContactFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -235,6 +238,15 @@ export class Api {
           content.longitude,
           content.title,
           content.address,
+          keyboard,
+          moreOptions,
+        );
+      else if (content instanceof Contact)
+        return this.sendContact(
+          chatId,
+          content.phone,
+          content.firstName,
+          content.lastName,
           keyboard,
           moreOptions,
         );
@@ -578,6 +590,35 @@ export class Api {
       longitude,
       title,
       address,
+      ...moreOptions,
+    });
+  }
+
+  /**
+   * Sends a contact to the chat
+   * @param chatId Chat ID where you want to send a contact. It can be id of group/channel or ID of the user
+   * @param phone Contact phone
+   * @param firstName Contact first name
+   * @param lastName Contact last name (optional)
+   * @param keyboard Pass Keyboard class if you want to add keyboard to the message
+   * @param moreOptions Message options {@link ISendContactOptions}
+   * @see https://core.telegram.org/bots/api#sendcontact
+   * */
+  sendContact(
+    chatId: number | string,
+    phone: string,
+    firstName: string,
+    lastName: string | null = null,
+    keyboard: Keyboard | null = null,
+    moreOptions: ISendContactOptions = {},
+  ): Promise<IMessage> {
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+
+    return this.callApi<IMessage, ISendContactFetchOptions>('sendContact', {
+      chat_id: chatId,
+      phone_number: phone,
+      first_name: firstName,
+      last_name: lastName,
       ...moreOptions,
     });
   }

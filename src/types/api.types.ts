@@ -132,13 +132,8 @@ export interface IForwardMessageFetchOptions extends IForwardMessageOptions, IMe
   from_chat_id: string | number;
 }
 
-export interface ICopyMessageOptions extends ISendPhotoOptions {
+export interface ICopyMessageOptions extends ISendPhotoOptions, IDefaultOptions {
   parse_mode?: ParseModes;
-  disable_notification?: boolean;
-  protect_content?: boolean;
-  reply_to_message_id?: number;
-  allow_sending_without_reply?: boolean;
-  reply_markup?: IReplyMarkup;
 }
 
 export interface ICopyMessageFetchOptions extends ICopyMessageOptions, IMessageId {
@@ -181,16 +176,22 @@ export interface ISendVenueFetchOptions extends ISendVenueOptions {
   address: string;
 }
 
-export interface ISendVenueOptions {
+export interface ISendVenueOptions extends IDefaultOptions {
   foursquare_id?: string;
   foursquare_type?: string;
   google_place_id?: string;
   google_place_type?: string;
-  disable_notification?: boolean;
-  protect_content?: boolean;
-  reply_to_message_id?: number;
-  allow_sending_without_reply?: boolean;
-  reply_markup?: IReplyMarkup;
+}
+
+export interface ISendContactFetchOptions extends ISendContactOptions {
+  chat_id: string | number;
+  phone_number: string;
+  first_name: string;
+  last_name?: string;
+}
+
+export interface ISendContactOptions extends IDefaultOptions {
+  vcard?: string;
 }
 
 export interface ISendMediaGroupOptions extends IDefaultOptions {}

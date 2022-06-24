@@ -12,4 +12,5 @@ export * from './Animation';
 export * from './MediaGroup';
 
 export * from './Location';
+export * from './Contact';
 export * from './Venue';
