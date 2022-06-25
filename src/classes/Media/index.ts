@@ -15,3 +15,4 @@ export * from './Location';
 export * from './Contact';
 export * from './Venue';
 export * from './Poll';
+export * from './Dice';

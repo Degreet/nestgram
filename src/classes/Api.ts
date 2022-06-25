@@ -56,11 +56,15 @@ import {
   ISendVenueFetchOptions,
   Venue,
   Contact,
+  Poll,
+  Dice,
   ISendContactOptions,
   ISendContactFetchOptions,
   ISendPollOptions,
   ISendPollFetchOptions,
-  Poll,
+  DiceEmojis,
+  ISendDiceOptions,
+  ISendDiceFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -252,6 +256,11 @@ export class Api {
         );
       else if (content instanceof Poll)
         return this.sendPoll(chatId, content.question, content.options, keyboard, {
+          ...moreOptions,
+          ...(content.moreOptions || {}),
+        });
+      else if (content instanceof Dice)
+        return this.sendDice(chatId, content.emoji, keyboard, {
           ...moreOptions,
           ...(content.moreOptions || {}),
         });
@@ -650,6 +659,29 @@ export class Api {
       chat_id: chatId,
       question,
       options,
+      ...moreOptions,
+    });
+  }
+
+  /**
+   * Sends dice to the chat
+   * @param chatId Chat ID where you want to send dice. It can be id of group/channel or ID of the user
+   * @param emoji Dice emoji {@link DiceEmojis}
+   * @param keyboard Pass Keyboard class if you want to add keyboard to the message
+   * @param moreOptions Message options {@link ISendDiceOptions}
+   * @see https://core.telegram.org/bots/api#senddice
+   * */
+  sendDice(
+    chatId: number | string,
+    emoji: DiceEmojis | null = null,
+    keyboard: Keyboard | null = null,
+    moreOptions: ISendDiceOptions = {},
+  ): Promise<IMessage> {
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+
+    return this.callApi<IMessage, ISendDiceFetchOptions>('sendDice', {
+      chat_id: chatId,
+      emoji: emoji || '🎲',
       ...moreOptions,
     });
   }

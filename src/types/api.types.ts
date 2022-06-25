@@ -6,6 +6,7 @@ import { Thumb } from '../classes';
 export type IOptions = ISendOptions | ISendPhotoOptions | ISendVideoOptions;
 export type ParseModes = 'HTML' | 'Markdown' | 'MarkdownV2';
 export type PollTypes = 'quiz' | 'regular';
+export type DiceEmojis = '🎲' | '🎯' | '🏀' | '⚽' | '🎳' | '🎰';
 
 export interface ISendFetchOptions extends ISendOptions {
   chat_id: number | string;
@@ -214,5 +215,11 @@ export interface ISendPollOptions extends IDefaultOptions {
   is_closed?: boolean;
 }
 
+export interface ISendDiceFetchOptions extends ISendDiceOptions {
+  chat_id: string | number;
+  emoji?: DiceEmojis;
+}
+
+export interface ISendDiceOptions extends IDefaultOptions {}
 export interface ISendMediaGroupOptions extends IDefaultOptions {}
 export interface ISendDocumentOptions extends ISendPhotoOptions {}

@@ -5,7 +5,7 @@ export class Poll extends Media {
   type: MediaSendTypes = 'poll';
 
   /**
-   * Send contact
+   * Send poll
    * @param question Poll question
    * @param options Poll options (2-10 strings 1-100 characters each)
    * @param moreOptions Message options {@link ISendPollOptions}
