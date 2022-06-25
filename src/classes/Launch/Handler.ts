@@ -91,7 +91,7 @@ export class Handler {
         message?.location,
         message?.contact,
         message?.venue,
-        message?.poll,
+        message?.poll || update?.poll,
       ];
 
       const handlerMethod: HandlerMethod = handler.controller[handler.methodKey].bind(
