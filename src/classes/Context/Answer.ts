@@ -1,14 +1,15 @@
 import {
-  ISendOptions,
-  IMessage,
-  IUpdate,
-  ContentTypes,
   Keyboard,
+  ChatActions,
+  ContentTypes,
   IAnswerCallbackQueryOptions,
-  IFile,
   IForwardMessageOptions,
   ICopyMessageOptions,
   IStopMessageLiveLocationOptions,
+  ISendOptions,
+  IMessage,
+  IUpdate,
+  IFile,
 } from '../..';
 
 import { MessageCreator } from '../Message';
@@ -38,6 +39,17 @@ export class Answer {
     const chatId: number | string | undefined = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
     return this.api.send(chatId, content, keyboard, moreOptions);
+  }
+
+  /**
+   * Setups chat action
+   * @param action Action type {@link ChatActions}
+   * @see https://core.telegram.org/bots/api#sendchataction
+   * */
+  chatAction(action: ChatActions): Promise<true> {
+    const chatId: number | string | undefined = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+    return this.api.chatAction(chatId, action);
   }
 
   /**

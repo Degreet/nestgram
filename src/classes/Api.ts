@@ -65,6 +65,8 @@ import {
   DiceEmojis,
   ISendDiceOptions,
   ISendDiceFetchOptions,
+  ChatActions,
+  ISendChatActionFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -683,6 +685,19 @@ export class Api {
       chat_id: chatId,
       emoji: emoji || '🎲',
       ...moreOptions,
+    });
+  }
+
+  /**
+   * Setups chat action
+   * @param chatId Chat ID where you want to send action. It can be id of group/channel or ID of the user
+   * @param action Action type {@link ChatActions}
+   * @see https://core.telegram.org/bots/api#sendchataction
+   * */
+  chatAction(chatId: number | string, action: ChatActions): Promise<true> {
+    return this.callApi<true, ISendChatActionFetchOptions>('sendChatAction', {
+      chat_id: chatId,
+      action,
     });
   }
 

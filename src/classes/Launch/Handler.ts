@@ -12,7 +12,7 @@ import {
 import { Answer } from '../Context/Answer';
 import { Filter } from '../Context/Filter';
 
-import { MessageCreator, Forward, Alert, Toast, MessageSend, Copy } from '../Message';
+import { MessageCreator, Forward, Alert, Toast, MessageSend, Copy, ChatAction } from '../Message';
 import { FileLogger } from '../Helpers/FileLogger';
 import { info } from '../../logger';
 
@@ -109,16 +109,17 @@ export class Handler {
       }
 
       if (!resultMessageToSend) return;
-      let sendMethodKey: string = 'send';
+      let sendMethodKey: string;
       const answerCallArgs: any[] = [];
 
       if (resultMessageToSend instanceof MessageCreator) {
-        if (resultMessageToSend instanceof Alert || resultMessageToSend instanceof Toast) {
-          sendMethodKey = resultMessageToSend.sendType;
-          answerCallArgs.push(resultMessageToSend.text, resultMessageToSend.options);
-        } else if (resultMessageToSend instanceof Forward || resultMessageToSend instanceof Copy) {
-          sendMethodKey = resultMessageToSend.sendType;
+        sendMethodKey = resultMessageToSend.sendType;
 
+        if (resultMessageToSend instanceof Alert || resultMessageToSend instanceof Toast) {
+          answerCallArgs.push(resultMessageToSend.text, resultMessageToSend.options);
+        } else if (resultMessageToSend instanceof ChatAction) {
+          answerCallArgs.push(resultMessageToSend.action);
+        } else if (resultMessageToSend instanceof Forward || resultMessageToSend instanceof Copy) {
           if (resultMessageToSend instanceof Forward)
             answerCallArgs.push(resultMessageToSend.toChatId, resultMessageToSend.options);
           else if (resultMessageToSend instanceof Copy)
@@ -128,6 +129,8 @@ export class Handler {
               resultMessageToSend.options,
             );
         } else if (resultMessageToSend instanceof MessageSend) {
+          sendMethodKey = 'send';
+
           answerCallArgs.push(
             resultMessageToSend.content,
             resultMessageToSend.keyboard,
@@ -140,6 +143,7 @@ export class Handler {
         answerCallArgs.push(resultMessageToSend);
       }
 
+      console.log(sendMethodKey);
       await answer[sendMethodKey](...answerCallArgs);
     };
 

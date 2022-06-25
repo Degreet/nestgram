@@ -8,6 +8,19 @@ export type ParseModes = 'HTML' | 'Markdown' | 'MarkdownV2';
 export type PollTypes = 'quiz' | 'regular';
 export type DiceEmojis = '🎲' | '🎯' | '🏀' | '⚽' | '🎳' | '🎰';
 
+export type ChatActions =
+  | 'typing'
+  | 'upload_photo'
+  | 'record_video'
+  | 'upload_video'
+  | 'record_voice'
+  | 'upload_voice'
+  | 'upload_document'
+  | 'choose_sticker'
+  | 'find_location'
+  | 'record_video_note'
+  | 'upload_video_note';
+
 export interface ISendFetchOptions extends ISendOptions {
   chat_id: number | string;
   text: string;
@@ -213,6 +226,11 @@ export interface ISendPollOptions extends IDefaultOptions {
   open_period?: number;
   close_date?: number;
   is_closed?: boolean;
+}
+
+export interface ISendChatActionFetchOptions {
+  chat_id: number | string;
+  action: ChatActions;
 }
 
 export interface ISendDiceFetchOptions extends ISendDiceOptions {
