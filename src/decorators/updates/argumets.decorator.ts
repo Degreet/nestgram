@@ -97,3 +97,8 @@ export const ReceivedContact = () => buildArgumentDecorator('contact');
  * Venue that user sent
  * */
 export const ReceivedVenue = () => buildArgumentDecorator('venue');
+
+/**
+ * Venue that user sent
+ * */
+export const ReceivedPoll = () => buildArgumentDecorator('poll');

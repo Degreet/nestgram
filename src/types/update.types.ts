@@ -1,5 +1,6 @@
 import { IChat, IUser } from './chat.types';
 import { IReplyMarkup } from './keyboard.types';
+import { PollTypes } from './api.types';
 
 export type MessageEntityTypes =
   | 'mention'
@@ -86,7 +87,7 @@ export interface IMessage {
   contact?: IContact;
   dice?: any; //!
   game?: any; //!
-  poll?: any; //!
+  poll?: IPoll;
   venue?: IVenue;
   location?: ILocation;
   new_chat_members?: IUser[];
@@ -191,4 +192,25 @@ export interface IContact {
   last_name?: string;
   user_id?: number;
   vcard?: string;
+}
+
+export interface IPollOption {
+  text: string;
+  voter_count: number;
+}
+
+export interface IPoll {
+  id: string;
+  question: string;
+  options: IPollOption[];
+  total_voter_count: number;
+  is_closed: boolean;
+  is_anonymous: boolean;
+  type: PollTypes;
+  allows_multiple_answers: boolean;
+  correct_option_id?: number;
+  explanation?: string;
+  explanation_entities?: IMessageEntity[];
+  open_period?: number;
+  close_date?: number;
 }

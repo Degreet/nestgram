@@ -13,6 +13,7 @@ const argsProcedure: string[] = [
   'location',
   'contact',
   'venue',
+  'poll',
 ];
 
 export function setupArguments(

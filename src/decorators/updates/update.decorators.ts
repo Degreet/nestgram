@@ -126,19 +126,25 @@ export const OnDocument = (): MethodDecorator => buildUpdateDecorator('media', '
  * Listen for a location
  * @see https://core.telegram.org/bots/api#location
  * */
-export const OnLocation = (): MethodDecorator => buildUpdateDecorator('location');
+export const OnLocation = (): MethodDecorator => buildUpdateDecorator('otherMedia', 'location');
 
 /**
  * Listen for a venue
  * @see https://core.telegram.org/bots/api#venue
  * */
-export const OnVenue = (): MethodDecorator => buildUpdateDecorator('venue');
+export const OnVenue = (): MethodDecorator => buildUpdateDecorator('otherMedia', 'venue');
 
 /**
  * Listen for a contact
  * @see https://core.telegram.org/bots/api#contact
  * */
-export const OnContact = (): MethodDecorator => buildUpdateDecorator('contact');
+export const OnContact = (): MethodDecorator => buildUpdateDecorator('otherMedia', 'contact');
+
+/**
+ * Listen for a poll
+ * @see https://core.telegram.org/bots/api#poll
+ * */
+export const OnPoll = (): MethodDecorator => buildUpdateDecorator('otherMedia', 'poll');
 
 /**
  * Listen for an update

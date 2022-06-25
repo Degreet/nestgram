@@ -1,10 +1,11 @@
 import { IMessageEntity } from './update.types';
 import { IInlineKeyboard, IReplyMarkup } from './keyboard.types';
-import { Thumb } from '../classes';
 import { InputMediaTypes } from './media.types';
+import { Thumb } from '../classes';
 
 export type IOptions = ISendOptions | ISendPhotoOptions | ISendVideoOptions;
 export type ParseModes = 'HTML' | 'Markdown' | 'MarkdownV2';
+export type PollTypes = 'quiz' | 'regular';
 
 export interface ISendFetchOptions extends ISendOptions {
   chat_id: number | string;
@@ -201,8 +202,8 @@ export interface ISendPollFetchOptions extends ISendPollOptions {
 }
 
 export interface ISendPollOptions extends IDefaultOptions {
+  type?: PollTypes;
   is_anonymous?: boolean;
-  type?: 'quiz' | 'regular';
   allows_multiple_answers?: boolean;
   correct_option_id?: number;
   explanation?: string;

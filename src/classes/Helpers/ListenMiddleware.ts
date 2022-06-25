@@ -33,7 +33,7 @@ export class ListenMiddleware {
     };
   }
 
-  static location(): MiddlewareFunction {
+  static otherMedia(type: string) {
     return function use(
       update: IUpdate,
       answer: Answer,
@@ -42,35 +42,7 @@ export class ListenMiddleware {
       fail: NextFunction,
     ): any {
       if (!update.message) return fail();
-      else if (!update.message.location) return fail();
-      next();
-    };
-  }
-
-  static venue(): MiddlewareFunction {
-    return function use(
-      update: IUpdate,
-      answer: Answer,
-      params: any,
-      next: NextFunction,
-      fail: NextFunction,
-    ): any {
-      if (!update.message) return fail();
-      else if (!update.message.venue) return fail();
-      next();
-    };
-  }
-
-  static contact(): MiddlewareFunction {
-    return function use(
-      update: IUpdate,
-      answer: Answer,
-      params: any,
-      next: NextFunction,
-      fail: NextFunction,
-    ): any {
-      if (!update.message) return fail();
-      else if (!update.message.contact) return fail();
+      else if (!update.message[type]) return fail();
       next();
     };
   }
