@@ -3,6 +3,7 @@ import { keyboardStore } from './KeyboardStore';
 import { error, warn } from '../../logger';
 
 export class Keyboard<T = any> {
+  private oneTimeKeyboard: boolean = false;
   unresolvedButtons: IButton[] = [];
   rows: IButton[][] = [];
 
@@ -11,9 +12,9 @@ export class Keyboard<T = any> {
    * @param keyboardType Type of keyboard {@link KeyboardTypes}
    * @param placeholder Placeholder for input "Type message..." (only for under_the_chat keyboard)
    * */
-  constructor(public readonly keyboardType: KeyboardTypes, public readonly placeholder?: string) {}
+  constructor(public readonly keyboardType: KeyboardTypes, private placeholder?: string) {}
 
-  private checkButton(buttonType: string, supportKeyboard: KeyboardTypes) {
+  private checkButton(buttonType: string, supportKeyboard: KeyboardTypes): void {
     if (this.keyboardType !== supportKeyboard)
       throw error(`You can't use ${buttonType} button for ${this.keyboardType}`);
   }
@@ -23,7 +24,7 @@ export class Keyboard<T = any> {
    * @param text Text of the button
    * @param hidden If true hides button
    * */
-  text(text: string, hidden?: boolean) {
+  text(text: string, hidden?: boolean): this {
     if (hidden) return this;
     this.checkButton('text', KeyboardTypes.underTheChat);
     this.unresolvedButtons.push({ text });
@@ -36,7 +37,7 @@ export class Keyboard<T = any> {
    * @param clickData String with some click data
    * @param hidden If true hides button
    * */
-  btn(text: string, clickData: string, hidden?: boolean) {
+  btn(text: string, clickData: string, hidden?: boolean): this {
     if (hidden) return this;
     this.checkButton('callback', KeyboardTypes.underTheMessage);
     this.unresolvedButtons.push({ text, callback_data: clickData });
@@ -49,7 +50,7 @@ export class Keyboard<T = any> {
    * @param url Button click link
    * @param hidden If true hides button
    * */
-  url(text: string, url: string, hidden?: boolean) {
+  url(text: string, url: string, hidden?: boolean): this {
     if (hidden) return this;
     this.checkButton('url', KeyboardTypes.underTheMessage);
     this.unresolvedButtons.push({ text, url });
@@ -61,7 +62,7 @@ export class Keyboard<T = any> {
    * @param text Text of the button
    * @param hidden If true hides button
    * */
-  contact(text: string, hidden?: boolean) {
+  contact(text: string, hidden?: boolean): this {
     if (hidden) return this;
     this.checkButton('request_contact', KeyboardTypes.underTheChat);
     this.unresolvedButtons.push({ text, request_contact: true });
@@ -73,7 +74,7 @@ export class Keyboard<T = any> {
    * @param text Text of the button
    * @param hidden If true hides button
    * */
-  location(text: string, hidden?: boolean) {
+  location(text: string, hidden?: boolean): this {
     if (hidden) return this;
     this.checkButton('request_location', KeyboardTypes.underTheChat);
     this.unresolvedButtons.push({ text, request_location: true });
@@ -86,7 +87,7 @@ export class Keyboard<T = any> {
    * @param switchQuery Switch inline query string data
    * @param hidden If true hides button
    * */
-  switch(text: string, switchQuery: string, hidden?: boolean) {
+  switch(text: string, switchQuery: string, hidden?: boolean): this {
     if (hidden) return this;
     this.checkButton('switch_inline_query', KeyboardTypes.underTheMessage);
     this.unresolvedButtons.push({ text, switch_inline_query: switchQuery });
@@ -97,7 +98,7 @@ export class Keyboard<T = any> {
    * Creates a pay button (only for under_the_message keyboard)
    * @param text Text of the button
    * */
-  pay(text: string) {
+  pay(text: string): this {
     this.checkButton('pay', KeyboardTypes.underTheMessage);
     this.unresolvedButtons.push({ text, pay: true });
     return this;
@@ -109,7 +110,7 @@ export class Keyboard<T = any> {
    * @param url Link to web app
    * @param hidden If true hides button
    * */
-  webApp(text: string, url: string, hidden?: boolean) {
+  webApp(text: string, url: string, hidden?: boolean): this {
     if (hidden) return this;
     this.unresolvedButtons.push({ text, web_app: { url } });
     return this;
@@ -120,7 +121,7 @@ export class Keyboard<T = any> {
    * @param btnsPerLine If you pass a number to it, your newly added buttons will be arranged in multiple rows with the number of buttons you specify in one row
    * @param hidden If true hides row
    * */
-  row(btnsPerLine?: number | null, hidden?: boolean): Keyboard {
+  row(btnsPerLine?: number | null, hidden?: boolean): this {
     const btns: IButton[] = [...this.unresolvedButtons];
     this.unresolvedButtons = [];
     if (hidden) return this;
@@ -150,7 +151,7 @@ export class Keyboard<T = any> {
    * Saves rows as layout
    * @param layoutName Layout name
    * */
-  save(layoutName: string): Keyboard {
+  save(layoutName: string): this {
     this.row();
     keyboardStore.layouts.push({ name: layoutName, rows: this.rows, type: this.keyboardType });
     return this;
@@ -160,7 +161,7 @@ export class Keyboard<T = any> {
    * Extracts rows from the layout
    * @param layoutName Layout name
    * */
-  use(layoutName: string): Keyboard {
+  use(layoutName: string): this {
     const layout: IKeyboardLayout | undefined = keyboardStore.layouts.find(
       (layout: IKeyboardLayout): boolean => layout.name === layoutName,
     );
@@ -185,8 +186,28 @@ export class Keyboard<T = any> {
     return this;
   }
 
+  setPlaceholder(newPlaceholder: string): this {
+    this.placeholder = newPlaceholder;
+    return this;
+  }
+
+  oneTime(): this {
+    this.oneTimeKeyboard = !this.oneTimeKeyboard;
+    return this;
+  }
+
   buildMarkup(): IReplyMarkup {
     this.row();
-    return { [this.keyboardType]: this.rows, placeholder: this.placeholder };
+
+    if (this.keyboardType === 'keyboard') {
+      return {
+        keyboard: this.rows,
+        input_field_placeholder: this.placeholder,
+        one_time_keyboard: this.oneTimeKeyboard,
+        resize_keyboard: true,
+      };
+    } else {
+      return { [this.keyboardType]: this.rows };
+    }
   }
 }
