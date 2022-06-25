@@ -132,3 +132,8 @@ export const GetPoll = () => buildArgumentDecorator('poll');
  * @deprecated Use @GetPoll instead
  * */
 export const ReceivedPoll = GetPoll;
+
+/**
+ * Dice that user sent
+ * */
+export const GetDice = () => buildArgumentDecorator('dice');

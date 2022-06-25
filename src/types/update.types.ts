@@ -1,6 +1,6 @@
 import { IChat, IUser } from './chat.types';
 import { IReplyMarkup } from './keyboard.types';
-import { PollTypes } from './api.types';
+import { DiceEmojis, PollTypes } from './api.types';
 
 export type MessageEntityTypes =
   | 'mention'
@@ -87,7 +87,7 @@ export interface IMessage {
   caption?: string;
   caption_entities?: IMessageEntity[];
   contact?: IContact;
-  dice?: any; //!
+  dice?: IDice;
   game?: any; //!
   poll?: IPoll;
   venue?: IVenue;
@@ -221,4 +221,9 @@ export interface IPollAnswer {
   poll_id: string;
   user: IUser;
   option_ids: number[];
+}
+
+export interface IDice {
+  emoji: DiceEmojis;
+  value: number;
 }

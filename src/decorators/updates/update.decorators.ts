@@ -159,6 +159,12 @@ export const OnPollEdit = (): MethodDecorator => buildUpdateDecorator('pollEdit'
 export const OnPollAnswer = (): MethodDecorator => buildUpdateDecorator('pollEdit', true);
 
 /**
+ * Listen for a dice
+ * @see https://core.telegram.org/bots/api#poll
+ * */
+export const OnDice = (): MethodDecorator => buildUpdateDecorator('otherMedia', 'dice');
+
+/**
  * Listen for an update
  * @see https://core.telegram.org/bots/api#update
  * */

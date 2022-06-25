@@ -2,6 +2,7 @@ import { ControllerClass } from './decorators.types';
 import { MiddlewareFunction } from './middleware.types';
 import {
   IContact,
+  IDice,
   ILocation,
   IMessage,
   IMessageEntity,
@@ -32,6 +33,7 @@ export type ArgsTypes = [
   IContact, // contact
   IVenue, // venue
   IPoll, // poll
+  IDice, // dice
 ];
 
 export type ContentTypes = Media | string | undefined | null;
