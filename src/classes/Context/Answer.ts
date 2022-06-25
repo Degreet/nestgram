@@ -10,6 +10,8 @@ import {
   IMessage,
   IUpdate,
   IFile,
+  IUserProfilePhotos,
+  IPhotoSize,
 } from '../..';
 
 import { MessageCreator } from '../Message';
@@ -50,6 +52,18 @@ export class Answer {
     const chatId: number | string | undefined = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
     return this.api.chatAction(chatId, action);
+  }
+
+  /**
+   * @param limit Limit of user profile photos
+   * @param offset Skip user profile photos
+   * @see https://core.telegram.org/bots/api#getuserprofilephotos
+   * @return User profile photos
+   * */
+  getUserProfilePhotos(limit?: number, offset?: number): Promise<IUserProfilePhotos> {
+    const userId: number | undefined = Filter.getUserId(this.update);
+    if (!userId) throw error(`Can't find userId from update`);
+    return this.api.getUserProfilePhotos(userId, limit, offset);
   }
 
   /**
@@ -139,18 +153,42 @@ export class Answer {
   }
 
   /**
-   * Saves any media was sent
-   * @param path Path where you want to save the media file
+   * Saves user profile photo
+   * @param path Path where you want to save the image
+   * @param index Index of the user profile photo you want to save (0 by default)
    * @return true if saved success
    * */
-  async saveFile(path: string): Promise<boolean> {
+  async saveProfilePhoto(path: string, index: number = 0): Promise<boolean> {
+    const userProfilePhotosInfo: IUserProfilePhotos = await this.getUserProfilePhotos();
+    if (!userProfilePhotosInfo) return false;
+
+    const photos: IPhotoSize[] | undefined = userProfilePhotosInfo.photos[index];
+    if (!photos) return false;
+
+    const fileId: string | undefined = photos[photos.length - 1]?.file_id;
+    if (!fileId) return false;
+
+    return this.saveFile(path, fileId);
+  }
+
+  /**
+   * Saves any media was sent
+   * @param path Path where you want to save the media file
+   * @param fileId Id of the file you want to download
+   * @return true if saved success
+   * */
+  async saveFile(path: string, fileId?: string): Promise<boolean> {
     const msg: IMessage = this.update.message;
     if (!msg) return false;
 
-    const fileId: string | undefined =
-      msg.audio?.file_id ||
-      msg.video?.file_id ||
-      (msg.photo && msg.photo[msg.photo.length - 1]?.file_id);
+    if (!fileId)
+      fileId =
+        msg.audio?.file_id ||
+        msg.video?.file_id ||
+        msg.animation?.file_id ||
+        msg.document?.file_id ||
+        msg.voice?.file_id ||
+        (msg.photo && msg.photo[msg.photo.length - 1]?.file_id);
 
     if (!fileId) return false;
     const fileInfo: IFile = await this.getFile(fileId);

@@ -13,6 +13,14 @@ export class Filter {
 
   /**
    * @param update Update {@link IUpdate}
+   * @return user id from sent message
+   * */
+  public static getUserId(update: IUpdate): number | undefined {
+    return Filter.getMessage(update)?.from?.id;
+  }
+
+  /**
+   * @param update Update {@link IUpdate}
    * @return message id
    * */
   public static getMsgId(update: IUpdate): number | undefined {

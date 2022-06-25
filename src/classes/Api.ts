@@ -67,6 +67,8 @@ import {
   ISendDiceFetchOptions,
   ChatActions,
   ISendChatActionFetchOptions,
+  IGetUserProfilePhotosFetchOptions,
+  IUserProfilePhotos,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -699,6 +701,28 @@ export class Api {
       chat_id: chatId,
       action,
     });
+  }
+
+  /**
+   * @param userId Id of the user you want to get profile photos
+   * @param limit Limit of user profile photos
+   * @param offset Skip user profile photos
+   * @see https://core.telegram.org/bots/api#getuserprofilephotos
+   * @return User profile photos
+   * */
+  getUserProfilePhotos(
+    userId: number,
+    limit?: number,
+    offset?: number,
+  ): Promise<IUserProfilePhotos> {
+    return this.callApi<IUserProfilePhotos, IGetUserProfilePhotosFetchOptions>(
+      'getUserProfilePhotos',
+      {
+        user_id: userId,
+        limit,
+        offset,
+      },
+    );
   }
 
   /**

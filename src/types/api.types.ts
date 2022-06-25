@@ -1,4 +1,4 @@
-import { IMessageEntity } from './update.types';
+import { IMessageEntity, IPhotoSize } from './update.types';
 import { IInlineKeyboard, IReplyMarkup } from './keyboard.types';
 import { InputMediaTypes } from './media.types';
 import { Thumb } from '../classes';
@@ -236,6 +236,17 @@ export interface ISendChatActionFetchOptions {
 export interface ISendDiceFetchOptions extends ISendDiceOptions {
   chat_id: string | number;
   emoji?: DiceEmojis;
+}
+
+export interface IGetUserProfilePhotosFetchOptions {
+  user_id: number;
+  offset?: number;
+  limit?: number;
+}
+
+export interface IUserProfilePhotos {
+  total_count: number;
+  photos: IPhotoSize[][];
 }
 
 export interface ISendDiceOptions extends IDefaultOptions {}
