@@ -58,6 +58,9 @@ import {
   Contact,
   ISendContactOptions,
   ISendContactFetchOptions,
+  ISendPollOptions,
+  ISendPollFetchOptions,
+  Poll,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -224,13 +227,10 @@ export class Api {
       else if (content instanceof MediaGroup)
         return this.sendMediaGroup(chatId, content.mediaGroup, moreOptions);
       else if (content instanceof Location)
-        return this.sendLocation(
-          chatId,
-          content.latitude,
-          content.longitude,
-          keyboard,
-          moreOptions,
-        );
+        return this.sendLocation(chatId, content.latitude, content.longitude, keyboard, {
+          ...moreOptions,
+          ...(content.options || {}),
+        });
       else if (content instanceof Venue)
         return this.sendVenue(
           chatId,
@@ -239,7 +239,7 @@ export class Api {
           content.title,
           content.address,
           keyboard,
-          moreOptions,
+          { ...moreOptions, ...(content.options || {}) },
         );
       else if (content instanceof Contact)
         return this.sendContact(
@@ -248,8 +248,13 @@ export class Api {
           content.firstName,
           content.lastName,
           keyboard,
-          moreOptions,
+          { ...moreOptions, ...(content.options || {}) },
         );
+      else if (content instanceof Poll)
+        return this.sendPoll(chatId, content.question, content.options, keyboard, {
+          ...moreOptions,
+          ...(content.moreOptions || {}),
+        });
       else
         throw error(
           "Media file type is not defined. Don't use Media class, use Photo, Video class instead",
@@ -619,6 +624,32 @@ export class Api {
       phone_number: phone,
       first_name: firstName,
       last_name: lastName,
+      ...moreOptions,
+    });
+  }
+
+  /**
+   * Sends a poll to the chat
+   * @param chatId Chat ID where you want to send a poll. It can be id of group/channel or ID of the user
+   * @param question Poll question
+   * @param options Poll options (2-10 strings 1-100 characters each)
+   * @param keyboard Pass Keyboard class if you want to add keyboard to the message
+   * @param moreOptions Message options {@link ISendPollOptions}
+   * @see https://core.telegram.org/bots/api#sendpoll
+   * */
+  sendPoll(
+    chatId: number | string,
+    question: string,
+    options: string[],
+    keyboard: Keyboard | null = null,
+    moreOptions: ISendPollOptions = {},
+  ): Promise<IMessage> {
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+
+    return this.callApi<IMessage, ISendPollFetchOptions>('sendPoll', {
+      chat_id: chatId,
+      question,
+      options,
       ...moreOptions,
     });
   }

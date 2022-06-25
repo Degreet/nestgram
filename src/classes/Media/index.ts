@@ -14,3 +14,4 @@ export * from './MediaGroup';
 export * from './Location';
 export * from './Contact';
 export * from './Venue';
+export * from './Poll';

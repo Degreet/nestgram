@@ -194,5 +194,24 @@ export interface ISendContactOptions extends IDefaultOptions {
   vcard?: string;
 }
 
+export interface ISendPollFetchOptions extends ISendPollOptions {
+  chat_id: number | string;
+  question: string;
+  options: string[];
+}
+
+export interface ISendPollOptions extends IDefaultOptions {
+  is_anonymous?: boolean;
+  type?: 'quiz' | 'regular';
+  allows_multiple_answers?: boolean;
+  correct_option_id?: number;
+  explanation?: string;
+  explanation_parse_mode?: string;
+  explanation_entities?: IMessageEntity[];
+  open_period?: number;
+  close_date?: number;
+  is_closed?: boolean;
+}
+
 export interface ISendMediaGroupOptions extends IDefaultOptions {}
 export interface ISendDocumentOptions extends ISendPhotoOptions {}
