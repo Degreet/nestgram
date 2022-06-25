@@ -27,6 +27,8 @@ export interface IUpdate {
   channel_post?: IMessage;
   edited_channel_post?: IMessage;
   callback_query?: ICallbackQuery;
+  poll?: IPoll;
+  poll_answer?: IPollAnswer;
   //!
 }
 
@@ -213,4 +215,10 @@ export interface IPoll {
   explanation_entities?: IMessageEntity[];
   open_period?: number;
   close_date?: number;
+}
+
+export interface IPollAnswer {
+  poll_id: string;
+  user: IUser;
+  option_ids: number[];
 }

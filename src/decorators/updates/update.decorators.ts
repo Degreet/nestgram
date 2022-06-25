@@ -147,6 +147,18 @@ export const OnContact = (): MethodDecorator => buildUpdateDecorator('otherMedia
 export const OnPoll = (): MethodDecorator => buildUpdateDecorator('otherMedia', 'poll');
 
 /**
+ * Listen for a poll edit
+ * @see https://core.telegram.org/bots/api#poll
+ * */
+export const OnPollEdit = (): MethodDecorator => buildUpdateDecorator('pollEdit');
+
+/**
+ * Listen for a poll answer
+ * @see https://core.telegram.org/bots/api#pollanswer
+ * */
+export const OnPollAnswer = (): MethodDecorator => buildUpdateDecorator('pollEdit', true);
+
+/**
  * Listen for an update
  * @see https://core.telegram.org/bots/api#update
  * */

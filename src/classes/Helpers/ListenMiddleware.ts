@@ -33,6 +33,20 @@ export class ListenMiddleware {
     };
   }
 
+  static pollEdit(isAnswer: boolean = false): MiddlewareFunction {
+    return function use(
+      update: IUpdate,
+      answer: Answer,
+      params: any,
+      next: NextFunction,
+      fail: NextFunction,
+    ): any {
+      if (!isAnswer && !update.poll) return fail();
+      if (isAnswer && !update.poll_answer) return fail();
+      next();
+    };
+  }
+
   static otherMedia(type: string) {
     return function use(
       update: IUpdate,
@@ -41,8 +55,9 @@ export class ListenMiddleware {
       next: NextFunction,
       fail: NextFunction,
     ): any {
-      if (!update.message) return fail();
-      else if (!update.message[type]) return fail();
+      const message: IMessage | undefined = Filter.getMessage(update);
+      if (!message) return fail();
+      else if (!message[type]) return fail();
       next();
     };
   }

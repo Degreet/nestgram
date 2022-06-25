@@ -8,7 +8,7 @@ export class Filter {
    * @return chat id from sent message
    * */
   public static getChatId(update: IUpdate): number | string | undefined {
-    return Filter.getMessage(update)?.chat?.id;
+    return (Filter.getMessage(update)?.chat || update.poll_answer?.user)?.id;
   }
 
   /**
