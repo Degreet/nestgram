@@ -179,6 +179,22 @@ export class Api {
   }
 
   /**
+   * Log out
+   * @see https://core.telegram.org/bots/api#logout
+   * */
+  logOut(): Promise<true> {
+    return this.callApi<true>('logOut');
+  }
+
+  /**
+   * Close
+   * @see https://core.telegram.org/bots/api#close
+   * */
+  close(): Promise<true> {
+    return this.callApi<true>('close');
+  }
+
+  /**
    * Set ups a webhook
    * @param config Webhook config
    * */
