@@ -109,7 +109,7 @@ export class Handler {
       }
 
       if (!resultMessageToSend) return;
-      let sendMethodKey: string;
+      let sendMethodKey: string = 'send';
       const answerCallArgs: any[] = [];
 
       if (resultMessageToSend instanceof MessageCreator) {
@@ -143,7 +143,6 @@ export class Handler {
         answerCallArgs.push(resultMessageToSend);
       }
 
-      console.log(sendMethodKey);
       await answer[sendMethodKey](...answerCallArgs);
     };
 

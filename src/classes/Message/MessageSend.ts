@@ -21,3 +21,5 @@ export class MessageSend extends MessageCreator {
     if (keyboard) options.reply_markup = keyboard.buildMarkup();
   }
 }
+
+export class Message extends MessageSend {}
