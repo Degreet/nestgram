@@ -69,6 +69,7 @@ import {
   ISendChatActionFetchOptions,
   IGetUserProfilePhotosFetchOptions,
   IUserProfilePhotos,
+  IWebhookInfo,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -192,6 +193,15 @@ export class Api {
    * */
   close(): Promise<true> {
     return this.callApi<true>('close');
+  }
+
+  /**
+   * Webhook info
+   * @see https://core.telegram.org/bots/api#getwebhookinfo
+   * @return Webhook info
+   * */
+  getWebhookInfo(): Promise<IWebhookInfo> {
+    return this.callApi<IWebhookInfo>('getWebhookInfo');
   }
 
   /**
