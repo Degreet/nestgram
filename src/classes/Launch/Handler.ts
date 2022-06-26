@@ -39,10 +39,8 @@ export class Handler {
   ): NextFunction | null {
     const nextFunction: MiddlewareFunction = middlewares[++middlewareIndex];
 
-    return () => {
-      if (this.logging) info('Calling next middleware', `(${update.update_id})`.grey);
-
-      return (nextFunction || handler)(
+    return () =>
+      (nextFunction || handler)(
         update,
         answer,
         params,
@@ -58,7 +56,6 @@ export class Handler {
         ),
         failFunction.bind(null, middlewareIndex, handlerIndex),
       );
-    };
   }
 
   private handleMiddleware(
@@ -150,16 +147,12 @@ export class Handler {
       middlewareIndex?: number,
       handlerIndex?: number,
     ): void => {
-      if (this.logging) info('Middleware called fail function', `(${update.update_id})`.grey);
-
       if (handler.middlewares[middlewareIndex]) {
         return this.handleMiddleware(handlerIndex, update, answer, middlewareIndex);
       }
 
       return this.handleMiddleware(handlerIndex + 1, update, answer, 0);
     };
-
-    if (this.logging) info('Calling first middleware/handler', `(${update.update_id})`.grey);
 
     handler.middlewares[middlewareIndex](
       update,

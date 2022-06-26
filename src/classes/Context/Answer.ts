@@ -200,16 +200,10 @@ export class Answer {
         responseType: 'stream',
       });
 
-      response.data.pipe(fs.createWriteStream(path));
+      const pf: any = response.data.pipe(fs.createWriteStream(path));
 
-      return await new Promise((resolve, reject) => {
-        response.data.on('end', () => {
-          resolve(true);
-        });
-
-        response.data.on('error', () => {
-          reject();
-        });
+      return await new Promise((resolve: Function): void => {
+        pf.on('finish', () => resolve(true));
       });
     } catch (e: any) {
       return false;

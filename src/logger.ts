@@ -1,8 +1,22 @@
 // setup colors in console
 import 'colors';
 
+function buildTime(): string {
+  const date: Date = new Date();
+
+  const day: string = date.getDate().toString().padStart(2, '0');
+  const month: string = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year: string = date.getFullYear().toString();
+
+  const hours: string = date.getHours().toString().padStart(2, '0');
+  const minutes: string = date.getMinutes().toString().padStart(2, '0');
+  const seconds: string = date.getSeconds().toString().padStart(2, '0');
+
+  return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
+}
+
 export function log(typeColor: string, ...contents: any[]): void {
-  console.log(`[NestGram, ${new Date().toISOString()}]`[typeColor], ...contents);
+  console.log(`[NestGram, ${buildTime()}]`[typeColor], ...contents);
 }
 
 export function info(...contents: any[]): void {
