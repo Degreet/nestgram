@@ -194,16 +194,24 @@ export class Answer {
     const fileInfo: IFile = await this.getFile(fileId);
 
     try {
-      axios({
+      const response: AxiosResponse = await axios({
         method: 'GET',
         url: `https://api.telegram.org/file/bot${this.token}/${fileInfo.file_path}`,
         responseType: 'stream',
-      }).then((response: AxiosResponse): void => {
-        response.data.pipe(fs.createWriteStream(path));
       });
 
-      return true;
-    } catch {
+      response.data.pipe(fs.createWriteStream(path));
+
+      return await new Promise((resolve, reject) => {
+        response.data.on('end', () => {
+          resolve(true);
+        });
+
+        response.data.on('error', () => {
+          reject();
+        });
+      });
+    } catch (e: any) {
       return false;
     }
   }

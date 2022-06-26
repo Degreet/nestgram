@@ -126,14 +126,16 @@ export class Api {
     Api.appendMediaToFormData(
       formData,
       fromMediaKey,
-      mediaCache.getMediaFileId(media.media) || media,
+      media.useCache ? mediaCache.getMediaFileId(media.media) || media : media,
     );
 
     if (config.thumb) {
       Api.appendMediaToFormData(
         formData,
         'thumb',
-        mediaCache.getMediaFileId(config.thumb.media) || config.thumb,
+        media.useCache
+          ? mediaCache.getMediaFileId(config.thumb.media) || config.thumb
+          : config.thumb,
       );
     }
 

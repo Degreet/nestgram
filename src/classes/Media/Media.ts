@@ -10,11 +10,13 @@ export class Media {
    * @param passType Type how you want to pass media file, url or path
    * @param media Media that you want to send, url or path to a file
    * @param options Options for MediaGroup
+   * @param useCache Use cache
    * */
   constructor(
     public readonly passType: MediaPassTypes,
     public media: string,
     public readonly options?: any,
+    public readonly useCache: boolean = true,
   ) {}
 
   /**
