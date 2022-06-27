@@ -72,6 +72,8 @@ import {
   IWebhookInfo,
   IBanChatMemberFetchOptions,
   IUnbanChatMemberFetchOptions,
+  IChatPermissions,
+  IRestrictChatMemberFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -791,6 +793,29 @@ export class Api {
       chat_id: chatId,
       user_id: userId,
       only_if_banned: onlyIfBanned,
+    });
+  }
+
+  /**
+   * Restrict chat member
+   * @param chatId Id of the chat in which the person you want to restrict is located
+   * @param userId User id you want to restrict
+   * @param permissions Permissions you grant to the user
+   * @param untilDate Ban end date
+   * @see https://core.telegram.org/bots/api#restrictchatmember
+   * @return true on success
+   * */
+  restrict(
+    chatId: number | string,
+    userId: number,
+    permissions: IChatPermissions,
+    untilDate?: number,
+  ): Promise<true> {
+    return this.callApi<true, IRestrictChatMemberFetchOptions>('restrictChatMember', {
+      chat_id: chatId,
+      user_id: userId,
+      until_date: untilDate,
+      permissions,
     });
   }
 

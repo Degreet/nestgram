@@ -2,6 +2,7 @@ import { IMessageEntity, IPhotoSize } from './update.types';
 import { IInlineKeyboard, IReplyMarkup } from './keyboard.types';
 import { InputMediaTypes } from './media.types';
 import { Thumb } from '../classes';
+import { IChatPermissions } from './chat.types';
 
 export type IOptions = ISendOptions | ISendPhotoOptions | ISendVideoOptions;
 export type ParseModes = 'HTML' | 'Markdown' | 'MarkdownV2';
@@ -272,6 +273,13 @@ export interface IUnbanChatMemberFetchOptions {
   chat_id: number | string;
   user_id: number;
   only_if_banned?: boolean;
+}
+
+export interface IRestrictChatMemberFetchOptions {
+  chat_id: number | string;
+  user_id: number;
+  permissions: IChatPermissions;
+  until_date?: number;
 }
 
 export interface ISendDiceOptions extends IDefaultOptions {}

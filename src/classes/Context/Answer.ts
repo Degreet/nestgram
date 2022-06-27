@@ -13,6 +13,7 @@ import {
   IUserProfilePhotos,
   IPhotoSize,
   IMessageId,
+  IChatPermissions,
 } from '../..';
 
 import { MessageCreator } from '../Message';
@@ -172,6 +173,23 @@ export class Answer {
     if (!userId) throw error(`Can't find userId from update`);
 
     return this.api.ban(chatId, userId, untilDate, revokeMessages);
+  }
+
+  /**
+   * Restrict chat member
+   * @param permissions Permissions you grant to the user
+   * @param untilDate Ban end date
+   * @see https://core.telegram.org/bots/api#restrictchatmember
+   * @return true on success
+   * */
+  restrict(permissions: IChatPermissions, untilDate?: number): Promise<true> {
+    const chatId: number | string | undefined = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+
+    const userId: number | undefined = Filter.getUserId(this.update);
+    if (!userId) throw error(`Can't find userId from update`);
+
+    return this.api.restrict(chatId, userId, permissions, untilDate);
   }
 
   /**
