@@ -7,3 +7,4 @@ export * from './Toast';
 export * from './ChatAction';
 export * from './Forward';
 export * from './Copy';
+export * from './Ban';

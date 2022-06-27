@@ -261,6 +261,19 @@ export interface IWebhookInfo {
   allowed_updates?: string[];
 }
 
+export interface IBanChatMemberFetchOptions {
+  chat_id: number | string;
+  user_id: number;
+  until_date?: number;
+  revoke_messages?: boolean;
+}
+
+export interface IUnbanChatMemberFetchOptions {
+  chat_id: number | string;
+  user_id: number;
+  only_if_banned?: boolean;
+}
+
 export interface ISendDiceOptions extends IDefaultOptions {}
 export interface ISendMediaGroupOptions extends IDefaultOptions {}
 export interface ISendDocumentOptions extends ISendPhotoOptions {}

@@ -9,10 +9,20 @@ import {
   NextFunction,
 } from '../../types';
 
+import {
+  MessageCreator,
+  Forward,
+  Alert,
+  Toast,
+  MessageSend,
+  Copy,
+  ChatAction,
+  Ban,
+} from '../Message';
+
 import { Answer } from '../Context/Answer';
 import { Filter } from '../Context/Filter';
 
-import { MessageCreator, Forward, Alert, Toast, MessageSend, Copy, ChatAction } from '../Message';
 import { FileLogger } from '../Helpers/FileLogger';
 import { info } from '../../logger';
 
@@ -116,6 +126,8 @@ export class Handler {
           answerCallArgs.push(resultMessageToSend.text, resultMessageToSend.options);
         } else if (resultMessageToSend instanceof ChatAction) {
           answerCallArgs.push(resultMessageToSend.action);
+        } else if (resultMessageToSend instanceof Ban) {
+          answerCallArgs.push(resultMessageToSend.untilDate, resultMessageToSend.revokeMessages);
         } else if (resultMessageToSend instanceof Forward || resultMessageToSend instanceof Copy) {
           if (resultMessageToSend instanceof Forward)
             answerCallArgs.push(resultMessageToSend.toChatId, resultMessageToSend.options);

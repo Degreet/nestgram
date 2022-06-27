@@ -70,6 +70,8 @@ import {
   IGetUserProfilePhotosFetchOptions,
   IUserProfilePhotos,
   IWebhookInfo,
+  IBanChatMemberFetchOptions,
+  IUnbanChatMemberFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -751,6 +753,45 @@ export class Api {
         offset,
       },
     );
+  }
+
+  /**
+   * Ban chat member
+   * @param chatId Id of the chat in which the person you want to ban is located
+   * @param userId User id you want to ban
+   * @param untilDate Ban end date
+   * @param revokeMessages Remove all messages by this user
+   * @see https://core.telegram.org/bots/api#banchatmember
+   * @return true on success
+   * */
+  ban(
+    chatId: number | string,
+    userId: number,
+    untilDate?: number,
+    revokeMessages?: boolean,
+  ): Promise<true> {
+    return this.callApi<true, IBanChatMemberFetchOptions>('banChatMember', {
+      chat_id: chatId,
+      user_id: userId,
+      until_date: untilDate,
+      revoke_messages: revokeMessages,
+    });
+  }
+
+  /**
+   * Unban chat member
+   * @param chatId Id of the chat in which the person you want to ban is located
+   * @param userId User id you want to ban
+   * @param onlyIfBanned Do nothing if the user is not banned
+   * @see https://core.telegram.org/bots/api#unbanchatmember
+   * @return true on success
+   * */
+  unban(chatId: number | string, userId: number, onlyIfBanned?: boolean): Promise<true> {
+    return this.callApi<true, IUnbanChatMemberFetchOptions>('unbanChatMember', {
+      chat_id: chatId,
+      user_id: userId,
+      only_if_banned: onlyIfBanned,
+    });
   }
 
   /**

@@ -12,6 +12,7 @@ import {
   IFile,
   IUserProfilePhotos,
   IPhotoSize,
+  IMessageId,
 } from '../..';
 
 import { MessageCreator } from '../Message';
@@ -125,7 +126,7 @@ export class Answer {
    * @param moreOptions More options {@link IForwardMessageOptions}
    * @see https://core.telegram.org/bots/api#forwardmessage
    * */
-  forward(toChatId: number | string, moreOptions?: IForwardMessageOptions) {
+  forward(toChatId: number | string, moreOptions?: IForwardMessageOptions): Promise<IMessage> {
     const chatId: number | string | undefined = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
 
@@ -142,7 +143,11 @@ export class Answer {
    * @param moreOptions More options {@link ICopyMessageOptions}
    * @see https://core.telegram.org/bots/api#copymessage
    * */
-  copy(toChatId: number | string, keyboard?: Keyboard | null, moreOptions?: ICopyMessageOptions) {
+  copy(
+    toChatId: number | string,
+    keyboard?: Keyboard | null,
+    moreOptions?: ICopyMessageOptions,
+  ): Promise<IMessageId> {
     const chatId: number | string | undefined = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
 
@@ -150,6 +155,39 @@ export class Answer {
     if (!msgId) throw error(`Can't find msgId from update`);
 
     return this.api.copy(msgId, chatId, toChatId, keyboard, moreOptions);
+  }
+
+  /**
+   * Ban chat member
+   * @param untilDate Ban end date
+   * @param revokeMessages Remove all messages by this user
+   * @see https://core.telegram.org/bots/api#banchatmember
+   * @return true on success
+   * */
+  ban(untilDate?: number, revokeMessages?: boolean): Promise<true> {
+    const chatId: number | string | undefined = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+
+    const userId: number | undefined = Filter.getUserId(this.update);
+    if (!userId) throw error(`Can't find userId from update`);
+
+    return this.api.ban(chatId, userId, untilDate, revokeMessages);
+  }
+
+  /**
+   * Unban chat member
+   * @param onlyIfBanned Do nothing if the user is not banned
+   * @see https://core.telegram.org/bots/api#unbanchatmember
+   * @return true on success
+   * */
+  unban(onlyIfBanned?: boolean): Promise<true> {
+    const chatId: number | string | undefined = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+
+    const userId: number | undefined = Filter.getUserId(this.update);
+    if (!userId) throw error(`Can't find userId from update`);
+
+    return this.api.unban(chatId, userId, onlyIfBanned);
   }
 
   /**
