@@ -10,7 +10,6 @@ export class Unban extends MessageCreator {
    * @param onlyIfBanned Do nothing if the user is not banned
    * @param userId User id you want to promote
    * @see https://core.telegram.org/bots/api#unbanchatmember
-   * @return true on success
    * */
   constructor(public readonly onlyIfBanned?: boolean, public readonly userId?: number) {
     super({});

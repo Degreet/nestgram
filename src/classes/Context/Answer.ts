@@ -236,6 +236,18 @@ export class Answer {
   }
 
   /**
+   * Set chat permissions
+   * @param permissions Chat permissions you want to set {@link IChatPermissions}
+   * @see https://core.telegram.org/bots/api#setchatpermissions
+   * @return true on success
+   * */
+  setChatPermissions(permissions: IPromoteChatPermissions): Promise<true> {
+    const chatId: number | string | undefined = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+    return this.api.setChatPermissions(chatId, permissions);
+  }
+
+  /**
    * Set admin custom title
    * @param title Admin custom title (status, post, job title. 0-16 characters, emoji are not allowed)
    * @param userId User id you want to set a custom title for

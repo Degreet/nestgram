@@ -24,6 +24,7 @@ import {
   AdminTitle,
   SaveFile,
   SaveProfilePhoto,
+  ChatPermissions,
 } from '../Message';
 
 import { Answer } from '../Context/Answer';
@@ -105,6 +106,8 @@ export class Handler {
         );
       } else if (resultMessageToSend instanceof Promote) {
         answerCallArgs.push(resultMessageToSend.permissions, resultMessageToSend.userId);
+      } else if (resultMessageToSend instanceof ChatPermissions) {
+        answerCallArgs.push(resultMessageToSend.permissions);
       } else if (resultMessageToSend instanceof AdminTitle) {
         answerCallArgs.push(resultMessageToSend.title, resultMessageToSend.userId);
       } else if (resultMessageToSend instanceof Forward || resultMessageToSend instanceof Copy) {

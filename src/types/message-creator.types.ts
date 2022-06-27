@@ -13,6 +13,7 @@ export type SendTypes =
   | 'promote'
   | 'adminTitle'
   | 'saveFile'
-  | 'saveProfilePhoto';
+  | 'saveProfilePhoto'
+  | 'setChatPermissions';
 
 export type MessageCreatorTypes = MediaFileTypes | 'text' | 'location';

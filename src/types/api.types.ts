@@ -312,6 +312,11 @@ export interface IBanChatSenderChatFetchOptions {
   sender_chat_id: number;
 }
 
+export interface ISetChatPermissionsFetchOptions {
+  chat_id: number | string;
+  permissions: IChatPermissions;
+}
+
 export interface ISendDiceOptions extends IDefaultOptions {}
 export interface ISendMediaGroupOptions extends IDefaultOptions {}
 export interface ISendDocumentOptions extends ISendPhotoOptions {}

@@ -78,6 +78,7 @@ import {
   IPromoteChatMemberFetchOptions,
   ISetChatAdministratorCustomTitle,
   IBanChatSenderChatFetchOptions,
+  ISetChatPermissionsFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -856,6 +857,20 @@ export class Api {
       chat_id: chatId,
       user_id: userId,
       ...permissions,
+    });
+  }
+
+  /**
+   * Set chat permissions
+   * @param chatId Id of the chat you want to set permissions
+   * @param permissions Chat permissions you want to set {@link IChatPermissions}
+   * @see https://core.telegram.org/bots/api#setchatpermissions
+   * @return true on success
+   * */
+  setChatPermissions(chatId: number | string, permissions: IChatPermissions): Promise<true> {
+    return this.callApi<true, ISetChatPermissionsFetchOptions>('setChatPermissions', {
+      chat_id: chatId,
+      permissions,
     });
   }
 
