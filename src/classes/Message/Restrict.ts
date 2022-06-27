@@ -7,7 +7,7 @@ export class Restrict extends MessageCreator {
 
   /**
    * Restrict chat member
-   * @param permissions Permissions you grant to the user
+   * @param permissions Permissions you grant to the user {@link IChatPermissions}
    * @param untilDate Ban end date
    * @see https://core.telegram.org/bots/api#restrictchatmember
    * @return true on success

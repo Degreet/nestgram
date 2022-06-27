@@ -74,6 +74,8 @@ import {
   IUnbanChatMemberFetchOptions,
   IChatPermissions,
   IRestrictChatMemberFetchOptions,
+  IPromoteChatPermissions,
+  IPromoteChatMemberFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -800,8 +802,8 @@ export class Api {
    * Restrict chat member
    * @param chatId Id of the chat in which the person you want to restrict is located
    * @param userId User id you want to restrict
-   * @param permissions Permissions you grant to the user
-   * @param untilDate Ban end date
+   * @param permissions Permissions you grant to the user {@link IChatPermissions}
+   * @param untilDate Date when restrictions will be lifted for the user, unix time. If user is restricted for more than 366 days or less than 30 seconds from the current time, they are considered to be restricted forever
    * @see https://core.telegram.org/bots/api#restrictchatmember
    * @return true on success
    * */
@@ -816,6 +818,26 @@ export class Api {
       user_id: userId,
       until_date: untilDate,
       permissions,
+    });
+  }
+
+  /**
+   * Promote chat member
+   * @param chatId Id of the chat in which the person you want to promote is located
+   * @param userId User id you want to promote
+   * @param permissions Permissions you grant to the user {@link IPromoteChatPermissions}
+   * @see https://core.telegram.org/bots/api#promotechatmember
+   * @return true on success
+   * */
+  promote(
+    chatId: number | string,
+    userId: number,
+    permissions: IPromoteChatPermissions,
+  ): Promise<true> {
+    return this.callApi<true, IPromoteChatMemberFetchOptions>('promoteChatMember', {
+      chat_id: chatId,
+      user_id: userId,
+      ...permissions,
     });
   }
 

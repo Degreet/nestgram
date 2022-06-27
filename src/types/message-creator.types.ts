@@ -8,5 +8,7 @@ export type SendTypes =
   | 'copy'
   | 'chatAction'
   | 'ban'
-  | 'restrict';
+  | 'restrict'
+  | 'promote';
+
 export type MessageCreatorTypes = MediaFileTypes | 'text' | 'location';

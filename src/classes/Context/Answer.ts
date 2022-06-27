@@ -14,6 +14,7 @@ import {
   IPhotoSize,
   IMessageId,
   IChatPermissions,
+  IPromoteChatPermissions,
 } from '../..';
 
 import { MessageCreator } from '../Message';
@@ -190,6 +191,22 @@ export class Answer {
     if (!userId) throw error(`Can't find userId from update`);
 
     return this.api.restrict(chatId, userId, permissions, untilDate);
+  }
+
+  /**
+   * Promote chat member
+   * @param permissions Permissions you grant to the user
+   * @see https://core.telegram.org/bots/api#promotechatmember
+   * @return true on success
+   * */
+  promote(permissions: IPromoteChatPermissions): Promise<true> {
+    const chatId: number | string | undefined = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+
+    const userId: number | undefined = Filter.getUserId(this.update);
+    if (!userId) throw error(`Can't find userId from update`);
+
+    return this.api.promote(chatId, userId, permissions);
   }
 
   /**

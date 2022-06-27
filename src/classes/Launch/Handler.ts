@@ -19,6 +19,7 @@ import {
   ChatAction,
   Ban,
   Restrict,
+  Promote,
 } from '../Message';
 
 import { Answer } from '../Context/Answer';
@@ -131,6 +132,8 @@ export class Handler {
           answerCallArgs.push(resultMessageToSend.untilDate, resultMessageToSend.revokeMessages);
         } else if (resultMessageToSend instanceof Restrict) {
           answerCallArgs.push(resultMessageToSend.permissions, resultMessageToSend.untilDate);
+        } else if (resultMessageToSend instanceof Promote) {
+          answerCallArgs.push(resultMessageToSend.permissions);
         } else if (resultMessageToSend instanceof Forward || resultMessageToSend instanceof Copy) {
           if (resultMessageToSend instanceof Forward)
             answerCallArgs.push(resultMessageToSend.toChatId, resultMessageToSend.options);

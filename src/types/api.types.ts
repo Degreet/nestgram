@@ -282,6 +282,25 @@ export interface IRestrictChatMemberFetchOptions {
   until_date?: number;
 }
 
+export interface IPromoteChatMemberFetchOptions extends IPromoteChatPermissions {
+  chat_id: number | string;
+  user_id: number;
+}
+
+export interface IPromoteChatPermissions {
+  is_anonymous?: boolean;
+  can_manage_chat?: boolean;
+  can_post_messages?: boolean;
+  can_edit_messages?: boolean;
+  can_delete_messages?: boolean;
+  can_manage_video_chats?: boolean;
+  can_restrict_members?: boolean;
+  can_promote_members?: boolean;
+  can_change_info?: boolean;
+  can_invite_users?: boolean;
+  can_pin_messages?: boolean;
+}
+
 export interface ISendDiceOptions extends IDefaultOptions {}
 export interface ISendMediaGroupOptions extends IDefaultOptions {}
 export interface ISendDocumentOptions extends ISendPhotoOptions {}
