@@ -27,7 +27,7 @@ export interface IChat {
   description?: string;
   invite_link?: string;
   pinned_message?: IMessage;
-  permissions?: any; //!
+  permissions?: IChatPermissions;
   slow_mode_delay?: number;
   message_auto_delete_time?: number;
   has_protected_content?: true;
@@ -35,4 +35,15 @@ export interface IChat {
   can_set_sticker_set?: true;
   linked_chat_id?: number;
   location?: any; //!
+}
+
+export interface IChatPermissions {
+  can_send_messages?: boolean;
+  can_send_media_messages?: boolean;
+  can_send_polls?: boolean;
+  can_send_other_messages?: boolean;
+  can_add_web_page_previews?: boolean;
+  can_change_info?: boolean;
+  can_invite_users?: boolean;
+  can_pin_messages?: boolean;
 }
