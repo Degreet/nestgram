@@ -874,6 +874,20 @@ export class Api {
   }
 
   /**
+   * Unban chat sender chat
+   * @param chatId Id of the chat in which the chat you want to unban is located
+   * @param senderChatId Chat id you want to ban
+   * @see https://core.telegram.org/bots/api#unbanchatsenderchat
+   * @return true on success
+   * */
+  unbanChat(chatId: number | string, senderChatId: number): Promise<true> {
+    return this.callApi<true, IBanChatSenderChatFetchOptions>('unbanChatSenderChat', {
+      chat_id: chatId,
+      sender_chat_id: senderChatId,
+    });
+  }
+
+  /**
    * Answers to the callback query (inline button click)
    * @param callback_query_id Callback query id
    * @param moreOptions More options {@link IAnswerCallbackQueryOptions}
