@@ -11,4 +11,8 @@ export * from './ChatAction';
 export * from './AdminTitle';
 export * from './Forward';
 export * from './Copy';
+
+export * from './Unban';
 export * from './Ban';
+
+export * from './SaveFile';

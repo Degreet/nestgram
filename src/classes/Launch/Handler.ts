@@ -18,9 +18,11 @@ import {
   Copy,
   ChatAction,
   Ban,
+  Unban,
   Restrict,
   Promote,
   AdminTitle,
+  SaveFile,
 } from '../Message';
 
 import { Answer } from '../Context/Answer';
@@ -28,7 +30,6 @@ import { Filter } from '../Context/Filter';
 
 import { FileLogger } from '../Helpers/FileLogger';
 import { info } from '../../logger';
-import { Unban } from '../Message/Unban';
 
 export class Handler {
   fileLogger: FileLogger = new FileLogger(this.fileLoggingLimit);
@@ -83,6 +84,8 @@ export class Handler {
         answerCallArgs.push(resultMessageToSend.text, resultMessageToSend.options);
       } else if (resultMessageToSend instanceof ChatAction) {
         answerCallArgs.push(resultMessageToSend.action);
+      } else if (resultMessageToSend instanceof SaveFile) {
+        answerCallArgs.push(resultMessageToSend.path, resultMessageToSend.fileId);
       } else if (resultMessageToSend instanceof Ban) {
         answerCallArgs.push(
           resultMessageToSend.untilDate,

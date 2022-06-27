@@ -11,6 +11,7 @@ export type SendTypes =
   | 'unban'
   | 'restrict'
   | 'promote'
-  | 'adminTitle';
+  | 'adminTitle'
+  | 'saveFile';
 
 export type MessageCreatorTypes = MediaFileTypes | 'text' | 'location';
