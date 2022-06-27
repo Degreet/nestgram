@@ -71,6 +71,56 @@ export class Handler {
       );
   }
 
+  static getAnswerInfo(resultMessageToSend: any): [string, any[]] {
+    let sendMethodKey: string = 'send';
+    const answerCallArgs: any[] = [];
+
+    if (resultMessageToSend instanceof MessageCreator) {
+      sendMethodKey = resultMessageToSend.sendType;
+
+      if (resultMessageToSend instanceof Alert || resultMessageToSend instanceof Toast) {
+        answerCallArgs.push(resultMessageToSend.text, resultMessageToSend.options);
+      } else if (resultMessageToSend instanceof ChatAction) {
+        answerCallArgs.push(resultMessageToSend.action);
+      } else if (resultMessageToSend instanceof Ban) {
+        answerCallArgs.push(resultMessageToSend.untilDate, resultMessageToSend.revokeMessages);
+      } else if (resultMessageToSend instanceof Restrict) {
+        answerCallArgs.push(
+          resultMessageToSend.permissions,
+          resultMessageToSend.userId,
+          resultMessageToSend.untilDate,
+        );
+      } else if (resultMessageToSend instanceof Promote) {
+        answerCallArgs.push(resultMessageToSend.permissions, resultMessageToSend.userId);
+      } else if (resultMessageToSend instanceof AdminTitle) {
+        answerCallArgs.push(resultMessageToSend.title, resultMessageToSend.userId);
+      } else if (resultMessageToSend instanceof Forward || resultMessageToSend instanceof Copy) {
+        if (resultMessageToSend instanceof Forward)
+          answerCallArgs.push(resultMessageToSend.toChatId, resultMessageToSend.options);
+        else if (resultMessageToSend instanceof Copy)
+          answerCallArgs.push(
+            resultMessageToSend.toChatId,
+            resultMessageToSend.keyboard,
+            resultMessageToSend.options,
+          );
+      } else if (resultMessageToSend instanceof MessageSend) {
+        sendMethodKey = 'send';
+
+        answerCallArgs.push(
+          resultMessageToSend.content,
+          resultMessageToSend.keyboard,
+          resultMessageToSend.options,
+        );
+      } else {
+        answerCallArgs.push(resultMessageToSend);
+      }
+    } else {
+      answerCallArgs.push(resultMessageToSend);
+    }
+
+    return [sendMethodKey, answerCallArgs];
+  }
+
   private handleMiddleware(
     index: number,
     update: IUpdate,
@@ -120,53 +170,16 @@ export class Handler {
       }
 
       if (!resultMessageToSend) return;
-      let sendMethodKey: string = 'send';
-      const answerCallArgs: any[] = [];
+      const messagesToSend: (MessageCreator | ContentTypes)[] = [
+        resultMessageToSend,
+        ...(resultMessageToSend instanceof MessageCreator ? resultMessageToSend.otherMessages : []),
+      ];
 
-      if (resultMessageToSend instanceof MessageCreator) {
-        sendMethodKey = resultMessageToSend.sendType;
-
-        if (resultMessageToSend instanceof Alert || resultMessageToSend instanceof Toast) {
-          answerCallArgs.push(resultMessageToSend.text, resultMessageToSend.options);
-        } else if (resultMessageToSend instanceof ChatAction) {
-          answerCallArgs.push(resultMessageToSend.action);
-        } else if (resultMessageToSend instanceof Ban) {
-          answerCallArgs.push(resultMessageToSend.untilDate, resultMessageToSend.revokeMessages);
-        } else if (resultMessageToSend instanceof Restrict) {
-          answerCallArgs.push(
-            resultMessageToSend.permissions,
-            resultMessageToSend.userId,
-            resultMessageToSend.untilDate,
-          );
-        } else if (resultMessageToSend instanceof Promote) {
-          answerCallArgs.push(resultMessageToSend.permissions, resultMessageToSend.userId);
-        } else if (resultMessageToSend instanceof AdminTitle) {
-          answerCallArgs.push(resultMessageToSend.title, resultMessageToSend.userId);
-        } else if (resultMessageToSend instanceof Forward || resultMessageToSend instanceof Copy) {
-          if (resultMessageToSend instanceof Forward)
-            answerCallArgs.push(resultMessageToSend.toChatId, resultMessageToSend.options);
-          else if (resultMessageToSend instanceof Copy)
-            answerCallArgs.push(
-              resultMessageToSend.toChatId,
-              resultMessageToSend.keyboard,
-              resultMessageToSend.options,
-            );
-        } else if (resultMessageToSend instanceof MessageSend) {
-          sendMethodKey = 'send';
-
-          answerCallArgs.push(
-            resultMessageToSend.content,
-            resultMessageToSend.keyboard,
-            resultMessageToSend.options,
-          );
-        } else {
-          answerCallArgs.push(resultMessageToSend);
-        }
-      } else {
-        answerCallArgs.push(resultMessageToSend);
+      for (const messageToSend of messagesToSend) {
+        const [sendMethodKey, answerCallArgs]: [string, any[]] =
+          Handler.getAnswerInfo(messageToSend);
+        await answer[sendMethodKey](...answerCallArgs);
       }
-
-      await answer[sendMethodKey](...answerCallArgs);
     };
 
     const failNextFunction: NextFunction = (
