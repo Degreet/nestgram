@@ -179,15 +179,16 @@ export class Answer {
   /**
    * Restrict chat member
    * @param permissions Permissions you grant to the user
+   * @param userId User id you want to promote
    * @param untilDate Ban end date
    * @see https://core.telegram.org/bots/api#restrictchatmember
    * @return true on success
    * */
-  restrict(permissions: IChatPermissions, untilDate?: number): Promise<true> {
+  restrict(permissions: IChatPermissions, userId?: number, untilDate?: number): Promise<true> {
     const chatId: number | string | undefined = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
 
-    const userId: number | undefined = Filter.getUserId(this.update);
+    if (!userId) userId = Filter.getUserId(this.update);
     if (!userId) throw error(`Can't find userId from update`);
 
     return this.api.restrict(chatId, userId, permissions, untilDate);
@@ -196,14 +197,15 @@ export class Answer {
   /**
    * Promote chat member
    * @param permissions Permissions you grant to the user
+   * @param userId User id you want to promote
    * @see https://core.telegram.org/bots/api#promotechatmember
    * @return true on success
    * */
-  promote(permissions: IPromoteChatPermissions): Promise<true> {
+  promote(permissions: IPromoteChatPermissions, userId?: number): Promise<true> {
     const chatId: number | string | undefined = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
 
-    const userId: number | undefined = Filter.getUserId(this.update);
+    if (!userId) userId = Filter.getUserId(this.update);
     if (!userId) throw error(`Can't find userId from update`);
 
     return this.api.promote(chatId, userId, permissions);

@@ -132,9 +132,13 @@ export class Handler {
         } else if (resultMessageToSend instanceof Ban) {
           answerCallArgs.push(resultMessageToSend.untilDate, resultMessageToSend.revokeMessages);
         } else if (resultMessageToSend instanceof Restrict) {
-          answerCallArgs.push(resultMessageToSend.permissions, resultMessageToSend.untilDate);
+          answerCallArgs.push(
+            resultMessageToSend.permissions,
+            resultMessageToSend.userId,
+            resultMessageToSend.untilDate,
+          );
         } else if (resultMessageToSend instanceof Promote) {
-          answerCallArgs.push(resultMessageToSend.permissions);
+          answerCallArgs.push(resultMessageToSend.permissions, resultMessageToSend.userId);
         } else if (resultMessageToSend instanceof Forward || resultMessageToSend instanceof Copy) {
           if (resultMessageToSend instanceof Forward)
             answerCallArgs.push(resultMessageToSend.toChatId, resultMessageToSend.options);
