@@ -301,6 +301,12 @@ export interface IPromoteChatPermissions {
   can_pin_messages?: boolean;
 }
 
+export interface ISetChatAdministratorCustomTitle {
+  chat_id: number | string;
+  user_id: number;
+  custom_title: string;
+}
+
 export interface ISendDiceOptions extends IDefaultOptions {}
 export interface ISendMediaGroupOptions extends IDefaultOptions {}
 export interface ISendDocumentOptions extends ISendPhotoOptions {}

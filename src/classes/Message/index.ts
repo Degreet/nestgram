@@ -8,6 +8,7 @@ export * from './Restrict';
 export * from './Promote';
 
 export * from './ChatAction';
+export * from './AdminTitle';
 export * from './Forward';
 export * from './Copy';
 export * from './Ban';

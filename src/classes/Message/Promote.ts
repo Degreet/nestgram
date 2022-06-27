@@ -10,7 +10,6 @@ export class Promote extends MessageCreator {
    * @param permissions Permissions you grant to the user {@link IPromoteChatPermissions}
    * @param userId User id you want to promote
    * @see https://core.telegram.org/bots/api#promotechatmember
-   * @return true on success
    * */
   constructor(
     public readonly permissions: IPromoteChatPermissions,

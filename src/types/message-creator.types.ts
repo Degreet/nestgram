@@ -9,6 +9,7 @@ export type SendTypes =
   | 'chatAction'
   | 'ban'
   | 'restrict'
-  | 'promote';
+  | 'promote'
+  | 'adminTitle';
 
 export type MessageCreatorTypes = MediaFileTypes | 'text' | 'location';

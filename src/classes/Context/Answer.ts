@@ -212,6 +212,23 @@ export class Answer {
   }
 
   /**
+   * Set admin custom title
+   * @param title Admin custom title (status, post, job title. 0-16 characters, emoji are not allowed)
+   * @param userId User id you want to set a custom title for
+   * @see https://core.telegram.org/bots/api#setchatadministratorcustomtitle
+   * @return true on success
+   * */
+  adminTitle(title: string, userId?: number): Promise<true> {
+    const chatId: number | string | undefined = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+
+    if (!userId) userId = Filter.getUserId(this.update);
+    if (!userId) throw error(`Can't find userId from update`);
+
+    return this.api.adminTitle(chatId, userId, title);
+  }
+
+  /**
    * Unban chat member
    * @param onlyIfBanned Do nothing if the user is not banned
    * @see https://core.telegram.org/bots/api#unbanchatmember

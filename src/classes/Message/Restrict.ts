@@ -11,7 +11,6 @@ export class Restrict extends MessageCreator {
    * @param userId User id you want to restrict
    * @param untilDate Ban end date
    * @see https://core.telegram.org/bots/api#restrictchatmember
-   * @return true on success
    * */
   constructor(
     public readonly permissions: IChatPermissions,

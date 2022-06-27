@@ -76,6 +76,7 @@ import {
   IRestrictChatMemberFetchOptions,
   IPromoteChatPermissions,
   IPromoteChatMemberFetchOptions,
+  ISetChatAdministratorCustomTitle,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -795,6 +796,22 @@ export class Api {
       chat_id: chatId,
       user_id: userId,
       only_if_banned: onlyIfBanned,
+    });
+  }
+
+  /**
+   * Set admin custom title
+   * @param chatId Id of the chat in which the person you want to set custom title is located
+   * @param userId User id you want to set a custom title for
+   * @param title Admin custom title (status, post, job title. 0-16 characters, emoji are not allowed)
+   * @see https://core.telegram.org/bots/api#setchatadministratorcustomtitle
+   * @return true on success
+   * */
+  adminTitle(chatId: number | string, userId: number, title: string): Promise<true> {
+    return this.callApi<true, ISetChatAdministratorCustomTitle>('setChatAdministratorCustomTitle', {
+      chat_id: chatId,
+      user_id: userId,
+      custom_title: title,
     });
   }
 
