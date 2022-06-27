@@ -171,6 +171,9 @@ export class Answer {
     const chatId: number | string | undefined = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
 
+    const message: IMessage = Filter.getMessage(this.update);
+    if (message.sender_chat) return this.banChat();
+
     if (!userId) userId = Filter.getUserId(this.update);
     if (!userId) throw error(`Can't find userId from update`);
 
@@ -244,6 +247,22 @@ export class Answer {
     if (!userId) throw error(`Can't find userId from update`);
 
     return this.api.adminTitle(chatId, userId, title);
+  }
+
+  /**
+   * Ban chat sender chat
+   * @param senderChatId Chat id you want to ban
+   * @see https://core.telegram.org/bots/api#banchatsenderchat
+   * @return true on success
+   * */
+  banChat(senderChatId?: number): Promise<true> {
+    const chatId: number | string | undefined = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+
+    if (!senderChatId) senderChatId = Filter.getMessage(this.update)?.sender_chat?.id;
+    if (!senderChatId) throw error(`Can't find senderChatId from update`);
+
+    return this.api.banChat(chatId, senderChatId);
   }
 
   /**

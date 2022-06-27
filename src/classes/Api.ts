@@ -77,6 +77,7 @@ import {
   IPromoteChatPermissions,
   IPromoteChatMemberFetchOptions,
   ISetChatAdministratorCustomTitle,
+  IBanChatSenderChatFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -855,6 +856,20 @@ export class Api {
       chat_id: chatId,
       user_id: userId,
       ...permissions,
+    });
+  }
+
+  /**
+   * Ban chat sender chat
+   * @param chatId Id of the chat in which the chat you want to ban is located
+   * @param senderChatId Chat id you want to ban
+   * @see https://core.telegram.org/bots/api#banchatsenderchat
+   * @return true on success
+   * */
+  banChat(chatId: number | string, senderChatId: number): Promise<true> {
+    return this.callApi<true, IBanChatSenderChatFetchOptions>('banChatSenderChat', {
+      chat_id: chatId,
+      sender_chat_id: senderChatId,
     });
   }
 

@@ -307,6 +307,11 @@ export interface ISetChatAdministratorCustomTitle {
   custom_title: string;
 }
 
+export interface IBanChatSenderChatFetchOptions {
+  chat_id: number | string;
+  sender_chat_id: number;
+}
+
 export interface ISendDiceOptions extends IDefaultOptions {}
 export interface ISendMediaGroupOptions extends IDefaultOptions {}
 export interface ISendDocumentOptions extends ISendPhotoOptions {}
