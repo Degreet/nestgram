@@ -85,6 +85,11 @@ export const Params = () => buildArgumentDecorator('params');
 export const Sender = () => buildArgumentDecorator('sender');
 
 /**
+ * The chat in which the message was sent {@link IChat}
+ * */
+export const Chat = () => buildArgumentDecorator('chat');
+
+/**
  * User id who sent the message (number)
  * */
 export const UserId = () => buildArgumentDecorator('userId');

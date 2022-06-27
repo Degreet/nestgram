@@ -102,6 +102,7 @@ export class Handler {
         message?.venue,
         message?.poll || update?.poll,
         message?.dice,
+        message?.chat,
       ];
 
       const handlerMethod: HandlerMethod = handler.controller[handler.methodKey].bind(

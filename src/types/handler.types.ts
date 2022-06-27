@@ -11,7 +11,7 @@ import {
   IVenue,
 } from './update.types';
 import { Answer, Media, MessageCreator } from '../classes';
-import { IUser } from './chat.types';
+import { IChat, IUser } from './chat.types';
 
 export interface IHandler {
   controller: ControllerClass;
@@ -34,6 +34,7 @@ export type ArgsTypes = [
   IVenue, // venue
   IPoll, // poll
   IDice, // dice
+  IChat, // chat
 ];
 
 export type ContentTypes = Media | string | undefined | null;

@@ -15,6 +15,7 @@ const argsProcedure: string[] = [
   'venue',
   'poll',
   'dice',
+  'chat',
 ];
 
 export function setupArguments(
