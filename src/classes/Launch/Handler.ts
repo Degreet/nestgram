@@ -28,6 +28,7 @@ import { Filter } from '../Context/Filter';
 
 import { FileLogger } from '../Helpers/FileLogger';
 import { info } from '../../logger';
+import { Unban } from '../Message/Unban';
 
 export class Handler {
   fileLogger: FileLogger = new FileLogger(this.fileLoggingLimit);
@@ -83,7 +84,13 @@ export class Handler {
       } else if (resultMessageToSend instanceof ChatAction) {
         answerCallArgs.push(resultMessageToSend.action);
       } else if (resultMessageToSend instanceof Ban) {
-        answerCallArgs.push(resultMessageToSend.untilDate, resultMessageToSend.revokeMessages);
+        answerCallArgs.push(
+          resultMessageToSend.untilDate,
+          resultMessageToSend.revokeMessages,
+          resultMessageToSend.userId,
+        );
+      } else if (resultMessageToSend instanceof Unban) {
+        answerCallArgs.push(resultMessageToSend.onlyIfBanned, resultMessageToSend.userId);
       } else if (resultMessageToSend instanceof Restrict) {
         answerCallArgs.push(
           resultMessageToSend.permissions,

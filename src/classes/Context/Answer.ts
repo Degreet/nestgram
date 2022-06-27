@@ -163,17 +163,35 @@ export class Answer {
    * Ban chat member
    * @param untilDate Ban end date
    * @param revokeMessages Remove all messages by this user
+   * @param userId User id you want to ban
    * @see https://core.telegram.org/bots/api#banchatmember
    * @return true on success
    * */
-  ban(untilDate?: number, revokeMessages?: boolean): Promise<true> {
+  ban(untilDate?: number, revokeMessages?: boolean, userId?: number): Promise<true> {
     const chatId: number | string | undefined = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
 
-    const userId: number | undefined = Filter.getUserId(this.update);
+    if (!userId) userId = Filter.getUserId(this.update);
     if (!userId) throw error(`Can't find userId from update`);
 
     return this.api.ban(chatId, userId, untilDate, revokeMessages);
+  }
+
+  /**
+   * Unban chat member
+   * @param onlyIfBanned Do nothing if the user is not banned
+   * @param userId User id you want to ban
+   * @see https://core.telegram.org/bots/api#unbanchatmember
+   * @return true on success
+   * */
+  unban(onlyIfBanned?: boolean, userId?: number): Promise<true> {
+    const chatId: number | string | undefined = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+
+    if (!userId) userId = Filter.getUserId(this.update);
+    if (!userId) throw error(`Can't find userId from update`);
+
+    return this.api.unban(chatId, userId, onlyIfBanned);
   }
 
   /**
@@ -226,22 +244,6 @@ export class Answer {
     if (!userId) throw error(`Can't find userId from update`);
 
     return this.api.adminTitle(chatId, userId, title);
-  }
-
-  /**
-   * Unban chat member
-   * @param onlyIfBanned Do nothing if the user is not banned
-   * @see https://core.telegram.org/bots/api#unbanchatmember
-   * @return true on success
-   * */
-  unban(onlyIfBanned?: boolean): Promise<true> {
-    const chatId: number | string | undefined = Filter.getChatId(this.update);
-    if (!chatId) throw error(`Can't find chatId from update`);
-
-    const userId: number | undefined = Filter.getUserId(this.update);
-    if (!userId) throw error(`Can't find userId from update`);
-
-    return this.api.unban(chatId, userId, onlyIfBanned);
   }
 
   /**

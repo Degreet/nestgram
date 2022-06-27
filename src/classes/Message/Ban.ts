@@ -9,9 +9,14 @@ export class Ban extends MessageCreator {
    * Ban chat member
    * @param untilDate Ban end date
    * @param revokeMessages Remove all messages by this user
+   * @param userId User id you want to promote
    * @see https://core.telegram.org/bots/api#banchatmember
    * */
-  constructor(public readonly untilDate?: number, public readonly revokeMessages?: boolean) {
+  constructor(
+    public readonly untilDate?: number,
+    public readonly revokeMessages?: boolean,
+    public readonly userId?: number,
+  ) {
     super({});
   }
 }

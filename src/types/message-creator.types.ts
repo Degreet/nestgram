@@ -8,6 +8,7 @@ export type SendTypes =
   | 'copy'
   | 'chatAction'
   | 'ban'
+  | 'unban'
   | 'restrict'
   | 'promote'
   | 'adminTitle';
