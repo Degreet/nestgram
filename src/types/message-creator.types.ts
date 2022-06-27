@@ -12,6 +12,7 @@ export type SendTypes =
   | 'restrict'
   | 'promote'
   | 'adminTitle'
-  | 'saveFile';
+  | 'saveFile'
+  | 'saveProfilePhoto';
 
 export type MessageCreatorTypes = MediaFileTypes | 'text' | 'location';

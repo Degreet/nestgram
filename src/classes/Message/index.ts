@@ -15,4 +15,5 @@ export * from './Copy';
 export * from './Unban';
 export * from './Ban';
 
+export * from './SaveProfilePhoto';
 export * from './SaveFile';

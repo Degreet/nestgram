@@ -23,6 +23,7 @@ import {
   Promote,
   AdminTitle,
   SaveFile,
+  SaveProfilePhoto,
 } from '../Message';
 
 import { Answer } from '../Context/Answer';
@@ -86,6 +87,8 @@ export class Handler {
         answerCallArgs.push(resultMessageToSend.action);
       } else if (resultMessageToSend instanceof SaveFile) {
         answerCallArgs.push(resultMessageToSend.path, resultMessageToSend.fileId);
+      } else if (resultMessageToSend instanceof SaveProfilePhoto) {
+        answerCallArgs.push(resultMessageToSend.path, resultMessageToSend.index);
       } else if (resultMessageToSend instanceof Ban) {
         answerCallArgs.push(
           resultMessageToSend.untilDate,
