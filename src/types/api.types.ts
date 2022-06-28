@@ -2,7 +2,7 @@ import { IMessageEntity, IPhotoSize } from './update.types';
 import { IInlineKeyboard, IReplyMarkup } from './keyboard.types';
 import { InputMediaTypes } from './media.types';
 import { Thumb } from '../classes';
-import { IChatPermissions } from './chat.types';
+import { IChatPermissions, IUser } from './chat.types';
 
 export type IOptions = ISendOptions | ISendPhotoOptions | ISendVideoOptions;
 export type ParseModes = 'HTML' | 'Markdown' | 'MarkdownV2';
@@ -319,6 +319,25 @@ export interface ISetChatPermissionsFetchOptions {
 
 export interface IExportChatInviteLinkFetchOptions {
   chat_id: number | string;
+}
+
+export interface IChatInviteLink extends ICreateChatInviteLinkOptions {
+  invite_link: string;
+  creator: IUser;
+  creates_join_request: boolean;
+  is_primary: boolean;
+  is_revoked: boolean;
+}
+
+export interface ICreateChatInviteLinkFetchOptions extends ICreateChatInviteLinkOptions {
+  chat_id: string | number;
+}
+
+export interface ICreateChatInviteLinkOptions {
+  name?: string;
+  expire_date?: number;
+  member_limit?: number;
+  pending_join_request_count?: number;
 }
 
 export interface ISendDiceOptions extends IDefaultOptions {}

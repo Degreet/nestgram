@@ -15,6 +15,8 @@ import {
   IMessageId,
   IChatPermissions,
   IPromoteChatPermissions,
+  ICreateChatInviteLinkOptions,
+  IChatInviteLink,
 } from '../..';
 
 import { MessageCreator } from '../Message';
@@ -245,6 +247,22 @@ export class Answer {
     if (!chatId) chatId = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
     return this.api.exportInviteLink(chatId);
+  }
+
+  /**
+   * Creates chat invite link
+   * @param moreOptions Message options {@link ICreateChatInviteLinkOptions}
+   * @param chatId Optional. Chat ID where you want to send dice. It can be id of group/channel or ID of the user. Current chat id by default
+   * @see https://core.telegram.org/bots/api#createchatinvitelink
+   * @return Chat invite link info {@link IChatInviteLink}
+   * */
+  createInviteLink(
+    moreOptions: ICreateChatInviteLinkOptions = {},
+    chatId?: number | string,
+  ): Promise<IChatInviteLink> {
+    if (!chatId) chatId = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+    return this.api.createInviteLink(chatId, moreOptions);
   }
 
   /**

@@ -80,6 +80,9 @@ import {
   IBanChatSenderChatFetchOptions,
   ISetChatPermissionsFetchOptions,
   IExportChatInviteLinkFetchOptions,
+  ICreateChatInviteLinkOptions,
+  ICreateChatInviteLinkFetchOptions,
+  IChatInviteLink,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -885,6 +888,26 @@ export class Api {
     return this.callApi<string, IExportChatInviteLinkFetchOptions>('exportChatInviteLink', {
       chat_id: chatId,
     });
+  }
+
+  /**
+   * Creates chat invite link
+   * @param chatId Chat ID where you want to send dice. It can be id of group/channel or ID of the user
+   * @param moreOptions Message options {@link ICreateChatInviteLinkOptions}
+   * @see https://core.telegram.org/bots/api#createchatinvitelink
+   * @return Chat invite link info {@link IChatInviteLink}
+   * */
+  createInviteLink(
+    chatId: number | string,
+    moreOptions: ICreateChatInviteLinkOptions = {},
+  ): Promise<IChatInviteLink> {
+    return this.callApi<IChatInviteLink, ICreateChatInviteLinkFetchOptions>(
+      'createChatInviteLink',
+      {
+        chat_id: chatId,
+        ...moreOptions,
+      },
+    );
   }
 
   /**
