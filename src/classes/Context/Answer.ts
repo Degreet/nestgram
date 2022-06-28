@@ -271,7 +271,7 @@ export class Answer {
    * @see https://core.telegram.org/bots/api#setchatpermissions
    * @return true on success
    * */
-  setChatPermissions(permissions: IPromoteChatPermissions): Promise<true> {
+  setChatPermissions(permissions: IChatPermissions): Promise<true> {
     const chatId: number | string | undefined = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
     return this.api.setChatPermissions(chatId, permissions);
