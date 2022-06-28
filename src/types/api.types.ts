@@ -317,6 +317,10 @@ export interface ISetChatPermissionsFetchOptions {
   permissions: IChatPermissions;
 }
 
+export interface IExportChatInviteLinkFetchOptions {
+  chat_id: number | string;
+}
+
 export interface ISendDiceOptions extends IDefaultOptions {}
 export interface ISendMediaGroupOptions extends IDefaultOptions {}
 export interface ISendDocumentOptions extends ISendPhotoOptions {}

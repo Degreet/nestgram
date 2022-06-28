@@ -236,6 +236,18 @@ export class Answer {
   }
 
   /**
+   * Export chat invite link
+   * @param chatId Optional. ID of the chat you want to export invite link. Current chat id by default
+   * @see https://core.telegram.org/bots/api#exportchatinvitelink
+   * @return string Invite link on success
+   * */
+  exportInviteLink(chatId?: number | string): Promise<string> {
+    if (!chatId) chatId = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+    return this.api.exportInviteLink(chatId);
+  }
+
+  /**
    * Set chat permissions
    * @param permissions Chat permissions you want to set {@link IChatPermissions}
    * @see https://core.telegram.org/bots/api#setchatpermissions

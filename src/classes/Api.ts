@@ -79,6 +79,7 @@ import {
   ISetChatAdministratorCustomTitle,
   IBanChatSenderChatFetchOptions,
   ISetChatPermissionsFetchOptions,
+  IExportChatInviteLinkFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -871,6 +872,18 @@ export class Api {
     return this.callApi<true, ISetChatPermissionsFetchOptions>('setChatPermissions', {
       chat_id: chatId,
       permissions,
+    });
+  }
+
+  /**
+   * Export chat invite link
+   * @param chatId Id of the chat you want to export invite link
+   * @see https://core.telegram.org/bots/api#exportchatinvitelink
+   * @return string Invite link on success
+   * */
+  exportInviteLink(chatId: number | string): Promise<string> {
+    return this.callApi<string, IExportChatInviteLinkFetchOptions>('exportChatInviteLink', {
+      chat_id: chatId,
     });
   }
 
