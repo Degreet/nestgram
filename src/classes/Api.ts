@@ -88,6 +88,7 @@ import {
   IDeclineChatJoinRequestFetchOptions,
   ISetChatPhotoFetchOptions,
   IDeleteChatPhoto,
+  ISetChatTitleFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -952,8 +953,22 @@ export class Api {
    * @see https://core.telegram.org/bots/api#deletechatphoto
    * @return true on success
    * */
-  async deleteChatPhoto(chatId: number | string): Promise<boolean> {
-    return await this.callApi<boolean, IDeleteChatPhoto>('deleteChatPhoto', { chat_id: chatId });
+  deleteChatPhoto(chatId: number | string): Promise<boolean> {
+    return this.callApi<boolean, IDeleteChatPhoto>('deleteChatPhoto', { chat_id: chatId });
+  }
+
+  /**
+   * Set chat title
+   * @param chatId Chat ID where you want to set chat title. It can be id of group/channel or ID of the user
+   * @param title Title you want to set for the chat
+   * @see https://core.telegram.org/bots/api#setchattitle
+   * @return true on success
+   * */
+  setChatTitle(chatId: number | string, title: string): Promise<boolean> {
+    return this.callApi<boolean, ISetChatTitleFetchOptions>('setChatTitle', {
+      chat_id: chatId,
+      title,
+    });
   }
 
   /**

@@ -305,6 +305,19 @@ export class Answer {
   }
 
   /**
+   * Set chat title
+   * @param title Title you want to set for the chat
+   * @param chatId Optional. Chat ID where you want to set chat title. It can be id of group/channel or ID of the user. Current chat id by default
+   * @see https://core.telegram.org/bots/api#setchattitle
+   * @return true on success
+   * */
+  setChatTitle(title: string, chatId?: number | string): Promise<boolean> {
+    if (!chatId) chatId = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+    return this.api.setChatTitle(chatId, title);
+  }
+
+  /**
    * Approves chat join request
    * @param userId User ID you want to approve join request
    * @param chatId Optional. Chat ID where you want to approve join request. It can be id of group/channel or ID of the user. Current chat id by default

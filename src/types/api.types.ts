@@ -351,6 +351,11 @@ export interface ISetChatPhotoFetchOptions extends IDefaultSendMediaConfig {
   photo?: string | any; // configures in form data
 }
 
+export interface ISetChatTitleFetchOptions {
+  chat_id: number | string;
+  title: string;
+}
+
 export interface ICreateChatInviteLinkFetchOptions
   extends ICreateChatInviteLinkOptions,
     IExportChatInviteLinkFetchOptions {}

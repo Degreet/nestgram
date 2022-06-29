@@ -24,3 +24,5 @@ export * from './SaveFile';
 
 export * from './ApproveJoinRequest';
 export * from './DeclineJoinRequest';
+
+export * from './SetChatTitle';

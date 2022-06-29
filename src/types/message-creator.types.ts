@@ -18,6 +18,7 @@ export type SendTypes =
   | 'approveJoinRequest'
   | 'declineJoinRequest'
   | 'setChatPhoto'
-  | 'deleteChatPhoto';
+  | 'deleteChatPhoto'
+  | 'setChatTitle';
 
 export type MessageCreatorTypes = MediaFileTypes | 'text' | 'location';
