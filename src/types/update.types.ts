@@ -1,6 +1,6 @@
 import { IChat, IUser } from './chat.types';
 import { IReplyMarkup } from './keyboard.types';
-import { DiceEmojis, PollTypes } from './api.types';
+import { DiceEmojis, IChatInviteLink, PollTypes } from './api.types';
 
 export type MessageEntityTypes =
   | 'mention'
@@ -29,7 +29,16 @@ export interface IUpdate {
   callback_query?: ICallbackQuery;
   poll?: IPoll;
   poll_answer?: IPollAnswer;
+  chat_join_request?: IChatJoinRequest;
   //!
+}
+
+export interface IChatJoinRequest {
+  chat: IChat;
+  from: IUser;
+  date: number;
+  bio?: string;
+  invite_link?: IChatInviteLink;
 }
 
 export interface ICallbackQuery {

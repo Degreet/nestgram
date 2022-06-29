@@ -112,3 +112,8 @@ export const GetPoll = () => buildArgumentDecorator('poll');
  * Dice that user sent
  * */
 export const GetDice = () => buildArgumentDecorator('dice');
+
+/**
+ * Chat join request info {@link IChatJoinRequest}
+ * */
+export const JoinRequest = () => buildArgumentDecorator('joinRequest');

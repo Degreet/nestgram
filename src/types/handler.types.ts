@@ -1,6 +1,7 @@
 import { ControllerClass } from './decorators.types';
 import { MiddlewareFunction } from './middleware.types';
 import {
+  IChatJoinRequest,
   IContact,
   IDice,
   ILocation,
@@ -35,6 +36,7 @@ export type ArgsTypes = [
   IPoll, // poll
   IDice, // dice
   IChat, // chat
+  IChatJoinRequest, // join request
 ];
 
 export type ContentTypes = Media | string | undefined | null;

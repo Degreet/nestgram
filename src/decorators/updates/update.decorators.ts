@@ -165,6 +165,12 @@ export const OnPollAnswer = (): MethodDecorator => buildUpdateDecorator('pollEdi
 export const OnDice = (): MethodDecorator => buildUpdateDecorator('otherMedia', 'dice');
 
 /**
+ * Listen for a join request
+ * @see https://core.telegram.org/bots/api#chatjoinrequest
+ * */
+export const OnJoinRequest = (): MethodDecorator => buildUpdateDecorator('joinRequest');
+
+/**
  * Listen for an update
  * @see https://core.telegram.org/bots/api#update
  * */

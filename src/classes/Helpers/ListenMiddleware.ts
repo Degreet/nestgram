@@ -33,6 +33,19 @@ export class ListenMiddleware {
     };
   }
 
+  static joinRequest(): MiddlewareFunction {
+    return function use(
+      update: IUpdate,
+      answer: Answer,
+      params: any,
+      next: NextFunction,
+      fail: NextFunction,
+    ): any {
+      if (!update.chat_join_request) return fail();
+      next();
+    };
+  }
+
   static pollEdit(isAnswer: boolean = false): MiddlewareFunction {
     return function use(
       update: IUpdate,

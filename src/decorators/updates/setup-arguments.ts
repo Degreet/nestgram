@@ -16,6 +16,7 @@ const argsProcedure: string[] = [
   'poll',
   'dice',
   'chat',
+  'joinRequest',
 ];
 
 export function setupArguments(
