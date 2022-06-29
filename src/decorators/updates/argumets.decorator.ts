@@ -49,12 +49,6 @@ export const Text = () => buildArgumentDecorator('text');
 export const GetAnswer = () => buildArgumentDecorator('answer');
 
 /**
- * Answer {@link Answer}
- * @deprecated Use @GetAnswer instead
- * */
-export const Answ = GetAnswer;
-
-/**
  * Message sent by user {@link IMessage}
  * */
 export const Message = () => buildArgumentDecorator('message');
@@ -100,21 +94,9 @@ export const UserId = () => buildArgumentDecorator('userId');
 export const GetLocation = () => buildArgumentDecorator('location');
 
 /**
- * Location that user sent
- * @deprecated Use @GetLocation instead
- * */
-export const ReceivedLocation = GetLocation;
-
-/**
  * Contact that user sent
  * */
 export const GetContact = () => buildArgumentDecorator('contact');
-
-/**
- * Contact that user sent
- * @deprecated Use @GetContact instead
- * */
-export const ReceivedContact = GetContact;
 
 /**
  * Venue that user sent
@@ -123,20 +105,8 @@ export const GetVenue = () => buildArgumentDecorator('venue');
 
 /**
  * Venue that user sent
- * @deprecated Use @GetVenue instead
- * */
-export const ReceivedVenue = GetVenue;
-
-/**
- * Venue that user sent
  * */
 export const GetPoll = () => buildArgumentDecorator('poll');
-
-/**
- * Venue that user sent
- * @deprecated Use @GetPoll instead
- * */
-export const ReceivedPoll = GetPoll;
 
 /**
  * Dice that user sent
