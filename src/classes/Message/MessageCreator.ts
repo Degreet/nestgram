@@ -11,7 +11,7 @@ export class MessageCreator {
    * Add a message to send to the line
    * @param message Message to send
    * */
-  add(message: MessageCreator | ContentTypes): this {
+  next(message: MessageCreator | ContentTypes): this {
     this.otherMessages.push(message);
     return this;
   }
