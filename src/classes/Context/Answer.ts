@@ -292,6 +292,19 @@ export class Answer {
   }
 
   /**
+   * Declines chat join request
+   * @param userId User ID you want to decline join request
+   * @param chatId Optional. Chat ID where you want to decline join request. It can be id of group/channel or ID of the user. Current chat id by default
+   * @see https://core.telegram.org/bots/api#declinechatjoinrequest
+   * @return true on success
+   * */
+  declineJoinRequest(userId: number, chatId?: number | string): Promise<boolean> {
+    if (!chatId) chatId = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+    return this.api.declineJoinRequest(chatId, userId);
+  }
+
+  /**
    * Set chat permissions
    * @param permissions Chat permissions you want to set {@link IChatPermissions}
    * @see https://core.telegram.org/bots/api#setchatpermissions

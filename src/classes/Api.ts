@@ -84,7 +84,8 @@ import {
   ICreateChatInviteLinkFetchOptions,
   IChatInviteLink,
   IRevokeChatInviteLinkFetchOptions,
-  IApproveChatJoinRequest,
+  IApproveChatJoinRequestFetchOptions,
+  IDeclineChatJoinRequestFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -937,7 +938,21 @@ export class Api {
    * @return true on success
    * */
   approveJoinRequest(chatId: number | string, userId: number): Promise<boolean> {
-    return this.callApi<boolean, IApproveChatJoinRequest>('approveChatJoinRequest', {
+    return this.callApi<boolean, IApproveChatJoinRequestFetchOptions>('approveChatJoinRequest', {
+      chat_id: chatId,
+      user_id: userId,
+    });
+  }
+
+  /**
+   * Declines chat join request
+   * @param chatId Chat ID where you want to decline join request. It can be id of group/channel or ID of the user
+   * @param userId User ID you want to decline join request
+   * @see https://core.telegram.org/bots/api#declinechatjoinrequest
+   * @return true on success
+   * */
+  declineJoinRequest(chatId: number | string, userId: number): Promise<boolean> {
+    return this.callApi<boolean, IDeclineChatJoinRequestFetchOptions>('declineChatJoinRequest', {
       chat_id: chatId,
       user_id: userId,
     });

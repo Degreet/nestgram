@@ -20,3 +20,4 @@ export * from './SaveProfilePhoto';
 export * from './SaveFile';
 
 export * from './ApproveJoinRequest';
+export * from './DeclineJoinRequest';

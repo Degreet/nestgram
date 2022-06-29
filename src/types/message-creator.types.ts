@@ -15,6 +15,7 @@ export type SendTypes =
   | 'saveFile'
   | 'saveProfilePhoto'
   | 'setChatPermissions'
-  | 'approveJoinRequest';
+  | 'approveJoinRequest'
+  | 'declineJoinRequest';
 
 export type MessageCreatorTypes = MediaFileTypes | 'text' | 'location';
