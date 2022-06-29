@@ -7,6 +7,7 @@ export * from './Toast';
 export * from './Restrict';
 export * from './Promote';
 
+export * from './SetChatPhoto';
 export * from './ChatPermissions';
 export * from './ChatAction';
 export * from './AdminTitle';

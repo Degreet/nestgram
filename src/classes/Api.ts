@@ -86,6 +86,7 @@ import {
   IRevokeChatInviteLinkFetchOptions,
   IApproveChatJoinRequestFetchOptions,
   IDeclineChatJoinRequestFetchOptions,
+  ISetChatPhotoFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -183,7 +184,7 @@ export class Api {
   ): IMessage {
     if (!mediaCache.getMediaFileId(path)) {
       let mediaFileInfo: any & { file_id: string } = message[mediaKey];
-      if (mediaKey === 'photo') mediaFileInfo = message[mediaKey][message[mediaKey].length - 1];
+      if (mediaKey === 'photo') mediaFileInfo = mediaFileInfo[mediaFileInfo.length - 1];
       mediaCache.saveMediaFileId(path, mediaFileInfo.file_id);
     }
 
@@ -927,6 +928,20 @@ export class Api {
         chat_id: chatId,
         invite_link: inviteLink,
       },
+    );
+  }
+
+  /**
+   * Set chat photo
+   * @param chatId Chat ID where you want to revoke invite link. It can be id of group/channel or ID of the user
+   * @param photo Photo you want to set (you can create it using Photo class)
+   * @see https://core.telegram.org/bots/api#setchatphoto
+   * @return true on success
+   * */
+  async setChatPhoto(chatId: number | string, photo: Photo): Promise<boolean> {
+    return await this.callApi<boolean, FormData>(
+      'setChatPhoto',
+      this.buildFormData<ISetChatPhotoFetchOptions>('photo', photo, { chat_id: chatId }),
     );
   }
 

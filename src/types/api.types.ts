@@ -350,6 +350,11 @@ export interface IApproveChatJoinRequestFetchOptions {
   user_id: number;
 }
 
+export interface ISetChatPhotoFetchOptions extends IDefaultSendMediaConfig {
+  chat_id: number | string;
+  photo?: string | any; // configures in form data
+}
+
 export interface IDeclineChatJoinRequestFetchOptions extends IApproveChatJoinRequestFetchOptions {}
 export interface ISendDiceOptions extends IDefaultOptions {}
 export interface ISendMediaGroupOptions extends IDefaultOptions {}

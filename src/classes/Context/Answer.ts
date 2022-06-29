@@ -17,6 +17,7 @@ import {
   IPromoteChatPermissions,
   ICreateChatInviteLinkOptions,
   IChatInviteLink,
+  Photo,
 } from '../..';
 
 import { MessageCreator } from '../Message';
@@ -276,6 +277,19 @@ export class Answer {
     if (!chatId) chatId = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
     return this.api.revokeInviteLink(chatId, inviteLink);
+  }
+
+  /**
+   * Set chat photo
+   * @param photo Photo you want to set (you can create it using Photo class)
+   * @param chatId Optional. Chat ID where you want to revoke invite link. It can be id of group/channel or ID of the user. Current chat id by default
+   * @see https://core.telegram.org/bots/api#setchatphoto
+   * @return true on success
+   * */
+  async setChatPhoto(photo: Photo, chatId?: number | string): Promise<boolean> {
+    if (!chatId) chatId = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+    return this.api.setChatPhoto(chatId, photo);
   }
 
   /**

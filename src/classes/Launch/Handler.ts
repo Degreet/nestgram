@@ -27,6 +27,7 @@ import {
   ChatPermissions,
   ApproveJoinRequest,
   DeclineJoinRequest,
+  SetChatPhoto,
 } from '../Message';
 
 import { Answer } from '../Context/Answer';
@@ -113,6 +114,8 @@ export class Handler {
         );
       } else if (resultMessageToSend instanceof Promote) {
         answerCallArgs.push(resultMessageToSend.permissions, resultMessageToSend.userId);
+      } else if (resultMessageToSend instanceof SetChatPhoto) {
+        answerCallArgs.push(resultMessageToSend.photo, resultMessageToSend.chatId);
       } else if (resultMessageToSend instanceof ChatPermissions) {
         answerCallArgs.push(resultMessageToSend.permissions);
       } else if (resultMessageToSend instanceof AdminTitle) {
