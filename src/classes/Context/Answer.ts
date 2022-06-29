@@ -266,6 +266,19 @@ export class Answer {
   }
 
   /**
+   * Revokes chat invite link
+   * @param inviteLink Invite link you want to revoke
+   * @param chatId Chat ID where you want to revoke invite link. It can be id of group/channel or ID of the user
+   * @see https://core.telegram.org/bots/api#revokechatinvitelink
+   * @return Chat invite link info {@link IChatInviteLink}
+   * */
+  revokeInviteLink(inviteLink: string, chatId?: number | string): Promise<IChatInviteLink> {
+    if (!chatId) chatId = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+    return this.api.revokeInviteLink(chatId, inviteLink);
+  }
+
+  /**
    * Set chat permissions
    * @param permissions Chat permissions you want to set {@link IChatPermissions}
    * @see https://core.telegram.org/bots/api#setchatpermissions

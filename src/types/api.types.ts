@@ -340,6 +340,11 @@ export interface ICreateChatInviteLinkOptions {
   pending_join_request_count?: number;
 }
 
+export interface IRevokeChatInviteLinkFetchOptions {
+  chat_id: string | number;
+  invite_link: string;
+}
+
 export interface ISendDiceOptions extends IDefaultOptions {}
 export interface ISendMediaGroupOptions extends IDefaultOptions {}
 export interface ISendDocumentOptions extends ISendPhotoOptions {}

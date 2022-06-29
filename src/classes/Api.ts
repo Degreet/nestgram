@@ -83,6 +83,7 @@ import {
   ICreateChatInviteLinkOptions,
   ICreateChatInviteLinkFetchOptions,
   IChatInviteLink,
+  IRevokeChatInviteLinkFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -892,7 +893,7 @@ export class Api {
 
   /**
    * Creates chat invite link
-   * @param chatId Chat ID where you want to send dice. It can be id of group/channel or ID of the user
+   * @param chatId Chat ID where you want to create invite link. It can be id of group/channel or ID of the user
    * @param moreOptions Message options {@link ICreateChatInviteLinkOptions}
    * @see https://core.telegram.org/bots/api#createchatinvitelink
    * @return Chat invite link info {@link IChatInviteLink}
@@ -906,6 +907,23 @@ export class Api {
       {
         chat_id: chatId,
         ...moreOptions,
+      },
+    );
+  }
+
+  /**
+   * Revokes chat invite link
+   * @param chatId Chat ID where you want to revoke invite link. It can be id of group/channel or ID of the user
+   * @param inviteLink Invite link you want to revoke
+   * @see https://core.telegram.org/bots/api#revokechatinvitelink
+   * @return Chat invite link info {@link IChatInviteLink}
+   * */
+  revokeInviteLink(chatId: number | string, inviteLink: string): Promise<IChatInviteLink> {
+    return this.callApi<IChatInviteLink, IRevokeChatInviteLinkFetchOptions>(
+      'revokeChatInviteLink',
+      {
+        chat_id: chatId,
+        invite_link: inviteLink,
       },
     );
   }
