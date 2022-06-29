@@ -84,6 +84,7 @@ import {
   ICreateChatInviteLinkFetchOptions,
   IChatInviteLink,
   IRevokeChatInviteLinkFetchOptions,
+  IApproveChatJoinRequest,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -926,6 +927,20 @@ export class Api {
         invite_link: inviteLink,
       },
     );
+  }
+
+  /**
+   * Approves chat join request
+   * @param chatId Chat ID where you want to approve join request. It can be id of group/channel or ID of the user
+   * @param userId User ID you want to approve join request
+   * @see https://core.telegram.org/bots/api#approvechatjoinrequest
+   * @return true on success
+   * */
+  approveJoinRequest(chatId: number | string, userId: number): Promise<boolean> {
+    return this.callApi<boolean, IApproveChatJoinRequest>('approveChatJoinRequest', {
+      chat_id: chatId,
+      user_id: userId,
+    });
   }
 
   /**

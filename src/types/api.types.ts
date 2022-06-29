@@ -345,6 +345,11 @@ export interface IRevokeChatInviteLinkFetchOptions {
   invite_link: string;
 }
 
+export interface IApproveChatJoinRequest {
+  chat_id: string | number;
+  user_id: number;
+}
+
 export interface ISendDiceOptions extends IDefaultOptions {}
 export interface ISendMediaGroupOptions extends IDefaultOptions {}
 export interface ISendDocumentOptions extends ISendPhotoOptions {}

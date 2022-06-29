@@ -268,7 +268,7 @@ export class Answer {
   /**
    * Revokes chat invite link
    * @param inviteLink Invite link you want to revoke
-   * @param chatId Chat ID where you want to revoke invite link. It can be id of group/channel or ID of the user
+   * @param chatId Optional. Chat ID where you want to revoke invite link. It can be id of group/channel or ID of the user. Current chat id by default
    * @see https://core.telegram.org/bots/api#revokechatinvitelink
    * @return Chat invite link info {@link IChatInviteLink}
    * */
@@ -276,6 +276,19 @@ export class Answer {
     if (!chatId) chatId = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
     return this.api.revokeInviteLink(chatId, inviteLink);
+  }
+
+  /**
+   * Approves chat join request
+   * @param userId User ID you want to approve join request
+   * @param chatId Optional. Chat ID where you want to approve join request. It can be id of group/channel or ID of the user. Current chat id by default
+   * @see https://core.telegram.org/bots/api#approvechatjoinrequest
+   * @return true on success
+   * */
+  approveJoinRequest(userId: number, chatId?: number | string): Promise<boolean> {
+    if (!chatId) chatId = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+    return this.api.approveJoinRequest(chatId, userId);
   }
 
   /**

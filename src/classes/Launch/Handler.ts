@@ -25,6 +25,7 @@ import {
   SaveFile,
   SaveProfilePhoto,
   ChatPermissions,
+  ApproveJoinRequest,
 } from '../Message';
 
 import { Answer } from '../Context/Answer';
@@ -86,6 +87,8 @@ export class Handler {
         answerCallArgs.push(resultMessageToSend.text, resultMessageToSend.options);
       } else if (resultMessageToSend instanceof ChatAction) {
         answerCallArgs.push(resultMessageToSend.action);
+      } else if (resultMessageToSend instanceof ApproveJoinRequest) {
+        answerCallArgs.push(resultMessageToSend.userId, resultMessageToSend.chatId);
       } else if (resultMessageToSend instanceof SaveFile) {
         answerCallArgs.push(resultMessageToSend.path, resultMessageToSend.fileId);
       } else if (resultMessageToSend instanceof SaveProfilePhoto) {

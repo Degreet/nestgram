@@ -18,3 +18,5 @@ export * from './Ban';
 
 export * from './SaveProfilePhoto';
 export * from './SaveFile';
+
+export * from './ApproveJoinRequest';
