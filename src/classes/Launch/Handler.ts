@@ -28,6 +28,7 @@ import {
   ApproveJoinRequest,
   DeclineJoinRequest,
   SetChatPhoto,
+  DeleteChatPhoto,
 } from '../Message';
 
 import { Answer } from '../Context/Answer';
@@ -116,6 +117,8 @@ export class Handler {
         answerCallArgs.push(resultMessageToSend.permissions, resultMessageToSend.userId);
       } else if (resultMessageToSend instanceof SetChatPhoto) {
         answerCallArgs.push(resultMessageToSend.photo, resultMessageToSend.chatId);
+      } else if (resultMessageToSend instanceof DeleteChatPhoto) {
+        answerCallArgs.push(resultMessageToSend.chatId);
       } else if (resultMessageToSend instanceof ChatPermissions) {
         answerCallArgs.push(resultMessageToSend.permissions);
       } else if (resultMessageToSend instanceof AdminTitle) {

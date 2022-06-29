@@ -282,14 +282,26 @@ export class Answer {
   /**
    * Set chat photo
    * @param photo Photo you want to set (you can create it using Photo class)
-   * @param chatId Optional. Chat ID where you want to revoke invite link. It can be id of group/channel or ID of the user. Current chat id by default
+   * @param chatId Optional. Chat ID where you want to set chat photo. It can be id of group/channel or ID of the user. Current chat id by default
    * @see https://core.telegram.org/bots/api#setchatphoto
    * @return true on success
    * */
-  async setChatPhoto(photo: Photo, chatId?: number | string): Promise<boolean> {
+  setChatPhoto(photo: Photo, chatId?: number | string): Promise<boolean> {
     if (!chatId) chatId = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
     return this.api.setChatPhoto(chatId, photo);
+  }
+
+  /**
+   * Deletes chat photo
+   * @param chatId Optional. Chat ID where you want to delete chat photo. It can be id of group/channel or ID of the user. Current chat id by default
+   * @see https://core.telegram.org/bots/api#deletechatphoto
+   * @return true on success
+   * */
+  deleteChatPhoto(chatId?: number | string): Promise<boolean> {
+    if (!chatId) chatId = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+    return this.api.deleteChatPhoto(chatId);
   }
 
   /**

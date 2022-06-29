@@ -8,6 +8,8 @@ export * from './Restrict';
 export * from './Promote';
 
 export * from './SetChatPhoto';
+export * from './DeleteChatPhoto';
+
 export * from './ChatPermissions';
 export * from './ChatAction';
 export * from './AdminTitle';

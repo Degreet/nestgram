@@ -1,17 +1,15 @@
 import { MessageCreator } from './MessageCreator';
 import { MessageCreatorTypes, SendTypes } from '../../types';
-import { Photo } from '../Media';
 
-export class SetChatPhoto extends MessageCreator {
-  sendType: SendTypes = 'setChatPhoto';
+export class DeleteChatPhoto extends MessageCreator {
+  sendType: SendTypes = 'deleteChatPhoto';
   type: MessageCreatorTypes = 'text';
 
   /**
-   * Set chat photo
-   * @param photo Photo you want to set (you can create it using Photo class)
+   * Delete chat photo
    * @param chatId Optional. Chat ID where you want to set chat photo. It can be id of group/channel or ID of the user. Current chat id by default
    * */
-  constructor(public readonly photo: Photo, public readonly chatId?: number | string) {
+  constructor(public readonly chatId?: number | string) {
     super({});
   }
 }

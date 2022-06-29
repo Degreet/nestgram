@@ -329,10 +329,6 @@ export interface IChatInviteLink extends ICreateChatInviteLinkOptions {
   is_revoked: boolean;
 }
 
-export interface ICreateChatInviteLinkFetchOptions extends ICreateChatInviteLinkOptions {
-  chat_id: string | number;
-}
-
 export interface ICreateChatInviteLinkOptions {
   name?: string;
   expire_date?: number;
@@ -355,7 +351,13 @@ export interface ISetChatPhotoFetchOptions extends IDefaultSendMediaConfig {
   photo?: string | any; // configures in form data
 }
 
+export interface ICreateChatInviteLinkFetchOptions
+  extends ICreateChatInviteLinkOptions,
+    IExportChatInviteLinkFetchOptions {}
+
+export interface IDeleteChatPhoto extends IExportChatInviteLinkFetchOptions {}
 export interface IDeclineChatJoinRequestFetchOptions extends IApproveChatJoinRequestFetchOptions {}
+
 export interface ISendDiceOptions extends IDefaultOptions {}
 export interface ISendMediaGroupOptions extends IDefaultOptions {}
 export interface ISendDocumentOptions extends ISendPhotoOptions {}
