@@ -2,7 +2,7 @@ import { MessageCreator } from './MessageCreator';
 import { MessageCreatorTypes, SendTypes } from '../../types';
 import { Photo } from '../Media';
 
-export class SetChatPhoto extends MessageCreator {
+export class ChatPhoto extends MessageCreator {
   sendType: SendTypes = 'setChatPhoto';
   type: MessageCreatorTypes = 'text';
 

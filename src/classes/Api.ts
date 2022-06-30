@@ -89,6 +89,7 @@ import {
   ISetChatPhotoFetchOptions,
   IDeleteChatPhoto,
   ISetChatTitleFetchOptions,
+  ISetChatDescriptionFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -968,6 +969,20 @@ export class Api {
     return this.callApi<boolean, ISetChatTitleFetchOptions>('setChatTitle', {
       chat_id: chatId,
       title,
+    });
+  }
+
+  /**
+   * Set chat title
+   * @param chatId Chat ID where you want to set chat description. It can be id of group/channel or ID of the user
+   * @param description Description you want to set for the chat
+   * @see https://core.telegram.org/bots/api#setchatdescription
+   * @return true on success
+   * */
+  setChatDescription(chatId: number | string, description: string): Promise<boolean> {
+    return this.callApi<boolean, ISetChatDescriptionFetchOptions>('setChatDescription', {
+      chat_id: chatId,
+      description,
     });
   }
 

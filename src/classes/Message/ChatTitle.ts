@@ -1,7 +1,7 @@
 import { MessageCreator } from './MessageCreator';
 import { MessageCreatorTypes, SendTypes } from '../../types';
 
-export class SetChatTitle extends MessageCreator {
+export class ChatTitle extends MessageCreator {
   sendType: SendTypes = 'setChatTitle';
   type: MessageCreatorTypes = 'text';
 

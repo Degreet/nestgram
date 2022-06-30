@@ -356,6 +356,11 @@ export interface ISetChatTitleFetchOptions {
   title: string;
 }
 
+export interface ISetChatDescriptionFetchOptions {
+  chat_id: number | string;
+  description: string;
+}
+
 export interface ICreateChatInviteLinkFetchOptions
   extends ICreateChatInviteLinkOptions,
     IExportChatInviteLinkFetchOptions {}

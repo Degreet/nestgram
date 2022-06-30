@@ -318,6 +318,19 @@ export class Answer {
   }
 
   /**
+   * Set chat description
+   * @param description Description you want to set for the chat
+   * @param chatId Optional. Chat ID where you want to set chat description. It can be id of group/channel or ID of the user. Current chat id by default
+   * @see https://core.telegram.org/bots/api#setchatdescription
+   * @return true on success
+   * */
+  setChatDescription(description: string, chatId?: number | string): Promise<boolean> {
+    if (!chatId) chatId = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+    return this.api.setChatDescription(chatId, description);
+  }
+
+  /**
    * Approves chat join request
    * @param userId User ID you want to approve join request
    * @param chatId Optional. Chat ID where you want to approve join request. It can be id of group/channel or ID of the user. Current chat id by default

@@ -27,9 +27,10 @@ import {
   ChatPermissions,
   ApproveJoinRequest,
   DeclineJoinRequest,
-  SetChatPhoto,
+  ChatPhoto,
   DeleteChatPhoto,
-  SetChatTitle,
+  ChatTitle,
+  ChatDescription,
 } from '../Message';
 
 import { Answer } from '../Context/Answer';
@@ -116,12 +117,14 @@ export class Handler {
         );
       } else if (resultMessageToSend instanceof Promote) {
         answerCallArgs.push(resultMessageToSend.permissions, resultMessageToSend.userId);
-      } else if (resultMessageToSend instanceof SetChatPhoto) {
+      } else if (resultMessageToSend instanceof ChatPhoto) {
         answerCallArgs.push(resultMessageToSend.photo, resultMessageToSend.chatId);
       } else if (resultMessageToSend instanceof DeleteChatPhoto) {
         answerCallArgs.push(resultMessageToSend.chatId);
-      } else if (resultMessageToSend instanceof SetChatTitle) {
+      } else if (resultMessageToSend instanceof ChatTitle) {
         answerCallArgs.push(resultMessageToSend.title, resultMessageToSend.chatId);
+      } else if (resultMessageToSend instanceof ChatDescription) {
+        answerCallArgs.push(resultMessageToSend.description, resultMessageToSend.chatId);
       } else if (resultMessageToSend instanceof ChatPermissions) {
         answerCallArgs.push(resultMessageToSend.permissions);
       } else if (resultMessageToSend instanceof AdminTitle) {

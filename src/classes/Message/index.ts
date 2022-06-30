@@ -7,7 +7,7 @@ export * from './Toast';
 export * from './Restrict';
 export * from './Promote';
 
-export * from './SetChatPhoto';
+export * from './ChatPhoto';
 export * from './DeleteChatPhoto';
 
 export * from './ChatPermissions';
@@ -25,4 +25,5 @@ export * from './SaveFile';
 export * from './ApproveJoinRequest';
 export * from './DeclineJoinRequest';
 
-export * from './SetChatTitle';
+export * from './ChatTitle';
+export * from './ChatDescription';
