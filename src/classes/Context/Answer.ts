@@ -516,6 +516,32 @@ export class Answer {
   }
 
   /**
+   * Checks user subscription for channels/groups
+   * @param channelIds Id of the channels/groups you want to check subscription
+   * @return true if user subscribed for every channels
+   * */
+  async checkSubscription(channelIds: (string | number)[]): Promise<boolean> {
+    const userId: number = Filter.getUserId(this.update);
+    if (!userId) throw error(`Can't find userId from update`);
+
+    const result: boolean[] = await Promise.all(
+      channelIds.map(async (channelId: string | number): Promise<boolean> => {
+        try {
+          const chatMember: ChatMember = await this.getChatMember(userId, channelId);
+
+          return !(
+            !chatMember || !['member', 'administrator', 'creator'].includes(chatMember.status)
+          );
+        } catch (e: any) {
+          console.log(e);
+        }
+      }),
+    );
+
+    return result.every((subscribed: boolean) => !!subscribed);
+  }
+
+  /**
    * Saves user profile photo
    * @param path Path where you want to save the image
    * @param index Index of the user profile photo you want to save (0 by default)
