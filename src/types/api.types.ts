@@ -370,6 +370,10 @@ export interface IUnpinChatMessageFetchOptions {
   message_id: number;
 }
 
+export interface IUnpinAllChatMessagesFetchOptions {
+  chat_id: number | string;
+}
+
 export interface ICreateChatInviteLinkFetchOptions
   extends ICreateChatInviteLinkOptions,
     IExportChatInviteLinkFetchOptions {}

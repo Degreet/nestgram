@@ -350,18 +350,14 @@ export class Answer {
 
   /**
    * Unpin chat message
-   * @param msgId Message ID you want to unpin
+   * @param msgId Message ID you want to unpin. Or pass 'all' to unpin all messages
    * @param chatId Optional. Chat ID where you want to unpin message. It can be id of group/channel or ID of the user. Current chat id by default
    * @see https://core.telegram.org/bots/api#unpinchatmessage
    * @return true on success
    * */
-  unpin(msgId: number, chatId?: number | string): Promise<boolean> {
+  unpin(msgId: number | 'all' = 'all', chatId?: number | string): Promise<boolean> {
     if (!chatId) chatId = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
-
-    if (!msgId) msgId = Filter.getMsgId(this.update);
-    if (!msgId) throw error(`Can't find msgId from update`);
-
     return this.api.unpin(chatId, msgId);
   }
 

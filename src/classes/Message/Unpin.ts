@@ -7,11 +7,14 @@ export class Unpin extends MessageCreator {
 
   /**
    * Unpin chat message
-   * @param msgId Message ID you want to unpin
+   * @param msgId Message ID you want to unpin. Or pass 'all' to unpin all messages (by default)
    * @param chatId Optional. Chat ID where you want to unpin message. It can be id of group/channel or ID of the user. Current chat id by default
    * @see https://core.telegram.org/bots/api#unpinchatmessage
    * */
-  constructor(public readonly msgId: number, public readonly chatId?: number | string) {
+  constructor(
+    public readonly msgId: number | 'all' = 'all',
+    public readonly chatId?: number | string,
+  ) {
     super({});
   }
 }

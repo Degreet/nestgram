@@ -92,6 +92,7 @@ import {
   ISetChatDescriptionFetchOptions,
   IPinChatMessageFetchOptions,
   IUnpinChatMessageFetchOptions,
+  IUnpinAllChatMessagesFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -1007,14 +1008,28 @@ export class Api {
   /**
    * Unpin chat message
    * @param chatId Chat ID where you want to unpin message. It can be id of group/channel or ID of the user
-   * @param msgId Message ID you want to unpin
+   * @param msgId Message ID you want to unpin. Or pass 'all' to unpin all messages
    * @see https://core.telegram.org/bots/api#unpinchatmessage
    * @return true on success
    * */
-  unpin(chatId: number | string, msgId: number): Promise<boolean> {
+  unpin(chatId: number | string, msgId: number | 'all'): Promise<boolean> {
+    if (msgId === 'all') return this.unpinAll(chatId);
+
     return this.callApi<boolean, IUnpinChatMessageFetchOptions>('unpinChatMessage', {
       chat_id: chatId,
       message_id: msgId,
+    });
+  }
+
+  /**
+   * Unpin all chat messages
+   * @param chatId Chat ID where you want to unpin all messages. It can be id of group/channel or ID of the user
+   * @see https://core.telegram.org/bots/api#unpinallchatmessages
+   * @return true on success
+   * */
+  unpinAll(chatId: number | string): Promise<boolean> {
+    return this.callApi<boolean, IUnpinAllChatMessagesFetchOptions>('unpinAllChatMessages', {
+      chat_id: chatId,
     });
   }
 
