@@ -400,6 +400,18 @@ export class Answer {
   }
 
   /**
+   * Get chat member count
+   * @param chatId Optional. Chat ID in which you want to get member count. Current id by default
+   * @see https://core.telegram.org/bots/api#getchatmembercount
+   * @return {?number}
+   * */
+  getChatMemberCount(chatId?: number | string): Promise<number> {
+    if (!chatId) chatId = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+    return this.api.getChatMemberCount(chatId);
+  }
+
+  /**
    * Approves chat join request
    * @param userId User ID you want to approve join request
    * @param chatId Optional. Chat ID where you want to approve join request. It can be id of group/channel or ID of the user. Current chat id by default

@@ -386,6 +386,10 @@ export interface IGetChatAdministratorsFetchOptions {
   chat_id: number | string;
 }
 
+export interface IGetChatMemberCountFetchOptions {
+  chat_id: number | string;
+}
+
 export interface ICreateChatInviteLinkFetchOptions
   extends ICreateChatInviteLinkOptions,
     IExportChatInviteLinkFetchOptions {}
