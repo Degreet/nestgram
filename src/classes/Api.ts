@@ -94,6 +94,8 @@ import {
   IUnpinChatMessageFetchOptions,
   IUnpinAllChatMessagesFetchOptions,
   ILeaveChatFetchOptions,
+  IGetChatFetchOptions,
+  IChat,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -1042,6 +1044,18 @@ export class Api {
    * */
   leave(chatId: number | string): Promise<boolean> {
     return this.callApi<boolean, ILeaveChatFetchOptions>('leaveChat', {
+      chat_id: chatId,
+    });
+  }
+
+  /**
+   * Get chat
+   * @param chatId Chat ID you want to get
+   * @see https://core.telegram.org/bots/api#getchat
+   * @return Chat info on success {@link IChat}
+   * */
+  getChat(chatId: number | string): Promise<IChat> {
+    return this.callApi<IChat, IGetChatFetchOptions>('getChat', {
       chat_id: chatId,
     });
   }

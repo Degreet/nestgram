@@ -378,6 +378,10 @@ export interface ILeaveChatFetchOptions {
   chat_id: number | string;
 }
 
+export interface IGetChatFetchOptions {
+  chat_id: number | string;
+}
+
 export interface ICreateChatInviteLinkFetchOptions
   extends ICreateChatInviteLinkOptions,
     IExportChatInviteLinkFetchOptions {}

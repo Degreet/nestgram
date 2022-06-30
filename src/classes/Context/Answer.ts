@@ -18,6 +18,7 @@ import {
   ICreateChatInviteLinkOptions,
   IChatInviteLink,
   Photo,
+  IChat,
 } from '../..';
 
 import { MessageCreator } from '../Message';
@@ -371,6 +372,18 @@ export class Answer {
     if (!chatId) chatId = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
     return this.api.leave(chatId);
+  }
+
+  /**
+   * Get chat
+   * @param chatId Optional. Chat ID you want to get. Current chat id by default
+   * @see https://core.telegram.org/bots/api#getchat
+   * @return Chat info on success {@link IChat}
+   * */
+  getChat(chatId?: number | string): Promise<IChat> {
+    if (!chatId) chatId = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+    return this.api.getChat(chatId);
   }
 
   /**
