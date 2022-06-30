@@ -93,6 +93,7 @@ import {
   IPinChatMessageFetchOptions,
   IUnpinChatMessageFetchOptions,
   IUnpinAllChatMessagesFetchOptions,
+  ILeaveChatFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -1029,6 +1030,18 @@ export class Api {
    * */
   unpinAll(chatId: number | string): Promise<boolean> {
     return this.callApi<boolean, IUnpinAllChatMessagesFetchOptions>('unpinAllChatMessages', {
+      chat_id: chatId,
+    });
+  }
+
+  /**
+   * Leaves chat
+   * @param chatId Chat ID you want to leave
+   * @see https://core.telegram.org/bots/api#leavechat
+   * @return true on success
+   * */
+  leave(chatId: number | string): Promise<boolean> {
+    return this.callApi<boolean, ILeaveChatFetchOptions>('leaveChat', {
       chat_id: chatId,
     });
   }

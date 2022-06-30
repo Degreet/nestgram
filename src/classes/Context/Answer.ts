@@ -362,6 +362,18 @@ export class Answer {
   }
 
   /**
+   * Leaves chat
+   * @param chatId Optional. Chat ID you want to leave. Current chat id by default
+   * @see https://core.telegram.org/bots/api#leavechat
+   * @return true on success
+   * */
+  leave(chatId?: number | string): Promise<boolean> {
+    if (!chatId) chatId = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+    return this.api.leave(chatId);
+  }
+
+  /**
    * Approves chat join request
    * @param userId User ID you want to approve join request
    * @param chatId Optional. Chat ID where you want to approve join request. It can be id of group/channel or ID of the user. Current chat id by default

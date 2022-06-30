@@ -22,6 +22,7 @@ export type SendTypes =
   | 'setChatTitle'
   | 'setChatDescription'
   | 'pin'
-  | 'unpin';
+  | 'unpin'
+  | 'leave';
 
 export type MessageCreatorTypes = MediaFileTypes | 'text' | 'location';

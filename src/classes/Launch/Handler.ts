@@ -33,6 +33,7 @@ import {
   ChatDescription,
   Pin,
   Unpin,
+  Leave,
 } from '../Message';
 
 import { Answer } from '../Context/Answer';
@@ -121,7 +122,10 @@ export class Handler {
         answerCallArgs.push(resultMessageToSend.permissions, resultMessageToSend.userId);
       } else if (resultMessageToSend instanceof ChatPhoto) {
         answerCallArgs.push(resultMessageToSend.photo, resultMessageToSend.chatId);
-      } else if (resultMessageToSend instanceof DeleteChatPhoto) {
+      } else if (
+        resultMessageToSend instanceof DeleteChatPhoto ||
+        resultMessageToSend instanceof Leave
+      ) {
         answerCallArgs.push(resultMessageToSend.chatId);
       } else if (resultMessageToSend instanceof ChatTitle) {
         answerCallArgs.push(resultMessageToSend.title, resultMessageToSend.chatId);
