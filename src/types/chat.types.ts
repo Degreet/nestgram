@@ -1,4 +1,21 @@
 import { ILocation, IMessage } from './update.types';
+import { IPromoteChatPermissions } from './api.types';
+
+export type IChatMemberStatus =
+  | 'creator'
+  | 'administrator'
+  | 'member'
+  | 'restricted'
+  | 'left'
+  | 'kicked';
+
+export type ChatMember =
+  | IChatMemberOwner
+  | IChatMemberAdmin
+  | IChatMember
+  | IChatMemberRestricted
+  | IChatMemberLeft
+  | IChatMemberBanned;
 
 export interface IUser {
   id: number;
@@ -58,4 +75,40 @@ export interface IChatPermissions {
   can_change_info?: boolean;
   can_invite_users?: boolean;
   can_pin_messages?: boolean;
+}
+
+export interface IChatMemberDefault {
+  status: IChatMemberStatus;
+  user: IUser;
+}
+
+export interface IChatMemberOwner extends IChatMemberDefault {
+  status: 'creator';
+  is_anonymous: boolean;
+  custom_title?: string;
+}
+
+export interface IChatMemberAdmin extends IChatMemberDefault, IPromoteChatPermissions {
+  status: 'administrator';
+  custom_title?: string;
+  can_be_edited?: boolean;
+}
+
+export interface IChatMember extends IChatMemberDefault {
+  status: 'member';
+}
+
+export interface IChatMemberRestricted extends IChatMemberDefault, IChatPermissions {
+  status: 'restricted';
+  is_member: boolean;
+  until_date: number;
+}
+
+export interface IChatMemberLeft extends IChatMemberDefault {
+  status: 'left';
+}
+
+export interface IChatMemberBanned extends IChatMemberDefault {
+  status: 'kicked';
+  until_date: number;
 }
