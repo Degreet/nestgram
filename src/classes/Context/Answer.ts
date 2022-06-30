@@ -389,7 +389,7 @@ export class Answer {
 
   /**
    * Get chat administrators
-   * @param chatId Optional. Chat ID in which you want to get administrators. Current id by default
+   * @param chatId Optional. Chat ID in which you want to get administrators. Current chat id by default
    * @see https://core.telegram.org/bots/api#getchatadministrators
    * @return Array of {@link ChatMember}
    * */
@@ -401,14 +401,31 @@ export class Answer {
 
   /**
    * Get chat member count
-   * @param chatId Optional. Chat ID in which you want to get member count. Current id by default
+   * @param chatId Optional. Chat ID in which you want to get member count. Current chat id by default
    * @see https://core.telegram.org/bots/api#getchatmembercount
-   * @return {?number}
+   * @return {number}
    * */
   getChatMemberCount(chatId?: number | string): Promise<number> {
     if (!chatId) chatId = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
     return this.api.getChatMemberCount(chatId);
+  }
+
+  /**
+   * Get chat member
+   * @param userId Optional. User id you want to get chat member info. Current user id by default
+   * @param chatId Optional. Chat ID in which you want to get member info. Current chat id by default
+   * @see https://core.telegram.org/bots/api#getchatmember
+   * @return {@link ChatMember}
+   * */
+  getChatMember(userId?: number, chatId?: number | string): Promise<ChatMember> {
+    if (!chatId) chatId = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+
+    if (!userId) userId = Filter.getUserId(this.update);
+    if (!userId) throw error(`Can't find userId from update`);
+
+    return this.api.getChatMember(chatId, userId);
   }
 
   /**

@@ -99,6 +99,7 @@ import {
   ChatMember,
   IGetChatAdministratorsFetchOptions,
   IGetChatMemberCountFetchOptions,
+  IGetChatMemberFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -1084,6 +1085,20 @@ export class Api {
   getChatMemberCount(chatId: number | string): Promise<number> {
     return this.callApi<number, IGetChatMemberCountFetchOptions>('getChatMemberCount', {
       chat_id: chatId,
+    });
+  }
+
+  /**
+   * Get chat member
+   * @param chatId Chat ID in which you want to get member info
+   * @param userId User ID you want to get chat member info
+   * @see https://core.telegram.org/bots/api#getchatmember
+   * @return {@link ChatMember}
+   * */
+  getChatMember(chatId: number | string, userId: number): Promise<ChatMember> {
+    return this.callApi<ChatMember, IGetChatMemberFetchOptions>('getChatMember', {
+      chat_id: chatId,
+      user_id: userId,
     });
   }
 
