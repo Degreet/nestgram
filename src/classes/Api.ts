@@ -90,6 +90,7 @@ import {
   IDeleteChatPhoto,
   ISetChatTitleFetchOptions,
   ISetChatDescriptionFetchOptions,
+  IPinChatMessageFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -941,8 +942,8 @@ export class Api {
    * @see https://core.telegram.org/bots/api#setchatphoto
    * @return true on success
    * */
-  async setChatPhoto(chatId: number | string, photo: Photo): Promise<boolean> {
-    return await this.callApi<boolean, FormData>(
+  setChatPhoto(chatId: number | string, photo: Photo): Promise<boolean> {
+    return this.callApi<boolean, FormData>(
       'setChatPhoto',
       this.buildFormData<ISetChatPhotoFetchOptions>('photo', photo, { chat_id: chatId }),
     );
@@ -983,6 +984,22 @@ export class Api {
     return this.callApi<boolean, ISetChatDescriptionFetchOptions>('setChatDescription', {
       chat_id: chatId,
       description,
+    });
+  }
+
+  /**
+   * Pin chat message
+   * @param chatId Chat ID where you want to pin message. It can be id of group/channel or ID of the user
+   * @param msgId Message ID you want to pin
+   * @param disableNotification Optional. Disable notification for all chat users that you have pinned a message
+   * @see https://core.telegram.org/bots/api#pinchatmessage
+   * @return true on success
+   * */
+  pin(chatId: number | string, msgId: number, disableNotification?: boolean): Promise<boolean> {
+    return this.callApi<boolean, IPinChatMessageFetchOptions>('pinChatMessage', {
+      chat_id: chatId,
+      message_id: msgId,
+      disable_notification: disableNotification,
     });
   }
 

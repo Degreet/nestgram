@@ -331,6 +331,24 @@ export class Answer {
   }
 
   /**
+   * Pin chat message
+   * @param disableNotification Optional. Disable notification for all chat users that you have pinned a message
+   * @param msgId Optional. Message ID you want to pin. Current message id by default
+   * @param chatId Optional. Chat ID where you want to pin message. It can be id of group/channel or ID of the user. Current chat id by default
+   * @see https://core.telegram.org/bots/api#pinchatmessage
+   * @return true on success
+   * */
+  pin(disableNotification?: boolean, msgId?: number, chatId?: number | string): Promise<boolean> {
+    if (!chatId) chatId = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+
+    if (!msgId) msgId = Filter.getMsgId(this.update);
+    if (!msgId) throw error(`Can't find msgId from update`);
+
+    return this.api.pin(chatId, msgId, disableNotification);
+  }
+
+  /**
    * Approves chat join request
    * @param userId User ID you want to approve join request
    * @param chatId Optional. Chat ID where you want to approve join request. It can be id of group/channel or ID of the user. Current chat id by default

@@ -27,3 +27,5 @@ export * from './DeclineJoinRequest';
 
 export * from './ChatTitle';
 export * from './ChatDescription';
+
+export * from './Pin';

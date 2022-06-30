@@ -31,6 +31,7 @@ import {
   DeleteChatPhoto,
   ChatTitle,
   ChatDescription,
+  Pin,
 } from '../Message';
 
 import { Answer } from '../Context/Answer';
@@ -129,6 +130,12 @@ export class Handler {
         answerCallArgs.push(resultMessageToSend.permissions);
       } else if (resultMessageToSend instanceof AdminTitle) {
         answerCallArgs.push(resultMessageToSend.title, resultMessageToSend.userId);
+      } else if (resultMessageToSend instanceof Pin) {
+        answerCallArgs.push(
+          resultMessageToSend.disableNotification,
+          resultMessageToSend.msgId,
+          resultMessageToSend.chatId,
+        );
       } else if (resultMessageToSend instanceof Forward || resultMessageToSend instanceof Copy) {
         if (resultMessageToSend instanceof Forward)
           answerCallArgs.push(resultMessageToSend.toChatId, resultMessageToSend.options);

@@ -20,6 +20,7 @@ export type SendTypes =
   | 'setChatPhoto'
   | 'deleteChatPhoto'
   | 'setChatTitle'
-  | 'setChatDescription';
+  | 'setChatDescription'
+  | 'pin';
 
 export type MessageCreatorTypes = MediaFileTypes | 'text' | 'location';
