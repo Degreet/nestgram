@@ -19,6 +19,7 @@ import {
   IChatInviteLink,
   Photo,
   IChat,
+  ChatMember,
 } from '../..';
 
 import { MessageCreator } from '../Message';
@@ -384,6 +385,18 @@ export class Answer {
     if (!chatId) chatId = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
     return this.api.getChat(chatId);
+  }
+
+  /**
+   * Get chat administrators
+   * @param chatId Optional. Chat ID in which you want to get administrators. Current id by default
+   * @see https://core.telegram.org/bots/api#getchatadministrators
+   * @return Array of {@link ChatMember}
+   * */
+  getChatAdmins(chatId?: number | string): Promise<ChatMember[]> {
+    if (!chatId) chatId = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+    return this.api.getChatAdmins(chatId);
   }
 
   /**

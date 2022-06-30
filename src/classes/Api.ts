@@ -96,6 +96,8 @@ import {
   ILeaveChatFetchOptions,
   IGetChatFetchOptions,
   IChat,
+  ChatMember,
+  IGetChatAdministratorsFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -1056,6 +1058,18 @@ export class Api {
    * */
   getChat(chatId: number | string): Promise<IChat> {
     return this.callApi<IChat, IGetChatFetchOptions>('getChat', {
+      chat_id: chatId,
+    });
+  }
+
+  /**
+   * Get chat administrators
+   * @param chatId Chat ID in which you want to get administrators
+   * @see https://core.telegram.org/bots/api#getchatadministrators
+   * @return Array of {@link ChatMember}
+   * */
+  getChatAdmins(chatId: number | string): Promise<ChatMember[]> {
+    return this.callApi<ChatMember[], IGetChatAdministratorsFetchOptions>('getChatAdministrators', {
       chat_id: chatId,
     });
   }
