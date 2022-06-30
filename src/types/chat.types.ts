@@ -1,4 +1,4 @@
-import { IMessage } from './update.types';
+import { ILocation, IMessage } from './update.types';
 
 export interface IUser {
   id: number;
@@ -21,7 +21,7 @@ export interface IChat {
   username?: string;
   first_name?: string;
   last_name?: string;
-  photo?: any; //!
+  photo?: IChatPhoto;
   bio?: string;
   has_private_forwards?: true;
   description?: string;
@@ -34,7 +34,19 @@ export interface IChat {
   sticker_set_name?: string;
   can_set_sticker_set?: true;
   linked_chat_id?: number;
-  location?: any; //!
+  location?: IChatLocation;
+}
+
+export interface IChatPhoto {
+  small_file_id: string;
+  small_file_unique_id: string;
+  big_file_id: string;
+  big_file_unique_id: string;
+}
+
+export interface IChatLocation {
+  location: ILocation;
+  address: string;
 }
 
 export interface IChatPermissions {
