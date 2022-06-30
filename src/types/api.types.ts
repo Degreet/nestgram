@@ -361,10 +361,13 @@ export interface ISetChatDescriptionFetchOptions {
   description: string;
 }
 
-export interface IPinChatMessageFetchOptions {
+export interface IPinChatMessageFetchOptions extends IUnpinChatMessageFetchOptions {
+  disable_notification?: boolean;
+}
+
+export interface IUnpinChatMessageFetchOptions {
   chat_id: number | string;
   message_id: number;
-  disable_notification?: boolean;
 }
 
 export interface ICreateChatInviteLinkFetchOptions

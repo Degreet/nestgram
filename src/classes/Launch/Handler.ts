@@ -32,6 +32,7 @@ import {
   ChatTitle,
   ChatDescription,
   Pin,
+  Unpin,
 } from '../Message';
 
 import { Answer } from '../Context/Answer';
@@ -136,6 +137,8 @@ export class Handler {
           resultMessageToSend.msgId,
           resultMessageToSend.chatId,
         );
+      } else if (resultMessageToSend instanceof Unpin) {
+        answerCallArgs.push(resultMessageToSend.msgId, resultMessageToSend.chatId);
       } else if (resultMessageToSend instanceof Forward || resultMessageToSend instanceof Copy) {
         if (resultMessageToSend instanceof Forward)
           answerCallArgs.push(resultMessageToSend.toChatId, resultMessageToSend.options);

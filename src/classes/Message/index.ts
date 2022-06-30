@@ -29,3 +29,4 @@ export * from './ChatTitle';
 export * from './ChatDescription';
 
 export * from './Pin';
+export * from './Unpin';
