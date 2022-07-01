@@ -405,8 +405,11 @@ export interface IDeleteChatStickerSetFetchOptions {
   chat_id: number | string;
 }
 
-export interface ISetMyCommandsFetchOptions {
+export interface ISetMyCommandsFetchOptions extends IDeleteMyCommandsFetchOptions {
   commands: IBotCommand[];
+}
+
+export interface IDeleteMyCommandsFetchOptions {
   scope?: BotCommandScope;
   language_code?: string;
 }

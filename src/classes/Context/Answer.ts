@@ -473,6 +473,17 @@ export class Answer {
   }
 
   /**
+   * Delete my commands
+   * @param scope Optional. Scope for which you want to delete commands. {@link BotCommandScope}
+   * @param languageCode Optional. A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope, for whose language there are no dedicated commands
+   * @see https://core.telegram.org/bots/api#deletemycommands
+   * @return {true} on success
+   * */
+  deleteMyCommands(scope?: BotCommandScope, languageCode?: string): Promise<boolean> {
+    return this.api.deleteMyCommands(scope, languageCode);
+  }
+
+  /**
    * Approves chat join request
    * @param userId User ID you want to approve join request
    * @param chatId Optional. Chat ID where you want to approve join request. It can be id of group/channel or ID of the user. Current chat id by default

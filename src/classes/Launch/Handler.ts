@@ -37,6 +37,7 @@ import {
   ChatStickerSet,
   DeleteChatStickerSet,
   MyCommands,
+  DeleteMyCommands,
 } from '../Message';
 
 import { Answer } from '../Context/Answer';
@@ -147,6 +148,8 @@ export class Handler {
           resultMessageToSend.scope,
           resultMessageToSend.languageCode,
         );
+      } else if (resultMessageToSend instanceof DeleteMyCommands) {
+        answerCallArgs.push(resultMessageToSend.scope, resultMessageToSend.languageCode);
       } else if (resultMessageToSend instanceof Pin) {
         answerCallArgs.push(
           resultMessageToSend.disableNotification,

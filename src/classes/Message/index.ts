@@ -37,3 +37,4 @@ export * from './ChatStickerSet';
 export * from './DeleteChatStickerSet';
 
 export * from './MyCommands';
+export * from './DeleteMyCommands';

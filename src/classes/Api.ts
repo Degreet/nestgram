@@ -105,6 +105,7 @@ import {
   IBotCommand,
   BotCommandScope,
   ISetMyCommandsFetchOptions,
+  IDeleteMyCommandsFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -1149,6 +1150,20 @@ export class Api {
   ): Promise<boolean> {
     return this.callApi<boolean, ISetMyCommandsFetchOptions>('setMyCommands', {
       commands,
+      scope,
+      language_code: languageCode,
+    });
+  }
+
+  /**
+   * Delete my commands
+   * @param scope Optional. Scope for which you want to delete commands. {@link BotCommandScope}
+   * @param languageCode Optional. A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope, for whose language there are no dedicated commands
+   * @see https://core.telegram.org/bots/api#deletemycommands
+   * @return {true} on success
+   * */
+  deleteMyCommands(scope?: BotCommandScope, languageCode?: string): Promise<boolean> {
+    return this.callApi<boolean, IDeleteMyCommandsFetchOptions>('deleteMyCommands', {
       scope,
       language_code: languageCode,
     });
