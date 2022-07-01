@@ -3,6 +3,7 @@ import { IInlineKeyboard, IReplyMarkup } from './keyboard.types';
 import { InputMediaTypes } from './media.types';
 import { Thumb } from '../classes';
 import { IChatPermissions, IUser } from './chat.types';
+import { BotCommandScope, IBotCommand } from './bot-command.types';
 
 export type IOptions = ISendOptions | ISendPhotoOptions | ISendVideoOptions;
 export type ParseModes = 'HTML' | 'Markdown' | 'MarkdownV2';
@@ -402,6 +403,12 @@ export interface ISetChatStickerSetFetchOptions {
 
 export interface IDeleteChatStickerSetFetchOptions {
   chat_id: number | string;
+}
+
+export interface ISetMyCommandsFetchOptions {
+  commands: IBotCommand[];
+  scope?: BotCommandScope;
+  language_code?: string;
 }
 
 export interface ICreateChatInviteLinkFetchOptions

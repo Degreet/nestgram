@@ -36,6 +36,7 @@ import {
   Leave,
   ChatStickerSet,
   DeleteChatStickerSet,
+  MyCommands,
 } from '../Message';
 
 import { Answer } from '../Context/Answer';
@@ -140,6 +141,12 @@ export class Handler {
         answerCallArgs.push(resultMessageToSend.permissions);
       } else if (resultMessageToSend instanceof AdminTitle) {
         answerCallArgs.push(resultMessageToSend.title, resultMessageToSend.userId);
+      } else if (resultMessageToSend instanceof MyCommands) {
+        answerCallArgs.push(
+          resultMessageToSend.commands,
+          resultMessageToSend.scope,
+          resultMessageToSend.languageCode,
+        );
       } else if (resultMessageToSend instanceof Pin) {
         answerCallArgs.push(
           resultMessageToSend.disableNotification,

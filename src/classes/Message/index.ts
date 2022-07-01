@@ -35,3 +35,5 @@ export * from './Unpin';
 
 export * from './ChatStickerSet';
 export * from './DeleteChatStickerSet';
+
+export * from './MyCommands';

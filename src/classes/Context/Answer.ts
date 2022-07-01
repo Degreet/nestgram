@@ -20,6 +20,8 @@ import {
   Photo,
   IChat,
   ChatMember,
+  IBotCommand,
+  BotCommandScope,
 } from '../..';
 
 import { MessageCreator } from '../Message';
@@ -451,6 +453,23 @@ export class Answer {
     if (!chatId) chatId = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
     return this.api.deleteChatStickerSet(chatId);
+  }
+
+  /**
+   * Set my commands
+   * @param commands Commands you want to set (Array of {@link IBotCommand})
+   * @param scope Optional. Scope for which you want to set commands. {@link BotCommandScope}
+   * @param languageCode Optional. A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope, for whose language there are no dedicated commands
+   * @see https://core.telegram.org/bots/api#setmycommands
+   * @see https://core.telegram.org/bots#commands
+   * @return {true} on success
+   * */
+  setMyCommands(
+    commands: IBotCommand[],
+    scope?: BotCommandScope,
+    languageCode?: string,
+  ): Promise<boolean> {
+    return this.api.setMyCommands(commands, scope, languageCode);
   }
 
   /**

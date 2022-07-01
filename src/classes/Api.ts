@@ -102,6 +102,9 @@ import {
   IGetChatMemberFetchOptions,
   ISetChatStickerSetFetchOptions,
   IDeleteChatStickerSetFetchOptions,
+  IBotCommand,
+  BotCommandScope,
+  ISetMyCommandsFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -1127,6 +1130,27 @@ export class Api {
   deleteChatStickerSet(chatId: number | string): Promise<boolean> {
     return this.callApi<boolean, IDeleteChatStickerSetFetchOptions>('deleteChatStickerSet', {
       chat_id: chatId,
+    });
+  }
+
+  /**
+   * Set my commands
+   * @param commands Commands you want to set (Array of {@link IBotCommand})
+   * @param scope Optional. Scope for which you want to set commands. {@link BotCommandScope}
+   * @param languageCode Optional. A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope, for whose language there are no dedicated commands
+   * @see https://core.telegram.org/bots/api#setmycommands
+   * @see https://core.telegram.org/bots#commands
+   * @return {true} on success
+   * */
+  setMyCommands(
+    commands: IBotCommand[],
+    scope?: BotCommandScope,
+    languageCode?: string,
+  ): Promise<boolean> {
+    return this.callApi<boolean, ISetMyCommandsFetchOptions>('setMyCommands', {
+      commands,
+      scope,
+      language_code: languageCode,
     });
   }
 
