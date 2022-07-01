@@ -87,7 +87,7 @@ import {
   IApproveChatJoinRequestFetchOptions,
   IDeclineChatJoinRequestFetchOptions,
   ISetChatPhotoFetchOptions,
-  IDeleteChatPhoto,
+  IDeleteChatPhotoFetchOptions,
   ISetChatTitleFetchOptions,
   ISetChatDescriptionFetchOptions,
   IPinChatMessageFetchOptions,
@@ -106,6 +106,7 @@ import {
   BotCommandScope,
   ISetMyCommandsFetchOptions,
   IDeleteMyCommandsFetchOptions,
+  IGetMyCommandsFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -971,7 +972,9 @@ export class Api {
    * @return true on success
    * */
   deleteChatPhoto(chatId: number | string): Promise<boolean> {
-    return this.callApi<boolean, IDeleteChatPhoto>('deleteChatPhoto', { chat_id: chatId });
+    return this.callApi<boolean, IDeleteChatPhotoFetchOptions>('deleteChatPhoto', {
+      chat_id: chatId,
+    });
   }
 
   /**
@@ -1164,6 +1167,20 @@ export class Api {
    * */
   deleteMyCommands(scope?: BotCommandScope, languageCode?: string): Promise<boolean> {
     return this.callApi<boolean, IDeleteMyCommandsFetchOptions>('deleteMyCommands', {
+      scope,
+      language_code: languageCode,
+    });
+  }
+
+  /**
+   * Get my commands
+   * @param scope Optional. Scope for which you want to get commands. {@link BotCommandScope}
+   * @param languageCode Optional. A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope, for whose language there are no dedicated commands
+   * @see https://core.telegram.org/bots/api#getmycommands
+   * @return Array of {@link IBotCommand} on success
+   * */
+  getMyCommands(scope?: BotCommandScope, languageCode?: string): Promise<IBotCommand[]> {
+    return this.callApi<IBotCommand[], IGetMyCommandsFetchOptions>('getMyCommands', {
       scope,
       language_code: languageCode,
     });

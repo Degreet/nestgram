@@ -418,8 +418,9 @@ export interface ICreateChatInviteLinkFetchOptions
   extends ICreateChatInviteLinkOptions,
     IExportChatInviteLinkFetchOptions {}
 
-export interface IDeleteChatPhoto extends IExportChatInviteLinkFetchOptions {}
+export interface IDeleteChatPhotoFetchOptions extends IExportChatInviteLinkFetchOptions {}
 export interface IDeclineChatJoinRequestFetchOptions extends IApproveChatJoinRequestFetchOptions {}
+export interface IGetMyCommandsFetchOptions extends IDeleteMyCommandsFetchOptions {}
 
 export interface ISendDiceOptions extends IDefaultOptions {}
 export interface ISendMediaGroupOptions extends IDefaultOptions {}
