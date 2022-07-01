@@ -7,5 +7,5 @@ export * from './keyboard.types';
 export * from './media.types';
 export * from './message-creator.types';
 export * from './middleware.types';
-export * from './scope.types';
+export * from './bot-command.types';
 export * from './update.types';

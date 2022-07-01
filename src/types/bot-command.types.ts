@@ -50,3 +50,8 @@ export interface IBotCommandScopeChatMember extends IBotCommandScopeDefaultOptio
   chat_id: string | number;
   user_id: number;
 }
+
+export interface IBotCommand {
+  command: string;
+  description: string;
+}
