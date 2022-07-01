@@ -395,6 +395,11 @@ export interface IGetChatMemberFetchOptions {
   user_id: number;
 }
 
+export interface ISetChatStickerSetFetchOptions {
+  chat_id: number | string;
+  sticker_set_name: string;
+}
+
 export interface ICreateChatInviteLinkFetchOptions
   extends ICreateChatInviteLinkOptions,
     IExportChatInviteLinkFetchOptions {}

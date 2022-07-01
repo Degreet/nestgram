@@ -100,6 +100,7 @@ import {
   IGetChatAdministratorsFetchOptions,
   IGetChatMemberCountFetchOptions,
   IGetChatMemberFetchOptions,
+  ISetChatStickerSetFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -1099,6 +1100,20 @@ export class Api {
     return this.callApi<ChatMember, IGetChatMemberFetchOptions>('getChatMember', {
       chat_id: chatId,
       user_id: userId,
+    });
+  }
+
+  /**
+   * Set chat sticker set
+   * @param chatId Chat ID you want to set sticker set
+   * @param stickerSetName Sticker set name you want to set
+   * @see https://core.telegram.org/bots/api#setchatstickerset
+   * @return {true} on success
+   * */
+  setChatStickerSet(chatId: number | string, stickerSetName: string): Promise<boolean> {
+    return this.callApi<boolean, ISetChatStickerSetFetchOptions>('setChatStickerSet', {
+      chat_id: chatId,
+      sticker_set_name: stickerSetName,
     });
   }
 

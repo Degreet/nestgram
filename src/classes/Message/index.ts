@@ -13,6 +13,8 @@ export * from './DeleteChatPhoto';
 export * from './ChatPermissions';
 export * from './ChatAction';
 export * from './AdminTitle';
+export * from './Leave';
+
 export * from './Forward';
 export * from './Copy';
 
@@ -31,4 +33,4 @@ export * from './ChatDescription';
 export * from './Pin';
 export * from './Unpin';
 
-export * from './Leave';
+export * from './ChatStickerSet';
