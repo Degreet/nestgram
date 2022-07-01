@@ -24,6 +24,7 @@ export type SendTypes =
   | 'pin'
   | 'unpin'
   | 'leave'
-  | 'setChatStickerSet';
+  | 'setChatStickerSet'
+  | 'deleteChatStickerSet';
 
 export type MessageCreatorTypes = MediaFileTypes | 'text' | 'location';

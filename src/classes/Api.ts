@@ -101,6 +101,7 @@ import {
   IGetChatMemberCountFetchOptions,
   IGetChatMemberFetchOptions,
   ISetChatStickerSetFetchOptions,
+  IDeleteChatStickerSetFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -1114,6 +1115,18 @@ export class Api {
     return this.callApi<boolean, ISetChatStickerSetFetchOptions>('setChatStickerSet', {
       chat_id: chatId,
       sticker_set_name: stickerSetName,
+    });
+  }
+
+  /**
+   * Delete chat sticker set
+   * @param chatId Chat ID you want to delete sticker set
+   * @see https://core.telegram.org/bots/api#deletechatstickerset
+   * @return {true} on success
+   * */
+  deleteChatStickerSet(chatId: number | string): Promise<boolean> {
+    return this.callApi<boolean, IDeleteChatStickerSetFetchOptions>('deleteChatStickerSet', {
+      chat_id: chatId,
     });
   }
 

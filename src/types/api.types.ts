@@ -400,6 +400,10 @@ export interface ISetChatStickerSetFetchOptions {
   sticker_set_name: string;
 }
 
+export interface IDeleteChatStickerSetFetchOptions {
+  chat_id: number | string;
+}
+
 export interface ICreateChatInviteLinkFetchOptions
   extends ICreateChatInviteLinkOptions,
     IExportChatInviteLinkFetchOptions {}

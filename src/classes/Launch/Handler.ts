@@ -35,6 +35,7 @@ import {
   Unpin,
   Leave,
   ChatStickerSet,
+  DeleteChatStickerSet,
 } from '../Message';
 
 import { Answer } from '../Context/Answer';
@@ -127,6 +128,7 @@ export class Handler {
         answerCallArgs.push(resultMessageToSend.photo, resultMessageToSend.chatId);
       } else if (
         resultMessageToSend instanceof DeleteChatPhoto ||
+        resultMessageToSend instanceof DeleteChatStickerSet ||
         resultMessageToSend instanceof Leave
       ) {
         answerCallArgs.push(resultMessageToSend.chatId);
