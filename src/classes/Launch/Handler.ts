@@ -39,6 +39,7 @@ import {
   MyCommands,
   DeleteMyCommands,
   MenuButton,
+  MyDefaultAdminRights,
 } from '../Message';
 
 import { Answer } from '../Context/Answer';
@@ -137,6 +138,8 @@ export class Handler {
         answerCallArgs.push(resultMessageToSend.chatId);
       } else if (resultMessageToSend instanceof MenuButton) {
         answerCallArgs.push(resultMessageToSend.menuButton, resultMessageToSend.chatId);
+      } else if (resultMessageToSend instanceof MyDefaultAdminRights) {
+        answerCallArgs.push(resultMessageToSend.rights, resultMessageToSend.forChannels);
       } else if (resultMessageToSend instanceof ChatTitle) {
         answerCallArgs.push(resultMessageToSend.title, resultMessageToSend.chatId);
       } else if (resultMessageToSend instanceof ChatDescription) {

@@ -109,6 +109,8 @@ import {
   IGetMyCommandsFetchOptions,
   ISetChatMenuButtonFetchOptions,
   IGetChatMenuButtonFetchOptions,
+  IChatAdministratorRights,
+  ISetMyDefaultAdministratorRightsFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -1191,12 +1193,12 @@ export class Api {
 
   /**
    * Set chat menu button
-   * @param chatId Optional. Chat ID in which you want to set menu button. It can be id of group/channel or ID of the user
    * @param menuButton Optional. Menu button you want to set ({@link BotMenuButton})
+   * @param chatId Optional. Chat ID in which you want to set menu button. It can be id of group/channel or ID of the user
    * @see https://core.telegram.org/bots/api#setchatmenubutton
    * @return {true} on success
    * */
-  setMenuButton(chatId?: number | string, menuButton?: BotMenuButton): Promise<boolean> {
+  setMenuButton(menuButton?: BotMenuButton, chatId?: number | string): Promise<boolean> {
     return this.callApi<boolean, ISetChatMenuButtonFetchOptions>('setChatMenuButton', {
       chat_id: chatId,
       menu_button: menuButton,
@@ -1213,6 +1215,26 @@ export class Api {
     return this.callApi<BotMenuButton, IGetChatMenuButtonFetchOptions>('getChatMenuButton', {
       chat_id: chatId,
     });
+  }
+
+  /**
+   * Set my default administrator rights
+   * @param rights Optional. Rights you want to set as default
+   * @param forChannels Optional. Pass true to get default administrator rights of the bot in channels. Otherwise, default administrator rights of the bot for groups and supergroups will be returned
+   * @see https://core.telegram.org/bots/api#setmydefaultadministratorrights
+   * @return {true} on success
+   * */
+  setMyDefaultAdminRights(
+    rights?: IChatAdministratorRights,
+    forChannels?: boolean,
+  ): Promise<boolean> {
+    return this.callApi<boolean, ISetMyDefaultAdministratorRightsFetchOptions>(
+      'setMyDefaultAdministratorRights',
+      {
+        rights,
+        for_channels: forChannels,
+      },
+    );
   }
 
   /**

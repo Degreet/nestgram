@@ -22,6 +22,7 @@ import {
   ChatMember,
   IBotCommand,
   BotCommandScope,
+  IChatAdministratorRights,
 } from '../..';
 
 import { MessageCreator } from '../Message';
@@ -511,7 +512,7 @@ export class Answer {
       if (!chatId) throw error(`Can't find chatId from update`);
     }
 
-    return this.api.setMenuButton(chatId, menuButton);
+    return this.api.setMenuButton(menuButton, chatId);
   }
 
   /**
@@ -527,6 +528,20 @@ export class Answer {
     }
 
     return this.api.getMenuButton(chatId);
+  }
+
+  /**
+   * Set my default administrator rights
+   * @param rights Optional. Rights you want to set as default
+   * @param forChannels Optional. Pass true to get default administrator rights of the bot in channels. Otherwise, default administrator rights of the bot for groups and supergroups will be returned
+   * @see https://core.telegram.org/bots/api#setmydefaultadministratorrights
+   * @return {true} on success
+   * */
+  setMyDefaultAdminRights(
+    rights?: IChatAdministratorRights,
+    forChannels?: boolean,
+  ): Promise<boolean> {
+    return this.api.setMyDefaultAdminRights(rights, forChannels);
   }
 
   /**

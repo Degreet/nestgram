@@ -77,6 +77,8 @@ export interface IChatPermissions {
   can_pin_messages?: boolean;
 }
 
+export interface IChatAdministratorRights extends IPromoteChatPermissions {}
+
 export interface IChatMemberDefault {
   status: IChatMemberStatus;
   user: IUser;

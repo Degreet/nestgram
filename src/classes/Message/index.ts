@@ -12,7 +12,7 @@ export * from './DeleteChatPhoto';
 
 export * from './ChatPermissions';
 export * from './ChatAction';
-export * from './MenuButton';
+
 export * from './AdminTitle';
 export * from './Leave';
 
@@ -39,3 +39,6 @@ export * from './DeleteChatStickerSet';
 
 export * from './MyCommands';
 export * from './DeleteMyCommands';
+
+export * from './MenuButton';
+export * from './MyDefaultAdminRights';

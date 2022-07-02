@@ -28,6 +28,7 @@ export type SendTypes =
   | 'deleteChatStickerSet'
   | 'setMyCommands'
   | 'deleteMyCommands'
-  | 'setMenuButton';
+  | 'setMenuButton'
+  | 'setMyDefaultAdminRights';
 
 export type MessageCreatorTypes = MediaFileTypes | 'text' | 'location';

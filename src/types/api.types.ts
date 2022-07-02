@@ -2,7 +2,7 @@ import { IMessageEntity, IPhotoSize } from './update.types';
 import { IInlineKeyboard, IReplyMarkup } from './keyboard.types';
 import { InputMediaTypes } from './media.types';
 import { Thumb } from '../classes';
-import { IChatPermissions, IUser } from './chat.types';
+import { IChatAdministratorRights, IChatPermissions, IUser } from './chat.types';
 import { BotCommandScope, IBotCommand } from './bot-command.types';
 import { BotMenuButton } from './menu-button.types';
 
@@ -422,6 +422,11 @@ export interface ISetChatMenuButtonFetchOptions {
 
 export interface IGetChatMenuButtonFetchOptions {
   chat_id?: number | string;
+}
+
+export interface ISetMyDefaultAdministratorRightsFetchOptions {
+  rights?: IChatAdministratorRights;
+  for_channels?: boolean;
 }
 
 export interface ICreateChatInviteLinkFetchOptions
