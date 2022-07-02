@@ -111,6 +111,7 @@ import {
   IGetChatMenuButtonFetchOptions,
   IChatAdministratorRights,
   ISetMyDefaultAdministratorRightsFetchOptions,
+  IGetMyDefaultAdministratorRightsFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -1234,6 +1235,19 @@ export class Api {
         rights,
         for_channels: forChannels,
       },
+    );
+  }
+
+  /**
+   * Get my default administrator rights
+   * @param forChannels Optional. Pass true to get default administrator rights of the bot in channels. Otherwise, default administrator rights of the bot for groups and supergroups will be returned
+   * @see https://core.telegram.org/bots/api#getmydefaultadministratorrights
+   * @return {@link IChatAdministratorRights} on success
+   * */
+  getMyDefaultAdminRights(forChannels?: boolean): Promise<IChatAdministratorRights> {
+    return this.callApi<IChatAdministratorRights, IGetMyDefaultAdministratorRightsFetchOptions>(
+      'getMyDefaultAdministratorRights',
+      { for_channels: forChannels },
     );
   }
 

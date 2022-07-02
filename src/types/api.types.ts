@@ -429,6 +429,10 @@ export interface ISetMyDefaultAdministratorRightsFetchOptions {
   for_channels?: boolean;
 }
 
+export interface IGetMyDefaultAdministratorRightsFetchOptions {
+  for_channels?: boolean;
+}
+
 export interface ICreateChatInviteLinkFetchOptions
   extends ICreateChatInviteLinkOptions,
     IExportChatInviteLinkFetchOptions {}
