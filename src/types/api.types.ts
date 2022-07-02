@@ -415,9 +415,13 @@ export interface IDeleteMyCommandsFetchOptions {
   language_code?: string;
 }
 
-export interface ISetChatMenuButton {
+export interface ISetChatMenuButtonFetchOptions {
   chat_id?: number | string;
   menu_button?: BotMenuButton;
+}
+
+export interface IGetChatMenuButtonFetchOptions {
+  chat_id?: number | string;
 }
 
 export interface ICreateChatInviteLinkFetchOptions

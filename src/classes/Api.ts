@@ -107,7 +107,8 @@ import {
   ISetMyCommandsFetchOptions,
   IDeleteMyCommandsFetchOptions,
   IGetMyCommandsFetchOptions,
-  ISetChatMenuButton,
+  ISetChatMenuButtonFetchOptions,
+  IGetChatMenuButtonFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -1196,9 +1197,21 @@ export class Api {
    * @return {true} on success
    * */
   setMenuButton(chatId?: number | string, menuButton?: BotMenuButton): Promise<boolean> {
-    return this.callApi<boolean, ISetChatMenuButton>('setChatMenuButton', {
+    return this.callApi<boolean, ISetChatMenuButtonFetchOptions>('setChatMenuButton', {
       chat_id: chatId,
       menu_button: menuButton,
+    });
+  }
+
+  /**
+   * Get chat menu button
+   * @param chatId Optional. Chat ID in which you want to get menu button. It can be id of group/channel or ID of the user
+   * @see https://core.telegram.org/bots/api#getchatmenubutton
+   * @return {@link BotMenuButton} on success
+   * */
+  getMenuButton(chatId?: number | string): Promise<BotMenuButton> {
+    return this.callApi<BotMenuButton, IGetChatMenuButtonFetchOptions>('getChatMenuButton', {
+      chat_id: chatId,
     });
   }
 

@@ -30,8 +30,8 @@ import { Filter } from './Filter';
 import { Api } from '../Api';
 
 import axios, { AxiosResponse } from 'axios';
-import * as fs from 'fs';
 import { BotMenuButton } from '../../types/menu-button.types';
+import * as fs from 'fs';
 
 export class Answer {
   api: Api = new Api(this.token);
@@ -506,9 +506,27 @@ export class Answer {
     menuButton?: BotMenuButton,
     chatId?: number | string | '_current',
   ): Promise<boolean> {
-    if (chatId === '_current') chatId = Filter.getChatId(this.update);
-    if (!chatId) throw error(`Can't find chatId from update`);
+    if (chatId === '_current') {
+      chatId = Filter.getChatId(this.update);
+      if (!chatId) throw error(`Can't find chatId from update`);
+    }
+
     return this.api.setMenuButton(chatId, menuButton);
+  }
+
+  /**
+   * Get chat menu button
+   * @param chatId Optional. Chat ID in which you want to get menu button. It can be id of group/channel or ID of the user. Or pass '_current' to get chat menu button from current chat
+   * @see https://core.telegram.org/bots/api#getchatmenubutton
+   * @return {@link BotMenuButton} on success
+   * */
+  getMenuButton(chatId?: number | string | '_current'): Promise<BotMenuButton> {
+    if (chatId === '_current') {
+      chatId = Filter.getChatId(this.update);
+      if (!chatId) throw error(`Can't find chatId from update`);
+    }
+
+    return this.api.getMenuButton(chatId);
   }
 
   /**
