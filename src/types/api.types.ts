@@ -4,6 +4,7 @@ import { InputMediaTypes } from './media.types';
 import { Thumb } from '../classes';
 import { IChatPermissions, IUser } from './chat.types';
 import { BotCommandScope, IBotCommand } from './bot-command.types';
+import { BotMenuButton } from './menu-button.types';
 
 export type IOptions = ISendOptions | ISendPhotoOptions | ISendVideoOptions;
 export type ParseModes = 'HTML' | 'Markdown' | 'MarkdownV2';
@@ -412,6 +413,11 @@ export interface ISetMyCommandsFetchOptions extends IDeleteMyCommandsFetchOption
 export interface IDeleteMyCommandsFetchOptions {
   scope?: BotCommandScope;
   language_code?: string;
+}
+
+export interface ISetChatMenuButton {
+  chat_id?: number | string;
+  menu_button?: BotMenuButton;
 }
 
 export interface ICreateChatInviteLinkFetchOptions

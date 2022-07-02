@@ -12,6 +12,7 @@ export * from './DeleteChatPhoto';
 
 export * from './ChatPermissions';
 export * from './ChatAction';
+export * from './MenuButton';
 export * from './AdminTitle';
 export * from './Leave';
 

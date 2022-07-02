@@ -31,6 +31,7 @@ import { Api } from '../Api';
 
 import axios, { AxiosResponse } from 'axios';
 import * as fs from 'fs';
+import { BotMenuButton } from '../../types/menu-button.types';
 
 export class Answer {
   api: Api = new Api(this.token);
@@ -492,6 +493,22 @@ export class Answer {
    * */
   getMyCommands(scope?: BotCommandScope, languageCode?: string): Promise<IBotCommand[]> {
     return this.api.getMyCommands(scope, languageCode);
+  }
+
+  /**
+   * Set chat menu button
+   * @param menuButton Optional. Menu button you want to set ({@link BotMenuButton})
+   * @param chatId Optional. Chat ID in which you want to set menu button. It can be id of group/channel or ID of the user. Or pass '_current' to set chat menu button for current chat
+   * @see https://core.telegram.org/bots/api#setchatmenubutton
+   * @return {true} on success
+   * */
+  setMenuButton(
+    menuButton?: BotMenuButton,
+    chatId?: number | string | '_current',
+  ): Promise<boolean> {
+    if (chatId === '_current') chatId = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+    return this.api.setMenuButton(chatId, menuButton);
   }
 
   /**

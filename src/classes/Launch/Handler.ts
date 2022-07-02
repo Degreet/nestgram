@@ -38,6 +38,7 @@ import {
   DeleteChatStickerSet,
   MyCommands,
   DeleteMyCommands,
+  MenuButton,
 } from '../Message';
 
 import { Answer } from '../Context/Answer';
@@ -134,6 +135,8 @@ export class Handler {
         resultMessageToSend instanceof Leave
       ) {
         answerCallArgs.push(resultMessageToSend.chatId);
+      } else if (resultMessageToSend instanceof MenuButton) {
+        answerCallArgs.push(resultMessageToSend.menuButton, resultMessageToSend.chatId);
       } else if (resultMessageToSend instanceof ChatTitle) {
         answerCallArgs.push(resultMessageToSend.title, resultMessageToSend.chatId);
       } else if (resultMessageToSend instanceof ChatDescription) {

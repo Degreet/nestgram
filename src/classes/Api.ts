@@ -107,6 +107,7 @@ import {
   ISetMyCommandsFetchOptions,
   IDeleteMyCommandsFetchOptions,
   IGetMyCommandsFetchOptions,
+  ISetChatMenuButton,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -116,6 +117,7 @@ import { error } from '../logger';
 import axios from 'axios';
 import * as FormData from 'form-data';
 import * as fs from 'fs';
+import { BotMenuButton } from '../types/menu-button.types';
 
 export class Api {
   constructor(private readonly token?: string) {}
@@ -1183,6 +1185,20 @@ export class Api {
     return this.callApi<IBotCommand[], IGetMyCommandsFetchOptions>('getMyCommands', {
       scope,
       language_code: languageCode,
+    });
+  }
+
+  /**
+   * Set chat menu button
+   * @param chatId Optional. Chat ID in which you want to set menu button. It can be id of group/channel or ID of the user
+   * @param menuButton Optional. Menu button you want to set ({@link BotMenuButton})
+   * @see https://core.telegram.org/bots/api#setchatmenubutton
+   * @return {true} on success
+   * */
+  setMenuButton(chatId?: number | string, menuButton?: BotMenuButton): Promise<boolean> {
+    return this.callApi<boolean, ISetChatMenuButton>('setChatMenuButton', {
+      chat_id: chatId,
+      menu_button: menuButton,
     });
   }
 

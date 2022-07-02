@@ -1,7 +1,7 @@
 import { IWebAppInfo } from './web-app.types';
 
 export type MenuButtonTypes = 'default' | 'commands' | 'web_app';
-export type MenuButton = IMenuButtonCommands | IMenuButtonWebApp | IMenuButtonDefault;
+export type BotMenuButton = IMenuButtonCommands | IMenuButtonWebApp | IMenuButtonDefault;
 
 export interface IMenuButtonDefaultOptions {
   type: MenuButtonTypes;
