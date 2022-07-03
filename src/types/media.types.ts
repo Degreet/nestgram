@@ -15,12 +15,14 @@ export type MediaFileTypes =
 export type MediaSendTypes = 'location' | 'venue' | 'contact' | 'poll' | 'dice';
 
 export type InputMediaTypes =
+  | IInputMediaAnimation
   | IInputMediaAudio
   | IInputMediaDocument
   | IInputMediaPhoto
   | IInputMediaVideo;
 
 export type InputSupportedMedia = Audio | Document | Photo | Video;
+export type InputAllSupportedMedia = Animation | InputSupportedMedia;
 export type MediaPassTypes = 'url' | 'path';
 
 export interface IResolution {
@@ -29,11 +31,19 @@ export interface IResolution {
 }
 
 export interface IInputMediaDefault {
-  type: 'audio' | 'video' | 'photo' | 'document';
+  type: 'animation' | 'audio' | 'video' | 'photo' | 'document';
   media: string;
   caption?: string;
   parse_mode?: ParseModes;
   caption_entities?: IMessageEntity[];
+}
+
+export interface IInputMediaAnimation extends IInputMediaDefault {
+  type: 'animation';
+  thumb?: string;
+  duration?: number;
+  width?: number;
+  height?: number;
 }
 
 export interface IInputMediaAudio extends IInputMediaDefault {

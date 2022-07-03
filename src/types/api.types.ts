@@ -1,6 +1,6 @@
 import { IMessageEntity, IPhotoSize } from './update.types';
 import { IInlineKeyboard, IReplyMarkup } from './keyboard.types';
-import { InputMediaTypes } from './media.types';
+import { InputAllSupportedMedia, InputMediaTypes } from './media.types';
 import { Thumb } from '../classes';
 import { IChatAdministratorRights, IChatPermissions, IUser } from './chat.types';
 import { BotCommandScope, IBotCommand } from './bot-command.types';
@@ -472,6 +472,17 @@ export interface IEditCaptionOptions {
   inline_message_id?: string;
   parse_mode?: ParseModes;
   caption_entities?: IMessageEntity[];
+  reply_markup?: IInlineKeyboard;
+}
+
+export interface IEditMediaFetchOptions extends IEditMediaOptions {
+  chat_id?: number | string;
+  message_id?: number;
+  media: InputAllSupportedMedia;
+}
+
+export interface IEditMediaOptions {
+  inline_message_id?: string;
   reply_markup?: IInlineKeyboard;
 }
 

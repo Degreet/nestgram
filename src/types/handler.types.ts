@@ -41,7 +41,7 @@ export type ArgsTypes = [
 ];
 
 export type ContentTypes = Media | string | undefined | null;
-export type EditContentTypes = Caption | string;
+export type EditContentTypes = Media | Caption | string;
 
 export type HandlerMethod = ((...args: ArgsTypes) => MessageCreator | ContentTypes) & {
   prototype: { name: 'AsyncFunction' | 'Function' };

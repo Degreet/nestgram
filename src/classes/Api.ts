@@ -116,6 +116,7 @@ import {
   IEditCaptionOptions,
   IEditCaptionFetchOptions,
   SendOptions,
+  IEditMediaFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -786,6 +787,8 @@ export class Api {
 
     if (content instanceof Caption) {
       return this.editCaption(chatId, msgId, content.caption, keyboard, moreOptions);
+    } else if (content instanceof Media) {
+      return this.editMedia(chatId, msgId, content, keyboard, moreOptions);
     }
 
     return this.callApi<IMessage, IEditTextFetchOptions>('editMessageText', {
@@ -820,6 +823,58 @@ export class Api {
       caption,
       ...(moreOptions || {}),
     });
+  }
+
+  /**
+   * Edit a message media
+   * @param chatId Chat ID in which message you want to edit is located
+   * @param msgId Message ID you want to edit
+   * @param media Media you want to edit
+   * @param keyboard Pass Keyboard class if you want to add keyboard to the message
+   * @param moreOptions More options {@link IEditTextOptions}
+   * @see https://core.telegram.org/bots/api#editmessagemedia
+   * */
+  async editMedia(
+    chatId: number | string | null,
+    msgId: number | null,
+    media: Media,
+    keyboard?: Keyboard,
+    moreOptions: IEditCaptionOptions = {},
+  ): Promise<IMessage> {
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+
+    const formData: FormData = this.buildAttachFormData<IEditMediaFetchOptions>({
+      chat_id: chatId,
+      message_id: msgId,
+      media: {
+        type: media.type,
+        media: mediaCache.getMediaFileId(media.media) || `attach://media`,
+        ...(media.thumb
+          ? { thumb: mediaCache.getMediaFileId(media.thumb.media) || `attach://thumb` }
+          : {}),
+        ...(media instanceof Video ? media.resolution : {}),
+        ...(media.options || {}),
+      },
+      ...moreOptions,
+    });
+
+    if (!mediaCache.getMediaFileId(media.media))
+      Api.appendMediaToFormData(formData, 'media', media);
+
+    if (media.thumb) {
+      if (!mediaCache.getMediaFileId(media.thumb.media))
+        Api.appendMediaToFormData(formData, 'thumb', media.thumb);
+    }
+
+    const sentMessage: IMessage = await this.callApi<IMessage, FormData>(
+      'editMessageMedia',
+      formData,
+    );
+
+    // @ts-ignore
+    Api.saveMediaFileId(media.media, media.type, sentMessage);
+
+    return sentMessage;
   }
 
   /**
