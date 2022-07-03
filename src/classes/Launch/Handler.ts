@@ -42,6 +42,7 @@ import {
   MyDefaultAdminRights,
   Edit,
   Delete,
+  StopPoll,
 } from '../Message';
 
 import { Answer } from '../Context/Answer';
@@ -166,6 +167,13 @@ export class Handler {
         );
       } else if (resultMessageToSend instanceof Unpin || resultMessageToSend instanceof Delete) {
         answerCallArgs.push(resultMessageToSend.msgId, resultMessageToSend.chatId);
+      } else if (resultMessageToSend instanceof StopPoll) {
+        answerCallArgs.push(
+          resultMessageToSend.keyboard,
+          resultMessageToSend.moreOptions,
+          resultMessageToSend.msgId,
+          resultMessageToSend.chatId,
+        );
       } else if (resultMessageToSend instanceof Forward || resultMessageToSend instanceof Copy) {
         if (resultMessageToSend instanceof Forward)
           answerCallArgs.push(resultMessageToSend.toChatId, resultMessageToSend.options);

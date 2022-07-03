@@ -31,6 +31,7 @@ export type SendTypes =
   | 'setMenuButton'
   | 'setMyDefaultAdminRights'
   | 'edit'
-  | 'delete';
+  | 'delete'
+  | 'stopPoll';
 
 export type MessageCreatorTypes = MediaFileTypes | 'text' | 'location';

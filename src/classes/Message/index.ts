@@ -45,3 +45,4 @@ export * from './MyDefaultAdminRights';
 
 export * from './Edit';
 export * from './Delete';
+export * from './StopPoll';

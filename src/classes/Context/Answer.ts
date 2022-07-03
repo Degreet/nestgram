@@ -25,6 +25,7 @@ import {
   IEditTextOptions,
   EditContentTypes,
   SendOptions,
+  IStopPollOptions,
   IPoll,
 } from '../..';
 
@@ -96,6 +97,29 @@ export class Answer {
     if (!msgId) throw error(`Can't find msgId from update`);
 
     return this.api.delete(chatId, msgId);
+  }
+
+  /**
+   * Stop a poll
+   * @param keyboard Keyboard you want to edit
+   * @param moreOptions More options {@link IStopPollOptions}
+   * @param msgId Optional. Message ID of the poll you want to stop. Current message id by default
+   * @param chatId Optional. Chat ID in which poll you want to stop is located. Current chat id by default
+   * @see https://core.telegram.org/bots/api#stoppoll
+   * */
+  stopPoll(
+    keyboard?: Keyboard,
+    moreOptions: IStopPollOptions = {},
+    msgId?: number | null,
+    chatId?: number | string | null,
+  ): Promise<IPoll> {
+    if (!chatId) chatId = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+
+    if (!msgId) msgId = Filter.getMsgId(this.update);
+    if (!msgId) throw error(`Can't find msgId from update`);
+
+    return this.api.stopPoll(chatId, msgId, keyboard, moreOptions);
   }
 
   /**

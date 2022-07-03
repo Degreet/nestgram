@@ -121,7 +121,6 @@ import {
   IEditKeyboardOptions,
   IStopPollOptions,
   IStopPollFetchOptions,
-  StopPoll,
   IPoll,
   IDeleteMessageFetchOptions,
 } from '..';
@@ -798,9 +797,7 @@ export class Api {
     } else if (content instanceof Keyboard) {
       return this.editKeyboard(chatId, msgId, content, moreOptions);
     } else if (content instanceof MarkCreator) {
-      if (content instanceof StopPoll) {
-        return this.stopPoll(chatId, msgId, keyboard, moreOptions);
-      } else if (content instanceof Caption) {
+      if (content instanceof Caption) {
         return this.editCaption(chatId, msgId, content.caption, keyboard, moreOptions);
       } else return;
     }
