@@ -475,6 +475,16 @@ export interface IEditCaptionOptions {
   reply_markup?: IInlineKeyboard;
 }
 
+export interface IEditKeyboardFetchOptions extends IEditKeyboardOptions {
+  chat_id?: number | string;
+  message_id?: number;
+}
+
+export interface IEditKeyboardOptions {
+  inline_message_id?: string;
+  reply_markup?: IInlineKeyboard;
+}
+
 export interface IEditMediaFetchOptions extends IEditMediaOptions {
   chat_id?: number | string;
   message_id?: number;

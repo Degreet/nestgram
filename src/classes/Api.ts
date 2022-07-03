@@ -117,6 +117,8 @@ import {
   IEditCaptionFetchOptions,
   SendOptions,
   IEditMediaFetchOptions,
+  IEditKeyboardFetchOptions,
+  IEditKeyboardOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -774,13 +776,13 @@ export class Api {
    * @param content Content you want to edit (string or Caption class)
    * @param keyboard Pass Keyboard class if you want to add keyboard to the message
    * @param moreOptions More options {@link IEditTextOptions}
-   * @see https://core.telegram.org/bots/api#editmessagemedia
+   * @see https://core.telegram.org/bots/api#editmessagetext
    * */
   edit(
     chatId: number | string | null,
     msgId: number | null,
     content: EditContentTypes,
-    keyboard?: Keyboard,
+    keyboard?: Keyboard | null,
     moreOptions: IEditTextOptions = {},
   ): Promise<IMessage> {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
@@ -789,6 +791,8 @@ export class Api {
       return this.editCaption(chatId, msgId, content.caption, keyboard, moreOptions);
     } else if (content instanceof Media) {
       return this.editMedia(chatId, msgId, content, keyboard, moreOptions);
+    } else if (content instanceof Keyboard) {
+      return this.editKeyboard(chatId, msgId, content, moreOptions);
     }
 
     return this.callApi<IMessage, IEditTextFetchOptions>('editMessageText', {
@@ -806,7 +810,7 @@ export class Api {
    * @param caption Caption you want to edit
    * @param keyboard Pass Keyboard class if you want to add keyboard to the message
    * @param moreOptions More options {@link IEditTextOptions}
-   * @see https://core.telegram.org/bots/api#editmessagemedia
+   * @see https://core.telegram.org/bots/api#editmessagecaption
    * */
   editCaption(
     chatId: number | string | null,
@@ -821,6 +825,29 @@ export class Api {
       chat_id: chatId,
       message_id: msgId,
       caption,
+      ...(moreOptions || {}),
+    });
+  }
+
+  /**
+   * Edit a message keyboard
+   * @param chatId Chat ID in which message you want to edit is located
+   * @param msgId Message ID you want to edit
+   * @param keyboard Keyboard you want to edit
+   * @param moreOptions More options {@link IEditTextOptions}
+   * @see https://core.telegram.org/bots/api#editmessagereplymarkup
+   * */
+  editKeyboard(
+    chatId: number | string | null,
+    msgId: number | null,
+    keyboard?: Keyboard,
+    moreOptions: IEditKeyboardOptions = {},
+  ): Promise<IMessage> {
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+
+    return this.callApi<IMessage, IEditKeyboardFetchOptions>('editMessageReplyMarkup', {
+      chat_id: chatId,
+      message_id: msgId,
       ...(moreOptions || {}),
     });
   }

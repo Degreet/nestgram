@@ -11,7 +11,7 @@ import {
   IUpdate,
   IVenue,
 } from './update.types';
-import { Answer, Media, MessageCreator } from '../classes';
+import { Answer, Keyboard, Media, MessageCreator } from '../classes';
 import { IChat, IUser } from './chat.types';
 import { Caption } from '../classes/Marks';
 
@@ -41,7 +41,7 @@ export type ArgsTypes = [
 ];
 
 export type ContentTypes = Media | string | undefined | null;
-export type EditContentTypes = Media | Caption | string;
+export type EditContentTypes = Media | Caption | Keyboard | string;
 
 export type HandlerMethod = ((...args: ArgsTypes) => MessageCreator | ContentTypes) & {
   prototype: { name: 'AsyncFunction' | 'Function' };
