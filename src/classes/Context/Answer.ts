@@ -6,7 +6,6 @@ import {
   IForwardMessageOptions,
   ICopyMessageOptions,
   IStopMessageLiveLocationOptions,
-  ISendOptions,
   IMessage,
   IUpdate,
   IFile,
@@ -24,6 +23,8 @@ import {
   BotCommandScope,
   IChatAdministratorRights,
   IEditTextOptions,
+  EditContentTypes,
+  SendOptions,
 } from '../..';
 
 import { MessageCreator } from '../Message';
@@ -43,13 +44,13 @@ export class Answer {
    * Sends a message to the chat where got update
    * @param content Message data that you want to send, some media (e.g. Photo class) or string for text message
    * @param keyboard Pass Keyboard class if you want to add keyboard to the message
-   * @param moreOptions More options {@link ISendOptions}
+   * @param moreOptions More options {@link SendOptions}
    * @see https://core.telegram.org/bots/api#sendmessage
    * */
   send(
     content: MessageCreator | ContentTypes,
     keyboard: Keyboard | null = null,
-    moreOptions: ISendOptions = {},
+    moreOptions: SendOptions = {},
   ): Promise<IMessage | IMessage[]> {
     const chatId: number | string | undefined = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
@@ -58,14 +59,14 @@ export class Answer {
 
   /**
    * Edit a message
-   * @param text Text you want to edit
+   * @param content Content you want to edit (string or Caption class)
    * @param keyboard Optional. Pass Keyboard class if you want to add keyboard to the message
    * @param moreOptions Optional. More options {@link IEditTextOptions}
    * @param msgId Optional. Message ID you want to edit. Current message id by default
    * @see https://core.telegram.org/bots/api#editmessagemedia
    * */
   edit(
-    text: string,
+    content: EditContentTypes,
     keyboard?: Keyboard,
     moreOptions: IEditTextOptions = {},
     msgId?: number,
@@ -76,7 +77,7 @@ export class Answer {
     if (!msgId) msgId = Filter.getMsgId(this.update);
     if (!msgId) throw error(`Can't find msgId from update`);
 
-    return this.api.edit(chatId, msgId, text, keyboard, moreOptions);
+    return this.api.edit(chatId, msgId, content, keyboard, moreOptions);
   }
 
   /**

@@ -182,7 +182,7 @@ export class Handler {
         );
       } else if (resultMessageToSend instanceof Edit) {
         answerCallArgs.push(
-          resultMessageToSend.text,
+          resultMessageToSend.content,
           resultMessageToSend.keyboard,
           resultMessageToSend.moreOptions,
           resultMessageToSend.msgId,

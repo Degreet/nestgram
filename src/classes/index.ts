@@ -6,5 +6,6 @@ export * from './Helpers/ControllerHelper';
 
 export * from './Keyboard/Keyboard';
 export * from './Message';
+export * from './Marks';
 export * from './Media';
 export * from './Api';

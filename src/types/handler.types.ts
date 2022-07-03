@@ -13,6 +13,7 @@ import {
 } from './update.types';
 import { Answer, Media, MessageCreator } from '../classes';
 import { IChat, IUser } from './chat.types';
+import { Caption } from '../classes/Marks';
 
 export interface IHandler {
   controller: ControllerClass;
@@ -40,6 +41,7 @@ export type ArgsTypes = [
 ];
 
 export type ContentTypes = Media | string | undefined | null;
+export type EditContentTypes = Caption | string;
 
 export type HandlerMethod = ((...args: ArgsTypes) => MessageCreator | ContentTypes) & {
   prototype: { name: 'AsyncFunction' | 'Function' };

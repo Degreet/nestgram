@@ -6,7 +6,6 @@ import { IChatAdministratorRights, IChatPermissions, IUser } from './chat.types'
 import { BotCommandScope, IBotCommand } from './bot-command.types';
 import { BotMenuButton } from './menu-button.types';
 
-export type IOptions = ISendOptions | ISendPhotoOptions | ISendVideoOptions;
 export type ParseModes = 'HTML' | 'Markdown' | 'MarkdownV2';
 export type PollTypes = 'quiz' | 'regular';
 export type DiceEmojis = '🎲' | '🎯' | '🏀' | '⚽' | '🎳' | '🎰';
@@ -23,6 +22,22 @@ export type ChatActions =
   | 'find_location'
   | 'record_video_note'
   | 'upload_video_note';
+
+export type SendOptions =
+  | ISendOptions
+  | ISendAudioOptions
+  | ISendAnimationOptions
+  | ISendContactOptions
+  | ISendDiceOptions
+  | ISendDocumentOptions
+  | ISendLocationOptions
+  | ISendMediaGroupOptions
+  | ISendPhotoOptions
+  | ISendPollOptions
+  | ISendVenueOptions
+  | ISendVideoOptions
+  | ISendVideoNoteOptions
+  | ISendVoiceOptions;
 
 export interface ISendFetchOptions extends ISendOptions {
   chat_id: number | string;
@@ -444,6 +459,19 @@ export interface IEditTextOptions {
   parse_mode?: ParseModes;
   entities?: IMessageEntity[];
   disable_web_page_preview?: boolean;
+  reply_markup?: IInlineKeyboard;
+}
+
+export interface IEditCaptionFetchOptions extends IEditCaptionOptions {
+  chat_id?: number | string;
+  message_id?: number;
+  caption: string;
+}
+
+export interface IEditCaptionOptions {
+  inline_message_id?: string;
+  parse_mode?: ParseModes;
+  caption_entities?: IMessageEntity[];
   reply_markup?: IInlineKeyboard;
 }
 

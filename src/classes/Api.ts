@@ -17,7 +17,6 @@ import {
   IMessageId,
   InputMediaTypes,
   InputSupportedMedia,
-  IOptions,
   ISendAnimationFetchOptions,
   ISendAnimationOptions,
   ISendAudioFetchOptions,
@@ -29,7 +28,6 @@ import {
   ISendLocationOptions,
   ISendMediaGroupFetchOptions,
   ISendMediaGroupOptions,
-  ISendOptions,
   ISendPhotoFetchOptions,
   ISendPhotoOptions,
   ISendVideoFetchOptions,
@@ -114,6 +112,10 @@ import {
   IGetMyDefaultAdministratorRightsFetchOptions,
   IEditTextOptions,
   IEditTextFetchOptions,
+  EditContentTypes,
+  IEditCaptionOptions,
+  IEditCaptionFetchOptions,
+  SendOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -124,6 +126,7 @@ import axios from 'axios';
 import * as FormData from 'form-data';
 import * as fs from 'fs';
 import { BotMenuButton } from '../types/menu-button.types';
+import { Caption } from './Marks';
 
 export class Api {
   constructor(private readonly token?: string) {}
@@ -272,14 +275,14 @@ export class Api {
    * @param chatId Chat ID where you want to send message. It can be id of group/channel or ID of user
    * @param content Message data that you want to send, some media (e.g. Photo/Message class) or string for text message
    * @param keyboard Pass Keyboard class if you want to add keyboard to the message
-   * @param moreOptions More options {@link ISendOptions}
+   * @param moreOptions More options {@link SendOptions}
    * @see https://core.telegram.org/bots/api#sendmessage
    * */
   send(
     chatId: string | number,
     content: MessageCreator | ContentTypes,
     keyboard: Keyboard | null = null,
-    moreOptions: IOptions = {},
+    moreOptions: SendOptions = {},
   ): Promise<IMessage | IMessage[]> {
     if (content instanceof MessageCreator) {
       moreOptions = { ...moreOptions, ...content.options };
@@ -767,7 +770,7 @@ export class Api {
    * Edit a message
    * @param chatId Chat ID in which message you want to edit is located
    * @param msgId Message ID you want to edit
-   * @param text Text you want to edit
+   * @param content Content you want to edit (string or Caption class)
    * @param keyboard Pass Keyboard class if you want to add keyboard to the message
    * @param moreOptions More options {@link IEditTextOptions}
    * @see https://core.telegram.org/bots/api#editmessagemedia
@@ -775,16 +778,46 @@ export class Api {
   edit(
     chatId: number | string | null,
     msgId: number | null,
-    text: string,
+    content: EditContentTypes,
     keyboard?: Keyboard,
     moreOptions: IEditTextOptions = {},
   ): Promise<IMessage> {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
 
+    if (content instanceof Caption) {
+      return this.editCaption(chatId, msgId, content.caption, keyboard, moreOptions);
+    }
+
     return this.callApi<IMessage, IEditTextFetchOptions>('editMessageText', {
       chat_id: chatId,
       message_id: msgId,
-      text,
+      text: content,
+      ...(moreOptions || {}),
+    });
+  }
+
+  /**
+   * Edit a message caption
+   * @param chatId Chat ID in which message you want to edit is located
+   * @param msgId Message ID you want to edit
+   * @param caption Caption you want to edit
+   * @param keyboard Pass Keyboard class if you want to add keyboard to the message
+   * @param moreOptions More options {@link IEditTextOptions}
+   * @see https://core.telegram.org/bots/api#editmessagemedia
+   * */
+  editCaption(
+    chatId: number | string | null,
+    msgId: number | null,
+    caption: string,
+    keyboard?: Keyboard,
+    moreOptions: IEditCaptionOptions = {},
+  ): Promise<IMessage> {
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+
+    return this.callApi<IMessage, IEditCaptionFetchOptions>('editMessageCaption', {
+      chat_id: chatId,
+      message_id: msgId,
+      caption,
       ...(moreOptions || {}),
     });
   }
