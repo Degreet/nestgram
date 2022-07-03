@@ -2,7 +2,7 @@ import { KeyboardTypes, IButton, IKeyboardLayout, IReplyMarkup } from '../..';
 import { keyboardStore } from './KeyboardStore';
 import { error, warn } from '../../logger';
 
-export class Keyboard<T = any> {
+export class Keyboard {
   private oneTimeKeyboard: boolean = false;
   unresolvedButtons: IButton[] = [];
   rows: IButton[][] = [];
