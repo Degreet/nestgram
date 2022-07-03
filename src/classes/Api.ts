@@ -119,6 +119,9 @@ import {
   IEditMediaFetchOptions,
   IEditKeyboardFetchOptions,
   IEditKeyboardOptions,
+  IStopPollOptions,
+  IStopPollFetchOptions,
+  StopPoll,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -130,6 +133,7 @@ import * as FormData from 'form-data';
 import * as fs from 'fs';
 import { BotMenuButton } from '../types/menu-button.types';
 import { Caption } from './Marks';
+import { MarkCreator } from './Marks/MarkCreator';
 
 export class Api {
   constructor(private readonly token?: string) {}
@@ -787,12 +791,18 @@ export class Api {
   ): Promise<IMessage> {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
 
-    if (content instanceof Caption) {
-      return this.editCaption(chatId, msgId, content.caption, keyboard, moreOptions);
-    } else if (content instanceof Media) {
+    if (content instanceof Media) {
       return this.editMedia(chatId, msgId, content, keyboard, moreOptions);
     } else if (content instanceof Keyboard) {
       return this.editKeyboard(chatId, msgId, content, moreOptions);
+    } else if (content instanceof MarkCreator) {
+      if (content instanceof StopPoll) {
+        return this.stopPoll(chatId, msgId, keyboard, moreOptions);
+      } else if (content instanceof Caption) {
+        return this.editCaption(chatId, msgId, content.caption, keyboard, moreOptions);
+      }
+
+      return;
     }
 
     return this.callApi<IMessage, IEditTextFetchOptions>('editMessageText', {
@@ -902,6 +912,29 @@ export class Api {
     Api.saveMediaFileId(media.media, media.type, sentMessage);
 
     return sentMessage;
+  }
+
+  /**
+   * Stop a poll
+   * @param chatId Chat ID in which poll you want to stop is located
+   * @param msgId Message ID of the poll you want to stop
+   * @param keyboard Keyboard you want to edit
+   * @param moreOptions More options {@link IStopPollOptions}
+   * @see https://core.telegram.org/bots/api#stoppoll
+   * */
+  stopPoll(
+    chatId: number | string | null,
+    msgId: number | null,
+    keyboard?: Keyboard,
+    moreOptions: IStopPollOptions = {},
+  ): Promise<IMessage> {
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+
+    return this.callApi<IMessage, IStopPollFetchOptions>('stopPoll', {
+      chat_id: chatId,
+      message_id: msgId,
+      ...(moreOptions || {}),
+    });
   }
 
   /**

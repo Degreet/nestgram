@@ -496,6 +496,15 @@ export interface IEditMediaOptions {
   reply_markup?: IInlineKeyboard;
 }
 
+export interface IStopPollFetchOptions extends IStopPollOptions {
+  chat_id: number | string;
+  message_id?: number;
+}
+
+export interface IStopPollOptions {
+  reply_markup?: IInlineKeyboard;
+}
+
 export interface ICreateChatInviteLinkFetchOptions
   extends ICreateChatInviteLinkOptions,
     IExportChatInviteLinkFetchOptions {}
