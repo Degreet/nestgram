@@ -41,6 +41,7 @@ import {
   MenuButton,
   MyDefaultAdminRights,
   Edit,
+  Delete,
 } from '../Message';
 
 import { Answer } from '../Context/Answer';
@@ -163,7 +164,7 @@ export class Handler {
           resultMessageToSend.msgId,
           resultMessageToSend.chatId,
         );
-      } else if (resultMessageToSend instanceof Unpin) {
+      } else if (resultMessageToSend instanceof Unpin || resultMessageToSend instanceof Delete) {
         answerCallArgs.push(resultMessageToSend.msgId, resultMessageToSend.chatId);
       } else if (resultMessageToSend instanceof Forward || resultMessageToSend instanceof Copy) {
         if (resultMessageToSend instanceof Forward)

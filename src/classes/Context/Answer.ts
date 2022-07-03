@@ -25,6 +25,7 @@ import {
   IEditTextOptions,
   EditContentTypes,
   SendOptions,
+  IPoll,
 } from '../..';
 
 import { MessageCreator } from '../Message';
@@ -70,7 +71,7 @@ export class Answer {
     keyboard?: Keyboard,
     moreOptions: IEditTextOptions = {},
     msgId?: number,
-  ): Promise<IMessage> {
+  ): Promise<IMessage | IPoll> {
     const chatId: number | string | undefined = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
 
@@ -78,6 +79,23 @@ export class Answer {
     if (!msgId) throw error(`Can't find msgId from update`);
 
     return this.api.edit(chatId, msgId, content, keyboard, moreOptions);
+  }
+
+  /**
+   * Delete a message
+   * @param msgId Optional. Message ID you want to delete. Current message id by default
+   * @param chatId Optional. Chat ID in which message you want to delete is located. Current chat id by default
+   * @see https://core.telegram.org/bots/api#deletemessage
+   * @return true on success
+   * */
+  delete(msgId?: number | null, chatId?: number | string | null): Promise<boolean> {
+    if (!chatId) chatId = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+
+    if (!msgId) msgId = Filter.getMsgId(this.update);
+    if (!msgId) throw error(`Can't find msgId from update`);
+
+    return this.api.delete(chatId, msgId);
   }
 
   /**

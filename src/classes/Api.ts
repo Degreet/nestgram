@@ -122,6 +122,8 @@ import {
   IStopPollOptions,
   IStopPollFetchOptions,
   StopPoll,
+  IPoll,
+  IDeleteMessageFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -788,7 +790,7 @@ export class Api {
     content: EditContentTypes,
     keyboard?: Keyboard | null,
     moreOptions: IEditTextOptions = {},
-  ): Promise<IMessage> {
+  ): Promise<IMessage | IPoll> {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
 
     if (content instanceof Media) {
@@ -800,9 +802,7 @@ export class Api {
         return this.stopPoll(chatId, msgId, keyboard, moreOptions);
       } else if (content instanceof Caption) {
         return this.editCaption(chatId, msgId, content.caption, keyboard, moreOptions);
-      }
-
-      return;
+      } else return;
     }
 
     return this.callApi<IMessage, IEditTextFetchOptions>('editMessageText', {
@@ -915,6 +915,20 @@ export class Api {
   }
 
   /**
+   * Delete a message
+   * @param chatId Chat ID in which message you want to delete is located
+   * @param msgId Message ID you want to delete
+   * @see https://core.telegram.org/bots/api#deletemessage
+   * @return true on success
+   * */
+  delete(chatId: number | string | null, msgId: number | null): Promise<boolean> {
+    return this.callApi<boolean, IDeleteMessageFetchOptions>('deleteMessage', {
+      chat_id: chatId,
+      message_id: msgId,
+    });
+  }
+
+  /**
    * Stop a poll
    * @param chatId Chat ID in which poll you want to stop is located
    * @param msgId Message ID of the poll you want to stop
@@ -927,10 +941,10 @@ export class Api {
     msgId: number | null,
     keyboard?: Keyboard,
     moreOptions: IStopPollOptions = {},
-  ): Promise<IMessage> {
+  ): Promise<IPoll> {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
 
-    return this.callApi<IMessage, IStopPollFetchOptions>('stopPoll', {
+    return this.callApi<IPoll, IStopPollFetchOptions>('stopPoll', {
       chat_id: chatId,
       message_id: msgId,
       ...(moreOptions || {}),

@@ -44,3 +44,4 @@ export * from './MenuButton';
 export * from './MyDefaultAdminRights';
 
 export * from './Edit';
+export * from './Delete';

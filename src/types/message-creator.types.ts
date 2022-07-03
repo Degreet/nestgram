@@ -30,6 +30,7 @@ export type SendTypes =
   | 'deleteMyCommands'
   | 'setMenuButton'
   | 'setMyDefaultAdminRights'
-  | 'edit';
+  | 'edit'
+  | 'delete';
 
 export type MessageCreatorTypes = MediaFileTypes | 'text' | 'location';
