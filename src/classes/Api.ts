@@ -112,6 +112,8 @@ import {
   IChatAdministratorRights,
   ISetMyDefaultAdministratorRightsFetchOptions,
   IGetMyDefaultAdministratorRightsFetchOptions,
+  IEditTextOptions,
+  IEditTextFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -758,6 +760,32 @@ export class Api {
       chat_id: chatId,
       emoji: emoji || '🎲',
       ...moreOptions,
+    });
+  }
+
+  /**
+   * Edit a message
+   * @param chatId Chat ID in which message you want to edit is located
+   * @param msgId Message ID you want to edit
+   * @param text Text you want to edit
+   * @param keyboard Pass Keyboard class if you want to add keyboard to the message
+   * @param moreOptions More options {@link IEditTextOptions}
+   * @see https://core.telegram.org/bots/api#editmessagemedia
+   * */
+  edit(
+    chatId: number | string | null,
+    msgId: number | null,
+    text: string,
+    keyboard?: Keyboard,
+    moreOptions: IEditTextOptions = {},
+  ): Promise<IMessage> {
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+
+    return this.callApi<IMessage, IEditTextFetchOptions>('editMessageText', {
+      chat_id: chatId,
+      message_id: msgId,
+      text,
+      ...(moreOptions || {}),
     });
   }
 

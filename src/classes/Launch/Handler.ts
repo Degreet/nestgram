@@ -40,6 +40,7 @@ import {
   DeleteMyCommands,
   MenuButton,
   MyDefaultAdminRights,
+  Edit,
 } from '../Message';
 
 import { Answer } from '../Context/Answer';
@@ -174,12 +175,17 @@ export class Handler {
             resultMessageToSend.options,
           );
       } else if (resultMessageToSend instanceof MessageSend) {
-        sendMethodKey = 'send';
-
         answerCallArgs.push(
           resultMessageToSend.content,
           resultMessageToSend.keyboard,
           resultMessageToSend.options,
+        );
+      } else if (resultMessageToSend instanceof Edit) {
+        answerCallArgs.push(
+          resultMessageToSend.text,
+          resultMessageToSend.keyboard,
+          resultMessageToSend.moreOptions,
+          resultMessageToSend.msgId,
         );
       } else {
         answerCallArgs.push(resultMessageToSend);

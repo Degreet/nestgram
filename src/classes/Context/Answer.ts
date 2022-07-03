@@ -23,6 +23,7 @@ import {
   IBotCommand,
   BotCommandScope,
   IChatAdministratorRights,
+  IEditTextOptions,
 } from '../..';
 
 import { MessageCreator } from '../Message';
@@ -53,6 +54,29 @@ export class Answer {
     const chatId: number | string | undefined = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
     return this.api.send(chatId, content, keyboard, moreOptions);
+  }
+
+  /**
+   * Edit a message
+   * @param text Text you want to edit
+   * @param keyboard Optional. Pass Keyboard class if you want to add keyboard to the message
+   * @param moreOptions Optional. More options {@link IEditTextOptions}
+   * @param msgId Optional. Message ID you want to edit. Current message id by default
+   * @see https://core.telegram.org/bots/api#editmessagemedia
+   * */
+  edit(
+    text: string,
+    keyboard?: Keyboard,
+    moreOptions: IEditTextOptions = {},
+    msgId?: number,
+  ): Promise<IMessage> {
+    const chatId: number | string | undefined = Filter.getChatId(this.update);
+    if (!chatId) throw error(`Can't find chatId from update`);
+
+    if (!msgId) msgId = Filter.getMsgId(this.update);
+    if (!msgId) throw error(`Can't find msgId from update`);
+
+    return this.api.edit(chatId, msgId, text, keyboard, moreOptions);
   }
 
   /**

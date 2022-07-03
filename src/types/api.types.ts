@@ -433,6 +433,20 @@ export interface IGetMyDefaultAdministratorRightsFetchOptions {
   for_channels?: boolean;
 }
 
+export interface IEditTextFetchOptions extends IEditTextOptions {
+  chat_id?: number | string;
+  message_id?: number;
+  text: string;
+}
+
+export interface IEditTextOptions {
+  inline_message_id?: string;
+  parse_mode?: ParseModes;
+  entities?: IMessageEntity[];
+  disable_web_page_preview?: boolean;
+  reply_markup?: IInlineKeyboard;
+}
+
 export interface ICreateChatInviteLinkFetchOptions
   extends ICreateChatInviteLinkOptions,
     IExportChatInviteLinkFetchOptions {}
