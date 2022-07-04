@@ -525,6 +525,18 @@ export interface IEditLiveLocationOptions {
   reply_markup?: IInlineKeyboard;
 }
 
+export interface IEditInviteLinkFetchOptions extends IEditInviteLinkOptions {
+  chat_id: number | string;
+  invite_link: string;
+}
+
+export interface IEditInviteLinkOptions {
+  name?: string;
+  expire_date?: number;
+  member_limit?: number;
+  creates_join_request?: boolean;
+}
+
 export interface ICreateChatInviteLinkFetchOptions
   extends ICreateChatInviteLinkOptions,
     IExportChatInviteLinkFetchOptions {}

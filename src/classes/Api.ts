@@ -126,6 +126,8 @@ import {
   IEditLiveLocationOptions,
   IEditLiveLocationFetchOptions,
   LiveLocation,
+  IEditInviteLinkOptions,
+  IEditInviteLinkFetchOptions,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -138,6 +140,7 @@ import * as fs from 'fs';
 import { BotMenuButton } from '../types/menu-button.types';
 import { Caption } from './Marks';
 import { MarkCreator } from './Marks/MarkCreator';
+import { InviteLink } from './Marks/InviteLink';
 
 export class Api {
   constructor(private readonly token?: string) {}
@@ -792,7 +795,7 @@ export class Api {
     content: EditContentTypes,
     keyboard?: Keyboard | null,
     moreOptions: IEditTextOptions = {},
-  ): Promise<IMessage | IPoll> {
+  ): Promise<IMessage | IChatInviteLink> {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
 
     if (content instanceof Media) {
@@ -811,6 +814,8 @@ export class Api {
           content.keyboard,
           content.moreOptions,
         );
+      } else if (content instanceof InviteLink) {
+        return this.editInviteLink(chatId, content.inviteLink, content.options);
       } else return;
     }
 
@@ -924,6 +929,54 @@ export class Api {
   }
 
   /**
+   * Edit chat live location
+   * @param chatId Chat id in which location you want to edit is located
+   * @param msgId Message id you want to edit live location
+   * @param latitude Location latitude
+   * @param longitude Location longitude
+   * @param keyboard Optional. Keyboard you want to add
+   * @param moreOptions Optional. More options. {@link IEditLiveLocationOptions}
+   * @see https://core.telegram.org/bots/api#editchatlivelocation
+   * */
+  editLiveLocation(
+    chatId: number | string,
+    msgId: number,
+    latitude: number,
+    longitude: number,
+    keyboard?: Keyboard,
+    moreOptions: IEditLiveLocationOptions = {},
+  ): Promise<IMessage> {
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+
+    return this.callApi<IMessage, IEditLiveLocationFetchOptions>('editMessageLiveLocation', {
+      chat_id: chatId,
+      message_id: msgId,
+      latitude,
+      longitude,
+      ...(moreOptions || {}),
+    });
+  }
+
+  /**
+   * New chat invite link wrapper
+   * @param chatId Chat id in which you want to edit invite link
+   * @param inviteLink Invite link you want to edit
+   * @param options Options you want to edit. {@link IEditInviteLinkOptions}
+   * @see https://core.telegram.org/bots/api#editchatinvitelink
+   * */
+  editInviteLink(
+    chatId: number | string | null,
+    inviteLink: string,
+    options: IEditInviteLinkOptions,
+  ): Promise<IChatInviteLink> {
+    return this.callApi<IChatInviteLink, IEditInviteLinkFetchOptions>('editChatInviteLink', {
+      chat_id: chatId,
+      invite_link: inviteLink,
+      ...(options || {}),
+    });
+  }
+
+  /**
    * Delete a message
    * @param chatId Chat ID in which message you want to delete is located
    * @param msgId Message ID you want to delete
@@ -956,34 +1009,6 @@ export class Api {
     return this.callApi<IPoll, IStopPollFetchOptions>('stopPoll', {
       chat_id: chatId,
       message_id: msgId,
-      ...(moreOptions || {}),
-    });
-  }
-
-  /**
-   * New live location wrapper
-   * @param chatId Chat id in which location you want to edit is located
-   * @param msgId Message id you want to edit live location
-   * @param latitude Location latitude
-   * @param longitude Location longitude
-   * @param keyboard Optional. Keyboard you want to add
-   * @param moreOptions Optional. More options. {@link IEditLiveLocationOptions}
-   * */
-  editLiveLocation(
-    chatId: number | string,
-    msgId: number,
-    latitude: number,
-    longitude: number,
-    keyboard?: Keyboard,
-    moreOptions: IEditLiveLocationOptions = {},
-  ): Promise<IMessage> {
-    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
-
-    return this.callApi<IMessage, IEditLiveLocationFetchOptions>('editMessageLiveLocation', {
-      chat_id: chatId,
-      message_id: msgId,
-      latitude,
-      longitude,
       ...(moreOptions || {}),
     });
   }

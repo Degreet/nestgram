@@ -72,7 +72,7 @@ export class Answer {
     keyboard?: Keyboard,
     moreOptions: IEditTextOptions = {},
     msgId?: number,
-  ): Promise<IMessage | IPoll> {
+  ): Promise<IMessage | IChatInviteLink> {
     const chatId: number | string | undefined = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
 
