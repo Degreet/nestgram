@@ -15,7 +15,7 @@ export class Media {
   constructor(
     public readonly passType: MediaPassTypes,
     public media: string,
-    public readonly options?: any,
+    public options: any = {},
     public readonly useCache: boolean = true,
   ) {}
 
@@ -25,6 +25,16 @@ export class Media {
    * */
   setThumb(thumb: Thumb): this {
     this.thumb = thumb;
+    return this;
+  }
+
+  /**
+   * Set caption for media
+   * @param caption Caption you want to set
+   * */
+  setCaption(caption: string): this {
+    if (!this.options) this.options = {};
+    this.options.caption = caption;
     return this;
   }
 }

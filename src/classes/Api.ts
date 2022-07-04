@@ -390,6 +390,7 @@ export class Api {
     moreOptions: ISendPhotoOptions = {},
   ): Promise<IMessage> {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+    if (photo.options) moreOptions = { ...moreOptions, ...photo.options };
 
     return Api.saveMediaFileId(
       photo.media,
@@ -420,6 +421,7 @@ export class Api {
     moreOptions: ISendVideoOptions = {},
   ): Promise<IMessage> {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+    if (video.options) moreOptions = { ...moreOptions, ...video.options };
 
     return Api.saveMediaFileId(
       video.media,
@@ -452,6 +454,7 @@ export class Api {
     moreOptions: ISendVideoNoteOptions = {},
   ): Promise<IMessage> {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+    if (videoNote.options) moreOptions = { ...moreOptions, ...videoNote.options };
 
     return Api.saveMediaFileId(
       videoNote.media,
@@ -483,6 +486,7 @@ export class Api {
     moreOptions: ISendAudioOptions = {},
   ): Promise<IMessage> {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+    if (audio.options) moreOptions = { ...moreOptions, ...audio.options };
 
     return Api.saveMediaFileId(
       audio.media,
@@ -514,6 +518,7 @@ export class Api {
     moreOptions: ISendVoiceOptions = {},
   ): Promise<IMessage> {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+    if (voice.options) moreOptions = { ...moreOptions, ...voice.options };
 
     return Api.saveMediaFileId(
       voice.media,
@@ -544,6 +549,7 @@ export class Api {
     moreOptions: ISendDocumentOptions = {},
   ): Promise<IMessage> {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+    if (document.options) moreOptions = { ...moreOptions, ...document.options };
 
     return Api.saveMediaFileId(
       document.media,
@@ -575,6 +581,7 @@ export class Api {
     moreOptions: ISendAnimationOptions = {},
   ): Promise<IMessage> {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+    if (animation.options) moreOptions = { ...moreOptions, ...animation.options };
 
     return Api.saveMediaFileId(
       animation.media,
