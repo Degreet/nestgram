@@ -510,6 +510,21 @@ export interface IDeleteMessageFetchOptions {
   message_id: number;
 }
 
+export interface IEditLiveLocationFetchOptions extends IEditLiveLocationOptions {
+  chat_id?: number | string;
+  message_id?: number;
+  latitude: number;
+  longitude: number;
+}
+
+export interface IEditLiveLocationOptions {
+  inline_message_id?: string;
+  horizontal_accuracy?: number;
+  heading?: number;
+  proximity_alert_radius?: number;
+  reply_markup?: IInlineKeyboard;
+}
+
 export interface ICreateChatInviteLinkFetchOptions
   extends ICreateChatInviteLinkOptions,
     IExportChatInviteLinkFetchOptions {}

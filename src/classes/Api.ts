@@ -123,6 +123,9 @@ import {
   IStopPollFetchOptions,
   IPoll,
   IDeleteMessageFetchOptions,
+  IEditLiveLocationOptions,
+  IEditLiveLocationFetchOptions,
+  LiveLocation,
 } from '..';
 
 import { mediaCache } from './Media/MediaCache';
@@ -799,6 +802,15 @@ export class Api {
     } else if (content instanceof MarkCreator) {
       if (content instanceof Caption) {
         return this.editCaption(chatId, msgId, content.caption, keyboard, moreOptions);
+      } else if (content instanceof LiveLocation) {
+        return this.editLiveLocation(
+          chatId,
+          msgId,
+          content.latitude,
+          content.longitude,
+          content.keyboard,
+          content.moreOptions,
+        );
       } else return;
     }
 
@@ -944,6 +956,34 @@ export class Api {
     return this.callApi<IPoll, IStopPollFetchOptions>('stopPoll', {
       chat_id: chatId,
       message_id: msgId,
+      ...(moreOptions || {}),
+    });
+  }
+
+  /**
+   * New live location wrapper
+   * @param chatId Chat id in which location you want to edit is located
+   * @param msgId Message id you want to edit live location
+   * @param latitude Location latitude
+   * @param longitude Location longitude
+   * @param keyboard Optional. Keyboard you want to add
+   * @param moreOptions Optional. More options. {@link IEditLiveLocationOptions}
+   * */
+  editLiveLocation(
+    chatId: number | string,
+    msgId: number,
+    latitude: number,
+    longitude: number,
+    keyboard?: Keyboard,
+    moreOptions: IEditLiveLocationOptions = {},
+  ): Promise<IMessage> {
+    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+
+    return this.callApi<IMessage, IEditLiveLocationFetchOptions>('editMessageLiveLocation', {
+      chat_id: chatId,
+      message_id: msgId,
+      latitude,
+      longitude,
       ...(moreOptions || {}),
     });
   }
