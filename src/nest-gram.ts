@@ -131,6 +131,14 @@ export class NestGram {
   }
 
   /**
+   * Use an API class with a different token
+   * @param token Bot token you want to get api class
+   * */
+  to(token: string): Api {
+    return new Api(token);
+  }
+
+  /**
    * Starts bot using Long Polling or Webhooks
    * @return bot username
    * */
