@@ -154,7 +154,7 @@ export class ListenMiddleware {
     };
   }
 
-  static click(buttonId: string): MiddlewareFunction {
+  static click(buttonId: string | RegExp): MiddlewareFunction {
     return function use(
       update: IUpdate,
       answer: Answer,
@@ -163,7 +163,13 @@ export class ListenMiddleware {
       fail: NextFunction,
     ) {
       if (!update.callback_query) return fail();
-      if (update.callback_query.data !== buttonId) return fail();
+
+      if (buttonId instanceof RegExp) {
+        const match: RegExpMatchArray = update.callback_query.data.match(buttonId);
+        if (!match) return fail();
+        params._match = match;
+      } else if (update.callback_query.data !== buttonId) return fail();
+
       next();
     };
   }

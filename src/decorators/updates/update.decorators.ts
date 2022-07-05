@@ -69,7 +69,7 @@ export const OnEntity = (entity?: MessageEntityTypes): MethodDecorator =>
  * @param buttonId The id of the button you want to track.
  * @see https://core.telegram.org/bots/api#callbackquery
  * */
-export const OnClick = (buttonId: string): MethodDecorator =>
+export const OnClick = (buttonId: string | RegExp): MethodDecorator =>
   buildUpdateDecorator('click', buttonId);
 
 /**
