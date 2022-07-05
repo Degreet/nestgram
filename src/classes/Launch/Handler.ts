@@ -50,17 +50,23 @@ import { Filter } from '../Context/Filter';
 
 import { FileLogger } from '../Helpers/FileLogger';
 import { info } from '../../logger';
+import { scopeStore } from '../Scope/ScopeStore';
 
 export class Handler {
   fileLogger: FileLogger = new FileLogger(this.fileLoggingLimit);
+  handlers: IHandler[] = [];
+  scopes: IHandler[] = [];
 
   constructor(
     private readonly token: string,
-    private readonly handlers: IHandler[],
+    private readonly allHandlers: IHandler[],
     private readonly logging?: boolean,
     private readonly fileLogging?: boolean,
     private readonly fileLoggingLimit?: number,
-  ) {}
+  ) {
+    this.handlers = allHandlers.filter((handler: IHandler): boolean => !handler.scope) || [];
+    this.scopes = allHandlers.filter((handler: IHandler): boolean => !!handler.scope) || [];
+  }
 
   private getNextFunction(
     update: IUpdate,
@@ -206,13 +212,23 @@ export class Handler {
     return [sendMethodKey, answerCallArgs];
   }
 
+  private getHandlers(update: IUpdate) {
+    const userId: number | undefined = Filter.getUserId(update);
+    if (!userId) return this.handlers;
+
+    const current: string | undefined = scopeStore.getCurrent(userId);
+    if (!current) return this.handlers;
+
+    return this.scopes.filter((scope: IHandler): boolean => scope.scope === current);
+  }
+
   private handleMiddleware(
     index: number,
     update: IUpdate,
     answer: Answer,
     middlewareIndex: number = 0,
   ) {
-    const handler = this.handlers[index];
+    const handler = this.getHandlers(update)[index];
     if (!handler) return;
 
     const params: any = {};
@@ -314,7 +330,7 @@ export class Handler {
 
     // handle update
     const answer: Answer = new Answer(this.token, update);
-    const handler = this.handlers[0];
+    const handler = this.getHandlers(update)[0];
     if (handler) this.handleMiddleware(0, update, answer);
   }
 }

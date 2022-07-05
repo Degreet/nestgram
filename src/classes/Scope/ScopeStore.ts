@@ -34,6 +34,11 @@ class ScopeStore {
 
     return true;
   }
+
+  getCurrent(userId: number): string | undefined {
+    return (this.currentInfo.find((info: [number, string]): boolean => info[0] === userId) ||
+      [])[1];
+  }
 }
 
 export const scopeStore: ScopeStore = new ScopeStore();

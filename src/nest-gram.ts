@@ -7,6 +7,7 @@ import {
   IHandler,
   IUser,
   ModuleFunction,
+  ScopeClass,
 } from '.';
 
 import { clear, error, info, success } from './logger';
@@ -98,11 +99,15 @@ export class NestGram {
   private async setupImports(Module: any): Promise<void> {
     const controllers: ControllerClass[] = Reflect.getMetadata('controllers', Module);
     const services: ServiceClass[] = await NestGram.getServices(Module);
+
+    const scopes: ScopeClass[] = Reflect.getMetadata('scopes', Module);
     scopeStore.importScopes(Module);
 
-    if (controllers)
-      controllers.forEach((Controller: any): void => {
-        const controller: ControllerClass & { __proto__: any } = new Controller(...services);
+    if (controllers || scopes)
+      (controllers || scopes).forEach((Controller: any): void => {
+        const controller: (ControllerClass | ScopeClass) & { __proto__: any } = new Controller(
+          ...services,
+        );
 
         const globalMiddlewares: MiddlewareFunction[] =
           Reflect.getMetadata('middlewares', Module) || [];
@@ -119,6 +124,9 @@ export class NestGram {
             controller,
             methodKey,
             middlewares: [...globalMiddlewares, ...middlewares],
+            ...((scopes || []).includes(Controller)
+              ? { scope: controller.constructor.name.replace('Scope', '').toLowerCase() }
+              : {}),
           });
         });
 

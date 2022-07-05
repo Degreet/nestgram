@@ -20,6 +20,7 @@ export interface IHandler {
   controller: ControllerClass;
   middlewares: MiddlewareFunction[];
   methodKey: string;
+  scope?: string;
 }
 
 export type ArgsTypes = [
