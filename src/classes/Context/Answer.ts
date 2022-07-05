@@ -49,12 +49,21 @@ export class Answer {
    * Enter scope
    * @param scopeId Scope id in which you want to enter user
    * @return true on success
-   * @async
    * */
   async scope(scopeId: string): Promise<true> {
     const userId: number | string = Filter.getUserId(this.update);
     if (!userId) throw error(`Can't scope to ${scopeId}, can't get user id from update`);
     return this.scopeController.enter(userId, scopeId);
+  }
+
+  /**
+   * Leave scope
+   * @return true on success
+   * */
+  async unscope(): Promise<true> {
+    const userId: number | string = Filter.getUserId(this.update);
+    if (!userId) throw error(`Can't leave scope: can't get user id from update`);
+    return this.scopeController.leave(userId);
   }
 
   /**

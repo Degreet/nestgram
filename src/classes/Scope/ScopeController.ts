@@ -12,4 +12,9 @@ export class ScopeController {
     scopeStore.setCurrentScope(userId, scopeId);
     return true;
   }
+
+  async leave(userId: number): Promise<true> {
+    scopeStore.setCurrentScope(userId, '');
+    return true;
+  }
 }
