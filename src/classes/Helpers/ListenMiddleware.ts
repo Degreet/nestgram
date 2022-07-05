@@ -90,7 +90,9 @@ export class ListenMiddleware {
       if (!entity) return fail();
 
       if (!commandText) return next();
-      if (message.text.slice(entity.offset, entity.length) !== `/${commandText}`) return fail();
+      if (!message.text.slice(entity.offset, entity.length).startsWith(`/${commandText}`))
+        return fail();
+
       next();
     };
   }
