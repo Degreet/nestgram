@@ -1,4 +1,5 @@
 import { ModuleClass } from '../../types';
+import { error } from '../../logger';
 
 /**
  * Creates module: part of bot
@@ -12,6 +13,10 @@ export function Module(options: ModuleClass = {}): Function {
     if (options.imports) Reflect.defineMetadata('imports', options.imports, target);
     if (options.modules) Reflect.defineMetadata('modules', options.modules, target);
     if (options.scopes) Reflect.defineMetadata('scopes', options.scopes, target);
+
+    if (options.scopes && options.controllers)
+      throw error(`You can't use controllers in the scopes module`);
+
     return target;
   };
 }

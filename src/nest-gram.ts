@@ -14,11 +14,14 @@ import { Api } from './classes';
 
 import { Polling } from './classes/Launch/Polling';
 import { Webhook } from './classes/Launch/Webhook';
+import { ScopeController } from './classes/Scope/ScopeController';
+import { scopeStore } from './classes/Scope/ScopeStore';
 
 // clear console
 clear();
 
 export class NestGram {
+  scope: ScopeController = new ScopeController();
   handlers: IHandler[] = [];
   info: IUser;
 
@@ -59,8 +62,7 @@ export class NestGram {
     if (module) this.setupEntry(module);
   }
 
-  private async setupImports(Module: any): Promise<void> {
-    const controllers: ControllerClass[] = Reflect.getMetadata('controllers', Module);
+  static async getServices(Module: any): Promise<ServiceClass[]> {
     const modules: ModuleFunction[] = Reflect.getMetadata('modules', Module) || [];
     const compiledModules: any[] = [];
 
@@ -90,30 +92,39 @@ export class NestGram {
       return new Service(...compiledModules);
     });
 
-    controllers.forEach((Controller: any): void => {
-      const controller: ControllerClass & { __proto__: any } = new Controller(...services);
+    return services;
+  }
 
-      const globalMiddlewares: MiddlewareFunction[] =
-        Reflect.getMetadata('middlewares', Module) || [];
+  private async setupImports(Module: any): Promise<void> {
+    const controllers: ControllerClass[] = Reflect.getMetadata('controllers', Module);
+    const services: ServiceClass[] = await NestGram.getServices(Module);
+    scopeStore.importScopes(Module);
 
-      let methodKeys: (string | symbol)[] = Reflect.ownKeys(controller.__proto__);
-      methodKeys = methodKeys.filter((key: string | symbol): boolean => typeof key === 'string');
-      methodKeys = methodKeys.filter((key: string): boolean => key !== 'constructor');
+    if (controllers)
+      controllers.forEach((Controller: any): void => {
+        const controller: ControllerClass & { __proto__: any } = new Controller(...services);
 
-      methodKeys.forEach((methodKey: string): void => {
-        const middlewares: MiddlewareFunction[] =
-          Reflect.getMetadata('middlewares', controller[methodKey]) || [];
+        const globalMiddlewares: MiddlewareFunction[] =
+          Reflect.getMetadata('middlewares', Module) || [];
 
-        this.handlers.push({
-          controller,
-          methodKey,
-          middlewares: [...globalMiddlewares, ...middlewares],
+        let methodKeys: (string | symbol)[] = Reflect.ownKeys(controller.__proto__);
+        methodKeys = methodKeys.filter((key: string | symbol): boolean => typeof key === 'string');
+        methodKeys = methodKeys.filter((key: string): boolean => key !== 'constructor');
+
+        methodKeys.forEach((methodKey: string): void => {
+          const middlewares: MiddlewareFunction[] =
+            Reflect.getMetadata('middlewares', controller[methodKey]) || [];
+
+          this.handlers.push({
+            controller,
+            methodKey,
+            middlewares: [...globalMiddlewares, ...middlewares],
+          });
         });
-      });
 
-      const apiKey: string | undefined = Reflect.getMetadata('getApi', controller, 'api');
-      if (apiKey) controller[apiKey] = this.api;
-    });
+        const apiKey: string | undefined = Reflect.getMetadata('getApi', controller, 'api');
+        if (apiKey) controller[apiKey] = this.api;
+      });
   }
 
   private setupModule(Module: any): void {
@@ -132,7 +143,7 @@ export class NestGram {
 
   /**
    * Use an API class with a different token
-   * @param token Bot token you want to get api class
+   * @param token Bot token you want to get property class
    * */
   to(token: string): Api {
     return new Api(token);

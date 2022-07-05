@@ -1,5 +1,5 @@
 /**
- * Get api. You can use it to send message for another user {@link Api}
+ * Get property. You can use it to send message for another user {@link Api}
  * @type {Api}
  * @see https://degreetpro.gitbook.io/nestgram/advenced/get-api
  * */

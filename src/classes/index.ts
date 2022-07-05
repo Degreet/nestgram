@@ -1,5 +1,6 @@
 export * from './Context/Answer';
 export * from './Context/Filter';
+export * from './Scope/ScopeController';
 
 export * from './Helpers/NestgramDefault';
 export * from './Helpers/ControllerHelper';

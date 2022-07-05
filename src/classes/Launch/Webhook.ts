@@ -8,6 +8,8 @@ import * as http from 'http';
 
 export class Webhook {
   api: Api = new Api(this.token);
+  server: http.Server;
+
   handler: Handler = new Handler(
     this.token,
     this.handlers,
@@ -15,7 +17,6 @@ export class Webhook {
     this.fileLogging,
     this.fileLoggingLimit,
   );
-  server: http.Server;
 
   constructor(
     private readonly token: string,

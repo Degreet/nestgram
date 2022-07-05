@@ -27,6 +27,7 @@ import {
   SendOptions,
   IStopPollOptions,
   IPoll,
+  ScopeController,
 } from '../..';
 
 import { MessageCreator } from '../Message';
@@ -39,8 +40,22 @@ import { BotMenuButton } from '../../types/menu-button.types';
 import * as fs from 'fs';
 
 export class Answer {
-  api: Api = new Api(this.token);
+  private readonly scopeController: ScopeController = new ScopeController();
+  readonly api: Api = new Api(this.token);
+
   constructor(private readonly token: string, private readonly update: IUpdate) {}
+
+  /**
+   * Enter scope
+   * @param scopeId Scope id in which you want to enter user
+   * @return true on success
+   * @async
+   * */
+  async scope(scopeId: string): Promise<true> {
+    const userId: number | string = Filter.getUserId(this.update);
+    if (!userId) throw error(`Can't scope to ${scopeId}, can't get user id from update`);
+    return this.scopeController.enter(userId, scopeId);
+  }
 
   /**
    * Sends a message to the chat where got update
