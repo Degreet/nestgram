@@ -265,6 +265,14 @@ export class Handler {
       if (!['AsyncFunction', 'Function'].includes(handlerMethod.constructor.name)) return;
       let resultMessageToSend: MessageCreator | ContentTypes;
 
+      const getAnswerKey: string | undefined = Reflect.getMetadata(
+        'getAnswer',
+        handler.controller,
+        'answer',
+      );
+
+      if (getAnswerKey) handler.controller[getAnswerKey] = answer;
+
       try {
         resultMessageToSend = await handlerMethod(...args);
       } catch {
