@@ -12,6 +12,8 @@ export declare class ControllerClass {
   constructor(...services: ServiceClass[]);
 }
 
+export declare class ScopeClass extends ControllerClass {}
+
 export declare class ServiceClass {
   constructor(...args: any[]);
 }
@@ -22,4 +24,5 @@ export declare class ModuleClass {
   modules?: ModuleFunction[];
   services?: ServiceClass[];
   imports?: any[];
+  scopes?: ScopeClass[];
 }

@@ -111,8 +111,8 @@ export class NestGram {
         });
       });
 
-      const needApi: boolean | undefined = Reflect.getMetadata('getApi', controller, 'api');
-      if (needApi) controller['api'] = this.api;
+      const apiKey: string | undefined = Reflect.getMetadata('getApi', controller, 'api');
+      if (apiKey) controller[apiKey] = this.api;
     });
   }
 
