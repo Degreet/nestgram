@@ -1,4 +1,4 @@
-import { KeyboardTypes, IButton, IKeyboardLayout, IReplyMarkup } from '../..';
+import { IButton, IKeyboardLayout, IReplyMarkup, KeyboardTypes } from '../..';
 import { keyboardStore } from './KeyboardStore';
 import { error, warn } from '../../logger';
 
@@ -12,7 +12,10 @@ export class Keyboard {
    * @param keyboardType Type of keyboard {@link KeyboardTypes}
    * @param placeholder Placeholder for input "Type message..." (only for under_the_chat keyboard)
    * */
-  constructor(public readonly keyboardType: KeyboardTypes, private placeholder?: string) {}
+  constructor(
+    public readonly keyboardType: KeyboardTypes = KeyboardTypes.underTheMessage,
+    private placeholder?: string,
+  ) {}
 
   private checkButton(buttonType: string, supportKeyboard: KeyboardTypes): void {
     if (this.keyboardType !== supportKeyboard)
