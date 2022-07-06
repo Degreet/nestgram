@@ -1,10 +1,10 @@
 import { IScopeInfo } from '../../types/scope.types';
 import { ScopeClass, ServiceClass } from '../../types';
 import { NestGram } from '../../nest-gram';
+import { stateStore } from '../State/StateStore';
 
 class ScopeStore {
   protected scopes: IScopeInfo[] = [];
-  protected currentInfo: [number, string][] = [];
 
   importScopes(Module: any): true {
     const scopes: ScopeClass[] = Reflect.getMetadata('scopes', Module) || [];
@@ -25,19 +25,13 @@ class ScopeStore {
   }
 
   setCurrentScope(userId: number, scopeId: string): true {
-    const currentUserInfo: [number, string] | undefined = this.currentInfo.find(
-      (currentInfo: [number, string]): boolean => currentInfo[0] === userId,
-    );
-
-    if (currentUserInfo) currentUserInfo[1] = scopeId;
-    else this.currentInfo.push([userId, scopeId]);
-
+    const userState: { __currentScope?: string } = stateStore.getStore(userId);
+    userState.__currentScope = scopeId;
     return true;
   }
 
   getCurrent(userId: number): string | undefined {
-    return (this.currentInfo.find((info: [number, string]): boolean => info[0] === userId) ||
-      [])[1];
+    return stateStore.getStore(userId).__currentScope;
   }
 }
 
