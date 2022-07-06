@@ -1,8 +1,8 @@
 import {
   ArgsTypes,
+  ContentTypes,
   HandlerMethod,
   IHandler,
-  ContentTypes,
   IMessage,
   IUpdate,
   MiddlewareFunction,
@@ -10,39 +10,39 @@ import {
 } from '../../types';
 
 import {
-  MessageCreator,
-  Forward,
-  Alert,
-  Toast,
-  MessageSend,
-  Copy,
-  ChatAction,
-  Ban,
-  Unban,
-  Restrict,
-  Promote,
   AdminTitle,
+  Alert,
+  ApproveJoinRequest,
+  Ban,
+  ChatAction,
+  ChatDescription,
+  ChatPermissions,
+  ChatPhoto,
+  ChatStickerSet,
+  ChatTitle,
+  Copy,
+  DeclineJoinRequest,
+  Delete,
+  DeleteChatPhoto,
+  DeleteChatStickerSet,
+  DeleteMyCommands,
+  Edit,
+  Forward,
+  Leave,
+  MenuButton,
+  MessageCreator,
+  MessageSend,
+  MyCommands,
+  MyDefaultAdminRights,
+  Pin,
+  Promote,
+  Restrict,
   SaveFile,
   SaveProfilePhoto,
-  ChatPermissions,
-  ApproveJoinRequest,
-  DeclineJoinRequest,
-  ChatPhoto,
-  DeleteChatPhoto,
-  ChatTitle,
-  ChatDescription,
-  Pin,
-  Unpin,
-  Leave,
-  ChatStickerSet,
-  DeleteChatStickerSet,
-  MyCommands,
-  DeleteMyCommands,
-  MenuButton,
-  MyDefaultAdminRights,
-  Edit,
-  Delete,
   StopPoll,
+  Toast,
+  Unban,
+  Unpin,
 } from '../Message';
 
 import { Answer } from '../Context/Answer';
@@ -51,6 +51,7 @@ import { Filter } from '../Context/Filter';
 import { FileLogger } from '../Helpers/FileLogger';
 import { info } from '../../logger';
 import { scopeStore } from '../Scope/ScopeStore';
+import { stateStore } from '../State/StateStore';
 
 export class Handler {
   fileLogger: FileLogger = new FileLogger(this.fileLoggingLimit);
@@ -271,7 +272,15 @@ export class Handler {
         'answer',
       );
 
+      const getStateKey: string | undefined = Reflect.getMetadata(
+        'getState',
+        handler.controller,
+        'state',
+      );
+
       if (getAnswerKey) handler.controller[getAnswerKey] = answer;
+      if (getStateKey)
+        handler.controller[getStateKey] = stateStore.getStore(Filter.getPrivateId(update));
 
       try {
         resultMessageToSend = await handlerMethod(...args);

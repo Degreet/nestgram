@@ -13,3 +13,4 @@ export * from './updates/continue.decorator';
 export * from './property/api.decorator';
 export * from './property/scope-controller.decorator';
 export * from './property/answer.decorator';
+export * from './property/state.decorator';
