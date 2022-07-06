@@ -1,7 +1,7 @@
 {
   "name": "nestgram",
   "description": "Framework for working with Telegram Bot API on TypeScript like Nest.js",
-  "version": "1.8.5",
+  "version": "1.8.6",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "Degreet <degreetpro@gmail.com>",
