@@ -213,10 +213,10 @@ export class Handler {
   }
 
   private getHandlers(update: IUpdate) {
-    const userId: number | undefined = Filter.getUserId(update);
-    if (!userId) return this.handlers;
+    const privateId: number | undefined = Filter.getPrivateId(update);
+    if (!privateId) return this.handlers;
 
-    const current: string | undefined = scopeStore.getCurrent(userId);
+    const current: string | undefined = scopeStore.getCurrent(privateId);
     if (!current) return this.handlers;
 
     return this.scopes.filter((scope: IHandler): boolean => scope.scope === current);

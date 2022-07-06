@@ -1,4 +1,4 @@
-import { IMessage, IMessageEntity, IUpdate, MessageEntityTypes } from '../..';
+import { IChat, IMessage, IMessageEntity, IUpdate, MessageEntityTypes } from '../..';
 
 export class Filter {
   public static commandParamsRegExp = /\/.*? (.*)/;
@@ -51,6 +51,11 @@ export class Filter {
       update.edited_channel_post ||
       update.callback_query?.message
     );
+  }
+
+  public static getPrivateId(update: IUpdate): number | undefined {
+    const chat: IChat | undefined = Filter.getMessage(update)?.chat;
+    return chat?.type === 'private' ? chat?.id : Filter.getUserId(update);
   }
 
   /**

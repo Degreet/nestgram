@@ -51,9 +51,9 @@ export class Answer {
    * @return true on success
    * */
   async scope(scopeId: string): Promise<true> {
-    const userId: number | string = Filter.getUserId(this.update);
-    if (!userId) throw error(`Can't scope to ${scopeId}, can't get user id from update`);
-    return this.scopeController.enter(userId, scopeId);
+    const privateId: number | undefined = Filter.getPrivateId(this.update);
+    if (!privateId) throw error(`Can't scope to ${scopeId}: can't get chatId/userId from update`);
+    return this.scopeController.enter(privateId, scopeId);
   }
 
   /**
@@ -61,9 +61,10 @@ export class Answer {
    * @return true on success
    * */
   async unscope(): Promise<true> {
-    const userId: number | string = Filter.getUserId(this.update);
-    if (!userId) throw error(`Can't leave scope: can't get user id from update`);
-    return this.scopeController.leave(userId);
+    const chatId: number | string = Filter.getChatId(this.update);
+    if (!chatId || typeof chatId === 'string')
+      throw error(`Can't leave scope: can't get chatId from update`);
+    return this.scopeController.leave(chatId);
   }
 
   /**

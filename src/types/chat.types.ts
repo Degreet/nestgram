@@ -1,6 +1,8 @@
 import { ILocation, IMessage } from './update.types';
 import { IPromoteChatPermissions } from './api.types';
 
+export type ChatTypes = 'private' | 'group' | 'supergroup' | 'channel';
+
 export type IChatMemberStatus =
   | 'creator'
   | 'administrator'
@@ -33,7 +35,7 @@ export interface IUser {
 
 export interface IChat {
   id: number;
-  type: string;
+  type: ChatTypes;
   title?: string;
   username?: string;
   first_name?: string;
