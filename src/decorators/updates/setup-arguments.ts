@@ -26,7 +26,7 @@ export function setupArguments(
 ): void {
   const method: any = descriptor.value;
 
-  descriptor.value = function (): void {
+  descriptor.value = function handler(): void {
     const data: any = Reflect.getOwnMetadata('gotIndex', target, propertyName) || {};
     const startArguments: IArguments = { ...arguments };
 

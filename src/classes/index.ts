@@ -3,6 +3,7 @@ export * from './Context/Filter';
 
 export * from './Helpers/NestgramDefault';
 export * from './Helpers/ControllerHelper';
+export * from './Helpers/ListenMiddleware';
 
 export * from './Keyboard/Keyboard';
 export * from './Message';

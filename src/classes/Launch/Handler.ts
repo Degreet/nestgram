@@ -309,11 +309,6 @@ export class Handler {
       middlewareIndex?: number,
       handlerIndex?: number,
     ): void => {
-      if (handler.middlewares[middlewareIndex]) {
-        this.handleMiddleware(handlerIndex, update, answer, params, middlewareIndex);
-        return;
-      }
-
       this.handleMiddleware(handlerIndex + 1, update, answer, params, 0);
       return;
     };
