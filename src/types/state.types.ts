@@ -1,4 +1,4 @@
-export type CustomGetter = (userId: number, params?: any) => Promise<any> | any;
+export type CustomGetter = (userId: number, params?: any, defaultValue?: any) => Promise<any> | any;
 
 export interface IStateInfo<T> {
   userId: number;
