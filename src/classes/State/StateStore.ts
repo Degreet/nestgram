@@ -1,12 +1,21 @@
-import { IStateInfo } from '../../types/state.types';
+import { CustomGetter, IStateInfo } from '../../types/state.types';
 
 export class StateStore<T = any> {
   protected states: IStateInfo<T>[] = [];
 
   /**
-   * If you set a custom getter, when the user wants to get the store, he will ask your method. Must return object (state)
+   * If you want to set a custom getter, use .setCustomGetter method
    * */
-  customGetter: (userId: number, params?: any) => Promise<T | any> | T | any;
+  private customGetter: CustomGetter;
+
+  /**
+   * If you set a custom getter, when the user wants to get the store, he will ask your method
+   * @param customGetter Custom getter you want to save. Your getter can take user id and params from the handler as arguments. Getter must return object (state)
+   * */
+  setCustomGetter(customGetter: CustomGetter): true {
+    this.customGetter = customGetter;
+    return true;
+  }
 
   async getStore(userId: number, params?: any): Promise<T> {
     if (this.customGetter) {
