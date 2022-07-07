@@ -9,12 +9,12 @@ export class ScopeController {
     const scope: IScopeInfo | undefined = scopeStore.getScope(scopeId);
     if (!scope) throw error(`Can't find scope '${scopeId}'`);
 
-    scopeStore.setCurrentScope(userId, scopeId);
+    await scopeStore.setCurrentScope(userId, scopeId);
     return true;
   }
 
   async leave(userId: number): Promise<true> {
-    scopeStore.setCurrentScope(userId, '');
+    await scopeStore.setCurrentScope(userId, '');
     return true;
   }
 }

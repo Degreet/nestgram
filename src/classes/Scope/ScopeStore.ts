@@ -24,14 +24,14 @@ class ScopeStore {
     return this.scopes.find((scope: IScopeInfo): boolean => scope.name == scopeId);
   }
 
-  setCurrentScope(userId: number, scopeId: string): true {
-    const userState: { __currentScope?: string } = stateStore.getStore(userId);
+  async setCurrentScope(userId: number, scopeId: string): Promise<true> {
+    const userState: { __currentScope?: string } = await stateStore.getStore(userId);
     userState.__currentScope = scopeId;
     return true;
   }
 
-  getCurrent(userId: number): string | undefined {
-    return stateStore.getStore(userId).__currentScope;
+  async getCurrent(userId: number): Promise<string | undefined> {
+    return (await stateStore.getStore(userId)).__currentScope;
   }
 }
 

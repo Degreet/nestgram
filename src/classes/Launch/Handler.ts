@@ -213,23 +213,23 @@ export class Handler {
     return [sendMethodKey, answerCallArgs];
   }
 
-  private getHandlers(update: IUpdate) {
+  private async getHandlers(update: IUpdate): Promise<IHandler[]> {
     const privateId: number | undefined = Filter.getPrivateId(update);
     if (!privateId) return this.handlers;
 
-    const current: string | undefined = scopeStore.getCurrent(privateId);
+    const current: string | undefined = await scopeStore.getCurrent(privateId);
     if (!current) return this.handlers;
 
     return this.scopes.filter((scope: IHandler): boolean => scope.scope === current);
   }
 
-  private handleMiddleware(
+  private async handleMiddleware(
     index: number,
     update: IUpdate,
     answer: Answer,
     middlewareIndex: number = 0,
-  ) {
-    const handler = this.getHandlers(update)[index];
+  ): Promise<void> {
+    const handler = (await this.getHandlers(update))[index];
     if (!handler) return;
 
     const params: any = {};
@@ -280,7 +280,7 @@ export class Handler {
 
       if (getAnswerKey) handler.controller[getAnswerKey] = answer;
       if (getStateKey)
-        handler.controller[getStateKey] = stateStore.getStore(Filter.getPrivateId(update));
+        handler.controller[getStateKey] = await stateStore.getStore(Filter.getPrivateId(update));
 
       try {
         resultMessageToSend = await handlerMethod(...args);
@@ -304,7 +304,7 @@ export class Handler {
     const failNextFunction: NextFunction = (
       middlewareIndex?: number,
       handlerIndex?: number,
-    ): void => {
+    ): Promise<void> => {
       if (handler.middlewares[middlewareIndex]) {
         return this.handleMiddleware(handlerIndex, update, answer, middlewareIndex);
       }
@@ -347,7 +347,7 @@ export class Handler {
 
     // handle update
     const answer: Answer = new Answer(this.token, update);
-    const handler = this.getHandlers(update)[0];
+    const handler = (await this.getHandlers(update))[0];
     if (handler) this.handleMiddleware(0, update, answer);
   }
 }
