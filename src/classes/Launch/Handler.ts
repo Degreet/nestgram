@@ -227,12 +227,11 @@ export class Handler {
     index: number,
     update: IUpdate,
     answer: Answer,
+    params: any,
     middlewareIndex: number = 0,
   ): Promise<void> {
     const handler = (await this.getHandlers(update))[index];
     if (!handler) return;
-
-    const params: any = {};
 
     const baseNextFunction: NextFunction = async (): Promise<void> => {
       if (this.logging) info('Calling handler for update', `(${update.update_id})`.grey);
@@ -279,8 +278,13 @@ export class Handler {
       );
 
       if (getAnswerKey) handler.controller[getAnswerKey] = answer;
-      if (getStateKey)
-        handler.controller[getStateKey] = await stateStore.getStore(Filter.getPrivateId(update));
+
+      if (getStateKey) {
+        handler.controller[getStateKey] = await stateStore.getStore(
+          Filter.getPrivateId(update),
+          params,
+        );
+      }
 
       try {
         resultMessageToSend = await handlerMethod(...args);
@@ -304,12 +308,14 @@ export class Handler {
     const failNextFunction: NextFunction = (
       middlewareIndex?: number,
       handlerIndex?: number,
-    ): Promise<void> => {
+    ): void => {
       if (handler.middlewares[middlewareIndex]) {
-        return this.handleMiddleware(handlerIndex, update, answer, middlewareIndex);
+        this.handleMiddleware(handlerIndex, update, answer, params, middlewareIndex);
+        return;
       }
 
-      return this.handleMiddleware(handlerIndex + 1, update, answer, 0);
+      this.handleMiddleware(handlerIndex + 1, update, answer, params, 0);
+      return;
     };
 
     handler.middlewares[middlewareIndex](
@@ -335,7 +341,7 @@ export class Handler {
     );
 
     if (!isContinue) return;
-    this.handleMiddleware(index + 1, update, answer);
+    this.handleMiddleware(index + 1, update, answer, params);
   }
 
   async handleUpdate(update: IUpdate): Promise<void> {
@@ -345,9 +351,12 @@ export class Handler {
       if (this.fileLogging) this.fileLogger.saveLog(update);
     }
 
-    // handle update
+    // setup data for middlewares
+    const params: any = {};
     const answer: Answer = new Answer(this.token, update);
+
+    // handle update
     const handler = (await this.getHandlers(update))[0];
-    if (handler) this.handleMiddleware(0, update, answer);
+    if (handler) this.handleMiddleware(0, update, answer, params);
   }
 }

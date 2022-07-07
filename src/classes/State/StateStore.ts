@@ -6,16 +6,16 @@ export class StateStore<T = any> {
   /**
    * If you set a custom getter, when the user wants to get the store, he will ask your method. Must return object (state)
    * */
-  customGetter: (userId: number) => Promise<T | any> | T | any;
+  customGetter: (userId: number, params?: any) => Promise<T | any> | T | any;
 
-  async getStore(userId: number): Promise<T> {
+  async getStore(userId: number, params?: any): Promise<T> {
     if (this.customGetter) {
       let result: T;
 
       try {
-        result = await this.customGetter(userId);
+        result = await this.customGetter(userId, params);
       } catch (e: any) {
-        result = this.customGetter(userId);
+        result = this.customGetter(userId, params);
       }
 
       return result;
