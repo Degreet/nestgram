@@ -1,5 +1,3 @@
-import { KeyboardTypes } from '../enums';
-
 export interface IReplyMarkup extends IInlineKeyboard, IKeyboard {}
 
 export interface IInlineKeyboard {
@@ -27,10 +25,4 @@ export interface IButton {
   switch_inline_query?: string;
   web_app?: IWebAppButton;
   pay?: boolean;
-}
-
-export interface IKeyboardLayout {
-  name: string;
-  rows: IButton[][];
-  type: KeyboardTypes;
 }

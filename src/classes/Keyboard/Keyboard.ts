@@ -1,5 +1,4 @@
-import { IButton, IKeyboardLayout, IReplyMarkup, KeyboardTypes } from '../..';
-import { keyboardStore } from './KeyboardStore';
+import { IButton, IReplyMarkup, KeyboardTypes } from '../..';
 import { error, warn } from '../../logger';
 
 export class Keyboard {
@@ -153,37 +152,28 @@ export class Keyboard {
   /**
    * Saves rows as layout
    * @param layoutName Layout name
+   * @deprecated To use keyboard layouts, pass Keyboard class as argument to .use method
    * */
   save(layoutName: string): this {
-    this.row();
-    keyboardStore.layouts.push({ name: layoutName, rows: this.rows, type: this.keyboardType });
     return this;
   }
 
   /**
    * Extracts rows from the layout
-   * @param layoutName Layout name
+   * @param layout Layout you want to add to the current keyboard (pass instance of Keyboard class)
    * */
-  use(layoutName: string): this {
-    const layout: IKeyboardLayout | undefined = keyboardStore.layouts.find(
-      (layout: IKeyboardLayout): boolean => layout.name === layoutName,
-    );
-
-    if (!layout) {
-      warn(`Can't find layout with name`, layoutName.grey);
-      return this;
-    } else if (layout.type !== this.keyboardType) {
-      warn(
-        `Can't use layout with name`,
-        layoutName.grey,
-        `because it has a different keyboard type`,
-      );
-
+  use(layout: any): this {
+    if (layout.keyboardType !== this.keyboardType) {
+      warn(`Can't use layout, because it has a different keyboard type`);
       return this;
     }
 
     layout.rows.forEach((row: IButton[]): void => {
       this.unresolvedButtons.push(...row);
+    });
+
+    layout.unresolvedButtons.forEach((button: IButton): void => {
+      this.unresolvedButtons.push(button);
     });
 
     return this;

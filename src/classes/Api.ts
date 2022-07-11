@@ -364,7 +364,7 @@ export class Api {
         );
     }
 
-    if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
+    if (keyboard) moreOptions['reply_markup'] = keyboard.buildMarkup();
     if (!(typeof content === 'string')) return;
 
     return this.callApi<IMessage, ISendFetchOptions>('sendMessage', {

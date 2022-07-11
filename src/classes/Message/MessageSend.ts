@@ -18,6 +18,6 @@ export class MessageSend extends MessageCreator {
     public readonly options: SendOptions = {},
   ) {
     super(options);
-    if (keyboard) options.reply_markup = keyboard.buildMarkup();
+    if (keyboard) options['reply_markup'] = keyboard.buildMarkup();
   }
 }

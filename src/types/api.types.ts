@@ -62,6 +62,13 @@ export interface ISendMediaGroupFetchOptions extends ISendMediaGroupOptions {
   media: InputMediaTypes[];
 }
 
+export interface ISendMediaGroupOptions {
+  disable_notification?: boolean;
+  protect_content?: boolean;
+  reply_to_message_id?: number;
+  allow_sending_without_reply?: boolean;
+}
+
 export interface ISendPhotoFetchOptions extends ISendPhotoOptions {
   chat_id: number | string;
   photo?: string | any; // configures in form data
@@ -546,5 +553,4 @@ export interface IDeclineChatJoinRequestFetchOptions extends IApproveChatJoinReq
 export interface IGetMyCommandsFetchOptions extends IDeleteMyCommandsFetchOptions {}
 
 export interface ISendDiceOptions extends IDefaultOptions {}
-export interface ISendMediaGroupOptions extends IDefaultOptions {}
 export interface ISendDocumentOptions extends ISendPhotoOptions {}
