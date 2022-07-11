@@ -7,6 +7,7 @@ import {
   IUpdate,
   MiddlewareFunction,
   NextFunction,
+  NextLineAction,
 } from '../../types';
 
 import {
@@ -293,15 +294,23 @@ export class Handler {
       }
 
       if (!resultMessageToSend) return;
-      const messagesToSend: (MessageCreator | ContentTypes)[] = [
+      const actionsToDo: NextLineAction[] = [
         resultMessageToSend,
-        ...(resultMessageToSend instanceof MessageCreator ? resultMessageToSend.otherMessages : []),
+        ...(resultMessageToSend instanceof MessageCreator ? resultMessageToSend.otherActions : []),
       ];
 
-      for (const messageToSend of messagesToSend) {
-        const [sendMethodKey, answerCallArgs]: [string, any[]] =
-          Handler.getAnswerInfo(messageToSend);
-        await answer[sendMethodKey](...answerCallArgs);
+      for (const actionToDo of actionsToDo) {
+        if (typeof actionToDo === 'function') {
+          try {
+            await actionToDo();
+          } catch (e: any) {
+            actionToDo();
+          }
+        } else {
+          const [sendMethodKey, answerCallArgs]: [string, any[]] =
+            Handler.getAnswerInfo(actionToDo);
+          await answer[sendMethodKey](...answerCallArgs);
+        }
       }
     };
 

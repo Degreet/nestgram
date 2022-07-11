@@ -1,18 +1,18 @@
-import { ContentTypes, MessageCreatorTypes, SendTypes } from '../../types';
+import { MessageCreatorTypes, NextLineAction, SendTypes } from '../../types';
 
 export class MessageCreator {
   type: MessageCreatorTypes;
   sendType: SendTypes;
-  otherMessages: (MessageCreator | ContentTypes)[] = [];
+  otherActions: NextLineAction[] = [];
 
   constructor(public readonly options: any = {}) {}
 
   /**
-   * Add a message to send to the line
-   * @param message Message to send
+   * Add an action or a message to send to the line
+   * @param action Message to send or function (can be async)
    * */
-  next(message: MessageCreator | ContentTypes): this {
-    this.otherMessages.push(message);
+  next(action: NextLineAction): this {
+    this.otherActions.push(action);
     return this;
   }
 }

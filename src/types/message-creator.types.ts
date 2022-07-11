@@ -1,4 +1,6 @@
 import { MediaFileTypes } from './media.types';
+import { ContentTypes } from './handler.types';
+import { MessageCreator } from '../classes';
 
 export type SendTypes =
   | 'send'
@@ -34,4 +36,6 @@ export type SendTypes =
   | 'delete'
   | 'stopPoll';
 
+type NextLineFunction = () => Promise<any> | any;
+export type NextLineAction = MessageCreator | ContentTypes | NextLineFunction;
 export type MessageCreatorTypes = MediaFileTypes | 'text' | 'location';
