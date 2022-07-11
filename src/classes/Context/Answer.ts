@@ -351,7 +351,7 @@ export class Answer {
   /**
    * Creates chat invite link
    * @param moreOptions Message options {@link ICreateChatInviteLinkOptions}
-   * @param chatId Optional. Chat ID where you want to send dice. It can be id of group/channel or ID of the user. Current chat id by default
+   * @param chatId Optional. Chat ID where you want to create invite link. It can be id of group/channel or ID of the user. Current chat id by default
    * @see https://core.telegram.org/bots/api#createchatinvitelink
    * @return Chat invite link info {@link IChatInviteLink}
    * */
@@ -625,7 +625,7 @@ export class Answer {
   /**
    * Set my default administrator rights
    * @param rights Optional. Rights you want to set as default
-   * @param forChannels Optional. Pass true to get default administrator rights of the bot in channels. Otherwise, default administrator rights of the bot for groups and supergroups will be returned
+   * @param forChannels Optional. Pass true to get default administrator rights of the bot in channels. Otherwise, default administrator rights of the bot for groups and supergroups will be changed
    * @see https://core.telegram.org/bots/api#setmydefaultadministratorrights
    * @return {true} on success
    * */
