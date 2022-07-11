@@ -2,13 +2,25 @@
 
 Nestgram - Framework for working with Telegram Bot API on TypeScript like Nest.js
 
+> ℹ️ Nestgram in development. Current version is 1.8.7 <br>
+> If you found a bug, you can ask the [author](https://t.me/degreet) or ask the [form](https://do67hlsz91r.typeform.com/to/sI6NXBKV)
+
+> ⚠️ Nestgram can't use Nest.js modules. But you can create own modules for Nestgram :)
+
+# Links
+
+- [Official website](https://degreetpro.gitbook.io/nestgram/)
+- [Our telegram channel](https://t.me/nestgram_ts) 🇺🇦
+- [GitHub](https://github.com/Degreet/nestgram)
+- [Author](https://t.me/degreet)
+
 # Guide
 
 You can read the [guide on the official Nestgram website](https://degreetpro.gitbook.io/nestgram/getting-started/guide), on [Medium website](https://medium.com/p/ff251fb825fd) or here
 
 ## Install Nestgram
 
-You need to install nestgram at first. You can do this using yarn or npm.
+You need to install nestgram at first. You can do this using yarn or npm
 
 ```nginx
 yarn add nestgram
@@ -32,7 +44,14 @@ async function bootstrap(): Promise<void> {
 bootstrap();
 ```
 
-At first, we imported nestgram and our AppModule, later we will create it. In the next step, we created a bootstrap function, in which we set up and run the project. The NestGram class gets bot token as 1st parameter (you can get it via [BotFather](https://t.me/BotFather)), app module as 2nd parameter, options as 3rd parameter, and [run config](https://degreetpro.gitbook.io/nestgram/advenced/webhooks-and-run-config) as 4th parameter
+At first, we imported nestgram and our `AppModule`, later we will create it. In the next step, we created a bootstrap function, in which we set up and run the project. The `NestGram` class takes arguments:
+
+| Argument | Name                                                                                                                                      | Required     |
+|:---------|:------------------------------------------------------------------------------------------------------------------------------------------|:-------------|
+| 1        | Bot token. You can get it [here](https://t.me/BotFather)                                                                                  | **Required** |
+| 2        | [App module](#create-app.module.ts)                                                                                                       | **Required** |
+| 3        | Config [IPollingConfig](https://core.telegram.org/bots/api#getupdates) or [IWebhookConfig](https://core.telegram.org/bots/api#setwebhook) | Optional     |
+| 4        | [Run config](https://degreetpro.gitbook.io/nestgram/config/webhooks-and-run-config#run-config)                                            | Optional     |
 
 ## Create app.module.ts
 
@@ -50,11 +69,11 @@ import { AppService } from './app.service';
 export class AppModule {}
 ```
 
-At first, we imported Module class from nestgram, AppController and AppService also, that we will create later. Then we described our controllers and services in @Module decorator.
+At first, we imported Module class from nestgram, `AppController` and `AppService` also, that we will create later. Then we described our controllers and services in `@Module` decorator
 
 ## Create app.controller.ts
 
-Let's create the `app.controller.ts` file. In it, we will describe updates, that we want to handle.
+Let's create the `app.controller.ts` file. In it, we will describe updates, that we want to handle
 
 ```typescript
 import { OnCommand, Controller } from 'nestgram';
@@ -71,11 +90,11 @@ export class AppController {
 }
 ```
 
-We have created a controller where we describe an update when the user writes /start, and we handle it by sending a message "Hello, world!".
+We have created a controller where we describe an update when the user writes `/start`, and we handle it by sending a message `Hello, world!`
 
 ## Create app.service.ts
 
-Let's create the `app.service.ts` file. In it, we will describe methods with working with db, that we will call in controller.
+Let's create the `app.service.ts` file. In it, we will describe methods with working with db, that we will call in controller
 
 ```typescript
 import { Service } from 'nestgram';
@@ -84,7 +103,7 @@ import { Service } from 'nestgram';
 export class AppService {}
 ```
 
-We can describe methods in AppService class, and call it in controller by this.appService.
+We can describe methods in `AppService` class, and call it in controller by `this.appService`
 
 ## Run project
 
@@ -104,6 +123,6 @@ npm run build && npm run prod
 
 Now you know about the syntax and structure of the Nestgram project, but if you want to write your own pro bot, you can check out the [Nestgram documentation](https://degreetpro.gitbook.io/nestgram/)
 
-# Found a bug or have questions?
+# Found a bug?
 
-You can ask author: https://t.me/degreet
+You can ask the [author](https://t.me/degreet) or ask the [form](https://do67hlsz91r.typeform.com/to/sI6NXBKV?typeform-source=admin.typeform.com)
