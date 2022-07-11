@@ -738,7 +738,7 @@ export class Answer {
    * @param channelIds Id of the channels/groups you want to check subscription
    * @return true if user subscribed for every channels
    * */
-  async checkSubscription(channelIds: (string | number)[]): Promise<boolean> {
+  async checkSubscription(...channelIds: (string | number)[]): Promise<boolean> {
     const userId: number = Filter.getUserId(this.update);
     if (!userId) throw error(`Can't find userId from update`);
 
