@@ -221,7 +221,14 @@ export class Handler {
     const current: string | undefined = await scopeStore.getCurrent(privateId);
     if (!current) return this.handlers;
 
-    return this.scopes.filter((scope: IHandler): boolean => scope.scope === current);
+    const handlers: IHandler[] = this.scopes.filter(
+      (scope: IHandler): boolean => scope.scope === current,
+    );
+
+    return handlers.filter((handler: IHandler): boolean => {
+      const onEnter = Reflect.getMetadata('onEnterHandler', handler.controller[handler.methodKey]);
+      return !!onEnter === !!update.__scopeEntered;
+    });
   }
 
   private async handleMiddleware(
@@ -231,7 +238,7 @@ export class Handler {
     params: any,
     middlewareIndex: number = 0,
   ): Promise<void> {
-    const handler = (await this.getHandlers(update))[index];
+    const handler: IHandler = (await this.getHandlers(update))[index];
     if (!handler) return;
 
     const baseNextFunction: NextFunction = async (): Promise<void> => {
@@ -357,7 +364,7 @@ export class Handler {
 
     // setup data for middlewares
     const params: any = {};
-    const answer: Answer = new Answer(this.token, update);
+    const answer: Answer = new Answer(this.token, update, this);
 
     // handle update
     const handler = (await this.getHandlers(update))[0];

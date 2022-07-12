@@ -46,6 +46,7 @@ export class Polling {
         'getUpdates',
         this.config,
       );
+
       yield updates;
     }
   }

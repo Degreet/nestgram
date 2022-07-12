@@ -37,13 +37,18 @@ import { Api } from '../Api';
 
 import axios, { AxiosResponse } from 'axios';
 import { BotMenuButton } from '../../types/menu-button.types';
+import { Handler } from '../Launch/Handler';
 import * as fs from 'fs';
 
 export class Answer {
   private readonly scopeController: ScopeController = new ScopeController();
   readonly api: Api = new Api(this.token);
 
-  constructor(private readonly token: string, private readonly update: IUpdate) {}
+  constructor(
+    private readonly token: string,
+    private readonly update: IUpdate,
+    private readonly handler?: Handler,
+  ) {}
 
   /**
    * Enter scope
@@ -53,7 +58,11 @@ export class Answer {
   async scope(scopeId: string): Promise<true> {
     const privateId: number | undefined = Filter.getPrivateId(this.update);
     if (!privateId) throw error(`Can't scope to ${scopeId}: can't get chatId/userId from update`);
-    return this.scopeController.enter(privateId, scopeId);
+
+    await this.scopeController.enter(privateId, scopeId);
+    await this.handler.handleUpdate({ ...this.update, __scopeEntered: true });
+
+    return true;
   }
 
   /**

@@ -16,6 +16,18 @@ export function buildUpdateDecorator(
 }
 
 /**
+ * On scope enter
+ * @see https://degreetpro.gitbook.io/nestgram/nestgram-features/scopes
+ * */
+export function OnEnter(): MethodDecorator {
+  return function (target: any, key: string, descriptor: PropertyDescriptor): PropertyDescriptor {
+    Reflect.defineMetadata('onEnterHandler', descriptor.value, descriptor.value);
+    Middleware(ListenMiddleware.update())(target, key, descriptor);
+    return descriptor;
+  };
+}
+
+/**
  * Listen for a user that send some command and call method
  * @param commandText Command that you want to listen
  * @see https://core.telegram.org/bots/api#message

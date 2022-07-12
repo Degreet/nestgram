@@ -69,6 +69,7 @@ export class StateStore<T = any> {
 
     state = new Proxy<any>(state, {
       set: (target: any, name: string, value: any): true => {
+        target[name] = value;
         if (this.customSetter) this.customSetter(userId, name, value, params);
         return true;
       },

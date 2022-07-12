@@ -30,6 +30,7 @@ export interface IUpdate {
   poll?: IPoll;
   poll_answer?: IPollAnswer;
   chat_join_request?: IChatJoinRequest;
+  __scopeEntered?: boolean;
   //!
 }
 
