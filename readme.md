@@ -2,7 +2,7 @@
 
 Nestgram - Framework for working with Telegram Bot API on TypeScript like Nest.js
 
-> ℹ️ Nestgram in development. Current version is 1.8.7 <br>
+> ℹ️ Nestgram in development. Current version is **1.8.7** <br>
 > If you found a bug, you can ask the [author](https://t.me/degreet) or ask the [form](https://do67hlsz91r.typeform.com/to/sI6NXBKV)
 
 > ⚠️ Nestgram can't use Nest.js modules. But you can create own modules for Nestgram :)
@@ -10,9 +10,11 @@ Nestgram - Framework for working with Telegram Bot API on TypeScript like Nest.j
 # Links
 
 - [Official website](https://degreetpro.gitbook.io/nestgram/)
-- [Our telegram channel](https://t.me/nestgram_ts) 🇺🇦
 - [GitHub](https://github.com/Degreet/nestgram)
 - [Author](https://t.me/degreet)
+- Our telegram channels:
+  - 🇺🇦 [Channel](https://t.me/nestgram_ts)
+  - 🇺🇸 [Channel](https://t.me/nestgram_en)
 
 # Guide
 
@@ -55,7 +57,7 @@ At first, we imported nestgram and our `AppModule`, later we will create it. In 
 
 ## Create app.module.ts
 
-Let's create the `app.module.ts` file. In it, we will describe all available controllers and services.
+Let's create the `app.module.ts` file. In it, we will describe all available controllers and services
 
 ```typescript
 import { Module } from 'nestgram';
