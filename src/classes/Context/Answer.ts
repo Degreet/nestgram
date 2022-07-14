@@ -136,16 +136,16 @@ export class Answer {
   /**
    * Stop a poll
    * @param keyboard Keyboard you want to edit
-   * @param moreOptions More options {@link IStopPollOptions}
    * @param msgId Optional. Message ID of the poll you want to stop. Current message id by default
    * @param chatId Optional. Chat ID in which poll you want to stop is located. Current chat id by default
+   * @param moreOptions More options {@link IStopPollOptions}
    * @see https://core.telegram.org/bots/api#stoppoll
    * */
   stopPoll(
     keyboard?: Keyboard,
-    moreOptions: IStopPollOptions = {},
     msgId?: number | null,
     chatId?: number | string | null,
+    moreOptions: IStopPollOptions = {},
   ): Promise<IPoll> {
     if (!chatId) chatId = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
@@ -314,12 +314,18 @@ export class Answer {
    * Restrict chat member
    * @param permissions Permissions you grant to the user
    * @param userId User id you want to promote
+   * @param chatId Chat id in which user you want to restrict is located
    * @param untilDate Ban end date
    * @see https://core.telegram.org/bots/api#restrictchatmember
    * @return true on success
    * */
-  restrict(permissions: IChatPermissions, userId?: number, untilDate?: number): Promise<true> {
-    const chatId: number | string | undefined = Filter.getChatId(this.update);
+  restrict(
+    permissions: IChatPermissions,
+    userId?: number | null,
+    chatId?: string | number | null,
+    untilDate?: number,
+  ): Promise<true> {
+    if (!chatId) chatId = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
 
     if (!userId) userId = Filter.getUserId(this.update);
@@ -439,13 +445,17 @@ export class Answer {
 
   /**
    * Pin chat message
-   * @param disableNotification Optional. Disable notification for all chat users that you have pinned a message
    * @param msgId Optional. Message ID you want to pin. Current message id by default
    * @param chatId Optional. Chat ID where you want to pin message. It can be id of group/channel or ID of the user. Current chat id by default
+   * @param disableNotification Optional. Disable notification for all chat users that you have pinned a message
    * @see https://core.telegram.org/bots/api#pinchatmessage
    * @return true on success
    * */
-  pin(disableNotification?: boolean, msgId?: number, chatId?: number | string): Promise<boolean> {
+  pin(
+    msgId?: number | null,
+    chatId?: number | string | null,
+    disableNotification?: boolean,
+  ): Promise<boolean> {
     if (!chatId) chatId = Filter.getChatId(this.update);
     if (!chatId) throw error(`Can't find chatId from update`);
 

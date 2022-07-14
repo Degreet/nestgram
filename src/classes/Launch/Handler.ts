@@ -135,6 +135,7 @@ export class Handler {
         answerCallArgs.push(
           resultMessageToSend.permissions,
           resultMessageToSend.userId,
+          resultMessageToSend.chatId,
           resultMessageToSend.untilDate,
         );
       } else if (resultMessageToSend instanceof Promote) {
@@ -169,18 +170,18 @@ export class Handler {
         answerCallArgs.push(resultMessageToSend.scope, resultMessageToSend.languageCode);
       } else if (resultMessageToSend instanceof Pin) {
         answerCallArgs.push(
-          resultMessageToSend.disableNotification,
           resultMessageToSend.msgId,
           resultMessageToSend.chatId,
+          resultMessageToSend.disableNotification,
         );
       } else if (resultMessageToSend instanceof Unpin || resultMessageToSend instanceof Delete) {
         answerCallArgs.push(resultMessageToSend.msgId, resultMessageToSend.chatId);
       } else if (resultMessageToSend instanceof StopPoll) {
         answerCallArgs.push(
           resultMessageToSend.keyboard,
-          resultMessageToSend.moreOptions,
           resultMessageToSend.msgId,
           resultMessageToSend.chatId,
+          resultMessageToSend.moreOptions,
         );
       } else if (resultMessageToSend instanceof Forward || resultMessageToSend instanceof Copy) {
         if (resultMessageToSend instanceof Forward)
