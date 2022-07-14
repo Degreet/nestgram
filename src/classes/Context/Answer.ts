@@ -95,7 +95,7 @@ export class Answer {
 
   /**
    * Edit a message
-   * @param content Content you want to edit (string or Caption class)
+   * @param content Content you want to edit (string or class-marks)
    * @param keyboard Optional. Pass Keyboard class if you want to add keyboard to the message
    * @param moreOptions Optional. More options {@link IEditTextOptions}
    * @param msgId Optional. Message ID you want to edit. Current message id by default

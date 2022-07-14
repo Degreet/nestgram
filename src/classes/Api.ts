@@ -791,7 +791,7 @@ export class Api {
    * Edit a message
    * @param chatId Chat ID in which message you want to edit is located
    * @param msgId Message ID you want to edit
-   * @param content Content you want to edit (string or Caption class)
+   * @param content Content you want to edit (string or class-marks)
    * @param keyboard Pass Keyboard class if you want to add keyboard to the message
    * @param moreOptions More options {@link IEditTextOptions}
    * @see https://core.telegram.org/bots/api#editmessagetext
