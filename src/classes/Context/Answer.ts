@@ -28,6 +28,7 @@ import {
   IStopPollOptions,
   IPoll,
   ScopeController,
+  viewStore,
 } from '../..';
 
 import { MessageCreator } from '../Message';
@@ -39,6 +40,7 @@ import axios, { AxiosResponse } from 'axios';
 import { BotMenuButton } from '../../types/menu-button.types';
 import { Handler } from '../Launch/Handler';
 import * as fs from 'fs';
+import { IViewInfo } from '../../types/view.types';
 
 export class Answer {
   private readonly scopeController: ScopeController = new ScopeController();
@@ -74,6 +76,19 @@ export class Answer {
     if (!chatId || typeof chatId === 'string')
       throw error(`Can't leave scope: can't get chatId from update`);
     return this.scopeController.leave(chatId);
+  }
+
+  /**
+   * Enter view
+   * @param viewId View id in which you want to enter user
+   * @return true on success
+   * */
+  async view(viewId: string): Promise<boolean> {
+    const viewInfo: IViewInfo | undefined = viewStore.getView(viewId);
+    if (!viewInfo) return false;
+
+    viewInfo.view(this);
+    return true;
   }
 
   /**

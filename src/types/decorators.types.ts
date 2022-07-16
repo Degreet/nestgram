@@ -1,4 +1,5 @@
 import { MiddlewareFunction } from './middleware.types';
+import { Answer } from '../classes';
 
 export type DecoratorMethod = (
   target: any,
@@ -13,6 +14,7 @@ export declare class ControllerClass {
 }
 
 export declare class ScopeClass extends ControllerClass {}
+export type ViewFunction = (answer: Answer) => Promise<any> | any;
 
 export declare class ServiceClass {
   constructor(...args: any[]);
@@ -25,4 +27,5 @@ export declare class ModuleClass {
   services?: ServiceClass[];
   imports?: any[];
   scopes?: ScopeClass[];
+  views?: ViewFunction[];
 }

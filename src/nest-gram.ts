@@ -8,6 +8,8 @@ import {
   IUser,
   ModuleFunction,
   ScopeClass,
+  ViewFunction,
+  viewStore,
 } from '.';
 
 import { clear, error, info, success } from './logger';
@@ -101,7 +103,10 @@ export class NestGram {
     const services: ServiceClass[] = await NestGram.getServices(Module);
 
     const scopes: ScopeClass[] = Reflect.getMetadata('scopes', Module);
-    scopeStore.importScopes(Module);
+    if (scopes && scopes.length) scopeStore.importScopes(Module);
+
+    const views: ViewFunction[] = Reflect.getMetadata('views', Module);
+    if (views && views.length) viewStore.importViews(Module);
 
     if (controllers || scopes)
       (controllers || scopes).forEach((Controller: any): void => {

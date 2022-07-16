@@ -13,4 +13,6 @@ export * from './Api';
 
 export * from './Scope/ScopeController';
 export * from './Scope/ScopeStore';
+
+export * from './View/ViewStore';
 export * from './State/StateStore';
