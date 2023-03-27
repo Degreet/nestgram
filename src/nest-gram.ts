@@ -28,7 +28,7 @@ export class NestGram {
   handlers: IHandler[] = [];
   info: IUser;
 
-  api: Api = new Api(this.token);
+  api: Api = new Api(this.token, this.runConfig.cachePath);
   polling?: Polling;
   webhook?: Webhook;
 
@@ -159,7 +159,7 @@ export class NestGram {
    * @param token Bot token you want to get property class
    * */
   to(token: string): Api {
-    return new Api(token);
+    return new Api(token, this.runConfig.cachePath);
   }
 
   /**
@@ -188,6 +188,7 @@ export class NestGram {
         this.runConfig.logging,
         this.runConfig.fileLogging,
         this.runConfig.fileLoggingLimit,
+        this.runConfig.cachePath,
       );
 
       // start polling
@@ -205,6 +206,7 @@ export class NestGram {
         this.runConfig.logging,
         this.runConfig.fileLogging,
         this.runConfig.fileLoggingLimit,
+        this.runConfig.cachePath,
       );
     }
 

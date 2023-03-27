@@ -7,7 +7,7 @@ import { IncomingMessage, ServerResponse } from 'http';
 import * as http from 'http';
 
 export class Webhook {
-  api: Api = new Api(this.token);
+  api: Api = new Api(this.token, this.cachePath);
   server: http.Server;
 
   handler: Handler = new Handler(
@@ -16,6 +16,7 @@ export class Webhook {
     this.logging,
     this.fileLogging,
     this.fileLoggingLimit,
+    this.cachePath,
   );
 
   constructor(
@@ -25,6 +26,7 @@ export class Webhook {
     private readonly logging?: boolean,
     private readonly fileLogging?: boolean,
     private readonly fileLoggingLimit?: number,
+    private readonly cachePath?: string,
   ) {
     if (!this.token) throw error(`You can't run bot without token`);
     this.api.setWebhook(this.config);

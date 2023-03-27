@@ -130,7 +130,7 @@ import {
   IEditInviteLinkFetchOptions,
 } from '..';
 
-import { mediaCache } from './Media/MediaCache';
+import MediaCache from './Media/MediaCache';
 import { Animation, Media, VideoNote } from './Media';
 import { error } from '../logger';
 
@@ -143,7 +143,11 @@ import { MarkCreator } from './Marks/MarkCreator';
 import { InviteLink } from './Marks/InviteLink';
 
 export class Api {
-  constructor(private readonly token?: string) {}
+  private readonly mediaCache: MediaCache;
+
+  constructor(private readonly token?: string, private readonly cachePath?: string) {
+    this.mediaCache = new MediaCache(cachePath);
+  }
 
   async call<T = any, K = any>(
     token: string,
@@ -188,7 +192,7 @@ export class Api {
     Api.appendMediaToFormData(
       formData,
       fromMediaKey,
-      media.useCache ? mediaCache.getMediaFileId(media.media) || media : media,
+      media.useCache ? this.mediaCache.getMediaFileId(media.media) || media : media,
     );
 
     if (config.thumb) {
@@ -196,7 +200,7 @@ export class Api {
         formData,
         'thumb',
         media.useCache
-          ? mediaCache.getMediaFileId(config.thumb.media) || config.thumb
+          ? this.mediaCache.getMediaFileId(config.thumb.media) || config.thumb
           : config.thumb,
       );
     }
@@ -222,15 +226,15 @@ export class Api {
     return formData;
   }
 
-  private static saveMediaFileId(
+  private saveMediaFileId(
     path: string,
     mediaKey: MediaFileTypes,
     message: IMessage,
   ): IMessage {
-    if (!mediaCache.getMediaFileId(path)) {
+    if (!this.mediaCache.getMediaFileId(path)) {
       let mediaFileInfo: any & { file_id: string } = message[mediaKey];
       if (mediaKey === 'photo') mediaFileInfo = mediaFileInfo[mediaFileInfo.length - 1];
-      mediaCache.saveMediaFileId(path, mediaFileInfo.file_id);
+      this.mediaCache.saveMediaFileId(path, mediaFileInfo.file_id);
     }
 
     return message;
@@ -360,7 +364,7 @@ export class Api {
         });
       else
         throw error(
-          "Media file type is not defined. Don't use Media class, use Photo, Video class instead",
+          'Media file type is not defined. Don\'t use Media class, use Photo, Video class instead',
         );
     }
 
@@ -392,7 +396,7 @@ export class Api {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
     if (photo.options) moreOptions = { ...moreOptions, ...photo.options };
 
-    return Api.saveMediaFileId(
+    return this.saveMediaFileId(
       photo.media,
       'photo',
       await this.callApi<IMessage, FormData>(
@@ -423,7 +427,7 @@ export class Api {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
     if (video.options) moreOptions = { ...moreOptions, ...video.options };
 
-    return Api.saveMediaFileId(
+    return this.saveMediaFileId(
       video.media,
       'video',
       await this.callApi<IMessage, FormData>(
@@ -456,7 +460,7 @@ export class Api {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
     if (videoNote.options) moreOptions = { ...moreOptions, ...videoNote.options };
 
-    return Api.saveMediaFileId(
+    return this.saveMediaFileId(
       videoNote.media,
       'video_note',
       await this.callApi<IMessage, FormData>(
@@ -488,7 +492,7 @@ export class Api {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
     if (audio.options) moreOptions = { ...moreOptions, ...audio.options };
 
-    return Api.saveMediaFileId(
+    return this.saveMediaFileId(
       audio.media,
       'audio',
       await this.callApi<IMessage, FormData>(
@@ -520,7 +524,7 @@ export class Api {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
     if (voice.options) moreOptions = { ...moreOptions, ...voice.options };
 
-    return Api.saveMediaFileId(
+    return this.saveMediaFileId(
       voice.media,
       'voice',
       await this.callApi<IMessage, FormData>(
@@ -551,7 +555,7 @@ export class Api {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
     if (document.options) moreOptions = { ...moreOptions, ...document.options };
 
-    return Api.saveMediaFileId(
+    return this.saveMediaFileId(
       document.media,
       'document',
       await this.callApi<IMessage, FormData>(
@@ -583,7 +587,7 @@ export class Api {
     if (keyboard) moreOptions.reply_markup = keyboard.buildMarkup();
     if (animation.options) moreOptions = { ...moreOptions, ...animation.options };
 
-    return Api.saveMediaFileId(
+    return this.saveMediaFileId(
       animation.media,
       'animation',
       await this.callApi<IMessage, FormData>(
@@ -616,9 +620,9 @@ export class Api {
       media: mediaGroup.map((media: InputSupportedMedia, index: number): InputMediaTypes => {
         return {
           type: media.type,
-          media: mediaCache.getMediaFileId(media.media) || `attach://${index}`,
+          media: this.mediaCache.getMediaFileId(media.media) || `attach://${index}`,
           ...(media.thumb
-            ? { thumb: mediaCache.getMediaFileId(media.thumb.media) || `attach://${index}_thumb` }
+            ? { thumb: this.mediaCache.getMediaFileId(media.thumb.media) || `attach://${index}_thumb` }
             : {}),
           ...(media instanceof Video ? media.resolution : {}),
           ...(media.options || {}),
@@ -628,11 +632,11 @@ export class Api {
     });
 
     mediaGroup.forEach((media: InputSupportedMedia, index: number): void => {
-      if (!mediaCache.getMediaFileId(media.media))
+      if (!this.mediaCache.getMediaFileId(media.media))
         Api.appendMediaToFormData(formData, index.toString(), media);
 
       if (media.thumb) {
-        if (!mediaCache.getMediaFileId(media.thumb.media))
+        if (!this.mediaCache.getMediaFileId(media.thumb.media))
           Api.appendMediaToFormData(formData, `${index.toString()}_thumb`, media.thumb);
       }
     });
@@ -906,9 +910,9 @@ export class Api {
       message_id: msgId,
       media: {
         type: media.type,
-        media: mediaCache.getMediaFileId(media.media) || `attach://media`,
+        media: this.mediaCache.getMediaFileId(media.media) || `attach://media`,
         ...(media.thumb
-          ? { thumb: mediaCache.getMediaFileId(media.thumb.media) || `attach://thumb` }
+          ? { thumb: this.mediaCache.getMediaFileId(media.thumb.media) || `attach://thumb` }
           : {}),
         ...(media instanceof Video ? media.resolution : {}),
         ...(media.options || {}),
@@ -916,11 +920,11 @@ export class Api {
       ...moreOptions,
     });
 
-    if (!mediaCache.getMediaFileId(media.media))
+    if (!this.mediaCache.getMediaFileId(media.media))
       Api.appendMediaToFormData(formData, 'media', media);
 
     if (media.thumb) {
-      if (!mediaCache.getMediaFileId(media.thumb.media))
+      if (!this.mediaCache.getMediaFileId(media.thumb.media))
         Api.appendMediaToFormData(formData, 'thumb', media.thumb);
     }
 

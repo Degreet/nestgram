@@ -3,11 +3,17 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 
 export class FileLogger {
-  nestgramInfoDirPath: string = path.resolve(process.cwd(), 'nestgram');
-  logsFilePath: string = path.resolve(this.nestgramInfoDirPath, 'logs.md');
+  nestgramInfoDirPath: string;
+  logsFilePath: string;
 
-  constructor(private readonly limit: number) {
-    this.setupLogsFile();
+  constructor(private readonly limit: number,
+              private readonly isFileLoggingEnabled: boolean,
+              private readonly cachePath?: string) {
+    if (isFileLoggingEnabled) {
+      this.nestgramInfoDirPath = path.resolve(cachePath || process.cwd(), 'nestgram');
+      this.logsFilePath = path.resolve(this.nestgramInfoDirPath, 'logs.md');
+      this.setupLogsFile();
+    }
   }
 
   private async setupLogsFile(): Promise<void> {

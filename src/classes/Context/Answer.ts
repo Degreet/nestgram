@@ -44,7 +44,7 @@ import { IViewInfo } from '../../types/view.types';
 
 export class Answer {
   private readonly scopeController: ScopeController = new ScopeController();
-  readonly api: Api = new Api(this.token);
+  readonly api: Api = new Api(this.token, this.handler.cachePath);
 
   constructor(
     private readonly token: string,

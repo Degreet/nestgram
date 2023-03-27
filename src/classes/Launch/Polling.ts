@@ -4,13 +4,14 @@ import { Handler } from './Handler';
 import { Api } from '../Api';
 
 export class Polling {
-  api: Api = new Api(this.token);
+  api: Api = new Api(this.token, this.cachePath);
   handler: Handler = new Handler(
     this.token,
     this.handlers,
     this.logging,
     this.fileLogging,
     this.fileLoggingLimit,
+    this.cachePath,
   );
 
   constructor(
@@ -20,6 +21,7 @@ export class Polling {
     private readonly logging?: boolean,
     private readonly fileLogging?: boolean,
     private readonly fileLoggingLimit?: number,
+    private readonly cachePath?: string,
   ) {
     if (!this.token) throw error(`You can't run bot without token`);
   }
@@ -39,7 +41,7 @@ export class Polling {
     }
   }
 
-  private async *updateGetter(): AsyncIterableIterator<Promise<any>> {
+  private async* updateGetter(): AsyncIterableIterator<Promise<any>> {
     while (true) {
       const updates = await this.api.call<IUpdate, IPollingConfig>(
         this.token,
