@@ -37,6 +37,7 @@ export interface IRunConfig extends IGlobalWebhookConfig {
   port?: number;
   fileLogging?: boolean;
   fileLoggingLimit?: number;
+  cachePath?: string;
 }
 
 export interface IDeleteWebhookConfig extends IGlobalWebhookConfig {}

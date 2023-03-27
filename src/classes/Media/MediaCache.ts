@@ -4,11 +4,13 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 
 export class MediaCache {
-  nestgramInfoDirPath: string = path.resolve(process.cwd(), 'nestgram');
-  mediaKeeperFilePath: string = path.resolve(this.nestgramInfoDirPath, 'media.json');
+  nestgramInfoDirPath: string;
+  mediaKeeperFilePath: string;
   file: editJsonFile.JsonEditor;
 
-  constructor() {
+  constructor(private readonly cachePath?: string) {
+    this.nestgramInfoDirPath = path.resolve(cachePath || process.cwd(), 'nestgram');
+    this.mediaKeeperFilePath = path.resolve(this.nestgramInfoDirPath, 'media.json');
     this.getJSONFile();
   }
 
@@ -38,4 +40,4 @@ export class MediaCache {
   }
 }
 
-export const mediaCache = new MediaCache();
+export default MediaCache;

@@ -55,7 +55,7 @@ import { scopeStore } from '../Scope/ScopeStore';
 import { stateStore } from '../State/StateStore';
 
 export class Handler {
-  fileLogger: FileLogger = new FileLogger(this.fileLoggingLimit);
+  fileLogger: FileLogger = new FileLogger(this.fileLoggingLimit, this.fileLogging, this.cachePath);
   handlers: IHandler[] = [];
   scopes: IHandler[] = [];
 
@@ -65,6 +65,7 @@ export class Handler {
     private readonly logging?: boolean,
     private readonly fileLogging?: boolean,
     private readonly fileLoggingLimit?: number,
+    public cachePath?: string,
   ) {
     this.handlers = allHandlers.filter((handler: IHandler): boolean => !handler.scope) || [];
     this.scopes = allHandlers.filter((handler: IHandler): boolean => !!handler.scope) || [];
