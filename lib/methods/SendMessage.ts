@@ -1,5 +1,5 @@
 import { ApiMethod } from './ApiMethod';
-import { Message } from '../../types';
+import { Message } from '../types';
 
 export interface SendMessageOptions {
   business_connection_id?: string;

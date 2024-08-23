@@ -1,5 +1,6 @@
 export * from './bot';
 export * from './decorators';
+export * from './dispatcher';
 export * from './enums';
 export * from './exceptions';
 export * from './methods';

@@ -1,5 +1,5 @@
 import { ApiMethod } from './ApiMethod';
-import { Update } from '../../types';
+import { Update } from '../types';
 
 export interface GetUpdatesOptions {
   offset?: number;

@@ -1,6 +1,6 @@
-import { ApiException } from '../../exceptions';
+import { ApiException } from '../exceptions';
 
-import { ApiError, ApiResponse } from '../../types';
+import { ApiError, ApiResponse } from '../types';
 
 export abstract class ApiMethod<T, R> {
   protected abstract readonly methodName: string;
