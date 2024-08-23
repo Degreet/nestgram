@@ -7,7 +7,7 @@ export const OnUpdate = (): MethodDecorator => {
       descriptor.value,
     );
 
-    const newMetadata = [...(existingMetadata ?? []), { listener: 'update' }];
+    const newMetadata = [...(existingMetadata ?? []), {}];
 
     Reflect.defineMetadata(Metadata.LISTENERS, newMetadata, descriptor.value);
 

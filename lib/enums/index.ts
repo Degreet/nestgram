@@ -1,2 +1,2 @@
-export * from './providers';
-export * from './metadata';
+export * from './metadata.enum';
+export * from './providers.enum';

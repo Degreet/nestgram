@@ -1,5 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { InjectToken } from '../decorators';
+import { Inject, Injectable } from '@nestjs/common';
+
+import { BotOptions } from '../types';
+import { Providers } from '../enums';
 
 import {
   SendMessage,
@@ -9,11 +11,15 @@ import {
   GetUpdatesOptions,
   DeleteWebhookOptions,
   DeleteWebhook,
-} from './methods';
+} from '../methods';
 
 @Injectable()
 export class BotService {
-  constructor(@InjectToken() private readonly token: string) {}
+  private readonly token: string;
+
+  constructor(@Inject(Providers.BOT_OPTIONS) options: BotOptions) {
+    this.token = options.token;
+  }
 
   deleteWebhook(options?: DeleteWebhookOptions) {
     return new DeleteWebhook(this.token, options).fetch();

@@ -1,32 +1,26 @@
-import { DiscoveryModule } from '@nestjs/core';
 import { DynamicModule, Module, Provider } from '@nestjs/common';
+
+import { BotService } from './bot.service';
 
 import { BotAsyncOptions, BotOptions } from '../types';
 import { Providers } from '../enums';
-import { BotService } from './bot.service';
 
-@Module({
-  imports: [DiscoveryModule],
-})
+@Module({})
 export class BotModule {
   public static forRoot(options: BotOptions): DynamicModule {
     return {
       module: BotModule,
       providers: [
         {
-          provide: Providers.OPTIONS,
+          provide: Providers.BOT_OPTIONS,
           useValue: options,
-        },
-        {
-          provide: Providers.TOKEN,
-          useValue: options.token,
         },
         {
           provide: BotService,
           useClass: BotService,
         },
       ],
-      exports: [Providers.TOKEN, BotService],
+      exports: [BotService],
     };
   }
 
@@ -39,16 +33,11 @@ export class BotModule {
       providers: [
         ...providers,
         {
-          provide: Providers.TOKEN,
-          useFactory: (options: BotOptions) => options.token,
-          inject: [Providers.OPTIONS],
-        },
-        {
           provide: BotService,
           useClass: BotService,
         },
       ],
-      exports: [Providers.TOKEN, BotService],
+      exports: [BotService],
     };
   }
 
@@ -56,7 +45,7 @@ export class BotModule {
     if (options.useFactory) {
       return [
         {
-          provide: Providers.OPTIONS,
+          provide: Providers.BOT_OPTIONS,
           useFactory: options.useFactory,
           inject: options.inject ?? [],
         },
@@ -66,7 +55,7 @@ export class BotModule {
     const useClass = options.useClass ?? options.useExisting;
     return [
       {
-        provide: Providers.OPTIONS,
+        provide: Providers.BOT_OPTIONS,
         useFactory: async (options: BotOptions) => options,
         inject: [useClass],
       },
