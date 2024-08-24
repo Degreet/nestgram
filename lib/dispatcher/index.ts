@@ -1,2 +1,2 @@
 export * from './dispatcher.module';
-export * from './observer';
+export * from './dispatcher.service';

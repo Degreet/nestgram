@@ -6,4 +6,3 @@ export * from './BotOptions';
 export * from './Handler';
 export * from './Filter';
 export * from './Middleware';
-export * from './UnknownFunction';

@@ -1,10 +1,11 @@
-import { DynamicModule, Module, Provider } from '@nestjs/common';
+import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
 
 import { BotService } from './bot.service';
 
 import { BotAsyncOptions, BotOptions } from '../types';
 import { Providers } from '../enums';
 
+@Global()
 @Module({})
 export class BotModule {
   public static forRoot(options: BotOptions): DynamicModule {

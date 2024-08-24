@@ -1,5 +1,8 @@
 import { DynamicModule, Module, Provider } from '@nestjs/common';
 
+import { DispatcherService } from './dispatcher.service';
+
+import { BotModule } from '../bot';
 import { Providers } from '../enums';
 
 import {
@@ -7,7 +10,10 @@ import {
   DispatcherOptions,
 } from '../types/DispatcherOptions';
 
-@Module({})
+@Module({
+  imports: [BotModule],
+  providers: [DispatcherService],
+})
 export class DispatcherModule {
   public static forRoot(options: DispatcherOptions): DynamicModule {
     return {
