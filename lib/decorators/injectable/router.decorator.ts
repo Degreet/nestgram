@@ -1,5 +1,16 @@
 import { SetMetadata } from '@nestjs/common';
 
 import { Metadata } from '../../enums';
+import { RouterClass } from '../../types/DispatcherOptions';
 
-export const Router = () => SetMetadata(Metadata.ROUTER, true);
+export interface RouterOptions {
+  include?: RouterClass[];
+}
+
+export interface AppliedRouterOptions extends RouterOptions {
+  parent?: RouterClass;
+}
+
+export const Router = (options?: RouterOptions) => {
+  return SetMetadata(Metadata.ROUTER, options ?? {});
+};

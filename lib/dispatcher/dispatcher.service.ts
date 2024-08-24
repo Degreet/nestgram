@@ -1,9 +1,12 @@
+import { Reflector } from '@nestjs/core';
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 
-import { DispatcherOptions, RouterClass } from '../types/DispatcherOptions';
 import { BotService } from '../bot';
 import { Metadata, Providers } from '../enums';
-import { Reflector } from '@nestjs/core';
+import { AppliedRouterOptions, RouterOptions } from '../decorators';
+
+import { DispatcherOptions, RouterClass } from '../types/DispatcherOptions';
+import { Update } from '../types';
 
 @Injectable()
 export class DispatcherService implements OnModuleInit {
@@ -27,24 +30,24 @@ export class DispatcherService implements OnModuleInit {
   }
 
   private applyRouters() {
-    if (!this.options.routers?.length) {
-      return;
-    }
-
-    for (const router of this.options.routers) {
-      const isRouter = this.reflector.get(Metadata.ROUTER, router);
-      if (!isRouter) {
-        this.logger.error(
-          'Add the @Router() decorator to make the provider a router',
-        );
-        continue;
-      }
+    for (const router of this.options.routers ?? []) {
       this.applyRouter(router);
     }
   }
 
-  private applyRouter(router: RouterClass) {
-    console.log(router);
+  private applyRouter(router: RouterClass, parent?: RouterClass) {
+    const options: RouterOptions = this.reflector.get(Metadata.ROUTER, router);
+    if (!options) {
+      return this.logger.error(router.name + ' is not a router');
+    }
+
+    const appliedOptions: AppliedRouterOptions = { ...options, parent };
+
+    Reflect.defineMetadata(Metadata.ROUTER, appliedOptions, router);
+
+    options.include?.forEach((subRouter) => {
+      this.applyRouter(subRouter, router);
+    });
   }
 
   private async prepareToLaunch() {
