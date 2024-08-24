@@ -1,12 +1,12 @@
 import { Reflector } from '@nestjs/core';
-import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleInit, Type } from '@nestjs/common';
 
 import { BotService } from '../bot';
 import { Metadata, Providers } from '../enums';
 import { AppliedRouterOptions, RouterOptions } from '../decorators';
-import { MiddlewareService } from './middleware.service';
 
-import { DispatcherOptions, RouterClass } from '../types/DispatcherOptions';
+import { MiddlewareService } from './middleware.service';
+import { DispatcherOptions } from '../types/DispatcherOptions';
 
 @Injectable()
 export class DispatcherService implements OnModuleInit {
@@ -36,7 +36,7 @@ export class DispatcherService implements OnModuleInit {
     }
   }
 
-  private applyRouter(router: RouterClass, parent?: RouterClass) {
+  private applyRouter(router: Type, parent?: Type) {
     const options: RouterOptions = this.reflector.get(Metadata.ROUTER, router);
     if (!options) {
       return this.logger.error(router.name + ' is not a router');

@@ -1,15 +1,13 @@
-import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
+import { DynamicModule, Global, Module, Provider, Type } from '@nestjs/common';
 
 import { DispatcherService } from './dispatcher.service';
+import { MiddlewareService } from './middleware.service';
 
 import { BotModule } from '../bot';
-import { Providers } from '../enums';
+import { Metadata, Providers } from '../enums';
 
-import {
-  DispatcherAsyncOptions,
-  DispatcherOptions,
-} from '../types/DispatcherOptions';
-import { MiddlewareService } from './middleware.service';
+import { DispatcherOptions } from '../types/DispatcherOptions';
+import { RouterOptions } from '../decorators';
 
 @Global()
 @Module({
@@ -18,53 +16,49 @@ import { MiddlewareService } from './middleware.service';
 })
 export class DispatcherModule {
   public static forRoot(options: DispatcherOptions): DynamicModule {
-    return {
-      module: DispatcherModule,
-      providers: [
-        {
-          provide: Providers.DISPATCHER_OPTIONS,
-          useValue: options,
-        },
-      ],
-      exports: [Providers.DISPATCHER_OPTIONS],
-    };
-  }
-
-  public static forRootAsync(options: DispatcherAsyncOptions): DynamicModule {
-    const providers = this.createAsyncProviders(options);
-
-    return {
-      module: DispatcherModule,
-      imports: options.imports ?? [],
-      providers: [...providers],
-      exports: [Providers.DISPATCHER_OPTIONS],
-    };
-  }
-
-  private static createAsyncProviders(
-    options: DispatcherAsyncOptions,
-  ): Provider[] {
-    if (options.useFactory) {
-      return [
-        {
-          provide: Providers.DISPATCHER_OPTIONS,
-          useFactory: options.useFactory,
-          inject: options.inject ?? [],
-        },
-      ];
-    }
-
-    const useClass = options.useClass ?? options.useExisting;
-    return [
+    const providers: Provider[] = [
       {
         provide: Providers.DISPATCHER_OPTIONS,
-        useFactory: async (options: DispatcherOptions) => options,
-        inject: [useClass],
-      },
-      {
-        provide: useClass,
-        useClass,
+        useValue: options,
       },
     ];
+
+    const toProvide = [
+      ...this.exploreRouters(options.routers ?? []),
+      ...(options?.outerMiddlewares ?? []),
+    ];
+
+    toProvide.forEach((useClass) => {
+      providers.push({
+        provide: useClass,
+        useClass,
+      });
+    });
+
+    return {
+      module: DispatcherModule,
+      providers,
+      exports: [Providers.DISPATCHER_OPTIONS],
+    };
+  }
+
+  private static exploreRouters(routers?: Type[]): Type[] {
+    const explored: any[] = [];
+
+    routers.forEach((router) => {
+      explored.push(router);
+      const metadata: RouterOptions = Reflect.getMetadata(
+        Metadata.ROUTER,
+        router,
+      );
+      if (metadata?.middlewares) {
+        explored.push(...metadata.middlewares);
+      }
+      if (metadata?.includes) {
+        explored.push(...this.exploreRouters(routers));
+      }
+    });
+
+    return explored;
   }
 }

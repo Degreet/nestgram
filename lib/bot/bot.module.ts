@@ -26,13 +26,11 @@ export class BotModule {
   }
 
   public static forRootAsync(options: BotAsyncOptions): DynamicModule {
-    const providers = this.createAsyncProviders(options);
-
     return {
       module: BotModule,
       imports: options.imports ?? [],
       providers: [
-        ...providers,
+        ...this.createAsyncProviders(options),
         {
           provide: BotService,
           useClass: BotService,

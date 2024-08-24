@@ -1,16 +1,15 @@
-import { SetMetadata } from '@nestjs/common';
+import { SetMetadata, Type } from '@nestjs/common';
 
 import { Metadata } from '../../enums';
-import { RouterClass } from '../../types/DispatcherOptions';
 import { NestgramMiddleware } from '../../types/NestgramMiddleware';
 
 export interface RouterOptions {
-  includes?: RouterClass[];
-  middlewares?: NestgramMiddleware[];
+  includes?: Type[];
+  middlewares?: Type<NestgramMiddleware>[];
 }
 
 export interface AppliedRouterOptions extends RouterOptions {
-  parent?: RouterClass;
+  parent?: Type;
 }
 
 export const Router = (options?: RouterOptions) => {
