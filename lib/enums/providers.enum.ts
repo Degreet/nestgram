@@ -1,3 +1,4 @@
 export enum Providers {
   BOT_OPTIONS = 'BOT_OPTIONS',
+  DISPATCHER_OPTIONS = 'DISPATCHER_OPTIONS',
 }
