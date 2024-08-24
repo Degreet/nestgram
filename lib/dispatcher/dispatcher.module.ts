@@ -1,4 +1,4 @@
-import { DynamicModule, Module, Provider } from '@nestjs/common';
+import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
 
 import { DispatcherService } from './dispatcher.service';
 
@@ -9,10 +9,12 @@ import {
   DispatcherAsyncOptions,
   DispatcherOptions,
 } from '../types/DispatcherOptions';
+import { MiddlewareService } from './middleware.service';
 
+@Global()
 @Module({
   imports: [BotModule],
-  providers: [DispatcherService],
+  providers: [DispatcherService, MiddlewareService],
 })
 export class DispatcherModule {
   public static forRoot(options: DispatcherOptions): DynamicModule {
