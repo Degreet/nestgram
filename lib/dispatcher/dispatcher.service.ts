@@ -6,7 +6,6 @@ import { Metadata, Providers } from '../enums';
 import { AppliedRouterOptions, RouterOptions } from '../decorators';
 
 import { DispatcherOptions, RouterClass } from '../types/DispatcherOptions';
-import { Update } from '../types';
 
 @Injectable()
 export class DispatcherService implements OnModuleInit {
@@ -45,7 +44,7 @@ export class DispatcherService implements OnModuleInit {
 
     Reflect.defineMetadata(Metadata.ROUTER, appliedOptions, router);
 
-    options.include?.forEach((subRouter) => {
+    options.includes?.forEach((subRouter) => {
       this.applyRouter(subRouter, router);
     });
   }

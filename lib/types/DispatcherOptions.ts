@@ -1,12 +1,14 @@
 import { ModuleMetadata, Type } from '@nestjs/common';
 import { GetUpdatesOptions } from '../methods';
+import { NestgramMiddleware } from './NestgramMiddleware';
 
 export type RouterClass = new (...args: any[]) => any;
 
 export interface DispatcherOptions extends GetUpdatesOptions {
   drop_pending_updates?: boolean;
-  routers?: RouterClass[];
   start_polling?: boolean;
+  routers?: RouterClass[];
+  outerMiddlewares?: NestgramMiddleware[];
 }
 
 export interface DispatcherAsyncOptions
