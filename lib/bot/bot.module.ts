@@ -20,7 +20,7 @@ export class BotModule {
           useClass: BotService,
         },
       ],
-      exports: [BotService],
+      exports: [Providers.BOT_OPTIONS, BotService],
     };
   }
 
@@ -37,7 +37,7 @@ export class BotModule {
           useClass: BotService,
         },
       ],
-      exports: [BotService],
+      exports: [Providers.BOT_OPTIONS, BotService],
     };
   }
 
