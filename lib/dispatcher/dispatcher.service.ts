@@ -1,8 +1,9 @@
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 
-import { DispatcherOptions } from '../types/DispatcherOptions';
+import { DispatcherOptions, RouterClass } from '../types/DispatcherOptions';
 import { BotService } from '../bot';
-import { Providers } from '../enums';
+import { Metadata, Providers } from '../enums';
+import { Reflector } from '@nestjs/core';
 
 @Injectable()
 export class DispatcherService implements OnModuleInit {
@@ -12,9 +13,10 @@ export class DispatcherService implements OnModuleInit {
     @Inject(Providers.DISPATCHER_OPTIONS)
     private readonly options: DispatcherOptions,
     private readonly botService: BotService,
+    private readonly reflector: Reflector,
   ) {}
 
-  async onModuleInit() {
+  public async onModuleInit() {
     this.applyRouters();
 
     await this.prepareToLaunch();
@@ -24,15 +26,28 @@ export class DispatcherService implements OnModuleInit {
     }
   }
 
-  applyRouters() {
+  private applyRouters() {
     if (!this.options.routers?.length) {
       return;
     }
 
-    // todo: apply every router in this.options.routers
+    for (const router of this.options.routers) {
+      const isRouter = this.reflector.get(Metadata.ROUTER, router);
+      if (!isRouter) {
+        this.logger.error(
+          'Add the @Router() decorator to make the provider a router',
+        );
+        continue;
+      }
+      this.applyRouter(router);
+    }
   }
 
-  async prepareToLaunch() {
+  private applyRouter(router: RouterClass) {
+    console.log(router);
+  }
+
+  private async prepareToLaunch() {
     await this.botService.deleteWebhook({
       drop_pending_updates: this.options.drop_pending_updates,
     });
@@ -41,7 +56,7 @@ export class DispatcherService implements OnModuleInit {
     this.logger.log(`Bot @${me.username} prepared to launch`);
   }
 
-  async startPolling() {
+  private async startPolling() {
     // todo: run polling
   }
 }
