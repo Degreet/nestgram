@@ -5,8 +5,8 @@ import { NestgramMiddleware } from './NestgramMiddleware';
 export type RouterClass = new (...args: any[]) => any;
 
 export interface DispatcherOptions extends GetUpdatesOptions {
-  drop_pending_updates?: boolean;
-  start_polling?: boolean;
+  dropPendingUpdates?: boolean;
+  startPolling?: boolean;
   routers?: RouterClass[];
   outerMiddlewares?: NestgramMiddleware[];
 }

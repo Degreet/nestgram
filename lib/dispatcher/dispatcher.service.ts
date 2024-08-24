@@ -4,6 +4,7 @@ import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { BotService } from '../bot';
 import { Metadata, Providers } from '../enums';
 import { AppliedRouterOptions, RouterOptions } from '../decorators';
+import { MiddlewareService } from './middleware.service';
 
 import { DispatcherOptions, RouterClass } from '../types/DispatcherOptions';
 
@@ -15,6 +16,7 @@ export class DispatcherService implements OnModuleInit {
     @Inject(Providers.DISPATCHER_OPTIONS)
     private readonly options: DispatcherOptions,
     private readonly botService: BotService,
+    private readonly middlewareService: MiddlewareService,
     private readonly reflector: Reflector,
   ) {}
 
@@ -23,7 +25,7 @@ export class DispatcherService implements OnModuleInit {
 
     await this.prepareToLaunch();
 
-    if (this.options.start_polling) {
+    if (this.options.startPolling) {
       this.startPolling();
     }
   }
@@ -51,7 +53,7 @@ export class DispatcherService implements OnModuleInit {
 
   private async prepareToLaunch() {
     await this.botService.deleteWebhook({
-      drop_pending_updates: this.options.drop_pending_updates,
+      drop_pending_updates: this.options.dropPendingUpdates,
     });
 
     const me = await this.botService.getMe();
