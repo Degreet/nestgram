@@ -6,7 +6,7 @@ import { MiddlewareService } from './middleware.service';
 import { BotModule } from '../bot';
 import { Metadata, Providers } from '../enums';
 
-import { DispatcherOptions } from '../types/DispatcherOptions';
+import { DispatcherOptions } from '../types';
 import { RouterOptions } from '../decorators';
 
 @Global()
@@ -38,7 +38,7 @@ export class DispatcherModule {
     return {
       module: DispatcherModule,
       providers,
-      exports: [Providers.DISPATCHER_OPTIONS],
+      exports: [Providers.DISPATCHER_OPTIONS, DispatcherService],
     };
   }
 
