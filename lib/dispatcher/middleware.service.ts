@@ -16,6 +16,20 @@ export class MiddlewareService {
     private readonly moduleRef: ModuleRef,
   ) {}
 
+  public createHandlerContext(
+    instance: Type,
+    callback: () => any,
+    methodName: string,
+  ) {
+    return this.externalContextCreator.create(
+      instance,
+      callback,
+      methodName,
+      Metadata.PARAMS,
+      this.paramsFactory,
+    );
+  }
+
   public createContext(middleware: NestgramMiddleware) {
     return this.externalContextCreator.create(
       middleware,

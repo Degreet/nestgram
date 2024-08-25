@@ -1,7 +1,7 @@
 import { SetMetadata, Type } from '@nestjs/common';
 
 import { Metadata } from '../../enums';
-import { NestgramMiddleware } from '../../types/NestgramMiddleware';
+import { NestgramMiddleware } from '../../types';
 
 export interface RouterOptions {
   includes?: Type[];
