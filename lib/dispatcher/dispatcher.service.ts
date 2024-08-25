@@ -57,7 +57,9 @@ export class DispatcherService implements OnModuleInit, OnApplicationShutdown {
     this.logger.debug(`Bot @${me.username} prepared to launch`);
   }
 
-  private async findHandler(update: Update) {}
+  private async findHandler(update: Update, updateType: string) {
+    // todo
+  }
 
   private async processUpdate(update: Update) {
     this.logger.log('Processing update #' + update.update_id);
@@ -69,7 +71,7 @@ export class DispatcherService implements OnModuleInit, OnApplicationShutdown {
     await this.middlewareService.runMiddlewarePipeline(
       this.options.outerMiddlewares || [],
       [updateType],
-      () => console.log('stack completed'),
+      () => this.findHandler(update, updateType),
     );
   }
 
