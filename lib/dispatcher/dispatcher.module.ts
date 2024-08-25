@@ -2,6 +2,7 @@ import { DynamicModule, Global, Module, Provider, Type } from '@nestjs/common';
 
 import { DispatcherService } from './dispatcher.service';
 import { MiddlewareService } from './middleware.service';
+import { HandlerService } from './handler.service';
 
 import { BotModule } from '../bot';
 import { Metadata, Providers } from '../enums';
@@ -12,7 +13,7 @@ import { AppliedRouterOptions, RouterOptions } from '../decorators';
 @Global()
 @Module({
   imports: [BotModule],
-  providers: [DispatcherService, MiddlewareService],
+  providers: [DispatcherService, MiddlewareService, HandlerService],
 })
 export class DispatcherModule {
   public static forRoot(options: DispatcherOptions): DynamicModule {

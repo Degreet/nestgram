@@ -3,6 +3,7 @@ export * from './BotOptions';
 export * from './DispatcherOptions';
 export * from './Filter';
 export * from './Handler';
+export * from './ListenerOptions';
 export * from './Message';
 export * from './NestgramMiddleware';
 export * from './User';
