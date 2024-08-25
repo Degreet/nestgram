@@ -20,7 +20,7 @@ export class SendMessage extends ApiMethod<SendMessageOptions, Message> {
   protected readonly methodName = 'sendMessage';
   protected readonly isFormData = false;
 
-  constructor(token: string, options: SendMessageOptions) {
+  constructor(public token: string, public options: SendMessageOptions) {
     super(token, options);
   }
 }

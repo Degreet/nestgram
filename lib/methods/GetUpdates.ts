@@ -12,7 +12,7 @@ export class GetUpdates extends ApiMethod<GetUpdatesOptions, Update[]> {
   protected readonly methodName = 'getUpdates';
   protected readonly isFormData = false;
 
-  constructor(token: string, options?: GetUpdatesOptions) {
+  constructor(public token: string, public options?: GetUpdatesOptions) {
     super(token, options);
   }
 }

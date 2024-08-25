@@ -8,7 +8,7 @@ export class DeleteWebhook extends ApiMethod<DeleteWebhookOptions, true> {
   protected readonly methodName = 'deleteWebhook';
   protected readonly isFormData = false;
 
-  constructor(token: string, options?: DeleteWebhookOptions) {
+  constructor(public token: string, public options?: DeleteWebhookOptions) {
     super(token, options);
   }
 }

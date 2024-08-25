@@ -7,17 +7,18 @@ export abstract class ApiMethod<T, R> {
   protected abstract readonly isFormData: boolean;
 
   protected constructor(
-    private readonly token: string,
-    private readonly options?: T,
+    public readonly token: string,
+    public readonly options?: T,
   ) {}
 
-  async fetch(): Promise<R> {
+  public async fetch(signal?: AbortSignal): Promise<R> {
     const response = await fetch(
       `https://api.telegram.org/bot${this.token}/${this.methodName}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: this.options && JSON.stringify(this.options),
+        signal,
       },
     );
 
