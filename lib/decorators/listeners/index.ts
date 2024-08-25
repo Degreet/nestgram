@@ -1,1 +1,1 @@
-export * from './on-update.decorator';
+export * from './on-message.decorator';
