@@ -1,17 +1,14 @@
-import { Reflector } from '@nestjs/core';
 import {
   Inject,
   Injectable,
   Logger,
   OnApplicationShutdown,
   OnModuleInit,
-  Type,
 } from '@nestjs/common';
 
 import { BotService } from '../bot';
-import { Metadata, Providers } from '../enums';
+import { Providers } from '../enums';
 
-import { AppliedRouterOptions, RouterOptions } from '../decorators';
 import { DispatcherOptions, Update } from '../types';
 
 import { MiddlewareService } from './middleware.service';
@@ -31,7 +28,6 @@ export class DispatcherService implements OnModuleInit, OnApplicationShutdown {
     private readonly options: DispatcherOptions,
     private readonly botService: BotService,
     private readonly middlewareService: MiddlewareService,
-    private readonly reflector: Reflector,
   ) {
     this.getUpdates = new GetUpdates(this.botService.token, {
       offset: options.offset ?? 0,
@@ -42,8 +38,6 @@ export class DispatcherService implements OnModuleInit, OnApplicationShutdown {
   }
 
   public async onModuleInit() {
-    this.applyRouters();
-
     if (this.options.startPolling) {
       await this.prepareToLaunch();
       this.startPolling();
@@ -52,27 +46,6 @@ export class DispatcherService implements OnModuleInit, OnApplicationShutdown {
 
   public async onApplicationShutdown() {
     await this.stopPolling();
-  }
-
-  private applyRouters() {
-    for (const router of this.options.routers ?? []) {
-      this.applyRouter(router);
-    }
-  }
-
-  private applyRouter(router: Type, parent?: Type) {
-    const options: RouterOptions = this.reflector.get(Metadata.ROUTER, router);
-    if (!options) {
-      return this.logger.error(router.name + ' is not a router');
-    }
-
-    const appliedOptions: AppliedRouterOptions = { ...options, parent };
-
-    Reflect.defineMetadata(Metadata.ROUTER, appliedOptions, router);
-
-    options.includes?.forEach((subRouter) => {
-      this.applyRouter(subRouter, router);
-    });
   }
 
   private async prepareToLaunch() {
@@ -84,9 +57,20 @@ export class DispatcherService implements OnModuleInit, OnApplicationShutdown {
     this.logger.debug(`Bot @${me.username} prepared to launch`);
   }
 
+  private async findHandler(update: Update) {}
+
   private async processUpdate(update: Update) {
     this.logger.log('Processing update #' + update.update_id);
     this.logger.debug(update);
+
+    const keys = Object.keys(update);
+    const [updateType] = keys.filter((key) => key !== 'update_id');
+
+    await this.middlewareService.runMiddlewarePipeline(
+      this.options.outerMiddlewares || [],
+      [updateType],
+      () => console.log('stack completed'),
+    );
   }
 
   private async handleUpdates() {
