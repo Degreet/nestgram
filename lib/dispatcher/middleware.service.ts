@@ -3,7 +3,7 @@ import { ExternalContextCreator, ModuleRef } from '@nestjs/core';
 
 import { HandlerParamsFactory } from '../factories';
 import { Metadata } from '../enums';
-import { NestgramMiddleware } from '../types';
+import { FilteredNestgramMiddleware, NestgramMiddleware } from '../types';
 
 @Injectable()
 export class MiddlewareService {
@@ -16,18 +16,18 @@ export class MiddlewareService {
     private readonly moduleRef: ModuleRef,
   ) {}
 
-  public createHandlerContext(
-    instance: Type,
-    callback: () => any,
-    methodName: string,
-  ) {
-    return this.externalContextCreator.create(
-      instance,
-      callback,
-      methodName,
-      Metadata.PARAMS,
-      this.paramsFactory,
-    );
+  public filter(middlewares: Type<NestgramMiddleware>[], updateType: string) {
+    const filtered: FilteredNestgramMiddleware[] = [];
+
+    middlewares.forEach((middleware) => {
+      const instance = this.moduleRef.get(middleware);
+      const { updateTypes } = instance;
+      if (!updateTypes || updateTypes.includes(updateType)) {
+        filtered.push({ instance, name: middleware.name });
+      }
+    });
+
+    return filtered;
   }
 
   public createContext(middleware: NestgramMiddleware) {
@@ -41,16 +41,14 @@ export class MiddlewareService {
   }
 
   public runMiddlewarePipeline(
-    middlewares: Type<NestgramMiddleware>[],
+    middlewares: FilteredNestgramMiddleware[],
     args: any[],
     callback: () => any | Promise<any>,
     index = 0,
   ) {
     if (index < middlewares.length) {
-      const instance = this.moduleRef.get(middlewares[index]);
-      const middlewareName = middlewares[index].name;
-
-      this.logger.debug('Executing ' + middlewareName);
+      const { instance, name } = middlewares[index];
+      this.logger.debug('Executing ' + name);
 
       const handler = this.createContext(instance);
       return handler(...args, () => {

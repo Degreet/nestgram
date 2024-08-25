@@ -3,3 +3,8 @@ export interface NestgramMiddleware {
 
   use(...args: any[]): any | Promise<any>;
 }
+
+export interface FilteredNestgramMiddleware {
+  instance: NestgramMiddleware;
+  name: string;
+}

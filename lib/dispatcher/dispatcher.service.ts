@@ -65,8 +65,10 @@ export class DispatcherService implements OnModuleInit, OnApplicationShutdown {
     const keys = Object.keys(update);
     const [updateType] = keys.filter((key) => key !== 'update_id');
 
+    const outerMiddlewares = this.options.outerMiddlewares || [];
+
     await this.middlewareService.runMiddlewarePipeline(
-      this.options.outerMiddlewares || [],
+      this.middlewareService.filter(outerMiddlewares, updateType),
       [updateType],
       () => {
         return this.handlerService.findHandler(

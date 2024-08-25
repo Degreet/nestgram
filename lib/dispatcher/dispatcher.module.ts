@@ -7,12 +7,12 @@ import { HandlerService } from './handler.service';
 import { BotModule } from '../bot';
 import { Providers } from '../enums';
 import { DispatcherOptions } from '../types';
+import { usedFilters } from '../decorators';
 
 import {
   createDependentProvider,
   createRouterProviders,
 } from './dispatcher.provider';
-import { usedFilters } from '../decorators';
 
 @Global()
 @Module({
