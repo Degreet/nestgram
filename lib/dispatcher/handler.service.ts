@@ -19,7 +19,7 @@ export class HandlerService {
     private readonly externalContextCreator: ExternalContextCreator,
   ) {}
 
-  private createContext(instance: Type, methodName: string) {
+  private createContext(instance: any, methodName: string) {
     return this.externalContextCreator.create(
       instance,
       instance[methodName],
@@ -29,7 +29,33 @@ export class HandlerService {
     );
   }
 
-  private async exploreRouter(router: Type, updateType: string) {
+  private async passFilters(
+    metadata: ListenerOptions[],
+    updateType: string,
+    args: any[],
+  ) {
+    for (const options of metadata) {
+      if (options.updateType !== updateType) continue;
+
+      const result = await Promise.all(
+        (options.filters ?? []).map(async (filter) => {
+          const instance = this.moduleRef.get(filter);
+          const callback = this.createContext(
+            instance,
+            instance.canActivate.name,
+          );
+          const result = callback(...args);
+          if (result instanceof Promise) await result;
+          return result;
+        }),
+      );
+      if (!result.every(Boolean)) continue;
+
+      return true;
+    }
+  }
+
+  private async exploreRouter(router: Type, updateType: string, args: any[]) {
     const routerMetadata: AppliedRouterOptions = this.reflector.get(
       Metadata.ROUTER,
       router,
@@ -50,13 +76,17 @@ export class HandlerService {
         Metadata.LISTENERS,
         method,
       );
-      if (metadata?.some((options) => options.updateType === updateType)) {
+      if (!metadata) {
+        continue;
+      }
+      const isPassed = await this.passFilters(metadata, updateType, args);
+      if (isPassed) {
         return { instance, prototype, methodName };
       }
     }
 
     for (const subRouter of routerMetadata.includes ?? []) {
-      const result = await this.exploreRouter(subRouter, updateType);
+      const result = await this.exploreRouter(subRouter, updateType, args);
       if (result) return result;
     }
   }
@@ -66,16 +96,21 @@ export class HandlerService {
     update: Update,
     updateType: string,
   ) {
+    const args = [update[updateType], update];
+
     for (const router of routers) {
-      const handler = await this.exploreRouter(router, updateType);
+      const handler = await this.exploreRouter(router, updateType, args);
       if (handler) {
+        this.logger.debug('Handler found!');
         const callback = this.createContext(
           handler.instance,
           handler.methodName,
         );
-        const response = callback(update[updateType], update);
+        const response = callback(...args);
         if (response instanceof Promise) await response;
         break;
+      } else {
+        this.logger.debug('Handler not found!');
       }
     }
 
