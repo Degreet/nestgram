@@ -40,27 +40,19 @@ export class HandlerService {
 
     const instance = this.moduleRef.get(router);
     const prototype = Object.getPrototypeOf(instance);
-    const ownKeys = Reflect.ownKeys(prototype);
 
-    for (const methodName of ownKeys) {
-      const method = prototype[methodName];
-      if (typeof method !== 'function') {
-        continue;
-      }
+    const ownMethods = Reflect.ownKeys(prototype)
+      .filter((key) => typeof prototype[key] === 'function')
+      .map((key) => ({ methodName: key, method: prototype[key] }));
 
+    for (const { methodName, method } of ownMethods) {
       const metadata: ListenerOptions[] = this.reflector.get(
         Metadata.LISTENERS,
         method,
       );
-      if (!metadata) {
-        continue;
+      if (metadata?.some((options) => options.updateType === updateType)) {
+        return { instance, prototype, methodName };
       }
-
-      if (metadata.every((options) => options.updateType !== updateType)) {
-        continue;
-      }
-
-      return { instance, prototype, methodName };
     }
 
     for (const subRouter of routerMetadata.includes ?? []) {

@@ -18,11 +18,10 @@ import { HandlerService } from './handler.service';
 @Injectable()
 export class DispatcherService implements OnModuleInit, OnApplicationShutdown {
   private readonly logger = new Logger(DispatcherService.name);
-
-  private isPollingRunning = false;
-  private abortController: AbortController;
-
   private readonly getUpdates: GetUpdates;
+
+  private abortController: AbortController;
+  private isPollingRunning = false;
 
   constructor(
     @Inject(Providers.DISPATCHER_OPTIONS)
