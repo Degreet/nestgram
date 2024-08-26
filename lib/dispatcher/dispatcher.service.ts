@@ -69,7 +69,7 @@ export class DispatcherService implements OnModuleInit, OnApplicationShutdown {
 
     await this.middlewareService.runMiddlewarePipeline(
       this.middlewareService.filter(outerMiddlewares, updateType),
-      [updateType],
+      [update[updateType], update],
       () => {
         return this.handlerService.findHandler(
           this.options.routers ?? [],

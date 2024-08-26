@@ -7,7 +7,9 @@ import { FilteredNestgramMiddleware, NestgramMiddleware } from '../types';
 
 @Injectable()
 export class MiddlewareService {
-  private readonly logger = new Logger(MiddlewareService.name);
+  private readonly logger = new Logger(MiddlewareService.name, {
+    timestamp: true,
+  });
 
   private readonly paramsFactory = new HandlerParamsFactory();
 

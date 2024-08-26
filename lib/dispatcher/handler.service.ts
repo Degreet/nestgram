@@ -1,15 +1,18 @@
 import { Injectable, Logger, Type } from '@nestjs/common';
 import { ExternalContextCreator, ModuleRef, Reflector } from '@nestjs/core';
 
-import { Update, ListenerOptions } from '../types';
+import { Update, ListenerOptions, NestgramMiddleware } from '../types';
 import { Metadata } from '../enums';
 
 import { AppliedRouterOptions } from '../decorators';
 import { HandlerParamsFactory } from '../factories';
+import { MiddlewareService } from './middleware.service';
 
 @Injectable()
 export class HandlerService {
-  private readonly logger = new Logger(HandlerService.name);
+  private readonly logger = new Logger(HandlerService.name, {
+    timestamp: true,
+  });
 
   private readonly paramsFactory = new HandlerParamsFactory();
 
@@ -17,9 +20,10 @@ export class HandlerService {
     private readonly reflector: Reflector,
     private readonly moduleRef: ModuleRef,
     private readonly externalContextCreator: ExternalContextCreator,
+    private readonly middlewareService: MiddlewareService,
   ) {}
 
-  private createContext(instance: any, methodName: string) {
+  private createContext(instance: object, methodName: string) {
     return this.externalContextCreator.create(
       instance,
       instance[methodName],
@@ -55,6 +59,27 @@ export class HandlerService {
     }
   }
 
+  private getMiddlewareStack(router: AppliedRouterOptions, updateType: string) {
+    const routers: AppliedRouterOptions[] = [router];
+    const middlewares: Type<NestgramMiddleware>[] = [];
+    let parent = router.parent;
+
+    while (parent) {
+      const metadata: AppliedRouterOptions = this.reflector.get(
+        Metadata.ROUTER,
+        parent,
+      );
+      routers.push(metadata);
+      parent = metadata.parent;
+    }
+
+    routers.reverse().forEach((router) => {
+      middlewares.push(...(router.middlewares ?? []));
+    });
+
+    return this.middlewareService.filter(middlewares, updateType);
+  }
+
   private async exploreRouter(router: Type, updateType: string, args: any[]) {
     const routerMetadata: AppliedRouterOptions = this.reflector.get(
       Metadata.ROUTER,
@@ -67,21 +92,21 @@ export class HandlerService {
     const instance = this.moduleRef.get(router);
     const prototype = Object.getPrototypeOf(instance);
 
-    const ownMethods = Reflect.ownKeys(prototype)
-      .filter((key) => typeof prototype[key] === 'function')
-      .map((key) => ({ methodName: key, method: prototype[key] }));
+    const ownMethods = Reflect.ownKeys(prototype).filter(
+      (key) => typeof prototype[key] === 'function',
+    );
 
-    for (const { methodName, method } of ownMethods) {
+    for (const methodName of ownMethods) {
       const metadata: ListenerOptions[] = this.reflector.get(
         Metadata.LISTENERS,
-        method,
+        prototype[methodName],
       );
       if (!metadata) {
         continue;
       }
       const isPassed = await this.passFilters(metadata, updateType, args);
       if (isPassed) {
-        return { instance, prototype, methodName };
+        return { instance, methodName, router: routerMetadata };
       }
     }
 
@@ -102,12 +127,17 @@ export class HandlerService {
       const handler = await this.exploreRouter(router, updateType, args);
       if (handler) {
         this.logger.debug('Handler found!');
-        const callback = this.createContext(
-          handler.instance,
-          handler.methodName,
+        await this.middlewareService.runMiddlewarePipeline(
+          this.getMiddlewareStack(handler.router, updateType),
+          args,
+          () => {
+            const callback = this.createContext(
+              handler.instance,
+              handler.methodName,
+            );
+            return callback(...args);
+          },
         );
-        const response = callback(...args);
-        if (response instanceof Promise) await response;
         break;
       } else {
         this.logger.debug('Handler not found!');
