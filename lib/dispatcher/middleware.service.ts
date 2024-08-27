@@ -11,11 +11,10 @@ export class MiddlewareService {
     timestamp: true,
   });
 
-  private readonly paramsFactory = new HandlerParamsFactory();
-
   constructor(
     private readonly externalContextCreator: ExternalContextCreator,
     private readonly moduleRef: ModuleRef,
+    private readonly paramsFactory: HandlerParamsFactory,
   ) {}
 
   public filter(middlewares: Type<NestgramMiddleware>[], updateType: string) {

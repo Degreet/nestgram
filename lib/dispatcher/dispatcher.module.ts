@@ -13,6 +13,7 @@ import {
   createDependentProvider,
   createRouterProviders,
 } from './dispatcher.provider';
+import { HandlerParamsFactory } from '../factories';
 
 @Global()
 @Module({
@@ -25,6 +26,10 @@ export class DispatcherModule {
       {
         provide: Providers.DISPATCHER_OPTIONS,
         useValue: options,
+      },
+      {
+        provide: HandlerParamsFactory,
+        useClass: HandlerParamsFactory,
       },
       ...createRouterProviders(options.routers ?? []),
       ...options.outerMiddlewares?.map(createDependentProvider),

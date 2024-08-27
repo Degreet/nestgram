@@ -14,13 +14,12 @@ export class HandlerService {
     timestamp: true,
   });
 
-  private readonly paramsFactory = new HandlerParamsFactory();
-
   constructor(
     private readonly reflector: Reflector,
     private readonly moduleRef: ModuleRef,
     private readonly externalContextCreator: ExternalContextCreator,
     private readonly middlewareService: MiddlewareService,
+    private readonly paramsFactory: HandlerParamsFactory,
   ) {}
 
   private createContext(instance: object, methodName: string) {
