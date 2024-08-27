@@ -34,9 +34,11 @@ export class DispatcherModule {
       ...createRouterProviders(options.routers ?? []),
       ...options.outerMiddlewares?.map(createDependentProvider),
       ...usedFilters.map(createDependentProvider),
+      ...(options.providers ?? []),
     ];
 
     return {
+      imports: [...(options.imports ?? [])],
       module: DispatcherModule,
       providers,
       exports: [Providers.DISPATCHER_OPTIONS, DispatcherService],
