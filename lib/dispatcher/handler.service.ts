@@ -120,7 +120,8 @@ export class HandlerService {
     update: Update,
     updateType: string,
   ) {
-    const args = [update[updateType], update];
+    const data = {};
+    const args = [update[updateType], data];
 
     for (const router of routers) {
       const handler = await this.exploreRouter(router, updateType, args);
