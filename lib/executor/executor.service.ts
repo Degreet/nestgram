@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { extractUpdateType } from '../utils/extractUpdateType';
 
 import { HandlerService, MiddlewareService } from '../dispatcher';
 import { DispatcherOptions, Update } from '../types';
@@ -15,14 +16,8 @@ export class ExecutorService {
     private readonly handlerService: HandlerService,
   ) {}
 
-  private extractUpdateType(update: Update): string {
-    const keys = Object.keys(update);
-    const [updateType] = keys.filter((key) => key !== 'update_id');
-    return updateType;
-  }
-
   private processOuterMiddlewares(update: Update) {
-    const updateType = this.extractUpdateType(update);
+    const updateType = extractUpdateType(update);
 
     const outerMiddlewares = this.options.outerMiddlewares || [];
 
@@ -45,7 +40,7 @@ export class ExecutorService {
   }
 
   private async processInnerMiddlewares(update: Update, handler: any) {
-    const updateType = this.extractUpdateType(update);
+    const updateType = extractUpdateType(update);
 
     const data = {};
     const args = [update[updateType], data];
@@ -63,11 +58,11 @@ export class ExecutorService {
   }
 
   private processHandlerExecuting(args: any[], handler: any) {
-    const callback = this.handlerService.createContext(
+    return this.handlerService.executeHandler(
       handler.instance,
       handler.methodName,
+      ...args,
     );
-    return callback(...args);
   }
 
   public async processUpdate(update: Update) {

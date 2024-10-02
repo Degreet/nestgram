@@ -7,6 +7,7 @@ import { Metadata } from '../enums';
 import { AppliedRouterOptions } from '../decorators';
 import { HandlerParamsFactory } from '../factories';
 import { MiddlewareService } from './middleware.service';
+import { FilterService } from '../executor/filter.service';
 
 @Injectable()
 export class HandlerService {
@@ -20,42 +21,17 @@ export class HandlerService {
     private readonly externalContextCreator: ExternalContextCreator,
     private readonly middlewareService: MiddlewareService,
     private readonly paramsFactory: HandlerParamsFactory,
+    private readonly filterService: FilterService,
   ) {}
 
-  public createContext(instance: object, methodName: string) {
+  public executeHandler(instance: object, methodName: string, ...args: any[]) {
     return this.externalContextCreator.create(
       instance,
       instance[methodName],
       methodName,
       Metadata.PARAMS,
       this.paramsFactory,
-    );
-  }
-
-  private async passFilters(
-    metadata: ListenerOptions[],
-    updateType: string,
-    args: any[],
-  ) {
-    for (const options of metadata) {
-      if (options.updateType !== updateType) continue;
-
-      const result = await Promise.all(
-        (options.filters ?? []).map(async (filter) => {
-          const instance = this.moduleRef.get(filter);
-          const callback = this.createContext(
-            instance,
-            instance.canActivate.name,
-          );
-          const result = callback(...args);
-          if (result instanceof Promise) await result;
-          return result;
-        }),
-      );
-      if (!result.every(Boolean)) continue;
-
-      return true;
-    }
+    )(...args);
   }
 
   public getMiddlewareStack(router: AppliedRouterOptions, updateType: string) {
@@ -103,10 +79,9 @@ export class HandlerService {
       if (!metadata) {
         continue;
       }
-      // todo
-      const isPassed = await this.passFilters(metadata, updateType, args);
+      const isPassed = await this.filterService.passFilters(metadata, update);
       if (isPassed) {
-        return { instance, methodName, router: routerMetadata };
+        return { instance, methodName, router: routerMetadata }; // todo: interface
       }
     }
 
