@@ -9,11 +9,10 @@ import {
 import { BotService } from '../bot';
 import { Providers } from '../enums';
 
-import { DispatcherOptions, Update } from '../types';
+import { DispatcherOptions } from '../types';
 import { GetUpdates } from '../methods';
 
-import { MiddlewareService } from './middleware.service';
-import { HandlerService } from './handler.service';
+import { ExecutorService } from '../executor';
 
 @Injectable()
 export class DispatcherService implements OnModuleInit, OnApplicationShutdown {
@@ -27,8 +26,7 @@ export class DispatcherService implements OnModuleInit, OnApplicationShutdown {
     @Inject(Providers.DISPATCHER_OPTIONS)
     private readonly options: DispatcherOptions,
     private readonly botService: BotService,
-    private readonly middlewareService: MiddlewareService,
-    private readonly handlerService: HandlerService,
+    private readonly executorService: ExecutorService,
   ) {
     this.getUpdates = new GetUpdates(this.botService.token, {
       offset: options.offset ?? 0,
@@ -58,34 +56,12 @@ export class DispatcherService implements OnModuleInit, OnApplicationShutdown {
     this.logger.debug(`Bot @${me.username} prepared to launch`);
   }
 
-  private async processUpdate(update: Update) {
-    this.logger.log('Processing update #' + update.update_id);
-    this.logger.debug(update);
-
-    const keys = Object.keys(update);
-    const [updateType] = keys.filter((key) => key !== 'update_id');
-
-    const outerMiddlewares = this.options.outerMiddlewares || [];
-
-    await this.middlewareService.runMiddlewarePipeline(
-      this.middlewareService.filter(outerMiddlewares, updateType),
-      [update[updateType], update],
-      () => {
-        return this.handlerService.findHandler(
-          this.options.routers ?? [],
-          update,
-          updateType,
-        );
-      },
-    );
-  }
-
   private async handleUpdates() {
     try {
       const updates = await this.getUpdates.fetch(this.abortController.signal);
 
       for (const update of updates) {
-        await this.processUpdate(update);
+        await this.executorService.processUpdate(update);
         this.getUpdates.options.offset = update.update_id + 1;
       }
     } catch (error) {

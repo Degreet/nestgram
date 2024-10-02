@@ -22,7 +22,7 @@ export class HandlerService {
     private readonly paramsFactory: HandlerParamsFactory,
   ) {}
 
-  private createContext(instance: object, methodName: string) {
+  public createContext(instance: object, methodName: string) {
     return this.externalContextCreator.create(
       instance,
       instance[methodName],
@@ -58,7 +58,7 @@ export class HandlerService {
     }
   }
 
-  private getMiddlewareStack(router: AppliedRouterOptions, updateType: string) {
+  public getMiddlewareStack(router: AppliedRouterOptions, updateType: string) {
     const routers: AppliedRouterOptions[] = [router];
     const middlewares: Type<NestgramMiddleware>[] = [];
     let parent = router.parent;
@@ -79,7 +79,7 @@ export class HandlerService {
     return this.middlewareService.filter(middlewares, updateType);
   }
 
-  private async exploreRouter(router: Type, updateType: string, args: any[]) {
+  private async exploreRouter(router: Type, update: Update) {
     const routerMetadata: AppliedRouterOptions = this.reflector.get(
       Metadata.ROUTER,
       router,
@@ -103,6 +103,7 @@ export class HandlerService {
       if (!metadata) {
         continue;
       }
+      // todo
       const isPassed = await this.passFilters(metadata, updateType, args);
       if (isPassed) {
         return { instance, methodName, router: routerMetadata };
@@ -110,7 +111,7 @@ export class HandlerService {
     }
 
     for (const subRouter of routerMetadata.includes ?? []) {
-      const result = await this.exploreRouter(subRouter, updateType, args);
+      const result = await this.exploreRouter(subRouter, update);
       if (result) return result;
     }
   }
@@ -118,32 +119,15 @@ export class HandlerService {
   public async findHandler(
     routers: Type[],
     update: Update,
-    updateType: string,
-  ) {
-    const data = {};
-    const args = [update[updateType], data];
-
+  ): Promise<any | void> {
     for (const router of routers) {
-      const handler = await this.exploreRouter(router, updateType, args);
+      const handler = await this.exploreRouter(router, update);
       if (handler) {
         this.logger.debug('Handler found!');
-        await this.middlewareService.runMiddlewarePipeline(
-          this.getMiddlewareStack(handler.router, updateType),
-          args,
-          () => {
-            const callback = this.createContext(
-              handler.instance,
-              handler.methodName,
-            );
-            return callback(...args);
-          },
-        );
-        break;
+        return handler;
       } else {
         this.logger.debug('Handler not found!');
       }
     }
-
-    return true;
   }
 }
