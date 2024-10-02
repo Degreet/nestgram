@@ -51,7 +51,7 @@ export class ExecutorService {
     const data = {};
     const args = [update[updateType], data];
 
-    const innerMiddlewares = this.handlerService.getMiddlewareStack(
+    const innerMiddlewares = this.middlewareService.getRouterStack(
       exploredRouter.router,
       updateType,
     );

@@ -1,12 +1,11 @@
 import { Injectable, Logger, Type } from '@nestjs/common';
 import { ExternalContextCreator, ModuleRef, Reflector } from '@nestjs/core';
 
-import { Update, ListenerOptions, NestgramMiddleware } from '../types';
+import { Update, ListenerOptions } from '../types';
 import { Metadata } from '../enums';
 
 import { AppliedRouterOptions } from '../decorators';
 import { HandlerParamsFactory } from '../factories';
-import { MiddlewareService } from './middleware.service';
 import { FilterService } from '../executor/filter.service';
 import { ExploredRouter } from '../types/ExploredRouter';
 
@@ -20,7 +19,6 @@ export class HandlerService {
     private readonly reflector: Reflector,
     private readonly moduleRef: ModuleRef,
     private readonly externalContextCreator: ExternalContextCreator,
-    private readonly middlewareService: MiddlewareService,
     private readonly paramsFactory: HandlerParamsFactory,
     private readonly filterService: FilterService,
   ) {}
@@ -33,27 +31,6 @@ export class HandlerService {
       Metadata.PARAMS,
       this.paramsFactory,
     );
-  }
-
-  public getMiddlewareStack(router: AppliedRouterOptions, updateType: string) {
-    const routers: AppliedRouterOptions[] = [router];
-    const middlewares: Type<NestgramMiddleware>[] = [];
-    let parent = router.parent;
-
-    while (parent) {
-      const metadata: AppliedRouterOptions = this.reflector.get(
-        Metadata.ROUTER,
-        parent,
-      );
-      routers.push(metadata);
-      parent = metadata.parent;
-    }
-
-    routers.reverse().forEach((router) => {
-      middlewares.push(...(router.middlewares ?? []));
-    });
-
-    return this.middlewareService.filter(middlewares, updateType);
   }
 
   private async exploreRouter(
