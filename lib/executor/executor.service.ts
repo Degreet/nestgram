@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { extractUpdateType } from '../utils/extractUpdateType';
 
 import { HandlerService, MiddlewareService } from '../dispatcher';
@@ -13,8 +13,10 @@ export class ExecutorService {
   constructor(
     @Inject(Providers.DISPATCHER_OPTIONS)
     private readonly options: DispatcherOptions,
-    private readonly middlewareService: MiddlewareService,
+    @Inject(forwardRef(() => HandlerService))
     private readonly handlerService: HandlerService,
+    @Inject(forwardRef(() => MiddlewareService))
+    private readonly middlewareService: MiddlewareService,
   ) {}
 
   private processOuterMiddlewares(update: Update) {

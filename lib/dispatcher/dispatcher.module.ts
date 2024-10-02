@@ -14,11 +14,19 @@ import {
   createRouterProviders,
 } from './dispatcher.provider';
 import { HandlerParamsFactory } from '../factories';
+import { ExecutorService } from '../executor';
+import { FilterService } from '../executor/filter.service';
 
 @Global()
 @Module({
   imports: [BotModule],
-  providers: [DispatcherService, MiddlewareService, HandlerService],
+  providers: [
+    DispatcherService,
+    MiddlewareService,
+    HandlerService,
+    ExecutorService,
+    FilterService,
+  ],
 })
 export class DispatcherModule {
   public static forRoot(options: DispatcherOptions): DynamicModule {
