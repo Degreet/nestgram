@@ -4,6 +4,7 @@ import { extractUpdateType } from '../utils/extractUpdateType';
 import { HandlerService, MiddlewareService } from '../dispatcher';
 import { DispatcherOptions, Update } from '../types';
 import { Providers } from '../enums';
+import { ExploredRouter } from '../types/ExploredRouter';
 
 @Injectable()
 export class ExecutorService {
@@ -28,40 +29,35 @@ export class ExecutorService {
     );
   }
 
-  private processHandlerSearch(update: Update) {
-    const handler = this.handlerService.findHandler(
+  private async processHandlerSearch(update: Update) {
+    const exploredRouter = await this.handlerService.findHandler(
       this.options.routers ?? [],
       update,
     );
 
-    if (handler) {
-      return this.processInnerMiddlewares(update, handler);
+    if (exploredRouter) {
+      return this.processInnerMiddlewares(update, exploredRouter);
     }
   }
 
-  private async processInnerMiddlewares(update: Update, handler: any) {
+  private async processInnerMiddlewares(
+    update: Update,
+    exploredRouter: ExploredRouter,
+  ) {
     const updateType = extractUpdateType(update);
 
     const data = {};
     const args = [update[updateType], data];
 
     const innerMiddlewares = this.handlerService.getMiddlewareStack(
-      handler.router,
+      exploredRouter.router,
       updateType,
     );
 
     await this.middlewareService.runMiddlewarePipeline(
       innerMiddlewares,
       args,
-      () => this.processHandlerExecuting(args, handler),
-    );
-  }
-
-  private processHandlerExecuting(args: any[], handler: any) {
-    return this.handlerService.executeHandler(
-      handler.instance,
-      handler.methodName,
-      ...args,
+      () => exploredRouter.handler(...args),
     );
   }
 

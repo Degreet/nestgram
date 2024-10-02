@@ -8,6 +8,7 @@ import { AppliedRouterOptions } from '../decorators';
 import { HandlerParamsFactory } from '../factories';
 import { MiddlewareService } from './middleware.service';
 import { FilterService } from '../executor/filter.service';
+import { ExploredRouter } from '../types/ExploredRouter';
 
 @Injectable()
 export class HandlerService {
@@ -24,14 +25,14 @@ export class HandlerService {
     private readonly filterService: FilterService,
   ) {}
 
-  public executeHandler(instance: object, methodName: string, ...args: any[]) {
+  private createContext(instance: object, methodName: string) {
     return this.externalContextCreator.create(
       instance,
       instance[methodName],
       methodName,
       Metadata.PARAMS,
       this.paramsFactory,
-    )(...args);
+    );
   }
 
   public getMiddlewareStack(router: AppliedRouterOptions, updateType: string) {
@@ -55,7 +56,10 @@ export class HandlerService {
     return this.middlewareService.filter(middlewares, updateType);
   }
 
-  private async exploreRouter(router: Type, update: Update) {
+  private async exploreRouter(
+    router: Type,
+    update: Update,
+  ): Promise<ExploredRouter | null> {
     const routerMetadata: AppliedRouterOptions = this.reflector.get(
       Metadata.ROUTER,
       router,
@@ -81,7 +85,10 @@ export class HandlerService {
       }
       const isPassed = await this.filterService.passFilters(metadata, update);
       if (isPassed) {
-        return { instance, methodName, router: routerMetadata }; // todo: interface
+        return {
+          router: routerMetadata,
+          handler: this.createContext(instance, methodName as string),
+        };
       }
     }
 
@@ -94,7 +101,7 @@ export class HandlerService {
   public async findHandler(
     routers: Type[],
     update: Update,
-  ): Promise<any | void> {
+  ): Promise<ExploredRouter | void> {
     for (const router of routers) {
       const handler = await this.exploreRouter(router, update);
       if (handler) {
