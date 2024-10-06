@@ -1,5 +1,6 @@
 import { ApiMethod } from './ApiMethod';
 import { Message } from '../types';
+import { BotService } from '../bot';
 
 export interface SendMessageOptions {
   business_connection_id?: string;
@@ -20,7 +21,14 @@ export class SendMessage extends ApiMethod<SendMessageOptions, Message> {
   protected readonly methodName = 'sendMessage';
   protected readonly isFormData = false;
 
-  constructor(public token: string, public options: SendMessageOptions) {
-    super(token, options);
+  constructor(
+    public readonly botService: BotService,
+    public options: SendMessageOptions,
+  ) {
+    super(botService.token, options);
+  }
+
+  interceptor(object: Message): Message {
+    return Message.fromObject(this.botService, object);
   }
 }

@@ -22,15 +22,15 @@ export class BotService {
   }
 
   deleteWebhook(options?: DeleteWebhookOptions) {
-    return new DeleteWebhook(this.token, options).fetch();
+    return new DeleteWebhook(this, options).fetch();
   }
 
   getMe() {
-    return new GetMe(this.token).fetch();
+    return new GetMe(this).fetch();
   }
 
   getUpdates(options?: GetUpdatesOptions) {
-    return new GetUpdates(this.token, options).fetch();
+    return new GetUpdates(this, options).fetch();
   }
 
   sendMessage(
@@ -38,7 +38,7 @@ export class BotService {
     text: string,
     options?: SendMessageOptions,
   ) {
-    return new SendMessage(this.token, {
+    return new SendMessage(this, {
       chat_id,
       text,
       ...(options ?? {}),

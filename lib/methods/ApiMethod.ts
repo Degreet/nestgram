@@ -2,6 +2,10 @@ import { ApiException } from '../exceptions';
 
 import { ApiError, ApiResponse } from '../types';
 
+export interface ApiMethod<T, R> {
+  interceptor?(object: R): R;
+}
+
 export abstract class ApiMethod<T, R> {
   protected abstract readonly methodName: string;
   protected abstract readonly isFormData: boolean;
@@ -28,6 +32,8 @@ export abstract class ApiMethod<T, R> {
       throw new ApiException(data as ApiError, this.options);
     }
 
-    return data.result;
+    const object = data.result;
+
+    return this.interceptor?.(object) ?? object;
   }
 }
