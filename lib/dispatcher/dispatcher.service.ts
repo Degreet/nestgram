@@ -28,7 +28,7 @@ export class DispatcherService implements OnModuleInit, OnApplicationShutdown {
     private readonly botService: BotService,
     private readonly executorService: ExecutorService,
   ) {
-    this.getUpdates = new GetUpdates(this.botService.token, {
+    this.getUpdates = new GetUpdates(this.botService, {
       offset: options.offset ?? 0,
       limit: options.limit,
       timeout: options.timeout,

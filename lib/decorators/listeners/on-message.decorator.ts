@@ -27,3 +27,26 @@ export const OnMessage = (
     return target;
   };
 };
+
+export const OnCallbackQuery = (
+  ...filters: Type<NestgramFilter>[]
+): MethodDecorator => {
+  return (target: any, _key: string, descriptor: PropertyDescriptor) => {
+    const existingMetadata = Reflect.getMetadata(
+      Metadata.LISTENERS,
+      descriptor.value,
+    );
+
+    const options: ListenerOptions = { updateType: 'callback_query', filters };
+
+    const newMetadata = [...(existingMetadata ?? []), options];
+
+    Reflect.defineMetadata(Metadata.LISTENERS, newMetadata, descriptor.value);
+
+    if (filters) {
+      usedFilters.push(...filters);
+    }
+
+    return target;
+  };
+};

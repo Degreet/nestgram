@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { ListenerOptions, NestgramFilter, Update } from '../types';
+import { ListenerOptions, NestgramFilter, UpdateObject } from '../types';
 import { ExternalContextCreator, ModuleRef } from '@nestjs/core';
-import { extractUpdateType } from '../utils/extractUpdateType';
 
 @Injectable()
 export class FilterService {
@@ -18,12 +17,14 @@ export class FilterService {
     )(...args);
   }
 
-  public async passFilters(listeners: ListenerOptions[], update: Update) {
-    const updateType = extractUpdateType(update);
-    const args = [update[updateType]];
+  public async passFilters(
+    listeners: ListenerOptions[],
+    updateObject: UpdateObject,
+  ) {
+    const args = [updateObject];
 
     for (const options of listeners) {
-      if (options.updateType !== updateType) continue;
+      if (options.updateType !== updateObject.updateTitle) continue;
 
       const result = await Promise.all(
         (options.filters ?? []).map(async (filter) => {

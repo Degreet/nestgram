@@ -7,9 +7,10 @@ import { SendMessageOptions } from './SendMessage';
 export abstract class ShortcutMethods {
   protected constructor(private readonly botService: BotService) {}
 
-  protected abstract chatIdShortcut: string | number | void;
+  protected abstract chatId: string | number | void;
+  protected abstract messageId: number | void;
 
-  deleteWebhook(options?: DeleteWebhookOptions) {
+  deleteWebhook(options?: Partial<DeleteWebhookOptions>) {
     return this.botService.deleteWebhook(options);
   }
 
@@ -17,15 +18,27 @@ export abstract class ShortcutMethods {
     return this.botService.getMe();
   }
 
-  getUpdates(options?: GetUpdatesOptions) {
+  getUpdates(options?: Partial<GetUpdatesOptions>) {
     return this.botService.getUpdates(options);
   }
 
-  answer(text: string, options?: SendMessageOptions) {
-    const chatId = this.chatIdShortcut ?? options.chat_id;
+  answer(text: string, options?: Partial<SendMessageOptions>) {
+    const chatId = this.chatId ?? options.chat_id;
     if (!chatId) {
       throw new Error('chat_id is not defined');
     }
     return this.botService.sendMessage(chatId, text, options);
+  }
+
+  reply(text: string, options?: Partial<SendMessageOptions>) {
+    const chatId = this.chatId ?? options.chat_id;
+    const messageId = this.messageId;
+    if (!chatId || !messageId) {
+      throw new Error('chat_id && message_id must be specified');
+    }
+    return this.botService.sendMessage(chatId, text, {
+      reply_parameters: { message_id: messageId },
+      ...options,
+    });
   }
 }

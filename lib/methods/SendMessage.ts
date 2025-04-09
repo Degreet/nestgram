@@ -1,5 +1,5 @@
 import { ApiMethod } from './ApiMethod';
-import { Message } from '../types';
+import { Message } from '../updateObjects';
 import { BotService } from '../bot';
 
 export interface SendMessageOptions {
