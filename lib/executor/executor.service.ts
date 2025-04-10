@@ -84,7 +84,7 @@ export class ExecutorService {
 
   public async processUpdate(update: Update) {
     this.logger.debug('Processing update #' + update.update_id);
-    this.logger.debug(update);
+    this.logger.verbose(update);
 
     await this.processOuterMiddlewares(update);
   }
