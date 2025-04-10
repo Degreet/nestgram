@@ -37,6 +37,7 @@ export class ExecutorService {
   }
 
   private processOuterMiddlewares(update: Update) {
+    const data = {};
     const updateType = extractUpdateType(update);
 
     const updateObject = this.buildUpdateObject(update, updateType);
@@ -45,30 +46,29 @@ export class ExecutorService {
 
     return this.middlewareService.runMiddlewarePipeline(
       this.middlewareService.filter(outerMiddlewares, updateType),
-      [updateObject],
-      () => this.processHandlerSearch(updateObject),
+      (next) => [updateObject, next, data],
+      () => this.processHandlerSearch(updateObject, data),
     );
   }
 
-  private async processHandlerSearch(updateObject: UpdateObject) {
+  private async processHandlerSearch(updateObject: UpdateObject, data: any) {
     const exploredRouter = await this.handlerService.findHandler(
       this.options.routers ?? [],
       updateObject,
+      data,
     );
 
     if (exploredRouter) {
-      return this.processInnerMiddlewares(updateObject, exploredRouter);
+      return this.processInnerMiddlewares(updateObject, exploredRouter, data);
     }
   }
 
   private async processInnerMiddlewares(
     updateObject: UpdateObject,
     exploredRouter: ExploredRouter,
+    data: any,
   ) {
     const updateType = updateObject.updateTitle;
-
-    const data = {};
-    const args = [updateObject, data];
 
     const innerMiddlewares = this.middlewareService.getRouterStack(
       exploredRouter.router,
@@ -77,8 +77,8 @@ export class ExecutorService {
 
     await this.middlewareService.runMiddlewarePipeline(
       innerMiddlewares,
-      args,
-      () => exploredRouter.handler(...args),
+      (next) => [updateObject, next, data],
+      () => exploredRouter.handler(updateObject, data),
     );
   }
 

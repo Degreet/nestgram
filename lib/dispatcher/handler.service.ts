@@ -36,6 +36,7 @@ export class HandlerService {
   private async exploreRouter(
     router: Type,
     updateObject: UpdateObject,
+    data: any,
   ): Promise<ExploredRouter | null> {
     const routerMetadata: AppliedRouterOptions = this.reflector.get(
       Metadata.ROUTER,
@@ -63,6 +64,7 @@ export class HandlerService {
       const isPassed = await this.filterService.passFilters(
         metadata,
         updateObject,
+        data,
       );
       if (isPassed) {
         return {
@@ -73,7 +75,7 @@ export class HandlerService {
     }
 
     for (const subRouter of routerMetadata.includes ?? []) {
-      const result = await this.exploreRouter(subRouter, updateObject);
+      const result = await this.exploreRouter(subRouter, updateObject, data);
       if (result) return result;
     }
   }
@@ -81,9 +83,10 @@ export class HandlerService {
   public async findHandler(
     routers: Type[],
     updateObject: UpdateObject,
+    data: any,
   ): Promise<ExploredRouter | void> {
     for (const router of routers) {
-      const handler = await this.exploreRouter(router, updateObject);
+      const handler = await this.exploreRouter(router, updateObject, data);
       if (handler) {
         this.logger.debug('Handler found!');
         return handler;

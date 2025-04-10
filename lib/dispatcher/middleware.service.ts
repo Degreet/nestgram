@@ -66,7 +66,7 @@ export class MiddlewareService {
 
   public runMiddlewarePipeline(
     middlewares: FilteredNestgramMiddleware[],
-    args: any[],
+    getArgs: (next: Function) => any[],
     callback: () => any | Promise<any>,
     index = 0,
   ) {
@@ -74,15 +74,17 @@ export class MiddlewareService {
       const { instance, name } = middlewares[index];
       this.logger.debug('Executing ' + name);
 
-      const handler = this.createContext(instance);
-      return handler(...args, () => {
+      const args = getArgs(() => {
         return this.runMiddlewarePipeline(
           middlewares,
-          args,
+          getArgs,
           callback,
           index + 1,
         );
       });
+
+      const handler = this.createContext(instance);
+      return handler(...args);
     } else {
       return callback();
     }

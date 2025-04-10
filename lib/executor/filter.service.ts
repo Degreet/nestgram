@@ -6,8 +6,9 @@ export class FilterService {
   public async passFilters(
     listeners: ListenerOptions[],
     updateObject: UpdateObject,
+    data: any,
   ) {
-    const args = [updateObject];
+    const args = [updateObject, data];
 
     for (const options of listeners) {
       if (options.updateType !== updateObject.updateTitle) continue;
