@@ -3,5 +3,5 @@ import { NestgramFilter } from './NestgramFilter';
 
 export interface ListenerOptions {
   updateType: string;
-  filters?: Type<NestgramFilter>[];
+  filters?: NestgramFilter[];
 }

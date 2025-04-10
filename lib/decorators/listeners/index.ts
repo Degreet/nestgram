@@ -1,4 +1,3 @@
-export * from './usedFilters';
 export * from './create-listener-decorator';
 
 export * from './on-message.decorator';

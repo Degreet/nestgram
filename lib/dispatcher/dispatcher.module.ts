@@ -7,7 +7,6 @@ import { HandlerService } from './handler.service';
 import { BotModule } from '../bot';
 import { Providers } from '../enums';
 import { DispatcherOptions } from '../types';
-import { usedFilters } from '../decorators';
 
 import {
   createDependentProvider,
@@ -41,7 +40,6 @@ export class DispatcherModule {
       },
       ...createRouterProviders(options.routers ?? []),
       ...options.outerMiddlewares?.map(createDependentProvider),
-      ...usedFilters.map(createDependentProvider),
       ...(options.providers ?? []),
     ];
 
