@@ -15,6 +15,11 @@ export class ExecutorService {
 
   private readonly UPDATE_OBJECTS = {
     message: Message,
+    edited_message: Message,
+    channel_post: Message,
+    edited_channel_post: Message,
+    business_message: Message,
+    edited_business_message: Message,
     callback_query: CallbackQuery,
   };
 
@@ -32,8 +37,12 @@ export class ExecutorService {
   private buildUpdateObject(update: Update, updateType: string) {
     const updateObject = this.UPDATE_OBJECTS[updateType];
     if (updateObject) {
-      return updateObject.fromObject(this.botService, update[updateType]);
+      return updateObject.fromUpdate(this.botService, update, updateType);
     }
+    this.logger.warn(
+      'Failed to find update object by update type ' + updateType,
+    );
+    return update[updateType];
   }
 
   private processOuterMiddlewares(update: Update) {
@@ -57,7 +66,6 @@ export class ExecutorService {
       updateObject,
       data,
     );
-
     if (exploredRouter) {
       return this.processInnerMiddlewares(updateObject, exploredRouter, data);
     }

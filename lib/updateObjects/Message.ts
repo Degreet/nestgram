@@ -1,9 +1,6 @@
-import { BotService } from '../bot';
 import { UpdateObject } from '../types';
 
 export class Message extends UpdateObject {
-  updateTitle = 'message';
-
   message_id: number;
   message_thread_id?: number;
   from: any;
@@ -17,11 +14,5 @@ export class Message extends UpdateObject {
 
   protected get messageId() {
     return this.message_id;
-  }
-
-  static fromObject(botService: BotService, object: Partial<Message>) {
-    const message = new Message(botService);
-    for (const key in object) message[key] = object[key];
-    return message;
   }
 }

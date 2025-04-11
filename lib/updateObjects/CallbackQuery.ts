@@ -1,10 +1,7 @@
-import { BotService } from '../bot';
 import { UpdateObject } from '../types';
 import { Message } from './Message';
 
 export class CallbackQuery extends UpdateObject {
-  updateTitle = 'callback_query';
-
   id: string;
   from: any;
   message?: Message;
@@ -19,11 +16,5 @@ export class CallbackQuery extends UpdateObject {
 
   protected get messageId() {
     return this.message?.message_id;
-  }
-
-  static fromObject(botService: BotService, object: Partial<CallbackQuery>) {
-    const callbackQuery = new CallbackQuery(botService);
-    for (const key in object) callbackQuery[key] = object[key];
-    return callbackQuery;
   }
 }

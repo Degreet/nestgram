@@ -5,10 +5,10 @@ import { GetUpdatesOptions } from './GetUpdates';
 import { SendMessageOptions } from './SendMessage';
 
 export abstract class ShortcutMethods {
-  protected constructor(private readonly botService: BotService) {}
+  constructor(private readonly botService: BotService) {}
 
-  protected abstract chatId: string | number | void;
-  protected abstract messageId: number | void;
+  protected abstract chatId?: string | number | void;
+  protected abstract messageId?: number | void;
 
   deleteWebhook(options?: Partial<DeleteWebhookOptions>) {
     return this.botService.deleteWebhook(options);
