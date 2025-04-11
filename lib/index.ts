@@ -6,3 +6,4 @@ export * from './exceptions';
 export * from './methods';
 export * from './types';
 export * from './updateObjects';
+export * from './filters';
