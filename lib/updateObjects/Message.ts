@@ -1,4 +1,4 @@
-import { UpdateObject } from '../types';
+import { UpdateObject } from './UpdateObject';
 
 export class Message extends UpdateObject {
   message_id: number;

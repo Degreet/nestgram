@@ -11,6 +11,8 @@ import {
   GetUpdatesOptions,
   DeleteWebhookOptions,
   DeleteWebhook,
+  AnswerCallbackQuery,
+  AnswerCallbackQueryOptions,
 } from '../methods';
 
 @Injectable()
@@ -41,6 +43,16 @@ export class BotService {
     return new SendMessage(this, {
       chat_id,
       text,
+      ...(options ?? {}),
+    }).fetch();
+  }
+
+  answerCallbackQuery(
+    callback_query_id: string,
+    options?: Partial<AnswerCallbackQueryOptions>,
+  ) {
+    return new AnswerCallbackQuery(this, {
+      callback_query_id,
       ...(options ?? {}),
     }).fetch();
   }

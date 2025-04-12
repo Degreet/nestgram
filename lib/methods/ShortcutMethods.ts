@@ -5,10 +5,15 @@ import { GetUpdatesOptions } from './GetUpdates';
 import { SendMessageOptions } from './SendMessage';
 
 export abstract class ShortcutMethods {
-  constructor(private readonly botService: BotService) {}
+  constructor(protected readonly botService: BotService) {}
 
-  protected abstract chatId?: string | number | void;
-  protected abstract messageId?: number | void;
+  protected get chatId(): string | number | undefined {
+    return undefined;
+  }
+
+  protected get messageId(): number | undefined {
+    return undefined;
+  }
 
   deleteWebhook(options?: Partial<DeleteWebhookOptions>) {
     return this.botService.deleteWebhook(options);
@@ -21,6 +26,8 @@ export abstract class ShortcutMethods {
   getUpdates(options?: Partial<GetUpdatesOptions>) {
     return this.botService.getUpdates(options);
   }
+
+  answer(...args: any[]): any;
 
   answer(text: string, options?: Partial<SendMessageOptions>) {
     const chatId = this.chatId ?? options.chat_id;

@@ -1,13 +1,14 @@
 import { Injectable, Logger, Type } from '@nestjs/common';
 import { ExternalContextCreator, ModuleRef, Reflector } from '@nestjs/core';
 
-import { ListenerOptions, UpdateObject } from '../types';
+import { ListenerOptions } from '../types';
 import { Metadata } from '../enums';
 
 import { AppliedRouterOptions } from '../decorators';
 import { HandlerParamsFactory } from '../factories';
 import { FilterService } from '../executor/filter.service';
 import { ExploredRouter } from '../types/ExploredRouter';
+import { UpdateObject } from '../updateObjects';
 
 @Injectable()
 export class HandlerService {

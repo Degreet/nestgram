@@ -6,8 +6,8 @@ import { Providers } from '../enums';
 import { ExploredRouter } from '../types/ExploredRouter';
 import { BotService } from '../bot';
 
-import { DispatcherOptions, Update, UpdateObject } from '../types';
-import { CallbackQuery, Message } from '../updateObjects';
+import { DispatcherOptions, Update } from '../types';
+import { CallbackQuery, Message, UpdateObject } from '../updateObjects';
 
 @Injectable()
 export class ExecutorService {

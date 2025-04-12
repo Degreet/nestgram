@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { ListenerOptions, UpdateObject } from '../types';
+import { ListenerOptions } from '../types';
+import { UpdateObject } from '../updateObjects';
 
 @Injectable()
 export class FilterService {
