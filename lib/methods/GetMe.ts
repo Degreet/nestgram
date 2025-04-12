@@ -5,9 +5,8 @@ import { BotService } from '../bot';
 
 export class GetMe extends ApiMethod<null, User> {
   protected readonly methodName = 'getMe';
-  protected readonly isFormData = false;
 
-  constructor(public botService: BotService) {
+  constructor(readonly botService: BotService) {
     super(botService.token, null);
   }
 }

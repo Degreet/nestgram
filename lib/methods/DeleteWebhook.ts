@@ -7,12 +7,8 @@ export interface DeleteWebhookOptions {
 
 export class DeleteWebhook extends ApiMethod<DeleteWebhookOptions, true> {
   protected readonly methodName = 'deleteWebhook';
-  protected readonly isFormData = false;
 
-  constructor(
-    public botService: BotService,
-    public options?: DeleteWebhookOptions,
-  ) {
+  constructor(readonly botService: BotService, options?: DeleteWebhookOptions) {
     super(botService.token, options);
   }
 }

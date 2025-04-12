@@ -1,4 +1,4 @@
-import { Message, CallbackQuery } from '../updateObjects';
+import { Message, CallbackQuery } from '../telegramObjects';
 
 export interface Update {
   _updateType: string;

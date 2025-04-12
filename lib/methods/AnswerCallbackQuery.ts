@@ -14,11 +14,10 @@ export class AnswerCallbackQuery extends ApiMethod<
   true
 > {
   protected readonly methodName = 'answerCallbackQuery';
-  protected readonly isFormData = false;
 
   constructor(
-    public readonly botService: BotService,
-    public options: AnswerCallbackQueryOptions,
+    readonly botService: BotService,
+    options: AnswerCallbackQueryOptions,
   ) {
     super(botService.token, options);
   }

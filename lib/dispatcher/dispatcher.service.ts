@@ -36,14 +36,14 @@ export class DispatcherService implements OnModuleInit, OnApplicationShutdown {
     });
   }
 
-  public async onModuleInit() {
+  async onModuleInit() {
     if (this.options.startPolling) {
       await this.prepareToLaunch();
       this.startPolling();
     }
   }
 
-  public async onApplicationShutdown() {
+  async onApplicationShutdown() {
     await this.stopPolling();
   }
 
@@ -70,7 +70,7 @@ export class DispatcherService implements OnModuleInit, OnApplicationShutdown {
     }
   }
 
-  public async startPolling() {
+  async startPolling() {
     if (this.isPollingRunning) {
       return this.logger.error('Polling already running!');
     }
@@ -87,7 +87,7 @@ export class DispatcherService implements OnModuleInit, OnApplicationShutdown {
     this.logger.debug('Polling is stopped!');
   }
 
-  public async stopPolling() {
+  async stopPolling() {
     this.logger.debug('Stopping the polling...');
     this.isPollingRunning = false;
     this.abortController?.abort();

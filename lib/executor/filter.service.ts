@@ -3,11 +3,7 @@ import { ListenerOptions, Update } from '../types';
 
 @Injectable()
 export class FilterService {
-  public async passFilters(
-    listeners: ListenerOptions[],
-    update: Update,
-    data: any,
-  ) {
+  async passFilters(listeners: ListenerOptions[], update: Update, data: any) {
     const args = [update._telegramObject, data];
 
     for (const options of listeners) {

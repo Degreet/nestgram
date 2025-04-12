@@ -19,7 +19,7 @@ export class MiddlewareService {
     private readonly paramsFactory: HandlerParamsFactory,
   ) {}
 
-  public getRouterStack(router: AppliedRouterOptions, updateType: string) {
+  getRouterStack(router: AppliedRouterOptions, updateType: string) {
     const routers: AppliedRouterOptions[] = [router];
     const middlewares: Type<NestgramMiddleware>[] = [];
     let parent = router.parent;
@@ -40,7 +40,7 @@ export class MiddlewareService {
     return this.filter(middlewares, updateType);
   }
 
-  public filter(middlewares: Type<NestgramMiddleware>[], updateType: string) {
+  filter(middlewares: Type<NestgramMiddleware>[], updateType: string) {
     const filtered: FilteredNestgramMiddleware[] = [];
 
     middlewares.forEach((middleware) => {
@@ -64,7 +64,7 @@ export class MiddlewareService {
     );
   }
 
-  public runMiddlewarePipeline(
+  runMiddlewarePipeline(
     middlewares: FilteredNestgramMiddleware[],
     getArgs: (next: Function) => any[],
     callback: () => any | Promise<any>,

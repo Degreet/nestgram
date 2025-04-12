@@ -1,5 +1,5 @@
 import { ApiMethod } from './ApiMethod';
-import { Message } from '../updateObjects';
+import { Message } from '../telegramObjects';
 import { BotService } from '../bot';
 
 export interface SendMessageOptions {
@@ -19,16 +19,12 @@ export interface SendMessageOptions {
 
 export class SendMessage extends ApiMethod<SendMessageOptions, Message> {
   protected readonly methodName = 'sendMessage';
-  protected readonly isFormData = false;
 
-  constructor(
-    public readonly botService: BotService,
-    public options: SendMessageOptions,
-  ) {
+  constructor(readonly botService: BotService, options: SendMessageOptions) {
     super(botService.token, options);
   }
 
-  interceptor(object: Message): Message {
+  interceptor(object: Message) {
     return new Message(this.botService, object);
   }
 }

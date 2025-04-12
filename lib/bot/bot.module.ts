@@ -8,7 +8,7 @@ import { Providers } from '../enums';
 @Global()
 @Module({})
 export class BotModule {
-  public static forRoot(options: BotOptions): DynamicModule {
+  static forRoot(options: BotOptions): DynamicModule {
     return {
       module: BotModule,
       providers: [
@@ -25,7 +25,7 @@ export class BotModule {
     };
   }
 
-  public static forRootAsync(options: BotAsyncOptions): DynamicModule {
+  static forRootAsync(options: BotAsyncOptions): DynamicModule {
     return {
       module: BotModule,
       imports: options.imports ?? [],

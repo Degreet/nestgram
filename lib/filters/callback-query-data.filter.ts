@@ -1,5 +1,5 @@
 import { NestgramFilter } from '../types';
-import { CallbackQuery } from '../updateObjects';
+import { CallbackQuery } from '../telegramObjects';
 
 export class CallbackQueryDataFilter implements NestgramFilter {
   constructor(private readonly data?: string | RegExp) {}

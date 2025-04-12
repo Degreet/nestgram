@@ -17,7 +17,7 @@ import {
 
 @Injectable()
 export class BotService {
-  public readonly token: string;
+  readonly token: string;
 
   constructor(@Inject(Providers.BOT_OPTIONS) options: BotOptions) {
     this.token = options.token;

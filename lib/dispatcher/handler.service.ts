@@ -80,7 +80,7 @@ export class HandlerService {
     }
   }
 
-  public async findHandler(
+  async findHandler(
     routers: Type[],
     update: Update,
     data: any,

@@ -4,18 +4,15 @@ import { ApiError, ApiResponse } from '../types';
 
 export interface ApiMethod<T, R> {
   interceptor?(object: R): R;
+  isFormData?: boolean;
 }
 
 export abstract class ApiMethod<T, R> {
   protected abstract readonly methodName: string;
-  protected abstract readonly isFormData: boolean;
 
-  protected constructor(
-    public readonly token: string,
-    public readonly options?: T,
-  ) {}
+  protected constructor(readonly token: string, readonly options?: T) {}
 
-  public async fetch(signal?: AbortSignal): Promise<R> {
+  async fetch(signal?: AbortSignal): Promise<R> {
     const response = await fetch(
       `https://api.telegram.org/bot${this.token}/${this.methodName}`,
       {

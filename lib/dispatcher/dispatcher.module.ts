@@ -28,7 +28,7 @@ import { FilterService } from '../executor/filter.service';
   ],
 })
 export class DispatcherModule {
-  public static forRoot(options: DispatcherOptions): DynamicModule {
+  static forRoot(options: DispatcherOptions): DynamicModule {
     const providers: Provider[] = [
       {
         provide: Providers.DISPATCHER_OPTIONS,

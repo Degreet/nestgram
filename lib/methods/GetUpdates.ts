@@ -11,12 +11,8 @@ export interface GetUpdatesOptions {
 
 export class GetUpdates extends ApiMethod<GetUpdatesOptions, Update[]> {
   protected readonly methodName = 'getUpdates';
-  protected readonly isFormData = false;
 
-  constructor(
-    public botService: BotService,
-    public options?: GetUpdatesOptions,
-  ) {
+  constructor(readonly botService: BotService, options?: GetUpdatesOptions) {
     super(botService.token, options);
   }
 }

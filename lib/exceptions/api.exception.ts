@@ -1,14 +1,14 @@
 import { ApiError, ResponseParameters } from '../types';
 
 export class ApiException extends Error {
-  public readonly name = 'ApiError';
+  readonly name = 'ApiError';
 
-  public readonly ok = false;
-  public readonly error_code: number;
-  public readonly description: string;
-  public readonly parameters?: ResponseParameters;
+  readonly ok = false;
+  readonly error_code: number;
+  readonly description: string;
+  readonly parameters?: ResponseParameters;
 
-  constructor(details: ApiError, public readonly body: any) {
+  constructor(details: ApiError, readonly body: any) {
     super([details.error_code, details.description].join(' '));
 
     this.error_code = details.error_code;
