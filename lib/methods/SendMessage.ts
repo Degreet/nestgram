@@ -29,6 +29,6 @@ export class SendMessage extends ApiMethod<SendMessageOptions, Message> {
   }
 
   interceptor(object: Message): Message {
-    return Message.fromObject(this.botService, object);
+    return new Message(this.botService, object);
   }
 }

@@ -1,6 +1,17 @@
-import { UpdateObject } from './UpdateObject';
+import { TelegramObject } from './TelegramObject';
+import { BotService } from '../bot';
+import { SendMessageOptions } from '../methods';
+import { UpdateType } from '../decorators';
 
-export class Message extends UpdateObject {
+@UpdateType(
+  'message',
+  'edited_message',
+  'channel_post',
+  'edited_channel_post',
+  'business_message',
+  'edited_business_message',
+)
+export class Message extends TelegramObject {
   message_id: number;
   message_thread_id?: number;
   from: any;
@@ -8,11 +19,19 @@ export class Message extends UpdateObject {
   text?: string;
   reply_markup?: any;
 
-  protected get chatId() {
-    return this.chat.id;
+  constructor(private readonly botService: BotService, from: Partial<Message>) {
+    super();
+    Object.assign(this, from);
   }
 
-  protected get messageId() {
-    return this.message_id;
+  answer(text: string, options?: Partial<SendMessageOptions>) {
+    return this.botService.sendMessage(this.chat.id, text, options);
+  }
+
+  reply(text: string, options?: Partial<SendMessageOptions>) {
+    return this.botService.sendMessage(this.chat.id, text, {
+      reply_parameters: { message_id: this.message_id },
+      ...options,
+    });
   }
 }

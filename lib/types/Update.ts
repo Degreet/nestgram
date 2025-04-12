@@ -1,6 +1,9 @@
 import { Message, CallbackQuery } from '../updateObjects';
 
 export interface Update {
+  _updateType: string;
+  _telegramObject?: any;
+
   update_id: number;
   message?: Message;
   edited_message?: Message;

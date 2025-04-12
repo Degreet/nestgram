@@ -1,14 +1,13 @@
 import { Injectable, Logger, Type } from '@nestjs/common';
 import { ExternalContextCreator, ModuleRef, Reflector } from '@nestjs/core';
 
-import { ListenerOptions } from '../types';
+import { ListenerOptions, Update } from '../types';
 import { Metadata } from '../enums';
 
 import { AppliedRouterOptions } from '../decorators';
 import { HandlerParamsFactory } from '../factories';
 import { FilterService } from '../executor/filter.service';
 import { ExploredRouter } from '../types/ExploredRouter';
-import { UpdateObject } from '../updateObjects';
 
 @Injectable()
 export class HandlerService {
@@ -36,7 +35,7 @@ export class HandlerService {
 
   private async exploreRouter(
     router: Type,
-    updateObject: UpdateObject,
+    update: Update,
     data: any,
   ): Promise<ExploredRouter | null> {
     const routerMetadata: AppliedRouterOptions = this.reflector.get(
@@ -64,7 +63,7 @@ export class HandlerService {
       }
       const isPassed = await this.filterService.passFilters(
         metadata,
-        updateObject,
+        update,
         data,
       );
       if (isPassed) {
@@ -76,18 +75,18 @@ export class HandlerService {
     }
 
     for (const subRouter of routerMetadata.includes ?? []) {
-      const result = await this.exploreRouter(subRouter, updateObject, data);
+      const result = await this.exploreRouter(subRouter, update, data);
       if (result) return result;
     }
   }
 
   public async findHandler(
     routers: Type[],
-    updateObject: UpdateObject,
+    update: Update,
     data: any,
   ): Promise<ExploredRouter | void> {
     for (const router of routers) {
-      const handler = await this.exploreRouter(router, updateObject, data);
+      const handler = await this.exploreRouter(router, update, data);
       if (handler) {
         this.logger.debug('Handler found!');
         return handler;

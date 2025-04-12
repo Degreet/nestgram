@@ -7,21 +7,11 @@ import { ExploredRouter } from '../types/ExploredRouter';
 import { BotService } from '../bot';
 
 import { DispatcherOptions, Update } from '../types';
-import { CallbackQuery, Message, UpdateObject } from '../updateObjects';
+import { getTelegramObjectByUpdateType } from '../decorators';
 
 @Injectable()
 export class ExecutorService {
   private readonly logger = new Logger(ExecutorService.name);
-
-  private readonly UPDATE_OBJECTS = {
-    message: Message,
-    edited_message: Message,
-    channel_post: Message,
-    edited_channel_post: Message,
-    business_message: Message,
-    edited_business_message: Message,
-    callback_query: CallbackQuery,
-  };
 
   constructor(
     @Inject(Providers.DISPATCHER_OPTIONS)
@@ -34,59 +24,61 @@ export class ExecutorService {
     private readonly botService: BotService,
   ) {}
 
-  private buildUpdateObject(update: Update, updateType: string) {
-    const updateObject = this.UPDATE_OBJECTS[updateType];
-    if (updateObject) {
-      return updateObject.fromUpdate(this.botService, update, updateType);
+  private mutateUpdateObject(update: Update) {
+    const updateType = extractUpdateType(update);
+    update._updateType = updateType;
+
+    const TargetClass = getTelegramObjectByUpdateType(updateType);
+    if (TargetClass) {
+      update._telegramObject = new TargetClass(
+        this.botService,
+        update[updateType],
+      );
+    } else {
+      this.logger.warn(`Update type ${updateType} not found`);
+      update._telegramObject = update[updateType];
     }
-    this.logger.warn(
-      'Failed to find update object by update type ' + updateType,
-    );
-    return update[updateType];
   }
 
   private processOuterMiddlewares(update: Update) {
     const data = {};
-    const updateType = extractUpdateType(update);
-
-    const updateObject = this.buildUpdateObject(update, updateType);
-
     const outerMiddlewares = this.options.outerMiddlewares || [];
+    const object = update._telegramObject;
 
     return this.middlewareService.runMiddlewarePipeline(
-      this.middlewareService.filter(outerMiddlewares, updateType),
-      (next) => [updateObject, next, data],
-      () => this.processHandlerSearch(updateObject, data),
+      this.middlewareService.filter(outerMiddlewares, update._updateType),
+      (next) => [object, next, data],
+      () => this.processHandlerSearch(update, data),
     );
   }
 
-  private async processHandlerSearch(updateObject: UpdateObject, data: any) {
+  private async processHandlerSearch(update: Update, data: any) {
     const exploredRouter = await this.handlerService.findHandler(
       this.options.routers ?? [],
-      updateObject,
+      update,
       data,
     );
     if (exploredRouter) {
-      return this.processInnerMiddlewares(updateObject, exploredRouter, data);
+      return this.processInnerMiddlewares(update, exploredRouter, data);
     }
   }
 
   private async processInnerMiddlewares(
-    updateObject: UpdateObject,
+    update: Update,
     exploredRouter: ExploredRouter,
     data: any,
   ) {
-    const updateType = updateObject.updateTitle;
+    const object = update._telegramObject;
 
     const innerMiddlewares = this.middlewareService.getRouterStack(
       exploredRouter.router,
-      updateType,
+      update._updateType,
     );
 
     await this.middlewareService.runMiddlewarePipeline(
       innerMiddlewares,
-      (next) => [updateObject, next, data],
-      () => exploredRouter.handler(updateObject, data),
+      (next) => [object, next, data],
+      () => exploredRouter.handler(object, data),
     );
   }
 
@@ -94,6 +86,7 @@ export class ExecutorService {
     this.logger.debug('Processing update #' + update.update_id);
     this.logger.verbose(update);
 
+    this.mutateUpdateObject(update);
     await this.processOuterMiddlewares(update);
   }
 }

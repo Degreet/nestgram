@@ -1,9 +1,11 @@
-import { UpdateObject } from './UpdateObject';
 import { Message } from './Message';
 import { BotService } from '../bot';
-import { AnswerCallbackQueryOptions } from '../methods/AnswerCallbackQuery';
+import { AnswerCallbackQueryOptions } from '../methods';
+import { TelegramObject } from './TelegramObject';
+import { UpdateType } from '../decorators';
 
-export class CallbackQuery extends UpdateObject {
+@UpdateType('callback_query')
+export class CallbackQuery extends TelegramObject {
   id: string;
   from: any;
   message?: Message;
@@ -12,23 +14,18 @@ export class CallbackQuery extends UpdateObject {
   data?: string;
   game_short_name?: string;
 
-  constructor(protected readonly botService: BotService) {
-    super(botService);
+  constructor(
+    private readonly botService: BotService,
+    from: Partial<CallbackQuery>,
+  ) {
+    super();
+    Object.assign(this, from);
+    TelegramObject.mutateObjects(botService, this, {
+      message: Message,
+    });
   }
 
-  protected objectReferences = {
-    message: Message,
-  };
-
-  protected get chatId() {
-    return this.from.id;
-  }
-
-  override answer(options?: Partial<AnswerCallbackQueryOptions>) {
-    const callbackQueryId = this.id;
-    if (!callbackQueryId) {
-      throw new Error('callback_query_id is not defined');
-    }
-    return this.botService.answerCallbackQuery(callbackQueryId, options);
+  answer(options?: Partial<AnswerCallbackQueryOptions>) {
+    return this.botService.answerCallbackQuery(this.id, options);
   }
 }

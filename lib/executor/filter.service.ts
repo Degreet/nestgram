@@ -1,18 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { ListenerOptions } from '../types';
-import { UpdateObject } from '../updateObjects';
+import { ListenerOptions, Update } from '../types';
 
 @Injectable()
 export class FilterService {
   public async passFilters(
     listeners: ListenerOptions[],
-    updateObject: UpdateObject,
+    update: Update,
     data: any,
   ) {
-    const args = [updateObject, data];
+    const args = [update._telegramObject, data];
 
     for (const options of listeners) {
-      if (options.updateType !== updateObject.updateTitle) continue;
+      if (options.updateType !== update._updateType) continue;
 
       const result = await Promise.all(
         (options.filters ?? []).map(async (filter) => {
