@@ -1,10 +1,12 @@
 import { ApiException } from '../exceptions';
 
 import { ApiError, ApiResponse } from '../types';
+import { FormDataBuilder } from '../utils/FormDataBuilder';
 
 export interface ApiMethod<T, R> {
   interceptor?(object: R): R;
-  isFormData?: boolean;
+  hasMedia?: boolean;
+  isAttachMedia?: boolean;
 }
 
 export abstract class ApiMethod<T, R> {
@@ -12,25 +14,50 @@ export abstract class ApiMethod<T, R> {
 
   protected constructor(readonly token: string, readonly options?: T) {}
 
+  private createJSONPayload(): RequestInit {
+    return {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', connection: 'keep-alive' },
+      body: this.options && JSON.stringify(this.options),
+    };
+  }
+
+  private async createFormDataPayload(): Promise<RequestInit> {
+    return {
+      method: 'POST',
+      headers: {
+        connection: 'keep-alive',
+      },
+      body: this.isAttachMedia
+        ? await FormDataBuilder.createAttachedData(this.options ?? {})
+        : await FormDataBuilder.createInlineData(this.options ?? {}),
+    };
+  }
+
+  private async createPayload() {
+    if (this.hasMedia) {
+      return await this.createFormDataPayload();
+    } else {
+      return this.createJSONPayload();
+    }
+  }
+
   async fetch(signal?: AbortSignal): Promise<R> {
+    const payload = await this.createPayload();
+
     const response = await fetch(
       `https://api.telegram.org/bot${this.token}/${this.methodName}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: this.options && JSON.stringify(this.options),
-        signal,
-      },
+      { ...payload, signal },
     );
 
-    const data: ApiResponse<R> = await response.json();
+    const data: ApiResponse<R> = (await response.json()) as ApiResponse<R>;
 
     if (!data.ok) {
       throw new ApiException(data as ApiError, this.options);
     }
 
-    const object = data.result;
+    const { result } = data;
 
-    return this.interceptor?.(object) ?? object;
+    return this.interceptor?.(result) ?? result;
   }
 }
