@@ -1,6 +1,7 @@
 export * from './ApiResponse';
 export * from './BotOptions';
 export * from './DispatcherOptions';
+export * from './InputFile';
 export * from './ListenerOptions';
 export * from './NestgramFilter';
 export * from './NestgramMiddleware';

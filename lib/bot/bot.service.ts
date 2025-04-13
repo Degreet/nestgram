@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { BotOptions } from '../types';
+import { BotOptions, InputFile } from '../types';
 import { Providers } from '../enums';
 
 import {
@@ -13,7 +13,17 @@ import {
   DeleteWebhook,
   AnswerCallbackQuery,
   AnswerCallbackQueryOptions,
+  SendPhotoOptions,
+  SendPhoto,
+  SendMediaGroup,
+  SendMediaGroupOptions,
 } from '../methods';
+import {
+  InputMediaAudio,
+  InputMediaDocument,
+  InputMediaPhoto,
+  InputMediaVideo,
+} from '../types/InputMedia';
 
 @Injectable()
 export class BotService {
@@ -43,6 +53,32 @@ export class BotService {
     return new SendMessage(this, {
       chat_id,
       text,
+      ...(options ?? {}),
+    }).fetch();
+  }
+
+  sendPhoto(
+    chat_id: number | string,
+    photo: string | InputFile,
+    options?: Partial<SendPhotoOptions>,
+  ) {
+    return new SendPhoto(this, {
+      chat_id,
+      photo,
+      ...(options ?? {}),
+    }).fetch();
+  }
+
+  sendMediaGroup(
+    chat_id: number | string,
+    media: Array<
+      InputMediaAudio | InputMediaDocument | InputMediaPhoto | InputMediaVideo
+    >,
+    options?: Partial<SendMediaGroupOptions>,
+  ) {
+    return new SendMediaGroup(this, {
+      chat_id,
+      media,
       ...(options ?? {}),
     }).fetch();
   }

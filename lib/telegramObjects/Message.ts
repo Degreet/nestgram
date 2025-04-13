@@ -1,7 +1,18 @@
 import { TelegramObject } from './TelegramObject';
 import { BotService } from '../bot';
-import { SendMessageOptions } from '../methods';
+import {
+  SendMediaGroupOptions,
+  SendMessageOptions,
+  SendPhotoOptions,
+} from '../methods';
 import { UpdateType } from '../decorators';
+import { InputFile } from '../types';
+import {
+  InputMediaAudio,
+  InputMediaDocument,
+  InputMediaPhoto,
+  InputMediaVideo,
+} from '../types/InputMedia';
 
 @UpdateType(
   'message',
@@ -28,8 +39,40 @@ export class Message extends TelegramObject {
     return this.botService.sendMessage(this.chat.id, text, options);
   }
 
+  answerPhoto(photo: string | InputFile, options?: Partial<SendPhotoOptions>) {
+    return this.botService.sendPhoto(this.chat.id, photo, options);
+  }
+
+  answerMediaGroup(
+    media: Array<
+      InputMediaAudio | InputMediaDocument | InputMediaPhoto | InputMediaVideo
+    >,
+    options?: Partial<SendMediaGroupOptions>,
+  ) {
+    return this.botService.sendMediaGroup(this.chat.id, media, options);
+  }
+
   reply(text: string, options?: Partial<SendMessageOptions>) {
     return this.botService.sendMessage(this.chat.id, text, {
+      reply_parameters: { message_id: this.message_id },
+      ...options,
+    });
+  }
+
+  replyPhoto(photo: string | InputFile, options?: Partial<SendPhotoOptions>) {
+    return this.botService.sendPhoto(this.chat.id, photo, {
+      reply_parameters: { message_id: this.message_id },
+      ...options,
+    });
+  }
+
+  replyMediaGroup(
+    media: Array<
+      InputMediaAudio | InputMediaDocument | InputMediaPhoto | InputMediaVideo
+    >,
+    options?: Partial<SendMediaGroupOptions>,
+  ) {
+    return this.botService.sendMediaGroup(this.chat.id, media, {
       reply_parameters: { message_id: this.message_id },
       ...options,
     });
