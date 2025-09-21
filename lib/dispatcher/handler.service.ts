@@ -1,5 +1,5 @@
 import { Injectable, Logger, Type } from '@nestjs/common';
-import { ExternalContextCreator, ModuleRef, Reflector } from '@nestjs/core';
+import { ModuleRef, Reflector } from '@nestjs/core';
 
 import { ListenerOptions, Update } from '../types';
 import { Metadata } from '../enums';
@@ -18,19 +18,34 @@ export class HandlerService {
   constructor(
     private readonly reflector: Reflector,
     private readonly moduleRef: ModuleRef,
-    private readonly externalContextCreator: ExternalContextCreator,
     private readonly paramsFactory: HandlerParamsFactory,
     private readonly filterService: FilterService,
   ) {}
 
   private createContext(instance: object, methodName: string) {
-    return this.externalContextCreator.create(
-      instance,
-      instance[methodName],
-      methodName,
-      Metadata.PARAMS,
-      this.paramsFactory,
-    );
+    const metadata: Record<number, any> =
+      Reflect.getMetadata(Metadata.PARAMS, instance.constructor, methodName) ||
+      {};
+
+    return (...originalArgs: any[]) => {
+      const paramTypesLength =
+        Reflect.getMetadata('design:paramtypes', instance, methodName)
+          ?.length || 0;
+
+      const finalArgs = Array.from({ length: paramTypesLength }, (_, index) => {
+        const paramMeta = metadata[index];
+        if (paramMeta) {
+          return this.paramsFactory.exchangeKeyForValue(
+            paramMeta.type,
+            paramMeta,
+            originalArgs,
+          );
+        }
+        return originalArgs[index];
+      });
+
+      return instance[methodName](...finalArgs);
+    };
   }
 
   private async exploreRouter(

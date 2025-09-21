@@ -28,7 +28,10 @@ export class Message extends TelegramObject {
   from: any;
   chat: any;
   text?: string;
+  caption?: string;
   reply_markup?: any;
+  entities?: any[];
+  caption_entities?: any[];
 
   constructor(private readonly botService: BotService, from: Partial<Message>) {
     super();

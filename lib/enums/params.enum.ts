@@ -1,3 +1,1 @@
-export enum Params {
-  UPDATE_TYPE,
-}
+export enum Params {}
