@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ExternalContextCreator } from '@nestjs/core';
 import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
-import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
 
 import { TelegramExecutionContext } from '../context/telegram-execution-context';
 import { NESTGRAM_CONTEXT_TYPE } from './context-type';
@@ -19,6 +18,10 @@ export type HandlerInvoker = (
  * an HTTP route would. The call signature follows ECC-NOTES.md's "minimal
  * correct call": a real `ParamsFactory` is required, and the invoker is fed
  * `(event, ctx)` so param decorators read `args[0]` (event) / `args[1]` (ctx).
+ *
+ * Takes the router instance directly (the route table carries instances, not
+ * `InstanceWrapper`s). The inquirer id is omitted: routers are singletons for
+ * now (Q-SCOPE), so there is no request-scoped inquirer to thread through.
  */
 @Injectable()
 export class HandlerExecutorFactory {
@@ -28,18 +31,17 @@ export class HandlerExecutorFactory {
     private readonly externalContextCreator: ExternalContextCreator,
   ) {}
 
-  create(wrapper: InstanceWrapper, methodName: string): HandlerInvoker {
-    const { instance } = wrapper;
-    const callback = instance[methodName];
+  create(instance: object, methodName: string): HandlerInvoker {
+    const callback = (instance as Record<string, unknown>)[methodName];
 
     const invoker = this.externalContextCreator.create(
       instance,
-      callback,
+      callback as (...args: unknown[]) => unknown,
       methodName,
       ROUTE_ARGS_METADATA,
       this.paramsFactory,
       undefined,
-      wrapper.host?.name,
+      undefined,
       undefined,
       NESTGRAM_CONTEXT_TYPE,
     );
