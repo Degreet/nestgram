@@ -173,4 +173,4 @@ updates otherwise.
 ## Next
 
 You have a working bot. Next, make it interactive with
-[commands, parameters & keyboards →](./02-commands-and-keyboards.md)
+[commands, parameters & keyboards →](/docs/commands-and-keyboards)

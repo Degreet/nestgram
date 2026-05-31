@@ -100,7 +100,7 @@ export class MenuRouter {
 
 `.row()` starts a new row; consecutive calls share the current one. Handling
 the `buy:1` press is the next page,
-[Callbacks →](./03-callbacks.md).
+[Callbacks →](/docs/callbacks).
 
 ## Reply keyboards
 
@@ -135,4 +135,4 @@ Both accept the full set of `SendMessage` options as a second argument.
 
 ## Next
 
-Time to handle button presses: [Callbacks →](./03-callbacks.md)
+Time to handle button presses: [Callbacks →](/docs/callbacks)
