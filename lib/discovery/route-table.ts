@@ -1,18 +1,33 @@
+import { Injectable, Optional } from '@nestjs/common';
+
 import { Route } from './route.types';
 
 /**
- * The immutable boot-time route table.
+ * The boot-time route table.
  *
  * Holds the discovered routes in declaration order — first-match routing relies
  * on that order — and indexes them by update type so a per-update lookup only
  * walks the handlers that could possibly match (e.g. only `message` routes for
  * a message update), not the whole table.
+ *
+ * Populated once, at `OnApplicationBootstrap`, via `set()`: the same singleton
+ * is injected into the dispatcher at construction (empty) and filled before any
+ * update flows. Tests can also construct it pre-filled (`new RouteTable(routes)`).
  */
+@Injectable()
 export class RouteTable {
-  private readonly routes: readonly Route[];
-  private readonly byType: ReadonlyMap<string, readonly Route[]>;
+  private routes: readonly Route[] = [];
+  private byType: ReadonlyMap<string, readonly Route[]> = new Map();
 
-  constructor(routes: Route[]) {
+  // `@Optional()`: under DI the table is provided empty and filled at boot via
+  // set(); Nest would otherwise try to inject the `Route[]` param as an `Array`
+  // token and fail. Tests can still construct it pre-filled.
+  constructor(@Optional() routes: Route[] = []) {
+    this.set(routes);
+  }
+
+  /** Replace the table's contents and rebuild the type index. Called once at boot. */
+  set(routes: Route[]): void {
     this.routes = [...routes];
 
     const index = new Map<string, Route[]>();

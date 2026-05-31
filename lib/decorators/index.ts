@@ -1,4 +1,10 @@
 export * from './injectable';
 export * from './listeners';
 export * from './core';
-export * from './params';
+// NOTE: `./params` is intentionally NOT re-exported here. The param decorators
+// import from `../context`, and this barrel is imported by low-level code
+// (telegramObjects, EventFactory via `getTelegramObjectByUpdateType`). Including
+// params would close a module cycle (decorators -> params -> context -> bot ->
+// methods -> types -> telegramObjects -> decorators), leaving BotService
+// `undefined` at decoration time. Params are public API via the top-level
+// `lib/index.ts` instead.
