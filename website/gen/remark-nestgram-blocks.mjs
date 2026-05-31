@@ -39,6 +39,11 @@ const ARROW = '→'; // →
 const MIDDOT = '·'; // ·
 const WARNING_SIGN = '⚠'; // ⚠
 
+// Shell-ish fences (written as bare ```bash, not wrapped in :::code) should
+// still get the code-island chrome, rendered as a terminal window.
+const TERMINAL_LANGS = new Set(['bash', 'sh', 'shell', 'zsh', 'console']);
+const TERMINAL_LABEL = 'Terminal';
+
 // ---- hast element helpers ---------------------------------------------------
 // An element node with given tag/classes/children that remark-rehype renders
 // verbatim (no raw-HTML passthrough needed).
@@ -268,6 +273,27 @@ function buildCodeIsland(node) {
   return setChildren(node, kids);
 }
 
+// ---- terminal island: wrap a bare shell fence in code-island chrome --------
+// Bare ```bash fences never reach buildCodeIsland (they aren't directives), so
+// they'd render as a plain Shiki <pre> with no chrome. Wrap such a top-level
+// code node in the same figure/.ci-bar structure, flagged as a terminal.
+function wrapTerminalIsland(codeNode, index, parent) {
+  const figure = el(
+    'figure',
+    { className: ['code-island', 'is-framed', 'is-terminal'] },
+    [
+      el('div', { className: ['ci-bar'] }, [
+        el('span', { className: ['ci-dot'] }),
+        el('span', { className: ['ci-dot'] }),
+        el('span', { className: ['ci-dot'] }),
+        el('span', { className: ['ci-name'] }, [text(TERMINAL_LABEL)]),
+      ]),
+      codeNode,
+    ],
+  );
+  parent.children[index] = figure;
+}
+
 export default function remarkNestgramBlocks() {
   let counter = 0;
   const makeId = () => `ngtab-${++counter}`;
@@ -303,6 +329,16 @@ export default function remarkNestgramBlocks() {
           asElement(node, 'div', {});
           return SKIP;
       }
+    });
+
+    // Second pass: bare shell fences at the top level become terminal islands.
+    // (Code nodes already inside a :::code figure are children of a figure, not
+    // of the root, so they're left untouched.)
+    visit(tree, 'code', (node, index, parent) => {
+      if (!parent || parent.type !== 'root' || index == null) return;
+      if (!TERMINAL_LANGS.has((node.lang || '').toLowerCase())) return;
+      wrapTerminalIsland(node, index, parent);
+      return SKIP;
     });
   };
 }
