@@ -104,4 +104,4 @@ paginate(query: CallbackQuery, @Match() match: RegExpMatchArray) {
 ## Next
 
 Your bot is interactive. Now lock it down with
-[guards & the Nest pipeline →](./04-guards-and-pipeline.md)
+[guards & the Nest pipeline →](/docs/guards-and-pipeline)

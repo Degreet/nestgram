@@ -144,7 +144,7 @@ function buildGuardrail(node) {
   const labelText = label ? `GUARDRAIL ${MIDDOT} ${label}` : 'GUARDRAIL';
   asElement(node, 'div', { className: ['guardrail', 'not-content'] });
   return setChildren(node, [
-    el('span', { className: ['gr-ico'] }, [text(WARNING_SIGN)]),
+    el('span', { className: ['gr-ico'] }, [warnIcon()]),
     el('div', { className: ['gr-body'] }, [
       el('span', { className: ['gr-label'] }, [text(labelText)]),
       ...unwrapParagraphs(rest),
