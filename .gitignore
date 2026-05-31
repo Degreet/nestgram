@@ -6,6 +6,9 @@
 # Stray local runtime data (not part of this project — external tool artifact)
 /data
 
+# Local tooling settings
+/.tooling
+
 # Logs
 logs
 *.log
