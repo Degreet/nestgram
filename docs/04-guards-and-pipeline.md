@@ -108,9 +108,14 @@ webhook URL can post fake updates.
 > Nestgram warns at startup and validates `X-Telegram-Bot-Api-Secret-Token` on every request when set
 :::
 
-Other production defaults Nestgram handles for you: a `getMe` health check at
-startup, graceful shutdown that drains in-flight updates, and send throttling
-that respects Telegram's rate limits and `429 retry_after`.
+Other production defaults Nestgram handles for you, no config required:
+
+- **Startup health check** — a `getMe` call confirms the token and logs the
+  bot you connected as.
+- **Graceful shutdown** — in-flight updates drain instead of being dropped
+  mid-handler.
+- **Send throttling** — outgoing calls respect Telegram's rate limits and
+  back off on `429 retry_after`.
 
 ## You've seen the framework
 

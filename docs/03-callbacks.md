@@ -9,6 +9,10 @@ sidebar:
 When a user taps an inline button, Telegram sends a **callback query** with
 the `callback_data` you set on the button. Handle it with `@Action()`.
 
+:::mental
+button tap -> callback query -> @Action handler* -> answer + edit
+:::
+
 ## Matching callback data
 
 `@Action()` is to callback queries what `@Command()` is to messages. It takes
