@@ -1,0 +1,8 @@
+# build output
+dist/
+# generated types
+.astro/
+# deps
+node_modules/
+# playwright verification artifacts
+.playwright-mcp/

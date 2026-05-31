@@ -1,0 +1,312 @@
+---
+import '../styles/nestgram.css';
+import '../styles/landing.css';
+import logo from '../assets/nestgram.svg';
+
+const githubUrl = 'https://github.com/Degreet/nestgram-v2';
+const docsUrl = '/01-quickstart';
+
+// Hand-tokenised showcase snippet — matches the locked Nestgram API
+// (@Router, @Command, @OnMessage, typed positional event).
+const showcaseCode = `<span class="tok-com">// greet.router.ts</span>
+<span class="tok-dec">@Router</span><span class="tok-pun">()</span>
+<span class="tok-key">export class</span> <span class="tok-typ">GreetRouter</span> <span class="tok-pun">{</span>
+  <span class="tok-dec">@Command</span><span class="tok-pun">(</span><span class="tok-str">'start'</span><span class="tok-pun">)</span>
+  <span class="tok-fn">start</span><span class="tok-pun">(</span><span class="tok-dec">@Sender</span><span class="tok-pun">()</span> user<span class="tok-pun">:</span> <span class="tok-typ">User</span><span class="tok-pun">) {</span>
+    <span class="tok-key">return</span> <span class="tok-str">\`Welcome, \${user.first_name} 👋\`</span><span class="tok-pun">;</span>
+  <span class="tok-pun">}</span>
+
+  <span class="tok-dec">@OnMessage</span><span class="tok-pun">()</span>
+  <span class="tok-fn">echo</span><span class="tok-pun">(</span>message<span class="tok-pun">:</span> <span class="tok-typ">Message</span><span class="tok-pun">) {</span>
+    <span class="tok-key">return</span> message<span class="tok-pun">.</span>text<span class="tok-pun">;</span>
+  <span class="tok-pun">}</span>
+<span class="tok-pun">}</span>`;
+
+const pipeline = [
+  { t: 'Update', s: 'webhook / polling', hl: true },
+  { t: 'Guard', s: '@UseGuards()' },
+  { t: 'Interceptor', s: 'wrap / log' },
+  { t: 'Pipe', s: 'transform / validate' },
+  { t: 'Handler', s: '@Command() @OnMessage()' },
+  { t: 'Reply', s: 'return value' },
+];
+---
+
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nestgram — Telegram bots, the NestJS way</title>
+    <meta
+      name="description"
+      content="A real NestJS framework for the Telegram Bot API — modules, DI, pipes & guards, built to scale and survive production."
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <div class="mesh" aria-hidden="true">
+      <div class="blob b1"></div>
+      <div class="blob b2"></div>
+      <div class="blob b3"></div>
+    </div>
+
+    <main class="landing">
+      <!-- NAV -->
+      <header class="wrap">
+        <nav class="nav">
+          <a class="brand" href="/"><img src={logo.src} alt="" />Nestgram</a>
+          <nav class="nav-links">
+            <a href="#difference">Difference</a>
+            <a href="#features">Features</a>
+            <a href="#pipeline">Pipeline</a>
+            <a href={docsUrl}>Docs</a>
+          </nav>
+          <div class="nav-right">
+            <a class="ghub" href={githubUrl}><span class="star">★</span> GitHub</a>
+            <a class="btn btn-primary" href={docsUrl} style="padding:9px 17px;font-size:14px;"
+              >Get started</a
+            >
+          </div>
+        </nav>
+      </header>
+
+      <!-- HERO (C) -->
+      <section class="hero wrap">
+        <img class="lion-bg" src={logo.src} alt="" />
+        <span class="tag"><b>v2.0</b> A framework, not a wrapper</span>
+        <h1>Telegram bots,<br />the <span class="g">NestJS</span> way.</h1>
+        <p class="sub">
+          A real NestJS framework for the Telegram Bot API — modules, DI, pipes &amp; guards, built
+          to scale and survive production.
+        </p>
+        <div class="cta">
+          <a class="btn btn-primary" href={docsUrl}>Read the docs →</a>
+          <span class="cmd"><span><span class="pfx">$</span> npm i nestgram</span></span>
+        </div>
+      </section>
+
+      <!-- VERSUS (C) -->
+      <section class="wrap versus">
+        <span class="lab">// where others wrap,</span>
+        <div class="names">
+          <s>telegraf</s><s>grammY</s><s>node-telegram-bot-api</s><span class="me"
+            >nestgram&nbsp;frameworks.</span
+          >
+        </div>
+      </section>
+
+      <!-- DIFFERENCE (A) -->
+      <section class="blk wrap" id="difference">
+        <div class="sec-head">
+          <span class="kicker">// the difference</span>
+          <h2>Other libraries wrap the API.<br />Nestgram <span class="grad-text">is</span> the framework.</h2>
+          <p>
+            Telegraf, grammY and node-telegram-bot-api are great clients. The “NestJS” packages
+            around them are thin adapters. Nestgram is built from the ground up on Nest’s own
+            lifecycle — so the framework works <em>for</em> you, not the API.
+          </p>
+        </div>
+        <div class="compare">
+          <div class="col bad">
+            <h4>◇ Thin wrappers</h4>
+            <ul>
+              <li>✕ Middleware lives outside Nest’s pipeline</li>
+              <li>✕ Bot logic bolted onto a service, not routed</li>
+              <li>✕ Magic strings &amp; manual update parsing</li>
+              <li>✕ No guardrails for production foot-guns</li>
+            </ul>
+          </div>
+          <div class="col good">
+            <h4>◆ Nestgram</h4>
+            <ul>
+              <li>✓ Guards, pipes &amp; interceptors from Nest’s pipeline</li>
+              <li>✓ A router <em>is</em> a controller — updates map to handlers</li>
+              <li>✓ Typed events &amp; decorators: <span class="mono" style="color:var(--a1)">@Sender() @Args()</span></li>
+              <li>✓ Framework warns you before you ship a mistake</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- FEATURES (A) -->
+      <section class="blk wrap" id="features">
+        <div class="sec-head">
+          <span class="kicker">// what you get</span>
+          <h2>Everything NestJS, mapped to Telegram.</h2>
+        </div>
+        <div class="pillars">
+          <div class="pillar wide">
+            <div class="ic">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                ><path d="M3 7l9-4 9 4-9 4-9-4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"
+                /><path d="M3 12l9 4 9-4M3 17l9 4 9-4" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"
+              /></svg>
+            </div>
+            <h3>Native Nest pipeline</h3>
+            <p>
+              Guards, pipes and interceptors run on the exact same lifecycle as your HTTP routes. No
+              parallel system to learn.
+            </p>
+            <span class="num">01</span>
+          </div>
+          <div class="pillar">
+            <div class="ic">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                ><rect x="3" y="4" width="18" height="6" rx="2" stroke="currentColor" stroke-width="1.6"
+                /><rect x="3" y="14" width="18" height="6" rx="2" stroke="currentColor" stroke-width="1.6"
+              /></svg>
+            </div>
+            <h3>Router = Controller</h3>
+            <p>
+              Your update handlers are just controllers. Decorators bind messages, callbacks &amp;
+              commands to methods.
+            </p>
+            <span class="num">02</span>
+          </div>
+          <div class="pillar">
+            <div class="ic">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                ><path d="M8 3v4M16 3v4M4 9h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                /><rect x="4" y="5" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.6"
+              /></svg>
+            </div>
+            <h3>Typed events &amp; decorators</h3>
+            <p>
+              Each handler gets the concrete update it asked for. Pull the sender or args with one
+              explicit decorator — no magic strings.
+            </p>
+            <span class="num">03</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SHOWCASE (A) -->
+      <section class="blk wrap">
+        <div class="showcase">
+          <div class="copy">
+            <span class="kicker">// router = controller</span>
+            <h2>If you know Nest,<br />you already know this.</h2>
+            <p>
+              A controller declares routes. In Nestgram, those routes are Telegram updates. Same
+              decorator discipline, same DI, same testability — pointed at a different transport.
+            </p>
+            <div class="feat-list">
+              <div class="row">
+                <span class="d"></span><span><b>@Router()</b> marks a class as a routed controller.</span>
+              </div>
+              <div class="row">
+                <span class="d"></span><span><b>@OnMessage() / @Command()</b> bind handlers to update types.</span>
+              </div>
+              <div class="row">
+                <span class="d"></span><span><b>@Sender() @Args()</b> inject exactly what you ask for.</span>
+              </div>
+            </div>
+          </div>
+          <div class="win">
+            <div class="win-bar">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span><span
+                class="fname">greet.router.ts</span
+              >
+            </div>
+            <pre set:html={showcaseCode}></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- PIPELINE (A) -->
+      <section class="blk wrap" id="pipeline">
+        <div class="sec-head">
+          <span class="kicker">// from update to handler</span>
+          <h2>One predictable pipeline.</h2>
+          <p>
+            Every Telegram update flows through the same Nest lifecycle your team already reasons
+            about — no parallel middleware system.
+          </p>
+        </div>
+        <div class="pipe">
+          <div class="endpts"><span>▼ incoming update</span><span>handler response ▲</span></div>
+          <div class="pipe-flow">
+            {
+              pipeline.map((st) => (
+                <div class={`stage${st.hl ? ' hl' : ''}`}>
+                  <div class="node">
+                    <div class="t">{st.t}</div>
+                    <div class="s">{st.s}</div>
+                  </div>
+                  <div class="arrow">→</div>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- GUARDRAILS (A) -->
+      <section class="blk wrap">
+        <div class="guard">
+          <div class="sec-head" style="margin:0">
+            <span class="kicker">// it warns you first</span>
+            <h2>Guardrails against<br />production foot-guns.</h2>
+            <p>
+              The framework knows the Telegram Bot API’s sharp edges. It surfaces them at boot — not
+              in an incident channel at 2 a.m.
+            </p>
+          </div>
+          <div class="warnbox">
+            <div><span class="wlabel">⚠ Nestgram warning</span></div>
+            <div style="margin-top:10px;">[WebhookModule]</div>
+            <div class="dim">You set a webhook with no <span style="color:var(--text)">secret_token</span>.</div>
+            <div class="dim">Anyone who learns your URL can spoof updates.</div>
+            <div style="margin-top:10px;color:var(--a1)">
+              → pass <span style="color:var(--text)">secretToken</span> to
+              <span style="color:var(--text)">setWebhook()</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FINAL CTA (A) -->
+      <section class="final wrap">
+        <h2>Build the bot like you build the app.</h2>
+        <p>
+          Bring your NestJS instincts. Nestgram brings the Telegram transport, the pipeline, and the
+          guardrails.
+        </p>
+        <div class="cta">
+          <a class="btn btn-primary" href={docsUrl}>Get started →</a>
+          <a class="btn btn-ghost" href={githubUrl}>Browse on GitHub</a>
+        </div>
+      </section>
+
+      <!-- FOOTER (A) -->
+      <footer class="foot">
+        <div class="wrap foot-in">
+          <div class="foot-brand">
+            <a class="brand" href="/"><img src={logo.src} alt="" />Nestgram</a>
+            <p>A NestJS framework for the Telegram Bot API.</p>
+          </div>
+          <div class="foot-col">
+            <h5>Docs</h5>
+            <a href={docsUrl}>Quickstart</a>
+            <a href="/02-commands-and-keyboards">Commands</a>
+            <a href="/03-callbacks">Callbacks</a>
+            <a href="/04-guards-and-pipeline">Guards</a>
+          </div>
+          <div class="foot-col">
+            <h5>Project</h5>
+            <a href={githubUrl}>GitHub</a>
+            <a href="https://www.npmjs.com/package/nestgram">npm</a>
+            <a href={`${githubUrl}/blob/main/ROADMAP.md`}>Roadmap</a>
+          </div>
+          <div class="foot-col">
+            <h5>Community</h5>
+            <a href="https://t.me/nestgram_en">Telegram</a>
+            <a href={`${githubUrl}/discussions`}>Discussions</a>
+            <a href={`${githubUrl}/blob/main/CONTRIBUTING.md`}>Contributing</a>
+          </div>
+        </div>
+      </footer>
+    </main>
+  </body>
+</html>

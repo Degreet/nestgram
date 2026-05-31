@@ -1,0 +1,526 @@
+/* ============================================================
+   Nestgram — Starlight theme bridge + shared design tokens
+   Maps the design system onto Starlight's --sl-* custom
+   properties so docs match the landing page, then recreates
+   the design's docs components (mental model, asides, code).
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* --- design system tokens --- */
+  --bg: #07090d;
+  --bg-soft: #0b0e14;
+  --panel: #0f131b;
+  --panel-2: #141925;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.13);
+
+  --text: #eef1f6;
+  --text-2: #b7c0cf;
+  --muted: #7c889b;
+  --faint: #525c6e;
+
+  --a1: #36b4f4; /* light blue */
+  --a2: #1f8fe6; /* core blue  */
+  --accent: var(--a2);
+  --accent-soft: rgba(54, 180, 244, 0.14);
+  --grad: linear-gradient(135deg, var(--a1), var(--a2));
+  --grad-text: linear-gradient(120deg, #eaf6ff 0%, var(--a1) 60%, var(--a2) 100%);
+  --glow: radial-gradient(60% 60% at 50% 0%, rgba(54, 180, 244, 0.22), transparent 70%);
+
+  --font-display: 'Space Grotesk', 'Hanken Grotesk', system-ui, sans-serif;
+  --font-body: 'Hanken Grotesk', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --radius: 14px;
+  --radius-lg: 20px;
+  --maxw: 1180px;
+}
+
+/* --- map onto Starlight --- */
+:root,
+:root[data-theme='dark'] {
+  --sl-color-accent-low: #0b2a40;
+  --sl-color-accent: var(--a2);
+  --sl-color-accent-high: var(--a1);
+
+  --sl-color-white: var(--text);
+  --sl-color-gray-1: #d7deea;
+  --sl-color-gray-2: var(--text-2);
+  --sl-color-gray-3: var(--muted);
+  --sl-color-gray-4: #3a4252;
+  --sl-color-gray-5: #232a36;
+  --sl-color-gray-6: var(--panel);
+  --sl-color-gray-7: var(--bg-soft);
+  --sl-color-black: var(--bg);
+
+  --sl-color-bg: var(--bg);
+  --sl-color-bg-nav: color-mix(in oklab, var(--bg) 82%, transparent);
+  --sl-color-bg-sidebar: var(--bg);
+  --sl-color-hairline: var(--border);
+  --sl-color-hairline-light: var(--border);
+  --sl-color-hairline-shade: var(--border);
+  /* keep links/headings readable; accent reserved for explicit blue bits */
+  --sl-color-text-accent: var(--a1);
+
+  --sl-font: var(--font-body);
+  --sl-font-mono: var(--font-mono);
+
+  --sl-content-width: 49rem;
+  --sl-sidebar-width: 17.5rem;
+  --sl-text-code: 0.875rem;
+  --sl-nav-height: 4rem;
+  /* generous side gutters so content breathes like the mockup */
+  --sl-content-pad-x: 3.5rem;
+}
+@media (max-width: 72rem) {
+  :root {
+    --sl-content-pad-x: 1.5rem;
+  }
+}
+
+/* ---- header / wordmark: white, not blue; sized down ---- */
+.site-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.site-title img {
+  height: 1.7rem;
+  width: auto;
+}
+header.header {
+  border-bottom: 1px solid var(--border);
+  background: var(--sl-color-bg-nav);
+  backdrop-filter: blur(14px);
+}
+
+/* ============================================================
+   Generous editorial rhythm — escape the cramped template feel.
+   The mockup breathes: big gaps between sections, air around
+   code and cards, looser line-height. Match that.
+   ============================================================ */
+
+/* extra top padding so the title sits low and airy */
+.content-panel {
+  padding-block: 2.4rem;
+}
+.content-panel + .content-panel {
+  border-top: 1px solid var(--border);
+}
+
+/* headings use the display font, like the landing page */
+.sl-markdown-content h1,
+.sl-markdown-content h2,
+.sl-markdown-content h3,
+.sl-markdown-content h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.022em;
+}
+.sl-markdown-content h2 {
+  font-size: 1.75rem;
+  margin-top: 4rem;
+  padding-top: 1.8rem;
+  border-top: 1px solid var(--border);
+}
+.sl-markdown-content h3 {
+  font-size: 1.25rem;
+  margin-top: 2.75rem;
+}
+
+/* looser body rhythm */
+.sl-markdown-content {
+  line-height: 1.72;
+}
+.sl-markdown-content p,
+.sl-markdown-content li {
+  line-height: 1.72;
+}
+.sl-markdown-content :where(p, ul, ol) {
+  margin-top: 1.15rem;
+}
+.sl-markdown-content li + li {
+  margin-top: 0.5rem;
+}
+
+/* breathing room around code blocks and custom cards */
+.sl-markdown-content .expressive-code {
+  margin-top: 1.6rem;
+  margin-bottom: 1.6rem;
+}
+.sl-markdown-content .expressive-code + p,
+.sl-markdown-content .expressive-code + .anno {
+  margin-top: 1.4rem;
+}
+
+/* "#" anchor marker before headings (design parity) */
+.sl-markdown-content :is(h2, h3) > a.anchor-link::before {
+  content: '#';
+  color: var(--faint);
+  font-weight: 400;
+  margin-right: 0.4em;
+}
+.sl-markdown-content :is(h2, h3) > a.anchor-link {
+  text-decoration: none;
+}
+
+/* lead paragraph (first paragraph after the title) */
+.sl-markdown-content > p:first-of-type {
+  font-size: 1.15rem;
+  color: var(--text-2);
+  line-height: 1.65;
+}
+
+/* inline code: pale blue like the mockup, not the bright accent */
+.sl-markdown-content :not(pre) > code {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  color: #cfe6ff;
+  font-size: 0.85em;
+  padding: 0.1em 0.4em;
+}
+
+/* ---- sidebar: tighter rhythm, mono group labels, rounded active ---- */
+.sidebar-content {
+  padding-top: 1.4rem;
+}
+.sidebar-content .sl-link-group + .sl-link-group {
+  margin-top: 1.6rem;
+}
+.sidebar-content summary,
+.sidebar-content > ul > li > a,
+.sidebar-content .top-level > li > details > summary {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.sidebar-content a {
+  border-radius: 8px;
+  font-size: 0.92rem;
+  padding-block: 0.42rem;
+  color: var(--text-2);
+}
+.sidebar-content a:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+.sidebar-content a[aria-current='page'] {
+  background: var(--accent-soft);
+  color: var(--a1);
+  font-weight: 500;
+}
+
+/* ---- right "On this page" TOC: blue active marker ---- */
+starlight-toc nav a[aria-current='true'] {
+  color: var(--a1);
+  border-inline-start: 2px solid var(--accent);
+  font-weight: 500;
+}
+
+/* ---- asides: roomy, with explicitly-coloured icons (design) ---- */
+.starlight-aside {
+  border-radius: 13px;
+  border-inline-start-width: 1px;
+  border-width: 1px;
+  padding: 1.1rem 1.3rem;
+  margin: 1.8rem 0;
+}
+.starlight-aside__title {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  align-items: center;
+}
+/* the icon is an SVG using currentColor — colour it per variant */
+.starlight-aside--tip,
+.starlight-aside--tip .starlight-aside__title,
+.starlight-aside--tip .starlight-aside__icon {
+  color: var(--a1);
+}
+.starlight-aside--tip {
+  --sl-color-asides-border: color-mix(in oklab, var(--accent) 38%, var(--border));
+  background: var(--accent-soft);
+}
+.starlight-aside--caution,
+.starlight-aside--caution .starlight-aside__title,
+.starlight-aside--caution .starlight-aside__icon {
+  color: #ffcb7a;
+}
+.starlight-aside--caution {
+  --sl-color-asides-border: color-mix(in oklab, #ffcb7a 35%, var(--border));
+  background: linear-gradient(180deg, rgba(255, 203, 122, 0.08), transparent);
+}
+.starlight-aside--note,
+.starlight-aside--note .starlight-aside__title,
+.starlight-aside--note .starlight-aside__icon {
+  color: var(--a1);
+}
+.starlight-aside--note {
+  --sl-color-asides-border: var(--border-strong);
+  background: rgba(255, 255, 255, 0.02);
+}
+/* body text stays readable, not tinted */
+.starlight-aside__content {
+  color: var(--text-2);
+  margin-top: 0.5rem;
+  line-height: 1.65;
+}
+
+/* ============================================================
+   Mental model card (raw HTML in markdown: .mental.not-content)
+   ============================================================ */
+.mental {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, var(--panel), var(--bg-soft));
+  padding: 26px 28px;
+  margin: 28px 0;
+}
+.mental .mm-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+.mental .mm-flow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.mental .mm-box {
+  padding: 13px 17px;
+  border-radius: 11px;
+  border: 1px solid var(--border-strong);
+  background: var(--panel-2);
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  color: var(--text);
+}
+.mental .mm-box.mm-accent {
+  border-color: color-mix(in oklab, var(--accent) 50%, var(--border));
+  background: linear-gradient(180deg, var(--accent-soft), var(--panel-2));
+  color: var(--a1);
+}
+.mental .mm-arrow {
+  color: var(--faint);
+}
+
+/* ============================================================
+   Numbered callouts under a code block
+   (raw HTML in markdown: <div class="anno not-content">…)
+   ============================================================ */
+.anno {
+  margin: 18px 0 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.anno .ai {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.anno .ai .n {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #04121d;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 11.5px;
+  display: grid;
+  place-items: center;
+  margin-top: 2px;
+}
+.anno .ai p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.anno .ai code {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--a1);
+}
+
+/* ============================================================
+   "Only in Nestgram" guardrail badge
+   (raw HTML: <div class="guardrail not-content">…)
+   ============================================================ */
+.guardrail {
+  margin: 24px 0;
+  border-radius: 12px;
+  padding: 16px 18px;
+  border: 1px solid color-mix(in oklab, #ffcb7a 32%, var(--border));
+  background: linear-gradient(180deg, rgba(255, 203, 122, 0.09), transparent);
+  display: flex;
+  gap: 13px;
+}
+.guardrail .gr-ico {
+  flex: none;
+  font-size: 18px;
+  line-height: 1.4;
+}
+.guardrail .gr-label {
+  display: block;
+  margin-bottom: 4px;
+  color: #ffcb7a;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+.guardrail .gr-body {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.guardrail .gr-body b {
+  color: var(--text);
+}
+.guardrail .gr-body code {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--a1);
+}
+
+/* ============================================================
+   CSS-only tabs (raw HTML, no JS — Starlight-independent)
+   <div class="ng-tabs not-content">
+     <input type="radio" name="x" id="x-a" checked><input … id="x-b">
+     <div class="ng-tablist"><label for="x-a">A</label>…</div>
+     <div class="ng-tab" data-for="x-a">…</div> …
+   ============================================================ */
+.ng-tabs {
+  margin: 22px 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 13px;
+  overflow: hidden;
+  background: #080a0f;
+}
+.ng-tabs > input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.ng-tablist {
+  display: flex;
+  gap: 4px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.015);
+}
+.ng-tablist label {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--muted);
+  padding: 5px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.13s;
+}
+.ng-tablist label:hover {
+  color: var(--text-2);
+}
+.ng-tab {
+  display: none;
+}
+.ng-tab pre {
+  margin: 0;
+  border-radius: 0;
+  border: 0;
+}
+/* show the panel whose matching radio is checked, light its label */
+.ng-tabs > input:nth-of-type(1):checked ~ .ng-tablist label:nth-of-type(1),
+.ng-tabs > input:nth-of-type(2):checked ~ .ng-tablist label:nth-of-type(2) {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+}
+.ng-tabs > input:nth-of-type(1):checked ~ .ng-tab.tab-1,
+.ng-tabs > input:nth-of-type(2):checked ~ .ng-tab.tab-2 {
+  display: block;
+}
+
+/* ============================================================
+   Markdown tables (e.g. parameter-decorator reference)
+   bigger, calmer, more readable — design parity
+   ============================================================ */
+.sl-markdown-content table {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  font-size: 0.95rem;
+}
+.sl-markdown-content th {
+  background: rgba(255, 255, 255, 0.02);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--muted);
+  text-align: left;
+  padding: 0.85rem 1.1rem;
+}
+.sl-markdown-content td {
+  padding: 0.85rem 1.1rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-2);
+  line-height: 1.55;
+}
+.sl-markdown-content tr td:first-child {
+  border-right: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.012);
+  white-space: nowrap;
+}
+.sl-markdown-content table code {
+  color: var(--a1);
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+/* ============================================================
+   Prev / next pager — compact, not oversized
+   ============================================================ */
+.pagination-links a {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.7rem 1rem;
+  gap: 0.15rem;
+}
+.pagination-links a:hover {
+  border-color: var(--border-strong);
+  background: rgba(255, 255, 255, 0.025);
+}
+.pagination-links a span {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+.pagination-links a .link-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--text);
+}
