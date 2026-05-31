@@ -37,6 +37,17 @@
  *   }
  */
 
+import { BotService } from '../bot';
+import { ContextFactory, EventFactory, resolveKind } from '../context';
+import { Message } from '../telegramObjects';
+import { RawUpdate } from '../types/raw-update.types';
+
+/** Build a ContextFactory with a stub BotService (no network is touched). */
+function buildContextFactory(): ContextFactory {
+  const botService = { token: 'TEST' } as unknown as BotService;
+  return new ContextFactory(botService, new EventFactory());
+}
+
 describe('Nestgram target public API (Phase 1)', () => {
   describe('Discovery & routing (boot-time route table)', () => {
     it.todo(
@@ -64,9 +75,7 @@ describe('Nestgram target public API (Phase 1)', () => {
       "@Command('start') matches '/start arg1 arg2' (command followed by args)",
     );
     it.todo("@Command('start') does NOT match a plain message 'start'");
-    it.todo(
-      "@Command('start') does NOT match a different command '/help'",
-    );
+    it.todo("@Command('start') does NOT match a different command '/help'");
     it.todo(
       "@Command('start') returning a string replies that string to the same chat",
     );
@@ -108,17 +117,54 @@ describe('Nestgram target public API (Phase 1)', () => {
     it.todo(
       'the Message event exposes message.text, message.from, message.chat from the raw payload',
     );
-    it.todo(
-      'the raw Update is NOT mutated — no _updateType / _telegramObject keys are added to it',
-    );
-    it.todo(
-      'the typed event is produced by wrapping the raw update, leaving the original object untouched',
-    );
+    it('the raw Update is NOT mutated — no _updateType / _telegramObject keys are added to it', () => {
+      const update: RawUpdate = {
+        update_id: 1,
+        message: {
+          message_id: 10,
+          chat: { id: 5, type: 'private' },
+          text: 'hi',
+        },
+      };
+      const before = JSON.stringify(update);
+
+      const ctx = buildContextFactory().wrap(update);
+      expect(ctx).not.toBeNull();
+      // Force the (lazy) event to be built; this must not write back to update.
+      void ctx?.event;
+
+      expect('_updateType' in update).toBe(false);
+      expect('_telegramObject' in update).toBe(false);
+      expect(JSON.stringify(update)).toBe(before);
+    });
+
+    it('the typed event is produced by wrapping the raw update, leaving the original object untouched', () => {
+      const rawMessage = {
+        message_id: 10,
+        chat: { id: 5, type: 'private' as const },
+        text: 'hi',
+      };
+      const update: RawUpdate = { update_id: 1, message: rawMessage };
+
+      const ctx = buildContextFactory().wrap(update);
+      if (!ctx) {
+        throw new Error('expected a resolvable update');
+      }
+      const event = ctx.event;
+
+      expect(ctx.kind).toBe(resolveKind(update));
+      expect(event).toBeInstanceOf(Message);
+      // The rich event is a separate object built by wrapping; the raw payload
+      // is left as-is (not replaced by the rich class).
+      expect(event).not.toBe(rawMessage);
+      expect(update.message).toBe(rawMessage);
+      expect((event as Message).text).toBe('hi');
+    });
   });
 
   describe('Event actions (rich context, command-object layer)', () => {
     it.todo('message.answer(text) sends a message to the same chat');
-    it.todo("message.react(emoji) reacts to the incoming message");
+    it.todo('message.react(emoji) reacts to the incoming message');
     it.todo(
       'returning a command object (e.g. new SendMessage(chatId, text)) executes it',
     );
@@ -136,12 +182,14 @@ describe('Nestgram target public API (Phase 1)', () => {
     //   handle(message: Message, @Sender() user: User) { ... }
     it.todo('@Sender() injects the User who sent the update');
     it.todo('@Chat() injects the Chat the update happened in');
-    it.todo("@Args() injects the whitespace-split arguments after a command");
+    it.todo('@Args() injects the whitespace-split arguments after a command');
     it.todo(
       "@Payload() injects the raw text remainder after a command (e.g. deep-link 'ref_123')",
     );
     it.todo('@CallbackData() injects the callback_query data string');
-    it.todo('@Match() injects the RegExpMatchArray for a regex @Action / @Hears');
+    it.todo(
+      '@Match() injects the RegExpMatchArray for a regex @Action / @Hears',
+    );
     it.todo(
       '@Session() injects the session object (stub in Phase 1, no backing store)',
     );
@@ -162,9 +210,7 @@ describe('Nestgram target public API (Phase 1)', () => {
     it.todo(
       '@UseGuards allows the handler when the guard returns true, and the guard sees the execution context',
     );
-    it.todo(
-      '@UseInterceptors wraps the handler and can transform its result',
-    );
+    it.todo('@UseInterceptors wraps the handler and can transform its result');
     it.todo(
       '@UsePipes / a param pipe transforms a derived param value before the handler runs',
     );
