@@ -48,8 +48,6 @@ export class GreetRouter {
 ```
 :::
 
-A few things to notice:
-
 :::anno
 1. The handler receives a **typed `Message`** as its first argument — no decorator, no guessing what's on it. You named the type, so you know exactly what arrived.
 2. `@Command('start')` matches the `/start` command; `@OnMessage()` matches any message. Nestgram tries handlers in order and runs the first match.
