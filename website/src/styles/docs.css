@@ -223,6 +223,66 @@ body {
   padding: 0.1em 0.4em;
 }
 
+/* ---- prev/next pager ---- */
+.dx-pager {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+.dx-pager-spacer {
+  display: block;
+}
+.dx-pager-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--bg-soft);
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+.dx-pager-btn:hover {
+  border-color: color-mix(in oklab, var(--accent) 55%, var(--border));
+  background: var(--panel);
+  transform: translateY(-2px);
+}
+.dx-pager-next {
+  text-align: right;
+  align-items: flex-end;
+}
+.dx-pager-dir {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color 0.15s;
+}
+.dx-pager-btn:hover .dx-pager-dir {
+  color: var(--a1);
+}
+.dx-pager-title {
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+@media (max-width: 38rem) {
+  .dx-pager {
+    grid-template-columns: 1fr;
+  }
+  .dx-pager-next {
+    text-align: left;
+    align-items: flex-start;
+  }
+}
+
 /* ---- right TOC ---- */
 .dx-toc {
   position: sticky;

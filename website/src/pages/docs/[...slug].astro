@@ -35,17 +35,25 @@ export async function getStaticPaths() {
     });
   }
 
-  return sorted.map((entry) => ({
+  // Linear reading order for the prev/next pager (same order as the sidebar).
+  const flat = sorted.map((entry) => ({
+    label: entry.data.sidebar?.label ?? entry.data.title,
+    href: `/docs/${cleanSlug(entry.id)}`,
+  }));
+
+  return sorted.map((entry, i) => ({
     params: { slug: cleanSlug(entry.id) },
     props: {
       entry,
       sidebar: groups,
       current: `/docs/${cleanSlug(entry.id)}`,
+      prev: i > 0 ? flat[i - 1] : null,
+      next: i < flat.length - 1 ? flat[i + 1] : null,
     },
   }));
 }
 
-const { entry, sidebar, current } = Astro.props;
+const { entry, sidebar, current, prev, next } = Astro.props;
 const { Content, headings } = await render(entry);
 const groupLabel = entry.data.sidebar?.group ?? 'Docs';
 ---
@@ -57,6 +65,8 @@ const groupLabel = entry.data.sidebar?.group ?? 'Docs';
   headings={headings}
   sidebar={sidebar}
   current={current}
+  prev={prev}
+  next={next}
 >
   <Content />
 </DocsLayout>
