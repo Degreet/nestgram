@@ -37,7 +37,6 @@ const ACCENT_MARK = '*';
 const FLOW_ARROW = '->';
 const ARROW = '→'; // →
 const MIDDOT = '·'; // ·
-const WARNING_SIGN = '⚠'; // ⚠
 
 // Shell-ish fences (written as bare ```bash, not wrapped in :::code) should
 // still get the code-island chrome, rendered as a terminal window.
@@ -164,7 +163,7 @@ function buildAside(kind, node) {
 }
 
 // A crisp warning triangle (rounded corners + exclamation) replacing the
-// stock ⚠ glyph. Inherits colour from `.warnbox .wlabel`.
+// stock (warn) glyph. Inherits colour from `.warnbox .wlabel`.
 function warnIcon() {
   return el(
     'svg',
