@@ -10,8 +10,8 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.39.2",
     "astro": "^6.4.2",
+    "remark-directive": "^3.0.1",
     "sharp": "^0.34.2"
   }
 }

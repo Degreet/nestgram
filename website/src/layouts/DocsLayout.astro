@@ -1,0 +1,133 @@
+---
+// Nestgram docs shell. Renders the mockup three-column layout:
+// top nav · sidebar · content · right TOC. Sidebar groups come from the
+// docs collection (per-file frontmatter); the TOC comes from Astro's
+// generated `headings`. Scroll-spy is the only JS on the page.
+import '../styles/docs.css';
+import logo from '../assets/nestgram.svg';
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+interface NavItem {
+  label: string;
+  href: string;
+}
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
+interface Props {
+  title: string;
+  description?: string;
+  breadcrumb?: string;
+  headings?: Heading[];
+  sidebar?: NavGroup[];
+  current?: string;
+}
+
+const {
+  title,
+  description = '',
+  breadcrumb = 'Docs',
+  headings = [],
+  sidebar = [],
+  current = '',
+} = Astro.props;
+
+// Only h2/h3 belong in the "On this page" rail.
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+
+const githubUrl = 'https://github.com/Degreet/nestgram-v2';
+---
+
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} — Nestgram</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <header class="dx-nav">
+      <a class="dx-brand" href="/"><img src={logo.src} alt="" />Nestgram</a>
+      <nav class="dx-nav-right">
+        <a href="/docs/quickstart">Docs</a>
+        <a href={githubUrl}>GitHub</a>
+      </nav>
+    </header>
+
+    <div class="dx-shell">
+      <aside class="dx-sidebar">
+        {
+          sidebar.map((group) => (
+            <div class="dx-group">
+              <p class="dx-group-label">{group.label}</p>
+              <ul>
+                {group.items.map((it) => (
+                  <li>
+                    <a href={it.href} class={it.href === current ? 'active' : ''}>
+                      {it.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </aside>
+
+      <main class="dx-main">
+        <div class="dx-breadcrumb">{breadcrumb}</div>
+        <article class="dx-content">
+          <h1>{title}</h1>
+          <slot />
+        </article>
+      </main>
+
+      <nav class="dx-toc">
+        {
+          toc.length > 0 && (
+            <>
+              <p class="dx-toc-label">On this page</p>
+              <ul>
+                {toc.map((t) => (
+                  <li>
+                    <a href={`#${t.slug}`} class={`lvl-${t.depth}`} data-toc={t.slug}>
+                      {t.text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )
+        }
+      </nav>
+    </div>
+
+    <script>
+      // scroll-spy: highlight the current section in the right TOC.
+      const links = [...document.querySelectorAll<HTMLAnchorElement>('.dx-toc a[data-toc]')];
+      const map = new Map(links.map((a) => [a.getAttribute('data-toc'), a]));
+      const obs = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              links.forEach((a) => a.classList.remove('active'));
+              map.get(e.target.id)?.classList.add('active');
+            }
+          }
+        },
+        { rootMargin: '0px 0px -75% 0px', threshold: 0 },
+      );
+      document
+        .querySelectorAll('.dx-content h2[id], .dx-content h3[id]')
+        .forEach((h) => obs.observe(h));
+    </script>
+  </body>
+</html>

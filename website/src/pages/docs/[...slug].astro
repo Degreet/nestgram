@@ -1,0 +1,62 @@
+---
+// Dynamic docs route. One page per entry in the `docs` collection (repo-root
+// docs/*.md). The body is rendered through the global markdown pipeline
+// (remark-directive → remark-nestgram-blocks → Shiki → rehype-nestgram-codemark)
+// configured in astro.config.mjs, then dropped into the DocsLayout shell.
+import { getCollection, render } from 'astro:content';
+import DocsLayout from '../../layouts/DocsLayout.astro';
+
+export async function getStaticPaths() {
+  // Clean route slug: drop the numeric ordering prefix (01-quickstart →
+  // quickstart). Defined inside getStaticPaths because Astro serializes this
+  // function in isolation — module-scope helpers aren't in scope here.
+  const cleanSlug = (id: string): string => id.replace(/^\d+[-_]/, '');
+
+  const entries = await getCollection('docs');
+
+  // Order by sidebar.order; group by sidebar.group. Sidebar groups are built
+  // from each file's own frontmatter — adding a doc file makes it appear
+  // automatically.
+  const sorted = [...entries].sort(
+    (a, b) => (a.data.sidebar?.order ?? 999) - (b.data.sidebar?.order ?? 999),
+  );
+
+  const groups: { label: string; items: { label: string; href: string }[] }[] = [];
+  for (const entry of sorted) {
+    const groupLabel = entry.data.sidebar?.group ?? 'Docs';
+    let group = groups.find((g) => g.label === groupLabel);
+    if (!group) {
+      group = { label: groupLabel, items: [] };
+      groups.push(group);
+    }
+    group.items.push({
+      label: entry.data.sidebar?.label ?? entry.data.title,
+      href: `/docs/${cleanSlug(entry.id)}`,
+    });
+  }
+
+  return sorted.map((entry) => ({
+    params: { slug: cleanSlug(entry.id) },
+    props: {
+      entry,
+      sidebar: groups,
+      current: `/docs/${cleanSlug(entry.id)}`,
+    },
+  }));
+}
+
+const { entry, sidebar, current } = Astro.props;
+const { Content, headings } = await render(entry);
+const groupLabel = entry.data.sidebar?.group ?? 'Docs';
+---
+
+<DocsLayout
+  title={entry.data.title}
+  description={entry.data.description}
+  breadcrumb={`Docs / ${groupLabel}`}
+  headings={headings}
+  sidebar={sidebar}
+  current={current}
+>
+  <Content />
+</DocsLayout>

@@ -1,0 +1,549 @@
+/* ============================================================
+   Nestgram docs — custom generator shell + blocks (PoC)
+   Reuses the approved design tokens and block visuals; replaces
+   Starlight's shell with our own grid (nav · sidebar · content · toc).
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --bg: #07090d;
+  --bg-soft: #0b0e14;
+  --panel: #0f131b;
+  --panel-2: #141925;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.13);
+  --text: #eef1f6;
+  --text-2: #b7c0cf;
+  --muted: #7c889b;
+  --faint: #525c6e;
+  --a1: #36b4f4;
+  --a2: #1f8fe6;
+  --accent: var(--a2);
+  --accent-soft: rgba(54, 180, 244, 0.14);
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Hanken Grotesk', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --radius: 14px;
+  --radius-lg: 20px;
+  --maxw: 1280px;
+  --nav-h: 4rem;
+  --sidebar-w: 17.5rem;
+  --toc-w: 14rem;
+  --content-w: 49rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--nav-h) + 1.5rem);
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- top nav ---- */
+.dx-nav {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  height: var(--nav-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.6rem;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in oklab, var(--bg) 82%, transparent);
+  backdrop-filter: blur(14px);
+}
+.dx-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text);
+  text-decoration: none;
+}
+.dx-brand img {
+  height: 1.7rem;
+}
+.dx-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  font-size: 0.9rem;
+}
+.dx-nav-right a {
+  color: var(--text-2);
+  text-decoration: none;
+}
+.dx-nav-right a:hover {
+  color: var(--text);
+}
+
+/* ---- layout grid ---- */
+.dx-shell {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr) var(--toc-w);
+  gap: 0;
+  align-items: start;
+}
+
+/* ---- sidebar ---- */
+.dx-sidebar {
+  position: sticky;
+  top: var(--nav-h);
+  height: calc(100vh - var(--nav-h));
+  overflow-y: auto;
+  padding: 2rem 1.2rem 3rem;
+  border-right: 1px solid var(--border);
+}
+.dx-group + .dx-group {
+  margin-top: 1.9rem;
+}
+.dx-group-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin: 0 0 0.7rem 0.6rem;
+}
+.dx-group ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.dx-group li {
+  margin: 0.1rem 0;
+}
+.dx-group a {
+  display: block;
+  position: relative;
+  padding: 0.46rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  color: var(--text-2);
+  text-decoration: none;
+  transition: 0.12s;
+}
+.dx-group a:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+.dx-group a.active {
+  background: var(--accent-soft);
+  color: var(--a1);
+  font-weight: 500;
+  /* right-side blue marker for the open subsection (mockup ask) */
+  border-inline-end: 2px solid var(--accent);
+}
+
+/* ---- content column ---- */
+.dx-main {
+  min-width: 0;
+  padding: 2.6rem 3.5rem 5rem;
+}
+.dx-breadcrumb {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: 0.9rem;
+}
+.dx-content {
+  max-width: var(--content-w);
+  line-height: 1.72;
+}
+.dx-content h1 {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  letter-spacing: -0.025em;
+  margin: 0 0 0.4rem;
+}
+.dx-content > p:first-of-type,
+.dx-content .dx-lead {
+  font-size: 1.15rem;
+  color: var(--text-2);
+  line-height: 1.65;
+}
+.dx-content h2,
+.dx-content h3,
+.dx-content h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.022em;
+}
+.dx-content h2 {
+  font-size: 1.75rem;
+  margin-top: 4rem;
+  padding-top: 1.8rem;
+  border-top: 1px solid var(--border);
+}
+.dx-content h3 {
+  font-size: 1.25rem;
+  margin-top: 2.75rem;
+}
+.dx-content :is(h2, h3) > a.anchor {
+  color: var(--faint);
+  text-decoration: none;
+  font-weight: 400;
+  margin-right: 0.15em;
+}
+.dx-content p,
+.dx-content li {
+  line-height: 1.72;
+}
+.dx-content :where(p, ul, ol) {
+  margin-top: 1.15rem;
+}
+.dx-content li + li {
+  margin-top: 0.5rem;
+}
+.dx-content a {
+  color: var(--a1);
+}
+.dx-content :not(pre) > code {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  color: #cfe6ff;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  padding: 0.1em 0.4em;
+}
+
+/* ---- right TOC ---- */
+.dx-toc {
+  position: sticky;
+  top: var(--nav-h);
+  height: calc(100vh - var(--nav-h));
+  overflow-y: auto;
+  padding: 2.6rem 1.2rem 3rem;
+}
+.dx-toc-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: 0.8rem;
+}
+.dx-toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.dx-toc a {
+  display: block;
+  padding: 0.28rem 0 0.28rem 0.8rem;
+  border-inline-start: 2px solid transparent;
+  font-size: 0.84rem;
+  color: var(--muted);
+  text-decoration: none;
+}
+.dx-toc a.lvl-3 {
+  padding-left: 1.6rem;
+}
+.dx-toc a:hover {
+  color: var(--text-2);
+}
+.dx-toc a.active {
+  color: var(--a1);
+  border-inline-start-color: var(--accent);
+  font-weight: 500;
+}
+
+@media (max-width: 72rem) {
+  .dx-shell {
+    grid-template-columns: 1fr;
+  }
+  .dx-sidebar,
+  .dx-toc {
+    display: none;
+  }
+  .dx-main {
+    padding: 2rem 1.4rem 4rem;
+  }
+}
+
+/* ============================================================
+   BLOCKS — visuals carried over verbatim from nestgram.css
+   (mental, anno, guardrail) plus new ng-aside / code-island.
+   ============================================================ */
+
+/* mental-model card */
+.mental {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, var(--panel), var(--bg-soft));
+  padding: 26px 28px;
+  margin: 28px 0;
+}
+.mental .mm-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+.mental .mm-flow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.mental .mm-box {
+  padding: 13px 17px;
+  border-radius: 11px;
+  border: 1px solid var(--border-strong);
+  background: var(--panel-2);
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  color: var(--text);
+}
+.mental .mm-box.mm-accent {
+  border-color: color-mix(in oklab, var(--accent) 50%, var(--border));
+  background: linear-gradient(180deg, var(--accent-soft), var(--panel-2));
+  color: var(--a1);
+}
+.mental .mm-arrow {
+  color: var(--faint);
+}
+
+/* numbered annotations */
+.anno {
+  margin: 18px 0 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.anno .ai {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.anno .ai .n {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #04121d;
+  font-weight: 700;
+  font-size: 11.5px;
+  display: grid;
+  place-items: center;
+  margin-top: 3px;
+}
+.anno .ai p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.anno .ai code {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--a1);
+}
+
+/* guardrail badge */
+.guardrail {
+  margin: 24px 0;
+  border-radius: 12px;
+  padding: 16px 18px;
+  border: 1px solid color-mix(in oklab, #ffcb7a 32%, var(--border));
+  background: linear-gradient(180deg, rgba(255, 203, 122, 0.09), transparent);
+  display: flex;
+  gap: 13px;
+}
+.guardrail .gr-ico {
+  flex: none;
+  font-size: 18px;
+  line-height: 1.4;
+}
+.guardrail .gr-label {
+  display: block;
+  margin-bottom: 4px;
+  color: #ffcb7a;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+.guardrail .gr-body {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.guardrail .gr-body strong {
+  color: var(--text);
+}
+.guardrail .gr-body code {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--a1);
+}
+
+/* asides */
+.ng-aside {
+  border-radius: 13px;
+  border: 1px solid var(--border-strong);
+  padding: 1.1rem 1.3rem;
+  margin: 1.8rem 0;
+}
+.ng-aside__title {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.ng-aside__body {
+  color: var(--text-2);
+  line-height: 1.65;
+}
+.ng-aside__body p {
+  margin: 0.4rem 0 0;
+}
+.ng-aside__body p:first-child {
+  margin-top: 0;
+}
+.ng-aside--tip,
+.ng-aside--note {
+  background: var(--accent-soft);
+  border-color: color-mix(in oklab, var(--accent) 38%, var(--border));
+}
+.ng-aside--tip .ng-aside__title,
+.ng-aside--note .ng-aside__title {
+  color: var(--a1);
+}
+.ng-aside--caution,
+.ng-aside--warning {
+  background: linear-gradient(180deg, rgba(255, 203, 122, 0.08), transparent);
+  border-color: color-mix(in oklab, #ffcb7a 35%, var(--border));
+}
+.ng-aside--caution .ng-aside__title,
+.ng-aside--warning .ng-aside__title {
+  color: #ffcb7a;
+}
+
+/* code island */
+.code-island {
+  margin: 1.6rem 0;
+  border-radius: 13px;
+  overflow: hidden;
+  background: #080a0f;
+}
+.code-island.is-framed {
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.8);
+}
+.code-island .ci-bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.015);
+  border-bottom: 1px solid var(--border);
+}
+.code-island .ci-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #2a3140;
+}
+.code-island .ci-name {
+  margin-left: 8px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.code-island pre {
+  margin: 0;
+  padding: 16px 18px;
+  overflow-x: auto;
+}
+.code-island code {
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--text);
+}
+.code-island .ci-mark {
+  display: inline-block;
+  width: 100%;
+  background: rgba(54, 180, 244, 0.1);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+/* code token palette (matches landing + nestgram-code-theme.mjs) */
+.tok-com {
+  color: #525c6e;
+  font-style: italic;
+}
+.tok-str {
+  color: #8ee6a8;
+}
+.tok-key {
+  color: #ff7aa3;
+}
+.tok-dec {
+  color: #36b4f4;
+}
+.tok-fn {
+  color: #c4a6ff;
+}
+.tok-typ {
+  color: #7fd0ff;
+}
+.tok-num {
+  color: #ffcb7a;
+}
+
+/* tables */
+.dx-content table {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  font-size: 0.95rem;
+  margin: 1.6rem 0;
+}
+.dx-content th {
+  background: rgba(255, 255, 255, 0.02);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--muted);
+  text-align: left;
+  padding: 0.85rem 1.1rem;
+}
+.dx-content td {
+  padding: 0.85rem 1.1rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-2);
+}

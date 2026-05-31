@@ -1,12 +1,25 @@
-import { defineCollection } from 'astro:content';
-import { docsLoader } from '@astrojs/starlight/loaders';
-import { docsSchema } from '@astrojs/starlight/schema';
+import { defineCollection, z } from 'astro:content';
+import { glob } from 'astro/loaders';
 
-// The DX spec is the source of truth and lives in the repo-root `docs/`
-// folder. `src/content/docs` is a symlink to it, so Starlight's own markdown
-// pipeline (asides, heading links, etc.) runs on the files — which the
-// external `glob({ base })` loader does NOT do — while authoring stays in
-// the repo-root `docs/`.
-export const collections = {
-  docs: defineCollection({ loader: docsLoader(), schema: docsSchema() }),
-};
+// Docs content lives in the repo-root `docs/` folder — the single source of
+// truth (the DX spec). We point a glob loader at it directly so authors keep
+// editing those files; adding a `.md` there makes a page appear automatically.
+//
+// Sidebar grouping/order comes from each file's own frontmatter (no central
+// sidebar.ts to drift): `sidebar: { label, group, order }`.
+const docs = defineCollection({
+  loader: glob({ pattern: '**/[0-9]*.md', base: '../docs' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string().optional(),
+    sidebar: z
+      .object({
+        label: z.string().optional(),
+        group: z.string().optional(),
+        order: z.number().optional(),
+      })
+      .optional(),
+  }),
+});
+
+export const collections = { docs };

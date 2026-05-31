@@ -1,1 +1,0 @@
-../../../../docs/02-commands-and-keyboards.md

@@ -1,9 +1,11 @@
 ---
 title: Commands, parameters & keyboards
 description: Parse commands, pull values with parameter decorators, and build inline and reply keyboards.
+sidebar:
+  label: Commands & keyboards
+  group: Guides
+  order: 2
 ---
-
-# Commands, parameters & keyboards
 
 Now that updates reach your router, let's make handlers expressive: parse
 command arguments, pull just the values you need, and send keyboards.
@@ -13,6 +15,7 @@ command arguments, pull just the values you need, and send keyboards.
 `@Command('start')` matches `/start`. The text after the command is
 available without any string-slicing of your own.
 
+:::code[order.router.ts]
 ```ts
 import { Router, Command, Message, Args, Payload } from 'nestgram';
 
@@ -27,6 +30,7 @@ export class OrderRouter {
   }
 }
 ```
+:::
 
 - `@Args()` gives the whitespace-split arguments.
 - `@Payload()` gives the raw remainder — handy for deep links like
@@ -38,6 +42,7 @@ The main event is always positional and typed. Parameter decorators are for
 **derived or cross-cutting** values — things you *could* read off the event
 but want named directly:
 
+:::code[whoami.router.ts]
 ```ts
 import { Router, Command, Sender, Chat, User } from 'nestgram';
 import type { Chat as TgChat } from 'nestgram';
@@ -50,6 +55,7 @@ export class WhoAmIRouter {
   }
 }
 ```
+:::
 
 | Decorator         | Gives you                                  |
 | ----------------- | ------------------------------------------ |
@@ -60,10 +66,11 @@ export class WhoAmIRouter {
 | `@CallbackData()` | a callback query's `data` string           |
 | `@Session()`      | the current session object                 |
 
-> [!NOTE]
-> These never collide with type names — `@Sender()` is a decorator, `User` is
-> a type, and you can import both. That collision is exactly what we avoid by
-> keeping the main event positional.
+:::note
+These never collide with type names — `@Sender()` is a decorator, `User` is
+a type, and you can import both. That collision is exactly what we avoid by
+keeping the main event positional.
+:::
 
 ## Inline keyboards
 
@@ -71,6 +78,7 @@ Build keyboards with a chainable builder and pass them through the normal
 `reply_markup` option — the options bag mirrors the Telegram API, so
 everything autocompletes.
 
+:::code[menu.router.ts]
 ```ts
 import { Router, Command, Message, InlineKeyboard } from 'nestgram';
 
@@ -88,6 +96,7 @@ export class MenuRouter {
   }
 }
 ```
+:::
 
 `.row()` starts a new row; consecutive calls share the current one. Handling
 the `buy:1` press is the next page,
@@ -97,6 +106,7 @@ the `buy:1` press is the next page,
 
 Same builder shape, for the custom keyboard under the input field:
 
+:::code[menu.router.ts]
 ```ts
 import { ReplyKeyboard } from 'nestgram';
 
@@ -110,6 +120,7 @@ const keyboard = new ReplyKeyboard()
 
 return message.answer('Menu:', { reply_markup: keyboard });
 ```
+:::
 
 `.resize()` and `.oneTime()` map to the Telegram `resize_keyboard` and
 `one_time_keyboard` flags — named for discoverability, but the underlying

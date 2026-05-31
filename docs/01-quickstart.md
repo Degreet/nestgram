@@ -1,6 +1,9 @@
 ---
 title: Quickstart
 description: Install Nestgram and run a working echo bot in a few minutes.
+sidebar:
+  group: Getting started
+  order: 1
 ---
 
 In Nestgram a **router is a controller**. If you've written a Nest HTTP
@@ -8,18 +11,9 @@ controller, you already know the shape — you're just pointing it at Telegram
 updates instead of routes. By the end of this page you'll have a running bot
 that greets users on `/start` and echoes everything else back.
 
-<div class="mental not-content">
-  <div class="mm-label">Mental model</div>
-  <div class="mm-flow">
-    <span class="mm-box">Telegram update</span>
-    <span class="mm-arrow">→</span>
-    <span class="mm-box mm-accent">@Router() controller</span>
-    <span class="mm-arrow">→</span>
-    <span class="mm-box">handler</span>
-    <span class="mm-arrow">→</span>
-    <span class="mm-box">reply</span>
-  </div>
-</div>
+:::mental
+Telegram update -> @Router() controller* -> handler -> reply
+:::
 
 ## Install
 
@@ -35,7 +29,8 @@ standard Nest project already has what it needs.
 Write a class, decorate it with `@Router()`, and bind methods to update
 types. Whatever a handler returns is sent back to the chat.
 
-```ts title="greet.router.ts" {6}
+:::code[greet.router.ts]{mark="6"}
+```ts
 import { Router, Command, OnMessage, Message } from 'nestgram';
 
 @Router()
@@ -51,14 +46,15 @@ export class GreetRouter {
   }
 }
 ```
+:::
 
 A few things to notice:
 
-<div class="anno not-content">
-  <div class="ai"><span class="n">1</span><p>The handler receives a <strong>typed <code>Message</code></strong> as its first argument — no decorator, no guessing what's on it. You named the type, so you know exactly what arrived.</p></div>
-  <div class="ai"><span class="n">2</span><p><code>@Command('start')</code> matches the <code>/start</code> command; <code>@OnMessage()</code> matches any message. Nestgram tries handlers in order and runs the first match.</p></div>
-  <div class="ai"><span class="n">3</span><p>Returning a <code>string</code> sends it as a reply — sugar over <code>message.answer(text)</code>, which you can call directly when you need options.</p></div>
-</div>
+:::anno
+1. The handler receives a **typed `Message`** as its first argument — no decorator, no guessing what's on it. You named the type, so you know exactly what arrived.
+2. `@Command('start')` matches the `/start` command; `@OnMessage()` matches any message. Nestgram tries handlers in order and runs the first match.
+3. Returning a `string` sends it as a reply — sugar over `message.answer(text)`, which you can call directly when you need options.
+:::
 
 :::tip
 Most handlers stay one line. When you need more control, return a command
@@ -71,7 +67,8 @@ object (`return new SendMessage(...)`) or call an action on the event
 Routers are plain Nest providers. List them in `providers` and Nestgram
 discovers them automatically — there's no separate registry to maintain.
 
-```ts title="app.module.ts" {10}
+:::code[app.module.ts]{mark="10"}
+```ts
 import { Module } from '@nestjs/common';
 import { NestgramModule } from 'nestgram';
 import { GreetRouter } from './greet.router';
@@ -87,18 +84,17 @@ import { GreetRouter } from './greet.router';
 })
 export class AppModule {}
 ```
+:::
 
 `NestgramModule.forRoot()` configures the bot itself (token, transport). It
 does **not** take a list of routers — discovery handles that, so adding a
 router never means editing two places.
 
-<div class="guardrail not-content">
-  <span class="gr-ico">⚠</span>
-  <div class="gr-body">
-    <span class="gr-label">GUARDRAIL · only in Nestgram</span>
-    If you set a webhook without a <b>secret_token</b>, Nestgram logs a startup warning — anyone who learns your URL could spoof updates. Most wrappers stay silent. We don't.
-  </div>
-</div>
+:::guardrail[only in Nestgram]
+If you set a webhook without a **secret_token**, Nestgram logs a startup
+warning — anyone who learns your URL could spoof updates. Most wrappers stay
+silent. We don't.
+:::
 
 :::note
 Need config from a service or `ConfigModule`? Use
@@ -111,7 +107,8 @@ Nest dynamic modules.
 A Nestgram bot is a standard Nest application context — no HTTP server
 required for polling.
 
-```ts title="main.ts"
+:::code[main.ts]
+```ts
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
@@ -122,6 +119,7 @@ async function bootstrap() {
 
 bootstrap();
 ```
+:::
 
 `enableShutdownHooks()` lets Nestgram stop polling cleanly on shutdown
 instead of dropping mid-flight updates.
@@ -131,22 +129,15 @@ instead of dropping mid-flight updates.
 The same router runs unchanged in development (long polling) and production
 (webhook). You switch the transport, not your code.
 
-<div class="ng-tabs not-content">
-<input type="radio" name="run" id="run-poll" checked />
-<input type="radio" name="run" id="run-hook" />
-<div class="ng-tablist"><label for="run-poll">polling · dev</label><label for="run-hook">webhook · prod</label></div>
-<div class="ng-tab tab-1">
-
+:::tabs{name="run"}
+::tab[polling · dev]
 ```ts
 NestgramModule.forRoot({
   token: process.env.BOT_TOKEN,
   polling: true, // dev: long polling
 });
 ```
-
-</div>
-<div class="ng-tab tab-2">
-
+::tab[webhook · prod]
 ```ts
 NestgramModule.forRoot({
   token: process.env.BOT_TOKEN,
@@ -156,9 +147,7 @@ NestgramModule.forRoot({
   },
 });
 ```
-
-</div>
-</div>
+:::
 
 Then start it:
 
@@ -169,6 +158,12 @@ BOT_TOKEN=123456:your-token-here node dist/main.js
 On startup Nestgram calls `getMe` as a health check and logs the bot it
 connected as. Message your bot `/start` and then anything else — you'll get
 a greeting and an echo.
+
+:::warn[Nestgram warning]
+[WebhookModule] You set a webhook with no **secret_token**.
+Anyone who learns your URL can spoof updates.
+> pass `secretToken` to `setWebhook()`
+:::
 
 :::caution[Heading to production?]
 Polling is great for development. For production you'll switch to a webhook —
