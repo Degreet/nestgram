@@ -3,6 +3,9 @@
 /node_modules
 /nestgram-2.0.0-alpha.0.tgz
 
+# Stray local runtime data (not part of this project — external tool artifact)
+/data
+
 # Logs
 logs
 *.log
