@@ -449,10 +449,67 @@ body {
 
 /* code island */
 .code-island {
+  position: relative;
   margin: 1.6rem 0;
   border-radius: 13px;
   overflow: hidden;
   background: #080a0f;
+}
+/* wrapper the copy-button script adds around a bare Shiki <pre> */
+.code-island.is-plain {
+  background: transparent;
+}
+
+/* ---- copy button (hover-reveal, top-right of any code block) ---- */
+.code-copy {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1;
+  color: var(--muted);
+  background: rgba(8, 10, 15, 0.86);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, border-color 0.15s;
+  backdrop-filter: blur(4px);
+}
+.code-island:hover .code-copy,
+.code-copy:focus-visible {
+  opacity: 1;
+}
+.code-copy:hover {
+  color: var(--text);
+  border-color: var(--text-2);
+}
+.code-copy__ico {
+  display: inline-flex;
+}
+.code-copy__ico--done {
+  display: none;
+  color: #8ee6a8;
+}
+.code-copy.is-copied {
+  color: #8ee6a8;
+  border-color: color-mix(in oklab, #8ee6a8 55%, var(--border));
+}
+.code-copy.is-copied .code-copy__ico--copy {
+  display: none;
+}
+.code-copy.is-copied .code-copy__ico--done {
+  display: inline-flex;
+}
+/* keep the button clear of the filename when chrome is present */
+.code-island .ci-bar {
+  padding-right: 92px;
 }
 .code-island.is-framed {
   border: 1px solid var(--border-strong);
