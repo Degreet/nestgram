@@ -28,6 +28,10 @@ just another Nest app, with the full Nest pipeline.*
 - [ ] Parameter decorators: `@Sender()`, `@Args()`, `@Payload()`,
       `@CallbackData()`
 - [ ] Guards, interceptors and exception filters via `ExternalContextCreator`
+- [ ] No privileged core: built-in behaviours (e.g. auto-answer) implemented
+      as the same public guards/interceptors a user can write
+- [ ] Configurable defaults, all toggleable: default `parseMode`, auto-answer
+      callback queries
 - [ ] `return string` → reply
 - [ ] Keyboard builders (inline + reply)
 - [ ] Production baseline: token validation, `getMe` health check, graceful
@@ -45,6 +49,10 @@ Everything needed to ship a production bot.
 - [ ] Webhook source: a Nest controller + secret-token validation
 - [ ] Pipes + `class-validator` DTOs for payloads
 - [ ] Sessions (in-memory + Redis stores), `@Session()`
+- [ ] Typed callback-data factory (`pack` / `filter` / typed `parse`) — kills
+      the magic-string triad of literal + regex + `split`
+- [ ] i18n via `AsyncLocalStorage` (`nestjs-cls`): ambient `t()` / locale,
+      explicit pass-through across worker/queue boundaries
 - [ ] Type + method **code generation** from a community spec
 - [ ] Full update-type coverage
 - [ ] Send throttler (global 30/s, 1/s per chat, `429 retry_after`)

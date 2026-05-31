@@ -158,6 +158,75 @@ A framework for bots "under load" must ship the boring-but-critical pieces:
 - Graceful shutdown and a startup health check (`getMe`).
 - Update processing that isolates failures.
 
+## Configurable defaults, all toggleable
+
+A framework for real projects must let you set sane defaults once and forget
+them — and turn any of them off. Defaults are configured on the module and
+overridable per call or per handler:
+
+- **Default parse mode** — set `parseMode: 'HTML'` once; every send inherits
+  it unless a call overrides it. Pass nothing / `undefined` to opt a call out.
+- **Auto-answer callback queries** — if a callback handler finishes without
+  manually answering, the framework calls `query.answer()` for you so the
+  button never spins. On a thrown error the exception filter decides instead.
+  Disable globally or per handler.
+
+The rule: every convenience is opt-out, never mandatory.
+
+## Flexibility: no privileged core
+
+Nestgram's own behaviours are built on the **same public extension points it
+gives you** — guards, interceptors, pipes, exception filters, the pluggable
+update source. Auto-answer is just an interceptor. Default parse mode is just
+a send-pipeline hook. Nothing the framework does is off-limits or magic you
+can't reach.
+
+The practical promise: if a feature doesn't exist, you can write it yourself
+at the same level the framework would, and drop it in. If a built-in doesn't
+fit, you can replace it. A developer building on Nestgram can extend or
+re-implement any behaviour mid-project without forking us. The engine
+(discovery, context creation, update source) is what you configure; every
+behaviour on top of it is a plugin you own.
+
+## Typed callback data — no magic strings
+
+Callback data is where magic strings breed: you write `buy:` when building a
+button, a `/^buy:(\d+)$/` regex to match it, and a `split(':')` to parse it —
+three places to drift. Nestgram provides a typed callback-data factory that
+collapses all three into one definition:
+
+```ts
+const Buy = callbackData('buy', { productId: Number });
+
+new InlineKeyboard().text('Buy', Buy.pack({ productId: 42 })); // build
+@Action(Buy.filter())                                          // match
+buy(query: CallbackQuery, @Data() data: { productId: number }) {} // typed parse
+```
+
+No literal separators, no hand-written regex, no positional `split` indexing.
+The same idea is encouraged everywhere user-facing strings carry structure.
+
+## Readable handlers over clever ones
+
+Examples and APIs favour code a reader understands at a glance: destructuring
+over positional indexing (`const [, id] = data.split(':')`, never
+`data.split(':')[1]`), named helpers over inline magic, no unexplained `:`/`_`
+separators. The typed callback-data factory above is the preferred way to
+avoid the magic entirely.
+
+## i18n via ambient context (AsyncLocalStorage)
+
+Locale resolution must not thread a `lang` argument through every function.
+Nestgram establishes an ambient per-update context using `AsyncLocalStorage`
+(via `nestjs-cls`, so guards/interceptors/services share it), seeded once when
+an update starts processing. A `t()` translator and the current locale are
+reachable anywhere in the call stack for that update.
+
+Honest caveat baked into the design: `AsyncLocalStorage` is in-process. Work
+offloaded to a separate worker/queue (e.g. BullMQ) crosses a process boundary
+and must carry the locale explicitly — the framework passes it through rather
+than pretending the ambient store survives.
+
 ## Non-goals
 
 - Not a wrapper over `telegraf`/`grammY`.
