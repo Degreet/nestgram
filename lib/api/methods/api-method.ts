@@ -1,7 +1,7 @@
 import { ApiException } from '../../exceptions';
 
 import { ApiError, ApiResponse } from '../api-response';
-import { FormDataBuilder } from '../../utils/FormDataBuilder';
+import { FormDataBuilder } from '../../utils/form-data-builder';
 
 export interface ApiMethod<T, R> {
   interceptor?(object: R): R;
