@@ -1,4 +1,4 @@
-import { ApiMethod } from './ApiMethod';
+import { ApiMethod } from './api-method';
 import { Message } from '../../telegramObjects';
 import { BotService } from '../bot.service';
 
