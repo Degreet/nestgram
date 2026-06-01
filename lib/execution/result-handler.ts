@@ -2,11 +2,19 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { TelegramExecutionContext } from '../context/telegram-execution-context';
 import { TelegramEvent } from '../context/event-factory';
-import { isCommand } from './command.types';
 
 /** An event that can reply to itself (e.g. `Message.answer`). */
 interface Answerable {
   answer(text: string): Promise<unknown>;
+}
+
+/**
+ * A command object the handler can return to be executed (the underlying layer
+ * beneath `message.answer(...)` sugar). `SendMessage`/`SendPhoto`/... satisfy it
+ * by extending `ApiMethod` and exposing `.fetch()`.
+ */
+interface Command {
+  fetch(): Promise<unknown>;
 }
 
 /**
@@ -39,7 +47,7 @@ export class ResultHandler {
       return;
     }
 
-    if (isCommand(result)) {
+    if (this.isCommand(result)) {
       await result.fetch();
     }
   }
@@ -48,5 +56,19 @@ export class ResultHandler {
     event: TelegramEvent,
   ): event is TelegramEvent & Answerable {
     return typeof (event as Answerable).answer === 'function';
+  }
+
+  /**
+   * Structural check on `fetch` (the loose, duck-typed variant): a plain object
+   * a handler returns will not have it. The tight `instanceof ApiMethod` variant
+   * is avoided because `ApiMethod` is an abstract class merged with a same-named
+   * interface, which does not import cleanly as a value.
+   */
+  private isCommand(value: unknown): value is Command {
+    return (
+      typeof value === 'object' &&
+      value !== null &&
+      typeof (value as Command).fetch === 'function'
+    );
   }
 }
