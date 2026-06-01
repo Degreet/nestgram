@@ -1,7 +1,7 @@
 import { ApiException } from '../../exceptions';
 
 import { ApiError, ApiResponse } from '../api-response';
-import { FormDataBuilder } from '../../utils/form-data-builder';
+import { createAttachedData, createInlineData } from '../form-data';
 
 export interface ApiMethod<T, R> {
   interceptor?(object: R): R;
@@ -23,14 +23,15 @@ export abstract class ApiMethod<T, R> {
   }
 
   private async createFormDataPayload(): Promise<RequestInit> {
+    const options = (this.options ?? {}) as Record<string, unknown>;
     return {
       method: 'POST',
       headers: {
         connection: 'keep-alive',
       },
       body: this.isAttachMedia
-        ? await FormDataBuilder.createAttachedData(this.options ?? {})
-        : await FormDataBuilder.createInlineData(this.options ?? {}),
+        ? await createAttachedData(options)
+        : await createInlineData(options),
     };
   }
 
