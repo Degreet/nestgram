@@ -1,4 +1,4 @@
-import { HearsPredicate, RoutePredicate } from '../../matching';
+import { HearsPredicate, RoutePredicate } from '../../engine/matching';
 import { createListenerDecorator } from './create-listener-decorator';
 
 const UPDATE_TYPE = 'message';

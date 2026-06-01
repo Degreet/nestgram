@@ -1,4 +1,4 @@
-import { RoutePredicate } from '../matching';
+import { RoutePredicate } from '../engine/matching';
 
 export interface ListenerOptions {
   updateType: string;

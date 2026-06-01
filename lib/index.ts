@@ -9,10 +9,10 @@ export * from './telegramObjects';
 
 // Engine public surface (the new pipeline; the legacy dispatcher/executor was
 // removed at cutover).
-export * from './matching';
-export * from './context';
-export * from './discovery';
-export * from './execution';
-export * from './runtime';
-export * from './source';
+export * from './engine/matching';
+export * from './engine/context';
+export * from './engine/discovery';
+export * from './engine/execution';
+export * from './engine/dispatcher';
+export * from './engine/source';
 export * from './module';

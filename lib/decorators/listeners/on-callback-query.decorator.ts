@@ -1,4 +1,4 @@
-import { ActionPredicate, RoutePredicate } from '../../matching';
+import { ActionPredicate, RoutePredicate } from '../../engine/matching';
 import { createListenerDecorator } from './create-listener-decorator';
 
 const UPDATE_TYPE = 'callback_query';

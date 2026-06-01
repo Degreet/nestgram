@@ -4,8 +4,8 @@ import {
   MetadataScanner,
 } from '@nestjs/core';
 
-import { Metadata } from '../enums';
-import { ListenerOptions } from '../types';
+import { Metadata } from '../../enums';
+import { ListenerOptions } from '../../types';
 import { Route } from './route.types';
 
 /**

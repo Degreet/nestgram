@@ -1,7 +1,7 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
-import { TelegramExecutionContext } from '../../context';
-import { extractChat } from '../../execution';
+import { TelegramExecutionContext } from '../../engine/context';
+import { extractChat } from '../../engine/execution';
 
 /** Injects the chat the update happened in (absent for inline-only queries). */
 export const Chat = createParamDecorator(

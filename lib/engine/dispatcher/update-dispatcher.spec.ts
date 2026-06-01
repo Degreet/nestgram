@@ -3,8 +3,8 @@ import { HandlerExecutorFactory, ResultHandler } from '../execution';
 import { RouteMatcher, RouteTable } from '../discovery';
 import { Route } from '../discovery/route.types';
 import { RoutePredicate } from '../matching';
-import { RawUpdate } from '../types/raw-update.types';
-import { BotService } from '../bot';
+import { RawUpdate } from '../../types/raw-update.types';
+import { BotService } from '../../bot';
 import { UpdateDispatcher } from './update-dispatcher';
 
 function fakeBot(): BotService {

@@ -1,4 +1,4 @@
-import { RoutePredicate } from '../../matching';
+import { RoutePredicate } from '../../engine/matching';
 import { ListenerOptions } from '../../types';
 import { Metadata } from '../../enums';
 

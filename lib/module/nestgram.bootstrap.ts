@@ -7,10 +7,10 @@ import {
 } from '@nestjs/common';
 
 import { BotService } from '../bot';
-import { RouteExplorer, RouteTable } from '../discovery';
+import { RouteExplorer, RouteTable } from '../engine/discovery';
 import { Providers } from '../enums';
-import { UpdateDispatcher } from '../runtime';
-import { PollingUpdateSource, UpdateSource } from '../source';
+import { UpdateDispatcher } from '../engine/dispatcher';
+import { PollingUpdateSource, UpdateSource } from '../engine/source';
 import { NestgramModuleOptions } from './nestgram-module.types';
 
 /**

@@ -1,6 +1,6 @@
 import { TelegramExecutionContext } from '../context/telegram-execution-context';
-import { User } from '../types/User';
-import { RawChat, RawMessage } from '../types/raw-update.types';
+import { User } from '../../types/User';
+import { RawChat, RawMessage } from '../../types/raw-update.types';
 
 /**
  * Pure derivations of cross-cutting values from a wrapped update.

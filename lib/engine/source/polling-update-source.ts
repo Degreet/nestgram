@@ -1,8 +1,8 @@
 import { Logger } from '@nestjs/common';
 
-import { BotService } from '../bot';
-import { GetUpdates } from '../methods';
-import { RawUpdate } from '../types/raw-update.types';
+import { BotService } from '../../bot';
+import { GetUpdates } from '../../methods';
+import { RawUpdate } from '../../types/raw-update.types';
 import {
   DEFAULT_POLLING_BACKOFF_MS,
   DEFAULT_POLLING_IDLE_MS,

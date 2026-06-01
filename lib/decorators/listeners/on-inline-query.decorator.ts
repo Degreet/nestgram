@@ -1,4 +1,4 @@
-import { RoutePredicate } from '../../matching';
+import { RoutePredicate } from '../../engine/matching';
 import { createListenerDecorator } from './create-listener-decorator';
 
 const UPDATE_TYPE = 'inline_query';

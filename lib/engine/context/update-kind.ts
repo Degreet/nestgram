@@ -1,4 +1,4 @@
-import { RawUpdate } from '../types/raw-update.types';
+import { RawUpdate } from '../../types/raw-update.types';
 
 /**
  * The set of update kinds the Phase 1 engine resolves and routes on.

@@ -1,6 +1,6 @@
 import { ModuleMetadata, Type } from '@nestjs/common';
 
-import { PollingOptions } from '../source';
+import { PollingOptions } from '../engine/source';
 
 /**
  * Options for `NestgramModule.forRoot`.

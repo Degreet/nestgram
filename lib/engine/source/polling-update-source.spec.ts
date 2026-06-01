@@ -1,5 +1,5 @@
-import { BotService } from '../bot';
-import { RawUpdate } from '../types/raw-update.types';
+import { BotService } from '../../bot';
+import { RawUpdate } from '../../types/raw-update.types';
 import { BatchFetcher, PollingUpdateSource } from './polling-update-source';
 
 function fakeBot(): BotService {

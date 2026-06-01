@@ -1,10 +1,10 @@
-import { BotService } from '../bot';
+import { BotService } from '../../bot';
 import {
   ContextFactory,
   EventFactory,
   TelegramExecutionContext,
 } from '../context';
-import { RawUpdate } from '../types/raw-update.types';
+import { RawUpdate } from '../../types/raw-update.types';
 import {
   extractArgs,
   extractCallbackData,

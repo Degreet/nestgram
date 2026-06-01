@@ -7,7 +7,7 @@ import {
   ResultHandler,
 } from '../execution';
 import { Route, RouteMatcher, RouteTable } from '../discovery';
-import { RawUpdate } from '../types/raw-update.types';
+import { RawUpdate } from '../../types/raw-update.types';
 
 /**
  * Routes one update through the new engine, end to end:

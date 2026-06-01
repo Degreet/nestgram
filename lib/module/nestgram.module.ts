@@ -2,11 +2,11 @@ import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
 import { DiscoveryModule } from '@nestjs/core';
 
 import { BotModule } from '../bot';
-import { ContextFactory, EventFactory } from '../context';
-import { RouteExplorer, RouteMatcher, RouteTable } from '../discovery';
+import { ContextFactory, EventFactory } from '../engine/context';
+import { RouteExplorer, RouteMatcher, RouteTable } from '../engine/discovery';
 import { Providers } from '../enums';
-import { HandlerExecutorFactory, ResultHandler } from '../execution';
-import { UpdateDispatcher } from '../runtime';
+import { HandlerExecutorFactory, ResultHandler } from '../engine/execution';
+import { UpdateDispatcher } from '../engine/dispatcher';
 import { NestgramBootstrap } from './nestgram.bootstrap';
 import {
   NestgramModuleAsyncOptions,
