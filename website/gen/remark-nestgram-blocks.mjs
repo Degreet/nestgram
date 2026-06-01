@@ -157,9 +157,47 @@ function buildAside(kind, node) {
   const title = label || ASIDE_TITLES[kind];
   asElement(node, 'aside', { className: ['ng-aside', `ng-aside--${kind}`, 'not-content'] });
   return setChildren(node, [
-    el('p', { className: ['ng-aside__title'] }, [text(title)]),
+    el('p', { className: ['ng-aside__title'] }, [
+      el('span', { className: ['ng-aside__ico'] }, [asideIcon(kind)]),
+      text(title),
+    ]),
     el('div', { className: ['ng-aside__body'] }, rest),
   ]);
+}
+
+// The info icon from the design mockup (circle + "i"). `stroke: currentColor`
+// so it inherits the callout's colour.
+function infoIcon() {
+  return el(
+    'svg',
+    {
+      className: ['wicon'],
+      viewBox: '0 0 24 24',
+      fill: 'none',
+      'aria-hidden': 'true',
+    },
+    [
+      el('circle', {
+        cx: '12',
+        cy: '12',
+        r: '9',
+        stroke: 'currentColor',
+        strokeWidth: '1.5',
+      }),
+      el('path', {
+        d: 'M12 11v5M12 8h.01',
+        stroke: 'currentColor',
+        strokeWidth: '1.7',
+        strokeLinecap: 'round',
+      }),
+    ],
+  );
+}
+
+// Per-kind callout icon: note/tip carry the info mark, caution/warning the
+// shield. Keeps every callout on one visual pattern (icon + title + body).
+function asideIcon(kind) {
+  return kind === 'caution' || kind === 'warning' ? warnIcon() : infoIcon();
 }
 
 // The shield warning icon from the design mockup. `stroke: currentColor` so it

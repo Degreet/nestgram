@@ -531,11 +531,22 @@ body {
   margin: 1.8rem 0;
 }
 .ng-aside__title {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   margin: 0 0 0.5rem;
   font-family: var(--font-mono);
   font-size: 0.78rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+.ng-aside__ico {
+  flex: none;
+  display: flex;
+}
+.ng-aside__ico .wicon {
+  width: 16px;
+  height: 16px;
 }
 .ng-aside__body {
   color: var(--text-2);
