@@ -100,8 +100,3 @@ paginate(query: CallbackQuery, @Match() match: RegExpMatchArray) {
 
 `editText` edits the text (and optionally the markup); there's also
 `editReplyMarkup` when you only want to change the buttons.
-
-## Next
-
-Your bot is interactive. Now lock it down with
-[guards & the Nest pipeline →](/docs/guards-and-pipeline)

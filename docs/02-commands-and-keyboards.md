@@ -132,7 +132,3 @@ markup is exactly what the API expects.
 - `message.reply(text)` sends it as a Telegram reply (quoting the original).
 
 Both accept the full set of `SendMessage` options as a second argument.
-
-## Next
-
-Time to handle button presses: [Callbacks →](/docs/callbacks)
