@@ -1,4 +1,4 @@
-import { TelegramObject } from './TelegramObject';
+import { TelegramObject } from './telegram-object';
 import { BotService } from '../api';
 import {
   SendMediaGroupOptions,

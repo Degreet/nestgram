@@ -1,5 +1,5 @@
 import { ApiMethod } from './api-method';
-import { Message } from '../../telegramObjects';
+import { Message } from '../../events';
 import { BotService } from '../bot.service';
 import { InputFile } from '../../types';
 import {

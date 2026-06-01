@@ -39,7 +39,7 @@
 
 import { BotService } from '../api';
 import { ContextFactory, EventFactory, resolveKind } from '../engine/context';
-import { Message } from '../telegramObjects';
+import { Message } from '../events';
 import { RawUpdate } from '../types/raw-update.types';
 
 /** Build a ContextFactory with a stub BotService (no network is touched). */

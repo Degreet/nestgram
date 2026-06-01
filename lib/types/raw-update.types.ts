@@ -2,7 +2,7 @@ import { User } from './User';
 
 /**
  * Raw Telegram Bot API payload types — the wire shape, distinct from the rich
- * event classes in `lib/telegramObjects`.
+ * event classes in `lib/events`.
  *
  * These intentionally do NOT carry the `_updateType` / `_telegramObject`
  * mutation fields of the legacy `lib/types/Update.ts` interface: the new engine

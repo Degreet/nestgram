@@ -1,4 +1,4 @@
-import { Message, CallbackQuery } from '../telegramObjects';
+import { Message, CallbackQuery } from '../events';
 
 export interface Update {
   update_id: number;

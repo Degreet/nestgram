@@ -1,5 +1,5 @@
 import { Constructor } from '@nestjs/common/utils/merge-with-values.util';
-import { TelegramObject } from '../../telegramObjects';
+import { TelegramObject } from '../../events';
 
 const TELEGRAM_OBJECT_REGISTRY = new Map<string, Constructor<TelegramObject>>();
 

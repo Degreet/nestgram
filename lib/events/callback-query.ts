@@ -1,7 +1,7 @@
-import { Message } from './Message';
+import { Message } from './message';
 import { BotService } from '../api';
 import { AnswerCallbackQueryOptions } from '../api/methods';
-import { TelegramObject } from './TelegramObject';
+import { TelegramObject } from './telegram-object';
 import { UpdateType } from '../decorators';
 
 @UpdateType('callback_query')

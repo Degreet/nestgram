@@ -9,7 +9,7 @@ import { matchesPattern, toStatelessPattern } from './pattern';
  *   - RegExp   -> `pattern.test(data)`
  *
  * Reads the raw `callback_query.data` off the update, so it needs no rich-event
- * import (which would pull `telegramObjects` -> `decorators` into a cycle).
+ * import (which would pull `events` -> `decorators` into a cycle).
  */
 export class ActionPredicate implements RoutePredicate {
   private readonly data?: string | RegExp;

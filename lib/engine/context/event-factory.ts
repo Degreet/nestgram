@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { BotService } from '../../api';
-import { TelegramObject } from '../../telegramObjects';
+import { TelegramObject } from '../../events';
 import { getTelegramObjectByUpdateType } from '../../decorators';
 import { RawUpdate } from '../../types/raw-update.types';
 import { UpdateKind } from './update-kind';
