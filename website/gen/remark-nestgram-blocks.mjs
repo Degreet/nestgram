@@ -162,29 +162,30 @@ function buildAside(kind, node) {
   ]);
 }
 
-// A crisp warning triangle (rounded corners + exclamation) replacing the
-// stock (warn) glyph. Inherits colour from `.warnbox .wlabel`.
+// The shield warning icon from the design mockup. `stroke: currentColor` so it
+// inherits the amber colour from `.warnbox .wlabel` / `.guardrail .gr-ico`.
 function warnIcon() {
   return el(
     'svg',
     {
       className: ['wicon'],
       viewBox: '0 0 24 24',
-      width: '15',
-      height: '15',
       fill: 'none',
-      stroke: 'currentColor',
-      strokeWidth: '2',
-      strokeLinecap: 'round',
-      strokeLinejoin: 'round',
       'aria-hidden': 'true',
     },
     [
       el('path', {
-        d: 'M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z',
+        d: 'M12 3l8 4v6c0 4.6-3.3 7.2-8 8-4.7-.8-8-3.4-8-8V7l8-4z',
+        stroke: 'currentColor',
+        strokeWidth: '1.5',
+        strokeLinejoin: 'round',
       }),
-      el('line', { x1: '12', y1: '9', x2: '12', y2: '13' }),
-      el('line', { x1: '12', y1: '17', x2: '12.01', y2: '17' }),
+      el('path', {
+        d: 'M12 8v4.5M12 16h.01',
+        stroke: 'currentColor',
+        strokeWidth: '1.6',
+        strokeLinecap: 'round',
+      }),
     ],
   );
 }

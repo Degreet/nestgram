@@ -436,7 +436,7 @@ body {
 .guardrail .gr-ico {
   flex: none;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   color: #ffcb7a;
 }
 .guardrail .gr-ico .wicon {
@@ -482,7 +482,7 @@ body {
 }
 .warnbox .wlabel {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   color: #ffcb7a;
   font-size: 12.5px;
