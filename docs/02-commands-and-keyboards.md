@@ -3,8 +3,8 @@ title: Commands, parameters & keyboards
 description: Parse commands, pull values with parameter decorators, and build inline and reply keyboards.
 sidebar:
   label: Commands & keyboards
-  group: Routing
-  order: 10
+  group: Keyboards
+  order: 50
 ---
 
 Now that updates reach your router, let's make handlers expressive: parse

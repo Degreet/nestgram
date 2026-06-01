@@ -4,7 +4,7 @@ description: Restrict handlers with a standard Nest guard, and understand why th
 sidebar:
   label: Guards & pipeline
   group: The Nest pipeline
-  order: 40
+  order: 60
 ---
 
 This is the page that explains *why* Nestgram is a framework and not a

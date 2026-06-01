@@ -3,7 +3,7 @@ title: Quickstart
 description: Install Nestgram and run a working echo bot in a few minutes.
 sidebar:
   group: Getting started
-  order: 4
+  order: 10
 ---
 
 In Nestgram a **router is a controller**. If you've written a Nest HTTP
