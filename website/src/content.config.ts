@@ -8,7 +8,7 @@ import { glob } from 'astro/loaders';
 // Sidebar grouping/order comes from each file's own frontmatter (no central
 // sidebar.ts to drift): `sidebar: { label, group, order }`.
 const docs = defineCollection({
-  loader: glob({ pattern: '**/[0-9]*.md', base: '../docs' }),
+  loader: glob({ pattern: ['**/*.md', '!**/README.md'], base: '../docs' }),
   schema: z.object({
     title: z.string(),
     description: z.string().optional(),

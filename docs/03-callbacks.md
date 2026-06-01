@@ -2,8 +2,8 @@
 title: Callbacks
 description: Handle inline button presses with @Action, edit messages, and answer callback queries.
 sidebar:
-  group: Guides
-  order: 3
+  group: Events & replies
+  order: 20
 ---
 
 When a user taps an inline button, Telegram sends a **callback query** with

@@ -3,8 +3,8 @@ title: Guards & the Nest pipeline
 description: Restrict handlers with a standard Nest guard, and understand why the full Nest pipeline works unchanged.
 sidebar:
   label: Guards & pipeline
-  group: Guides
-  order: 4
+  group: The Nest pipeline
+  order: 40
 ---
 
 This is the page that explains *why* Nestgram is a framework and not a
