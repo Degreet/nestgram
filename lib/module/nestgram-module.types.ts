@@ -1,3 +1,5 @@
+import { ModuleMetadata, Type } from '@nestjs/common';
+
 import { PollingOptions } from '../source';
 
 /**
@@ -16,4 +18,25 @@ export interface NestgramModuleOptions {
    * later phase via its own update source.
    */
   polling?: boolean | PollingOptions;
+}
+
+/** A class that can produce `NestgramModuleOptions` (for `useClass`/`useExisting`). */
+export interface NestgramOptionsFactory {
+  createNestgramOptions():
+    | Promise<NestgramModuleOptions>
+    | NestgramModuleOptions;
+}
+
+/**
+ * Options for `NestgramModule.forRootAsync` — resolve the config from DI (e.g.
+ * the token from `ConfigService`) instead of passing it literally.
+ */
+export interface NestgramModuleAsyncOptions
+  extends Pick<ModuleMetadata, 'imports'> {
+  inject?: any[];
+  useExisting?: Type<NestgramOptionsFactory>;
+  useClass?: Type<NestgramOptionsFactory>;
+  useFactory?: (
+    ...args: any[]
+  ) => Promise<NestgramModuleOptions> | NestgramModuleOptions;
 }

@@ -6,7 +6,7 @@ import {
   HandlerInvoker,
   ResultHandler,
 } from '../execution';
-import { findMatches, Route, RouteTable } from '../discovery';
+import { Route, RouteMatcher, RouteTable } from '../discovery';
 import { RawUpdate } from '../types/raw-update.types';
 
 /**
@@ -34,6 +34,7 @@ export class UpdateDispatcher {
   constructor(
     private readonly contextFactory: ContextFactory,
     private readonly routeTable: RouteTable,
+    private readonly routeMatcher: RouteMatcher,
     private readonly executorFactory: HandlerExecutorFactory,
     private readonly resultHandler: ResultHandler,
   ) {}
@@ -45,7 +46,7 @@ export class UpdateDispatcher {
         return;
       }
 
-      const [route] = await findMatches(this.routeTable, ctx);
+      const [route] = await this.routeMatcher.findMatches(this.routeTable, ctx);
       if (!route) {
         return;
       }

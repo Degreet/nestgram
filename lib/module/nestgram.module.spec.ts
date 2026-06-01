@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { Injectable, Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
+import { BotService } from '../bot';
 import { Event } from '../decorators/params/event.decorator';
 import { OnMessage } from '../decorators/listeners/on-message.decorator';
 import { Router } from '../decorators/injectable/router.decorator';
@@ -73,6 +74,43 @@ describe('NestgramModule (integration)', () => {
 
     // The only place GreetRouter is named is the providers array; forRoot got
     // no routers list, yet the route table still found it.
+    expect(app.get(RouteTable).size).toBe(1);
+
+    await app.close();
+  });
+});
+
+// A ConfigService stand-in: the realistic forRootAsync case where the token
+// comes from injected config rather than a literal.
+@Injectable()
+class FakeConfig {
+  readonly token = 'ASYNC_TOKEN';
+}
+
+@Module({ providers: [FakeConfig], exports: [FakeConfig] })
+class FakeConfigModule {}
+
+@Module({
+  imports: [
+    NestgramModule.forRootAsync({
+      imports: [FakeConfigModule],
+      inject: [FakeConfig],
+      useFactory: (config: FakeConfig) => ({ token: config.token }),
+    }),
+  ],
+  providers: [GreetRouter],
+})
+class AsyncAppModule {}
+
+describe('NestgramModule.forRootAsync (integration)', () => {
+  it('resolves options from DI and threads the token down to BotService', async () => {
+    const app = await NestFactory.createApplicationContext(AsyncAppModule, {
+      logger: false,
+    });
+
+    // Token resolved via the injected config factory reached the transport.
+    expect(app.get(BotService).token).toBe('ASYNC_TOKEN');
+    // Engine still wired: discovery built the route table.
     expect(app.get(RouteTable).size).toBe(1);
 
     await app.close();

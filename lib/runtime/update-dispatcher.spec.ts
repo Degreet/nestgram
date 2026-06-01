@@ -1,6 +1,6 @@
 import { ContextFactory, EventFactory } from '../context';
 import { HandlerExecutorFactory, ResultHandler } from '../execution';
-import { RouteTable } from '../discovery';
+import { RouteMatcher, RouteTable } from '../discovery';
 import { Route } from '../discovery/route.types';
 import { NestgramFilter } from '../types';
 import { RawUpdate } from '../types/raw-update.types';
@@ -51,6 +51,7 @@ function makeDispatcher(routes: Route[]) {
   const dispatcher = new UpdateDispatcher(
     contextFactory,
     table,
+    new RouteMatcher(),
     executorFactory,
     resultHandler,
   );
@@ -133,6 +134,7 @@ describe('UpdateDispatcher', () => {
     const dispatcher = new UpdateDispatcher(
       contextFactory,
       table,
+      new RouteMatcher(),
       executorFactory,
       resultHandler,
     );
@@ -164,6 +166,7 @@ describe('UpdateDispatcher', () => {
     const dispatcher = new UpdateDispatcher(
       contextFactory,
       table,
+      new RouteMatcher(),
       executorFactory,
       resultHandler,
     );
