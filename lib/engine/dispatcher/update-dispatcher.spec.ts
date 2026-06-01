@@ -3,7 +3,7 @@ import { HandlerExecutorFactory, ResultHandler } from '../execution';
 import { RouteMatcher, RouteTable } from '../discovery';
 import { Route } from '../discovery/route.types';
 import { RoutePredicate } from '../matching';
-import { RawUpdate } from '../../types/raw-update.types';
+import { RawUpdate } from '../../events/raw-update.types';
 import { BotService } from '../../api';
 import { UpdateDispatcher } from './update-dispatcher';
 

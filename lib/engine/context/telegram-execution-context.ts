@@ -1,8 +1,8 @@
 import { ExecutionContext } from '@nestjs/common';
 
 import { BotService } from '../../api';
-import { User } from '../../types/User';
-import { RawChat, RawUpdate } from '../../types/raw-update.types';
+import { User } from '../../events/user';
+import { RawChat, RawUpdate } from '../../events/raw-update.types';
 import { extractChat, extractSender } from '../execution/extractors';
 import { EventFactory, TelegramEvent } from './event-factory';
 import { UpdateKind } from './update-kind';

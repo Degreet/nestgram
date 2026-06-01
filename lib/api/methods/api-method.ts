@@ -1,6 +1,6 @@
 import { ApiException } from '../../exceptions';
 
-import { ApiError, ApiResponse } from '../../types';
+import { ApiError, ApiResponse } from '../api-response';
 import { FormDataBuilder } from '../../utils/FormDataBuilder';
 
 export interface ApiMethod<T, R> {

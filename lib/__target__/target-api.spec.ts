@@ -40,7 +40,7 @@
 import { BotService } from '../api';
 import { ContextFactory, EventFactory, resolveKind } from '../engine/context';
 import { Message } from '../events';
-import { RawUpdate } from '../types/raw-update.types';
+import { RawUpdate } from '../events/raw-update.types';
 
 /** Build a ContextFactory with a stub BotService (no network is touched). */
 function buildContextFactory(): ContextFactory {

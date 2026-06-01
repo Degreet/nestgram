@@ -4,7 +4,6 @@ export * from './decorators/params';
 export * from './enums';
 export * from './exceptions';
 export * from './api/methods';
-export * from './types';
 export * from './events';
 
 // Engine public surface (the new pipeline; the legacy dispatcher/executor was

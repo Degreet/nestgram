@@ -8,3 +8,4 @@ export * from './core';
 // methods -> types -> events -> decorators), leaving BotService
 // `undefined` at decoration time. Params are public API via the top-level
 // `lib/index.ts` instead.
+export * from './listener-options';

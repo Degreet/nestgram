@@ -1,4 +1,4 @@
-import { RawUpdate } from '../../types/raw-update.types';
+import { RawUpdate } from '../../events/raw-update.types';
 
 /** Called once per incoming update. May be async; the source awaits it. */
 export type UpdateListener = (update: RawUpdate) => void | Promise<void>;

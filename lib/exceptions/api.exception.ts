@@ -1,4 +1,4 @@
-import { ApiError, ResponseParameters } from '../types';
+import { ApiError, ResponseParameters } from '../api/api-response';
 
 export class ApiException extends Error {
   readonly name = 'ApiError';

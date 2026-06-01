@@ -1,13 +1,13 @@
 import { ApiMethod } from './api-method';
 import { Message } from '../../events';
 import { BotService } from '../bot.service';
-import { InputFile } from '../../types';
+import { InputFile } from '../input-file';
 import {
   InputMediaAudio,
   InputMediaDocument,
   InputMediaPhoto,
   InputMediaVideo,
-} from '../../types/InputMedia';
+} from '../input-media';
 
 export interface SendMediaGroupOptions {
   business_connection_id?: string;

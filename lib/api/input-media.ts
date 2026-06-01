@@ -1,4 +1,4 @@
-import { InputFile } from './InputFile';
+import { InputFile } from './input-file';
 
 export interface InputMediaAudio {
   type: 'audio';

@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { BotOptions, InputFile } from '../types';
+import { BotOptions } from './bot-options';
+import { InputFile } from './input-file';
 import { Providers } from '../enums';
 
 import {
@@ -23,7 +24,7 @@ import {
   InputMediaDocument,
   InputMediaPhoto,
   InputMediaVideo,
-} from '../types/InputMedia';
+} from './input-media';
 
 @Injectable()
 export class BotService {

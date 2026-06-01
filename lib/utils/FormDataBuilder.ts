@@ -1,4 +1,4 @@
-import { InputFile } from '../types';
+import { InputFile } from '../api/input-file';
 
 export class FormDataBuilder {
   static getFileId() {

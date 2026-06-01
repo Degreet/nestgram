@@ -4,7 +4,7 @@ import {
 } from '@nestjs/core';
 
 import { Metadata } from '../../enums';
-import { ListenerOptions } from '../../types';
+import { ListenerOptions } from '../../decorators/listener-options';
 import { RouteExplorer } from './route-explorer';
 import { RouteTable } from './route-table';
 

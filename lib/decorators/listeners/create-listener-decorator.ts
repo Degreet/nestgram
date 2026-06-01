@@ -1,5 +1,5 @@
 import { RoutePredicate } from '../../engine/matching';
-import { ListenerOptions } from '../../types';
+import { ListenerOptions } from '../listener-options';
 import { Metadata } from '../../enums';
 
 export const createListenerDecorator = (

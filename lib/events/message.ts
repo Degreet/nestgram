@@ -6,13 +6,13 @@ import {
   SendPhotoOptions,
 } from '../api/methods';
 import { UpdateType } from '../decorators';
-import { InputFile } from '../types';
+import { InputFile } from '../api/input-file';
 import {
   InputMediaAudio,
   InputMediaDocument,
   InputMediaPhoto,
   InputMediaVideo,
-} from '../types/InputMedia';
+} from '../api/input-media';
 
 @UpdateType(
   'message',

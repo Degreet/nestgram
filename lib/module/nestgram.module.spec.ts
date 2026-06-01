@@ -8,7 +8,7 @@ import { OnMessage } from '../decorators/listeners/on-message.decorator';
 import { Router } from '../decorators/injectable/router.decorator';
 import { RouteTable } from '../engine/discovery';
 import { UpdateDispatcher } from '../engine/dispatcher';
-import { RawUpdate } from '../types/raw-update.types';
+import { RawUpdate } from '../events/raw-update.types';
 import { NestgramModule } from './nestgram.module';
 
 /**

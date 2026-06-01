@@ -1,5 +1,5 @@
 import { ApiMethod } from './api-method';
-import { Update } from '../../types';
+import { Update } from '../update.types';
 import { BotService } from '../bot.service';
 
 export interface GetUpdatesOptions {

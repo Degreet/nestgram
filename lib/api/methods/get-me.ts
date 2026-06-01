@@ -1,6 +1,6 @@
 import { ApiMethod } from './api-method';
 
-import { User } from '../../types';
+import { User } from '../../events/user';
 import { BotService } from '../bot.service';
 
 export class GetMe extends ApiMethod<null, User> {

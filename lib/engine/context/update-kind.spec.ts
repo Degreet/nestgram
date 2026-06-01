@@ -1,5 +1,5 @@
 import { resolveKind } from './update-kind';
-import { RawUpdate } from '../../types/raw-update.types';
+import { RawUpdate } from '../../events/raw-update.types';
 
 describe('resolveKind', () => {
   it('resolves a message update', () => {

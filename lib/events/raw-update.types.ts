@@ -1,4 +1,4 @@
-import { User } from './User';
+import { User } from './user';
 
 /**
  * Raw Telegram Bot API payload types — the wire shape, distinct from the rich
