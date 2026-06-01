@@ -40,3 +40,8 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# Backlog tooling
+dev-debug.log
+.env
+# Task files are tracked in git (tasks.json + .backlog/tasks/) on purpose.
