@@ -1,6 +1,6 @@
-import { NestgramFilter } from './NestgramFilter';
+import { RoutePredicate } from '../matching';
 
 export interface ListenerOptions {
   updateType: string;
-  filters?: NestgramFilter[];
+  predicates?: RoutePredicate[];
 }

@@ -1,10 +1,10 @@
-import { NestgramFilter } from '../../types';
+import { RoutePredicate } from '../../matching';
 import { createListenerDecorator } from './create-listener-decorator';
 
 const UPDATE_TYPE = 'purchased_paid_media';
 
 export const OnPurchasedPaidMedia = (
-  ...filters: NestgramFilter[]
+  ...predicates: RoutePredicate[]
 ): MethodDecorator => {
-  return createListenerDecorator(UPDATE_TYPE, ...filters);
+  return createListenerDecorator(UPDATE_TYPE, ...predicates);
 };

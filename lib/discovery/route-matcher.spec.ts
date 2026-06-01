@@ -1,5 +1,5 @@
 import { TelegramExecutionContext } from '../context';
-import { NestgramFilter } from '../types';
+import { RoutePredicate } from '../matching';
 import { RouteMatcher } from './route-matcher';
 import { Route } from './route.types';
 import { RouteTable } from './route-table';
@@ -11,26 +11,26 @@ function ctxOf(kind: string, event: unknown = {}): TelegramExecutionContext {
 function route(
   updateType: string,
   methodName: string,
-  filters: NestgramFilter[] = [],
+  predicates: RoutePredicate[] = [],
 ): Route {
-  return { updateType, filters, instance: {}, methodName };
+  return { updateType, predicates, instance: {}, methodName };
 }
 
 function tableOf(...routes: Route[]): RouteTable {
   return new RouteTable(routes);
 }
 
-const allow: NestgramFilter = { canActivate: () => true };
-const deny: NestgramFilter = { canActivate: () => false };
-const allowAsync: NestgramFilter = {
-  canActivate: () => Promise.resolve(true),
+const allow: RoutePredicate = { matches: () => true };
+const deny: RoutePredicate = { matches: () => false };
+const allowAsync: RoutePredicate = {
+  matches: () => Promise.resolve(true),
 };
 
 describe('RouteMatcher', () => {
   const matcher = new RouteMatcher();
 
   describe('single-route matching', () => {
-    it('matches on update type with no filters', async () => {
+    it('matches on update type with no predicates', async () => {
       const matches = await matcher.findMatches(
         tableOf(route('message', 'm')),
         ctxOf('message'),
@@ -46,7 +46,7 @@ describe('RouteMatcher', () => {
       expect(matches).toEqual([]);
     });
 
-    it('requires every filter to pass', async () => {
+    it('requires every predicate to pass', async () => {
       const denied = await matcher.findMatches(
         tableOf(route('message', 'm', [allow, deny])),
         ctxOf('message'),
@@ -60,7 +60,7 @@ describe('RouteMatcher', () => {
       expect(allowed).toHaveLength(1);
     });
 
-    it('awaits async filters', async () => {
+    it('awaits async predicates', async () => {
       const matches = await matcher.findMatches(
         tableOf(route('message', 'm', [allowAsync])),
         ctxOf('message'),
@@ -68,11 +68,11 @@ describe('RouteMatcher', () => {
       expect(matches).toHaveLength(1);
     });
 
-    it('passes the rich event to the filter', async () => {
+    it('passes the execution context to the predicate', async () => {
       const seen: unknown[] = [];
-      const spy: NestgramFilter = {
-        canActivate: (event) => {
-          seen.push(event);
+      const spy: RoutePredicate = {
+        matches: (ctx) => {
+          seen.push(ctx.event);
           return true;
         },
       };
@@ -84,10 +84,10 @@ describe('RouteMatcher', () => {
       expect(seen).toEqual([event]);
     });
 
-    it('short-circuits: does not call later filters after a rejection', async () => {
+    it('short-circuits: does not call later predicates after a rejection', async () => {
       let laterCalled = false;
-      const later: NestgramFilter = {
-        canActivate: () => {
+      const later: RoutePredicate = {
+        matches: () => {
           laterCalled = true;
           return true;
         },

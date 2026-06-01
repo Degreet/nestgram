@@ -19,7 +19,7 @@ function listen(
   const fn = (prototype as Record<string, unknown>)[methodName];
   const options: ListenerOptions[] = updateTypes.map((updateType) => ({
     updateType,
-    filters: [],
+    predicates: [],
   }));
   Reflect.defineMetadata(Metadata.LISTENERS, options, fn as object);
 }

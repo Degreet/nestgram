@@ -54,7 +54,7 @@ export class RouteExplorer {
         for (const listener of listeners) {
           routes.push({
             updateType: listener.updateType,
-            filters: listener.filters ?? [],
+            predicates: listener.predicates ?? [],
             instance,
             methodName,
           });

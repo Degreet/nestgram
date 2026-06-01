@@ -1,8 +1,10 @@
-import { NestgramFilter } from '../../types';
+import { RoutePredicate } from '../../matching';
 import { createListenerDecorator } from './create-listener-decorator';
 
 const UPDATE_TYPE = 'poll_answer';
 
-export const OnPollAnswer = (...filters: NestgramFilter[]): MethodDecorator => {
-  return createListenerDecorator(UPDATE_TYPE, ...filters);
+export const OnPollAnswer = (
+  ...predicates: RoutePredicate[]
+): MethodDecorator => {
+  return createListenerDecorator(UPDATE_TYPE, ...predicates);
 };

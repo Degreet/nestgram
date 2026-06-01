@@ -1,9 +1,10 @@
-import { ListenerOptions, NestgramFilter } from '../../types';
+import { RoutePredicate } from '../../matching';
+import { ListenerOptions } from '../../types';
 import { Metadata } from '../../enums';
 
 export const createListenerDecorator = (
   updateType: string,
-  ...filters: NestgramFilter[]
+  ...predicates: RoutePredicate[]
 ): MethodDecorator => {
   return (target: any, _key: string, descriptor: PropertyDescriptor) => {
     const existingMetadata = Reflect.getMetadata(
@@ -11,7 +12,7 @@ export const createListenerDecorator = (
       descriptor.value,
     );
 
-    const options: ListenerOptions = { updateType, filters };
+    const options: ListenerOptions = { updateType, predicates };
 
     const newMetadata = [...(existingMetadata ?? []), options];
 

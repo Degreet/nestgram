@@ -6,10 +6,10 @@ export * from './exceptions';
 export * from './methods';
 export * from './types';
 export * from './telegramObjects';
-export * from './filters';
 
 // Engine public surface (the new pipeline; the legacy dispatcher/executor was
 // removed at cutover).
+export * from './matching';
 export * from './context';
 export * from './discovery';
 export * from './execution';

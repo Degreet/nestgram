@@ -1,4 +1,4 @@
-import { NestgramFilter } from '../types';
+import { RoutePredicate } from '../matching';
 
 /**
  * A single resolved route in the boot-time route table: a router method bound
@@ -8,8 +8,8 @@ import { NestgramFilter } from '../types';
 export interface Route {
   /** The Telegram update type this handler listens to (e.g. `'message'`). */
   readonly updateType: string;
-  /** Per-listener filters declared on the decorator. */
-  readonly filters: NestgramFilter[];
+  /** Per-listener match predicates declared on the decorator. */
+  readonly predicates: RoutePredicate[];
   /** The router instance that owns the handler. */
   readonly instance: object;
   /** The handler method name on that instance. */

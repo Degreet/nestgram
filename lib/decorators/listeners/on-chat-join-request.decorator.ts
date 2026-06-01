@@ -1,10 +1,10 @@
-import { NestgramFilter } from '../../types';
+import { RoutePredicate } from '../../matching';
 import { createListenerDecorator } from './create-listener-decorator';
 
 const UPDATE_TYPE = 'chat_join_request';
 
 export const OnChatJoinRequest = (
-  ...filters: NestgramFilter[]
+  ...predicates: RoutePredicate[]
 ): MethodDecorator => {
-  return createListenerDecorator(UPDATE_TYPE, ...filters);
+  return createListenerDecorator(UPDATE_TYPE, ...predicates);
 };

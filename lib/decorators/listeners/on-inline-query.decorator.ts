@@ -1,10 +1,10 @@
-import { NestgramFilter } from '../../types';
+import { RoutePredicate } from '../../matching';
 import { createListenerDecorator } from './create-listener-decorator';
 
 const UPDATE_TYPE = 'inline_query';
 
 export const OnInlineQuery = (
-  ...filters: NestgramFilter[]
+  ...predicates: RoutePredicate[]
 ): MethodDecorator => {
-  return createListenerDecorator(UPDATE_TYPE, ...filters);
+  return createListenerDecorator(UPDATE_TYPE, ...predicates);
 };

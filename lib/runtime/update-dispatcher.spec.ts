@@ -2,7 +2,7 @@ import { ContextFactory, EventFactory } from '../context';
 import { HandlerExecutorFactory, ResultHandler } from '../execution';
 import { RouteMatcher, RouteTable } from '../discovery';
 import { Route } from '../discovery/route.types';
-import { NestgramFilter } from '../types';
+import { RoutePredicate } from '../matching';
 import { RawUpdate } from '../types/raw-update.types';
 import { BotService } from '../bot';
 import { UpdateDispatcher } from './update-dispatcher';
@@ -61,12 +61,12 @@ function makeDispatcher(routes: Route[]) {
 function route(
   updateType: string,
   methodName: string,
-  filters: NestgramFilter[] = [],
+  predicates: RoutePredicate[] = [],
 ): Route {
-  return { updateType, filters, instance: {}, methodName };
+  return { updateType, predicates, instance: {}, methodName };
 }
 
-const deny: NestgramFilter = { canActivate: () => false };
+const deny: RoutePredicate = { matches: () => false };
 
 describe('UpdateDispatcher', () => {
   it('invokes the handler and passes its result to the result handler', async () => {

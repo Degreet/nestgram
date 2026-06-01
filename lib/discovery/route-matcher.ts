@@ -12,8 +12,8 @@ import { RouteTable } from './route-table';
  * to change how routes are selected. `UpdateDispatcher` injects it.
  *
  * A route matches when its `updateType` equals the resolved kind and every
- * declared filter passes. Filters receive the rich event plus the execution
- * context, may be async, run sequentially, and short-circuit on first rejection.
+ * declared predicate passes. Predicates receive the execution context, may be
+ * async, run sequentially, and short-circuit on the first rejection.
  */
 @Injectable()
 export class RouteMatcher {
@@ -48,8 +48,8 @@ export class RouteMatcher {
       return false;
     }
 
-    for (const filter of route.filters) {
-      const passed = await filter.canActivate(ctx.event, ctx);
+    for (const predicate of route.predicates) {
+      const passed = await predicate.matches(ctx);
       if (!passed) {
         return false;
       }
