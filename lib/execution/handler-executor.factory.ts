@@ -20,10 +20,10 @@ export type HandlerInvoker = (
  * `(event, ctx)` so param decorators read `args[0]` (event) / `args[1]` (ctx).
  *
  * `ExternalContextCreator` lives in Nest's `InternalCoreModule`, not in our
- * module's context, so it can't be constructor-injected directly. We resolve it
- * lazily and memoized via `ModuleRef` (`strict: false` searches the whole
- * container) on first `create()`, which only runs at bootstrap — after the
- * container is initialised, so the lookup is safe.
+ * module's context, so it can't be constructor-injected directly. We pull it
+ * from `ModuleRef` (`strict: false` searches the whole container) — it is a
+ * core singleton already instantiated by the time this provider is built, so
+ * resolving it in the constructor is safe.
  *
  * Takes the router instance directly (the route table carries instances, not
  * `InstanceWrapper`s). The inquirer id is omitted: routers are singletons for
@@ -32,14 +32,18 @@ export type HandlerInvoker = (
 @Injectable()
 export class HandlerExecutorFactory {
   private readonly paramsFactory = new NestgramParamsFactory();
-  private externalContextCreator?: ExternalContextCreator;
+  private readonly ecc: ExternalContextCreator;
 
-  constructor(private readonly moduleRef: ModuleRef) {}
+  constructor(private readonly moduleRef: ModuleRef) {
+    this.ecc = this.moduleRef.get(ExternalContextCreator, {
+      strict: false,
+    });
+  }
 
   create(instance: object, methodName: string): HandlerInvoker {
     const callback = (instance as Record<string, unknown>)[methodName];
 
-    const invoker = this.ecc().create(
+    const invoker = this.ecc.create(
       instance,
       callback as (...args: unknown[]) => unknown,
       methodName,
@@ -52,14 +56,5 @@ export class HandlerExecutorFactory {
     );
 
     return (ctx: TelegramExecutionContext) => invoker(ctx.event, ctx);
-  }
-
-  private ecc(): ExternalContextCreator {
-    if (!this.externalContextCreator) {
-      this.externalContextCreator = this.moduleRef.get(ExternalContextCreator, {
-        strict: false,
-      });
-    }
-    return this.externalContextCreator;
   }
 }
