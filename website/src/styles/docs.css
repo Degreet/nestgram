@@ -435,8 +435,13 @@ body {
 }
 .guardrail .gr-ico {
   flex: none;
-  font-size: 18px;
-  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  color: #ffcb7a;
+}
+.guardrail .gr-ico .wicon {
+  width: 17px;
+  height: 17px;
 }
 .guardrail .gr-label {
   display: block;
@@ -462,6 +467,60 @@ body {
   font-family: var(--font-mono);
   font-size: 0.85em;
   color: var(--a1);
+}
+
+/* warn callout — amber terminal-style box (matches the landing .warnbox) */
+.warnbox {
+  margin: 24px 0;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  border-radius: 13px;
+  border: 1px solid color-mix(in oklab, #ffcb7a 30%, var(--border));
+  background: linear-gradient(180deg, rgba(255, 203, 122, 0.08), transparent);
+  padding: 16px 20px;
+  line-height: 1.7;
+}
+.warnbox .wlabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffcb7a;
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.warnbox .wlabel .wicon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+.warnbox .wbody {
+  color: var(--text-2);
+}
+.warnbox .wbody .dim {
+  color: var(--muted);
+  margin: 0;
+}
+.warnbox .wbody code {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-size: 0.9em;
+  color: var(--a1);
+}
+.warnbox .wbody strong {
+  color: var(--text);
+}
+/* the blockquote "fix" line → blue arrow callout */
+.warnbox .wfix {
+  margin-top: 10px;
+  color: var(--text);
+}
+.warnbox .wfix .warrow {
+  color: var(--a1);
+  font-weight: 600;
 }
 
 /* asides */
