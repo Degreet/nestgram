@@ -152,16 +152,19 @@ function buildGuardrail(node) {
 }
 
 // ---- soft asides: note / tip / caution --------------------------------------
+// Shared callout shape (also used by warn & guardrail): an icon column on the
+// left, then a main column where the title sits on top and the body flows below
+// — so the body is indented under the title, never under the icon.
 function buildAside(kind, node) {
   const { label, rest } = takeLabel(node);
   const title = label || ASIDE_TITLES[kind];
   asElement(node, 'aside', { className: ['ng-aside', `ng-aside--${kind}`, 'not-content'] });
   return setChildren(node, [
-    el('p', { className: ['ng-aside__title'] }, [
-      el('span', { className: ['ng-aside__ico'] }, [asideIcon(kind)]),
-      text(title),
+    el('div', { className: ['ng-aside__ico'] }, [asideIcon(kind)]),
+    el('div', { className: ['ng-aside__main'] }, [
+      el('p', { className: ['ng-aside__title'] }, [text(title)]),
+      el('div', { className: ['ng-aside__body'] }, rest),
     ]),
-    el('div', { className: ['ng-aside__body'] }, rest),
   ]);
 }
 
@@ -249,10 +252,14 @@ function buildWarn(node) {
       body.push(child);
     }
   }
+  // Same icon-left / body-indented shape as the asides (see buildAside).
   asElement(node, 'div', { className: ['warnbox', 'not-content'] });
   return setChildren(node, [
-    el('div', { className: ['wlabel'] }, [warnIcon(), text(' '), text(labelText)]),
-    el('div', { className: ['wbody'] }, body),
+    el('div', { className: ['wicon-col'] }, [warnIcon()]),
+    el('div', { className: ['wmain'] }, [
+      el('div', { className: ['wlabel'] }, [text(labelText)]),
+      el('div', { className: ['wbody'] }, body),
+    ]),
   ]);
 }
 

@@ -479,21 +479,28 @@ body {
   background: linear-gradient(180deg, rgba(255, 203, 122, 0.08), transparent);
   padding: 16px 20px;
   line-height: 1.7;
+  display: flex;
+  gap: 13px;
 }
-.warnbox .wlabel {
+.warnbox .wicon-col {
+  flex: none;
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  color: #ffcb7a;
+}
+.warnbox .wicon-col .wicon {
+  width: 16px;
+  height: 16px;
+}
+.warnbox .wmain {
+  min-width: 0;
+}
+.warnbox .wlabel {
   color: #ffcb7a;
   font-size: 12.5px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   margin-bottom: 10px;
-}
-.warnbox .wlabel .wicon {
-  width: 16px;
-  height: 16px;
-  flex: none;
 }
 .warnbox .wbody {
   color: var(--text-2);
@@ -529,24 +536,27 @@ body {
   border: 1px solid var(--border-strong);
   padding: 1.1rem 1.3rem;
   margin: 1.8rem 0;
-}
-.ng-aside__title {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin: 0 0 0.5rem;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  gap: 13px;
 }
 .ng-aside__ico {
   flex: none;
   display: flex;
+  align-items: flex-start;
 }
 .ng-aside__ico .wicon {
   width: 16px;
   height: 16px;
+}
+.ng-aside__main {
+  min-width: 0;
+}
+.ng-aside__title {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 .ng-aside__body {
   color: var(--text-2);
@@ -564,7 +574,9 @@ body {
   border-color: color-mix(in oklab, var(--accent) 38%, var(--border));
 }
 .ng-aside--tip .ng-aside__title,
-.ng-aside--note .ng-aside__title {
+.ng-aside--note .ng-aside__title,
+.ng-aside--tip .ng-aside__ico,
+.ng-aside--note .ng-aside__ico {
   color: var(--a1);
 }
 .ng-aside--caution,
@@ -573,7 +585,9 @@ body {
   border-color: color-mix(in oklab, #ffcb7a 35%, var(--border));
 }
 .ng-aside--caution .ng-aside__title,
-.ng-aside--warning .ng-aside__title {
+.ng-aside--warning .ng-aside__title,
+.ng-aside--caution .ng-aside__ico,
+.ng-aside--warning .ng-aside__ico {
   color: #ffcb7a;
 }
 
