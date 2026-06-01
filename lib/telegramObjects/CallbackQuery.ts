@@ -1,6 +1,6 @@
 import { Message } from './Message';
-import { BotService } from '../bot';
-import { AnswerCallbackQueryOptions } from '../methods';
+import { BotService } from '../api';
+import { AnswerCallbackQueryOptions } from '../api/methods';
 import { TelegramObject } from './TelegramObject';
 import { UpdateType } from '../decorators';
 

@@ -37,7 +37,7 @@
  *   }
  */
 
-import { BotService } from '../bot';
+import { BotService } from '../api';
 import { ContextFactory, EventFactory, resolveKind } from '../engine/context';
 import { Message } from '../telegramObjects';
 import { RawUpdate } from '../types/raw-update.types';

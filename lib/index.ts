@@ -1,9 +1,9 @@
-export * from './bot';
+export * from './api';
 export * from './decorators';
 export * from './decorators/params';
 export * from './enums';
 export * from './exceptions';
-export * from './methods';
+export * from './api/methods';
 export * from './types';
 export * from './telegramObjects';
 

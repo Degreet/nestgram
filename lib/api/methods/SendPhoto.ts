@@ -1,7 +1,7 @@
 import { ApiMethod } from './ApiMethod';
-import { Message } from '../telegramObjects';
-import { BotService } from '../bot';
-import { InputFile } from '../types';
+import { Message } from '../../telegramObjects';
+import { BotService } from '../bot.service';
+import { InputFile } from '../../types';
 
 export interface SendPhotoOptions {
   business_connection_id?: string;

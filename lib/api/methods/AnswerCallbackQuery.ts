@@ -1,5 +1,5 @@
 import { ApiMethod } from './ApiMethod';
-import { BotService } from '../bot';
+import { BotService } from '../bot.service';
 
 export interface AnswerCallbackQueryOptions {
   callback_query_id: string;

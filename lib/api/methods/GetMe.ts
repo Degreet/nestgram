@@ -1,7 +1,7 @@
 import { ApiMethod } from './ApiMethod';
 
-import { User } from '../types';
-import { BotService } from '../bot';
+import { User } from '../../types';
+import { BotService } from '../bot.service';
 
 export class GetMe extends ApiMethod<null, User> {
   protected readonly methodName = 'getMe';

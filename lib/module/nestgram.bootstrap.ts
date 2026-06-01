@@ -6,7 +6,7 @@ import {
   OnApplicationShutdown,
 } from '@nestjs/common';
 
-import { BotService } from '../bot';
+import { BotService } from '../api';
 import { RouteExplorer, RouteTable } from '../engine/discovery';
 import { Providers } from '../enums';
 import { UpdateDispatcher } from '../engine/dispatcher';

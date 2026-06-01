@@ -1,6 +1,6 @@
 import { ApiMethod } from './ApiMethod';
-import { Update } from '../types';
-import { BotService } from '../bot';
+import { Update } from '../../types';
+import { BotService } from '../bot.service';
 
 export interface GetUpdatesOptions {
   offset?: number;

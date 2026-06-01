@@ -1,4 +1,4 @@
-import { BotService } from '../../bot';
+import { BotService } from '../../api';
 import {
   ContextFactory,
   EventFactory,

@@ -1,13 +1,13 @@
 import { ApiMethod } from './ApiMethod';
-import { Message } from '../telegramObjects';
-import { BotService } from '../bot';
-import { InputFile } from '../types';
+import { Message } from '../../telegramObjects';
+import { BotService } from '../bot.service';
+import { InputFile } from '../../types';
 import {
   InputMediaAudio,
   InputMediaDocument,
   InputMediaPhoto,
   InputMediaVideo,
-} from '../types/InputMedia';
+} from '../../types/InputMedia';
 
 export interface SendMediaGroupOptions {
   business_connection_id?: string;

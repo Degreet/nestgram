@@ -1,10 +1,10 @@
 import { TelegramObject } from './TelegramObject';
-import { BotService } from '../bot';
+import { BotService } from '../api';
 import {
   SendMediaGroupOptions,
   SendMessageOptions,
   SendPhotoOptions,
-} from '../methods';
+} from '../api/methods';
 import { UpdateType } from '../decorators';
 import { InputFile } from '../types';
 import {

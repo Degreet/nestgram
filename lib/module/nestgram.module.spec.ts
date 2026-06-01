@@ -1,7 +1,7 @@
 import { Injectable, Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
-import { BotService } from '../bot';
+import { BotService } from '../api';
 import { Event } from '../decorators/params/event.decorator';
 import { Command } from '../decorators/listeners/command.decorator';
 import { OnMessage } from '../decorators/listeners/on-message.decorator';

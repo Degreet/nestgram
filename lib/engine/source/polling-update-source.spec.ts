@@ -1,4 +1,4 @@
-import { BotService } from '../../bot';
+import { BotService } from '../../api';
 import { RawUpdate } from '../../types/raw-update.types';
 import { BatchFetcher, PollingUpdateSource } from './polling-update-source';
 

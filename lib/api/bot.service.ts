@@ -17,7 +17,7 @@ import {
   SendPhoto,
   SendMediaGroup,
   SendMediaGroupOptions,
-} from '../methods';
+} from './methods';
 import {
   InputMediaAudio,
   InputMediaDocument,

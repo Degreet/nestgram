@@ -1,6 +1,6 @@
 import { ApiMethod } from './ApiMethod';
-import { Message } from '../telegramObjects';
-import { BotService } from '../bot';
+import { Message } from '../../telegramObjects';
+import { BotService } from '../bot.service';
 
 export interface SendMessageOptions {
   business_connection_id?: string;

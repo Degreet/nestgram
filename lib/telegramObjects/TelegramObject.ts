@@ -1,4 +1,4 @@
-import { BotService } from '../bot';
+import { BotService } from '../api';
 
 export abstract class TelegramObject {
   static mutateObjects<T extends TelegramObject>(

@@ -1,5 +1,5 @@
 import { ApiMethod } from './ApiMethod';
-import { BotService } from '../bot';
+import { BotService } from '../bot.service';
 
 export interface DeleteWebhookOptions {
   drop_pending_updates?: boolean;

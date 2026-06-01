@@ -1,7 +1,7 @@
 import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
 import { DiscoveryModule } from '@nestjs/core';
 
-import { BotModule } from '../bot';
+import { BotModule } from '../api';
 import { ContextFactory, EventFactory } from '../engine/context';
 import { RouteExplorer, RouteMatcher, RouteTable } from '../engine/discovery';
 import { Providers } from '../enums';
