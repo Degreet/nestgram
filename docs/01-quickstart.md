@@ -48,8 +48,6 @@ export class GreetRouter {
 ```
 :::
 
-A few things to notice:
-
 :::anno
 1. The handler receives a **typed `Message`** as its first argument — no decorator, no guessing what's on it. You named the type, so you know exactly what arrived.
 2. `@Command('start')` matches the `/start` command; `@OnMessage()` matches any message. Nestgram tries handlers in order and runs the first match.
@@ -171,8 +169,3 @@ and you must set a `secret_token`. Nestgram warns you at boot if a webhook is
 configured without one, because anyone who learns your URL could spoof
 updates otherwise.
 :::
-
-## Next
-
-You have a working bot. Next, make it interactive with
-[commands, parameters & keyboards →](./02-commands-and-keyboards.md)

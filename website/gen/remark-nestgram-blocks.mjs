@@ -37,7 +37,11 @@ const ACCENT_MARK = '*';
 const FLOW_ARROW = '->';
 const ARROW = '→'; // →
 const MIDDOT = '·'; // ·
-const WARNING_SIGN = '⚠'; // ⚠
+
+// Shell-ish fences (written as bare ```bash, not wrapped in :::code) should
+// still get the code-island chrome, rendered as a terminal window.
+const TERMINAL_LANGS = new Set(['bash', 'sh', 'shell', 'zsh', 'console']);
+const TERMINAL_LABEL = 'Terminal';
 
 // ---- hast element helpers ---------------------------------------------------
 // An element node with given tag/classes/children that remark-rehype renders
@@ -139,7 +143,7 @@ function buildGuardrail(node) {
   const labelText = label ? `GUARDRAIL ${MIDDOT} ${label}` : 'GUARDRAIL';
   asElement(node, 'div', { className: ['guardrail', 'not-content'] });
   return setChildren(node, [
-    el('span', { className: ['gr-ico'] }, [text(WARNING_SIGN)]),
+    el('div', { className: ['gr-ico'] }, [warnIcon()]),
     el('div', { className: ['gr-body'] }, [
       el('span', { className: ['gr-label'] }, [text(labelText)]),
       ...unwrapParagraphs(rest),
@@ -148,14 +152,83 @@ function buildGuardrail(node) {
 }
 
 // ---- soft asides: note / tip / caution --------------------------------------
+// Shared callout shape (also used by warn & guardrail): an icon column on the
+// left, then a main column where the title sits on top and the body flows below
+// — so the body is indented under the title, never under the icon.
 function buildAside(kind, node) {
   const { label, rest } = takeLabel(node);
   const title = label || ASIDE_TITLES[kind];
   asElement(node, 'aside', { className: ['ng-aside', `ng-aside--${kind}`, 'not-content'] });
   return setChildren(node, [
-    el('p', { className: ['ng-aside__title'] }, [text(title)]),
-    el('div', { className: ['ng-aside__body'] }, rest),
+    el('div', { className: ['ng-aside__ico'] }, [asideIcon(kind)]),
+    el('div', { className: ['ng-aside__main'] }, [
+      el('p', { className: ['ng-aside__title'] }, [text(title)]),
+      el('div', { className: ['ng-aside__body'] }, rest),
+    ]),
   ]);
+}
+
+// The info icon from the design mockup (circle + "i"). `stroke: currentColor`
+// so it inherits the callout's colour.
+function infoIcon() {
+  return el(
+    'svg',
+    {
+      className: ['wicon'],
+      viewBox: '0 0 24 24',
+      fill: 'none',
+      'aria-hidden': 'true',
+    },
+    [
+      el('circle', {
+        cx: '12',
+        cy: '12',
+        r: '9',
+        stroke: 'currentColor',
+        strokeWidth: '1.5',
+      }),
+      el('path', {
+        d: 'M12 11v5M12 8h.01',
+        stroke: 'currentColor',
+        strokeWidth: '1.7',
+        strokeLinecap: 'round',
+      }),
+    ],
+  );
+}
+
+// Per-kind callout icon: note/tip carry the info mark, caution/warning the
+// shield. Keeps every callout on one visual pattern (icon + title + body).
+function asideIcon(kind) {
+  return kind === 'caution' || kind === 'warning' ? warnIcon() : infoIcon();
+}
+
+// The shield warning icon from the design mockup. `stroke: currentColor` so it
+// inherits the amber colour from `.warnbox .wlabel` / `.guardrail .gr-ico`.
+function warnIcon() {
+  return el(
+    'svg',
+    {
+      className: ['wicon'],
+      viewBox: '0 0 24 24',
+      fill: 'none',
+      'aria-hidden': 'true',
+    },
+    [
+      el('path', {
+        d: 'M12 3l8 4v6c0 4.6-3.3 7.2-8 8-4.7-.8-8-3.4-8-8V7l8-4z',
+        stroke: 'currentColor',
+        strokeWidth: '1.5',
+        strokeLinejoin: 'round',
+      }),
+      el('path', {
+        d: 'M12 8v4.5M12 16h.01',
+        stroke: 'currentColor',
+        strokeWidth: '1.6',
+        strokeLinecap: 'round',
+      }),
+    ],
+  );
 }
 
 // ---- warn: dramatic terminal-style box (landing .warnbox look) --------------
@@ -179,10 +252,14 @@ function buildWarn(node) {
       body.push(child);
     }
   }
+  // Same icon-left / body-indented shape as the asides (see buildAside).
   asElement(node, 'div', { className: ['warnbox', 'not-content'] });
   return setChildren(node, [
-    el('div', { className: ['wlabel'] }, [text(labelText)]),
-    el('div', { className: ['wbody'] }, body),
+    el('div', { className: ['wicon-col'] }, [warnIcon()]),
+    el('div', { className: ['wmain'] }, [
+      el('div', { className: ['wlabel'] }, [text(labelText)]),
+      el('div', { className: ['wbody'] }, body),
+    ]),
   ]);
 }
 
@@ -268,6 +345,27 @@ function buildCodeIsland(node) {
   return setChildren(node, kids);
 }
 
+// ---- terminal island: wrap a bare shell fence in code-island chrome --------
+// Bare ```bash fences never reach buildCodeIsland (they aren't directives), so
+// they'd render as a plain Shiki <pre> with no chrome. Wrap such a top-level
+// code node in the same figure/.ci-bar structure, flagged as a terminal.
+function wrapTerminalIsland(codeNode, index, parent) {
+  const figure = el(
+    'figure',
+    { className: ['code-island', 'is-framed', 'is-terminal'] },
+    [
+      el('div', { className: ['ci-bar'] }, [
+        el('span', { className: ['ci-dot'] }),
+        el('span', { className: ['ci-dot'] }),
+        el('span', { className: ['ci-dot'] }),
+        el('span', { className: ['ci-name'] }, [text(TERMINAL_LABEL)]),
+      ]),
+      codeNode,
+    ],
+  );
+  parent.children[index] = figure;
+}
+
 export default function remarkNestgramBlocks() {
   let counter = 0;
   const makeId = () => `ngtab-${++counter}`;
@@ -303,6 +401,16 @@ export default function remarkNestgramBlocks() {
           asElement(node, 'div', {});
           return SKIP;
       }
+    });
+
+    // Second pass: bare shell fences at the top level become terminal islands.
+    // (Code nodes already inside a :::code figure are children of a figure, not
+    // of the root, so they're left untouched.)
+    visit(tree, 'code', (node, index, parent) => {
+      if (!parent || parent.type !== 'root' || index == null) return;
+      if (!TERMINAL_LANGS.has((node.lang || '').toLowerCase())) return;
+      wrapTerminalIsland(node, index, parent);
+      return SKIP;
     });
   };
 }

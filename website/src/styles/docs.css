@@ -223,6 +223,66 @@ body {
   padding: 0.1em 0.4em;
 }
 
+/* ---- prev/next pager ---- */
+.dx-pager {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+.dx-pager-spacer {
+  display: block;
+}
+.dx-pager-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--bg-soft);
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+.dx-pager-btn:hover {
+  border-color: color-mix(in oklab, var(--accent) 55%, var(--border));
+  background: var(--panel);
+  transform: translateY(-2px);
+}
+.dx-pager-next {
+  text-align: right;
+  align-items: flex-end;
+}
+.dx-pager-dir {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color 0.15s;
+}
+.dx-pager-btn:hover .dx-pager-dir {
+  color: var(--a1);
+}
+.dx-pager-title {
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+@media (max-width: 38rem) {
+  .dx-pager {
+    grid-template-columns: 1fr;
+  }
+  .dx-pager-next {
+    text-align: left;
+    align-items: flex-start;
+  }
+}
+
 /* ---- right TOC ---- */
 .dx-toc {
   position: sticky;
@@ -375,8 +435,13 @@ body {
 }
 .guardrail .gr-ico {
   flex: none;
-  font-size: 18px;
-  line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  color: #ffcb7a;
+}
+.guardrail .gr-ico .wicon {
+  width: 17px;
+  height: 17px;
 }
 .guardrail .gr-label {
   display: block;
@@ -404,15 +469,90 @@ body {
   color: var(--a1);
 }
 
+/* warn callout — amber terminal-style box (matches the landing .warnbox) */
+.warnbox {
+  margin: 24px 0;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  border-radius: 13px;
+  border: 1px solid color-mix(in oklab, #ffcb7a 30%, var(--border));
+  background: linear-gradient(180deg, rgba(255, 203, 122, 0.08), transparent);
+  padding: 16px 20px;
+  line-height: 1.7;
+  display: flex;
+  gap: 13px;
+}
+.warnbox .wicon-col {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  color: #ffcb7a;
+}
+.warnbox .wicon-col .wicon {
+  width: 16px;
+  height: 16px;
+}
+.warnbox .wmain {
+  min-width: 0;
+}
+.warnbox .wlabel {
+  color: #ffcb7a;
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.warnbox .wbody {
+  color: var(--text-2);
+}
+.warnbox .wbody .dim {
+  color: var(--muted);
+  margin: 0;
+}
+.warnbox .wbody code {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-size: 0.9em;
+  color: var(--a1);
+}
+.warnbox .wbody strong {
+  color: var(--text);
+}
+/* the blockquote "fix" line → blue arrow callout */
+.warnbox .wfix {
+  margin-top: 10px;
+  color: var(--text);
+}
+.warnbox .wfix .warrow {
+  color: var(--a1);
+  font-weight: 600;
+}
+
 /* asides */
 .ng-aside {
   border-radius: 13px;
   border: 1px solid var(--border-strong);
   padding: 1.1rem 1.3rem;
   margin: 1.8rem 0;
+  display: flex;
+  gap: 13px;
+}
+.ng-aside__ico {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+}
+.ng-aside__ico .wicon {
+  width: 16px;
+  height: 16px;
+}
+.ng-aside__main {
+  min-width: 0;
 }
 .ng-aside__title {
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.4rem;
   font-family: var(--font-mono);
   font-size: 0.78rem;
   letter-spacing: 0.06em;
@@ -434,7 +574,9 @@ body {
   border-color: color-mix(in oklab, var(--accent) 38%, var(--border));
 }
 .ng-aside--tip .ng-aside__title,
-.ng-aside--note .ng-aside__title {
+.ng-aside--note .ng-aside__title,
+.ng-aside--tip .ng-aside__ico,
+.ng-aside--note .ng-aside__ico {
   color: var(--a1);
 }
 .ng-aside--caution,
@@ -443,16 +585,140 @@ body {
   border-color: color-mix(in oklab, #ffcb7a 35%, var(--border));
 }
 .ng-aside--caution .ng-aside__title,
-.ng-aside--warning .ng-aside__title {
+.ng-aside--warning .ng-aside__title,
+.ng-aside--caution .ng-aside__ico,
+.ng-aside--warning .ng-aside__ico {
   color: #ffcb7a;
+}
+
+/* tabs — CSS-only, radio-driven (markup from buildTabs) */
+.ng-tabs {
+  margin: 1.8rem 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 13px;
+  overflow: hidden;
+  background: var(--bg-soft);
+}
+.ng-tabs > input[type='radio'] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.ng-tablist {
+  display: flex;
+  gap: 2px;
+  padding: 8px 8px 0;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+.ng-tablist label {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--muted);
+  padding: 8px 14px;
+  border-radius: 8px 8px 0 0;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s, background 0.15s;
+}
+.ng-tablist label:hover {
+  color: var(--text);
+}
+.ng-tablist label:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.ng-tab {
+  display: none;
+  padding: 4px 6px;
+}
+/* active label + matching panel, addressed by index (up to 6 tabs) */
+.ng-tabs > input:nth-of-type(1):checked ~ .ng-tablist label:nth-of-type(1),
+.ng-tabs > input:nth-of-type(2):checked ~ .ng-tablist label:nth-of-type(2),
+.ng-tabs > input:nth-of-type(3):checked ~ .ng-tablist label:nth-of-type(3),
+.ng-tabs > input:nth-of-type(4):checked ~ .ng-tablist label:nth-of-type(4),
+.ng-tabs > input:nth-of-type(5):checked ~ .ng-tablist label:nth-of-type(5),
+.ng-tabs > input:nth-of-type(6):checked ~ .ng-tablist label:nth-of-type(6) {
+  color: var(--a1);
+  background: var(--bg-soft);
+}
+.ng-tabs > input:nth-of-type(1):checked ~ .ng-tab.tab-1,
+.ng-tabs > input:nth-of-type(2):checked ~ .ng-tab.tab-2,
+.ng-tabs > input:nth-of-type(3):checked ~ .ng-tab.tab-3,
+.ng-tabs > input:nth-of-type(4):checked ~ .ng-tab.tab-4,
+.ng-tabs > input:nth-of-type(5):checked ~ .ng-tab.tab-5,
+.ng-tabs > input:nth-of-type(6):checked ~ .ng-tab.tab-6 {
+  display: block;
+}
+.ng-tab > .code-island:first-child {
+  margin-top: 0.6rem;
 }
 
 /* code island */
 .code-island {
+  position: relative;
   margin: 1.6rem 0;
   border-radius: 13px;
   overflow: hidden;
   background: #080a0f;
+}
+/* wrapper the copy-button script adds around a bare Shiki <pre> */
+.code-island.is-plain {
+  background: transparent;
+}
+
+/* ---- copy button (hover-reveal, top-right of any code block) ---- */
+.code-copy {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1;
+  color: var(--muted);
+  background: rgba(8, 10, 15, 0.86);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, border-color 0.15s;
+  backdrop-filter: blur(4px);
+}
+.code-island:hover .code-copy,
+.code-copy:focus-visible {
+  opacity: 1;
+}
+.code-copy:hover {
+  color: var(--text);
+  border-color: var(--text-2);
+}
+.code-copy__ico {
+  display: inline-flex;
+}
+.code-copy__ico--done {
+  display: none;
+  color: #8ee6a8;
+}
+.code-copy.is-copied {
+  color: #8ee6a8;
+  border-color: color-mix(in oklab, #8ee6a8 55%, var(--border));
+}
+.code-copy.is-copied .code-copy__ico--copy {
+  display: none;
+}
+.code-copy.is-copied .code-copy__ico--done {
+  display: inline-flex;
+}
+/* keep the button clear of the filename when chrome is present */
+.code-island .ci-bar {
+  padding-right: 92px;
 }
 .code-island.is-framed {
   border: 1px solid var(--border-strong);
@@ -494,6 +760,18 @@ body {
   width: 100%;
   background: rgba(54, 180, 244, 0.1);
   box-shadow: inset 2px 0 0 var(--accent);
+}
+
+/* terminal island: a shell snippet rendered as a terminal window */
+.code-island.is-terminal .ci-name {
+  color: #8ee6a8;
+}
+.code-island.is-terminal pre {
+  background-image: radial-gradient(
+    120% 140% at 0% 0%,
+    rgba(142, 230, 168, 0.05),
+    transparent 60%
+  );
 }
 
 /* code token palette (matches landing + nestgram-code-theme.mjs) */

@@ -19,6 +19,10 @@ interface NavGroup {
   label: string;
   items: NavItem[];
 }
+interface PagerLink {
+  label: string;
+  href: string;
+}
 
 interface Props {
   title: string;
@@ -27,6 +31,8 @@ interface Props {
   headings?: Heading[];
   sidebar?: NavGroup[];
   current?: string;
+  prev?: PagerLink | null;
+  next?: PagerLink | null;
 }
 
 const {
@@ -36,6 +42,8 @@ const {
   headings = [],
   sidebar = [],
   current = '',
+  prev = null,
+  next = null,
 } = Astro.props;
 
 // Only h2/h3 belong in the "On this page" rail.
@@ -87,6 +95,29 @@ const githubUrl = 'https://github.com/Degreet/nestgram-v2';
         <article class="dx-content">
           <h1>{title}</h1>
           <slot />
+
+          {
+            (prev || next) && (
+              <nav class="dx-pager">
+                {prev ? (
+                  <a class="dx-pager-btn dx-pager-prev" href={prev.href}>
+                    <span class="dx-pager-dir">← Previous</span>
+                    <span class="dx-pager-title">{prev.label}</span>
+                  </a>
+                ) : (
+                  <span class="dx-pager-spacer" />
+                )}
+                {next ? (
+                  <a class="dx-pager-btn dx-pager-next" href={next.href}>
+                    <span class="dx-pager-dir">Next →</span>
+                    <span class="dx-pager-title">{next.label}</span>
+                  </a>
+                ) : (
+                  <span class="dx-pager-spacer" />
+                )}
+              </nav>
+            )
+          }
         </article>
       </main>
 
@@ -128,6 +159,51 @@ const githubUrl = 'https://github.com/Degreet/nestgram-v2';
       document
         .querySelectorAll('.dx-content h2[id], .dx-content h3[id]')
         .forEach((h) => obs.observe(h));
+
+      // Copy-to-clipboard for every code block. Code-island figures are
+      // position:relative via CSS; bare Shiki <pre> blocks get wrapped in a
+      // positioned shell so the button can sit top-right. Code blocks only.
+      const COPY_ICON =
+        '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg>';
+      const DONE_ICON =
+        '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>';
+      const COPIED_MS = 1600;
+
+      document.querySelectorAll<HTMLPreElement>('.dx-content pre').forEach((pre) => {
+        const code = pre.querySelector('code') ?? pre;
+        let host = pre.closest('.code-island') as HTMLElement | null;
+        if (!host) {
+          const wrap = document.createElement('div');
+          wrap.className = 'code-island is-plain';
+          pre.replaceWith(wrap);
+          wrap.appendChild(pre);
+          host = wrap;
+        }
+        if (host.querySelector('.code-copy')) return;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'code-copy';
+        btn.setAttribute('aria-label', 'Copy code');
+        btn.innerHTML =
+          '<span class="code-copy__ico code-copy__ico--copy">' + COPY_ICON + '</span>' +
+          '<span class="code-copy__ico code-copy__ico--done">' + DONE_ICON + '</span>' +
+          '<span class="code-copy__txt">Copy</span>';
+        btn.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(code.textContent ?? '');
+            btn.classList.add('is-copied');
+            const txt = btn.querySelector('.code-copy__txt');
+            if (txt) txt.textContent = 'Copied';
+            window.setTimeout(() => {
+              btn.classList.remove('is-copied');
+              if (txt) txt.textContent = 'Copy';
+            }, COPIED_MS);
+          } catch {
+            /* clipboard blocked (insecure context) — fail silently */
+          }
+        });
+        host.appendChild(btn);
+      });
     </script>
   </body>
 </html>

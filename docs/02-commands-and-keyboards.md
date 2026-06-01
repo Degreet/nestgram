@@ -100,7 +100,7 @@ export class MenuRouter {
 
 `.row()` starts a new row; consecutive calls share the current one. Handling
 the `buy:1` press is the next page,
-[Callbacks →](./03-callbacks.md).
+[Callbacks →](/docs/callbacks).
 
 ## Reply keyboards
 
@@ -132,7 +132,3 @@ markup is exactly what the API expects.
 - `message.reply(text)` sends it as a Telegram reply (quoting the original).
 
 Both accept the full set of `SendMessage` options as a second argument.
-
-## Next
-
-Time to handle button presses: [Callbacks →](./03-callbacks.md)

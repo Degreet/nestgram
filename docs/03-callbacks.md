@@ -9,6 +9,10 @@ sidebar:
 When a user taps an inline button, Telegram sends a **callback query** with
 the `callback_data` you set on the button. Handle it with `@Action()`.
 
+:::mental
+button tap -> callback query -> @Action handler* -> answer + edit
+:::
+
 ## Matching callback data
 
 `@Action()` is to callback queries what `@Command()` is to messages. It takes
@@ -96,8 +100,3 @@ paginate(query: CallbackQuery, @Match() match: RegExpMatchArray) {
 
 `editText` edits the text (and optionally the markup); there's also
 `editReplyMarkup` when you only want to change the buttons.
-
-## Next
-
-Your bot is interactive. Now lock it down with
-[guards & the Nest pipeline →](./04-guards-and-pipeline.md)
