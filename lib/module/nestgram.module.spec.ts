@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 
 import { BotService } from '../bot';
 import { Event } from '../decorators/params/event.decorator';
+import { Command } from '../decorators/listeners/command.decorator';
 import { OnMessage } from '../decorators/listeners/on-message.decorator';
 import { Router } from '../decorators/injectable/router.decorator';
 import { RouteTable } from '../discovery';
@@ -112,6 +113,46 @@ describe('NestgramModule.forRootAsync (integration)', () => {
     expect(app.get(BotService).token).toBe('ASYNC_TOKEN');
     // Engine still wired: discovery built the route table.
     expect(app.get(RouteTable).size).toBe(1);
+
+    await app.close();
+  });
+});
+
+// Content matching end to end: @Command must win over a generic @OnMessage for
+// a matching command, and fall through to it otherwise (first-match routing).
+@Router()
+class CommandRouter {
+  hits: string[] = [];
+
+  @Command('start')
+  start(): void {
+    this.hits.push('start');
+  }
+
+  @OnMessage()
+  echo(): void {
+    this.hits.push('echo');
+  }
+}
+
+@Module({
+  imports: [NestgramModule.forRoot({ token: 'TEST' })],
+  providers: [CommandRouter],
+})
+class CommandAppModule {}
+
+describe('match predicates (integration)', () => {
+  it('routes /start to @Command and other text to @OnMessage', async () => {
+    const app = await NestFactory.createApplicationContext(CommandAppModule, {
+      logger: false,
+    });
+    const dispatcher = app.get(UpdateDispatcher);
+    const router = app.get(CommandRouter);
+
+    await dispatcher.dispatch(messageUpdate(1, '/start'));
+    await dispatcher.dispatch(messageUpdate(2, 'just chatting'));
+
+    expect(router.hits).toEqual(['start', 'echo']);
 
     await app.close();
   });

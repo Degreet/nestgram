@@ -1,5 +1,6 @@
 import type { TelegramExecutionContext } from '../context/telegram-execution-context';
 import { RoutePredicate } from './route-predicate';
+import { matchesPattern, toStatelessPattern } from './pattern';
 
 /**
  * Matches a callback query by its `data` (the `@Action` predicate):
@@ -11,7 +12,11 @@ import { RoutePredicate } from './route-predicate';
  * import (which would pull `telegramObjects` -> `decorators` into a cycle).
  */
 export class ActionPredicate implements RoutePredicate {
-  constructor(private readonly data?: string | RegExp) {}
+  private readonly data?: string | RegExp;
+
+  constructor(data?: string | RegExp) {
+    this.data = data === undefined ? undefined : toStatelessPattern(data);
+  }
 
   matches(ctx: TelegramExecutionContext): boolean {
     if (this.data === undefined) {
@@ -23,8 +28,6 @@ export class ActionPredicate implements RoutePredicate {
       return false;
     }
 
-    return this.data instanceof RegExp
-      ? this.data.test(data)
-      : data === this.data;
+    return matchesPattern(this.data, data);
   }
 }

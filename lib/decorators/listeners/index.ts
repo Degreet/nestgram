@@ -1,5 +1,10 @@
 export * from './create-listener-decorator';
 
+// Match-predicate decorators (sugar over the generic on-* listeners).
+export * from './command.decorator';
+export * from './hears.decorator';
+export * from './action.decorator';
+
 export * from './on-business-connection.decorator';
 export * from './on-business-message.decorator';
 export * from './on-callback-query.decorator';
