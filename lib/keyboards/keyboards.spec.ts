@@ -41,6 +41,93 @@ describe('InlineKeyboard', () => {
       serialize(kb),
     );
   });
+
+  it('columns(n) auto-wraps buttons into a grid (uneven last row)', () => {
+    const kb = new InlineKeyboard()
+      .columns(2)
+      .text('a', '1')
+      .text('b', '2')
+      .text('c', '3')
+      .text('d', '4')
+      .text('e', '5');
+
+    expect(
+      (serialize(kb) as { inline_keyboard: unknown[][] }).inline_keyboard,
+    ).toHaveLength(3);
+    expect(serialize(kb)).toEqual({
+      inline_keyboard: [
+        [
+          { text: 'a', callback_data: '1' },
+          { text: 'b', callback_data: '2' },
+        ],
+        [
+          { text: 'c', callback_data: '3' },
+          { text: 'd', callback_data: '4' },
+        ],
+        [{ text: 'e', callback_data: '5' }],
+      ],
+    });
+  });
+
+  it('columns coexists with an explicit row()', () => {
+    const kb = new InlineKeyboard()
+      .text('top', 't')
+      .row()
+      .columns(2)
+      .text('a', '1')
+      .text('b', '2')
+      .text('c', '3');
+
+    expect(serialize(kb)).toEqual({
+      inline_keyboard: [
+        [{ text: 'top', callback_data: 't' }],
+        [
+          { text: 'a', callback_data: '1' },
+          { text: 'b', callback_data: '2' },
+        ],
+        [{ text: 'c', callback_data: '3' }],
+      ],
+    });
+  });
+
+  it('columns set mid-row counts buttons already in that row', () => {
+    const kb = new InlineKeyboard()
+      .text('a', '1')
+      .columns(2)
+      .text('b', '2')
+      .text('c', '3');
+
+    expect(serialize(kb)).toEqual({
+      inline_keyboard: [
+        [
+          { text: 'a', callback_data: '1' },
+          { text: 'b', callback_data: '2' },
+        ],
+        [{ text: 'c', callback_data: '3' }],
+      ],
+    });
+  });
+
+  it('columns(0) is rejected', () => {
+    expect(() => new InlineKeyboard().columns(0)).toThrow(RangeError);
+  });
+
+  it('hidden buttons are excluded (and an all-hidden row collapses)', () => {
+    const kb = new InlineKeyboard()
+      .text('keep', 'k')
+      .text('drop', 'd', true)
+      .row()
+      .text('gone', 'g', 1 > 0) // any boolean expression
+      .row()
+      .text('last', 'l');
+
+    expect(serialize(kb)).toEqual({
+      inline_keyboard: [
+        [{ text: 'keep', callback_data: 'k' }],
+        [{ text: 'last', callback_data: 'l' }],
+      ],
+    });
+  });
 });
 
 describe('ReplyKeyboard', () => {
@@ -58,6 +145,19 @@ describe('ReplyKeyboard', () => {
       resize_keyboard: true,
       one_time_keyboard: true,
       input_field_placeholder: 'Pick one',
+    });
+  });
+
+  it('supports columns grid and hidden buttons', () => {
+    const kb = new ReplyKeyboard()
+      .columns(2)
+      .text('a')
+      .text('skip', true)
+      .text('b')
+      .text('c');
+
+    expect(serialize(kb)).toEqual({
+      keyboard: [[{ text: 'a' }, { text: 'b' }], [{ text: 'c' }]],
     });
   });
 
