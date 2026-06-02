@@ -8,13 +8,11 @@ import {
 
 import { BotService } from '../api';
 import { RouteExplorer, RouteTable } from '../engine/discovery';
+import { NestgramConfigError } from '../exceptions';
 import { Providers } from '../providers';
 import { UpdateDispatcher } from '../engine/dispatcher';
 import { PollingUpdateSource, UpdateSource } from '../engine/source';
 import { NestgramModuleOptions } from './nestgram-module.types';
-
-/** Telegram bot tokens look like `123456789:AA...` (id colon secret). */
-const TELEGRAM_TOKEN_PATTERN = /^\d+:[\w-]+$/;
 
 /**
  * Wires the engine together at application boot and tears it down on shutdown.
@@ -29,6 +27,9 @@ const TELEGRAM_TOKEN_PATTERN = /^\d+:[\w-]+$/;
 export class NestgramBootstrap
   implements OnApplicationBootstrap, OnApplicationShutdown
 {
+  /** Telegram bot tokens look like `123456789:AA...` (id colon secret). */
+  private static readonly TOKEN_PATTERN = /^\d+:[\w-]+$/;
+
   private readonly logger = new Logger(NestgramBootstrap.name);
   private source?: UpdateSource;
 
@@ -45,8 +46,15 @@ export class NestgramBootstrap
     this.validateToken();
     this.warnOnInsecureWebhook();
 
-    this.routeTable.set(this.routeExplorer.explore());
-    this.logger.log(`Route table built: ${this.routeTable.size} route(s)`);
+    const routes = this.routeExplorer.explore();
+    this.routeTable.set(routes);
+    this.logger.log(`Route table built: ${routes.length} route(s)`);
+    for (const route of routes) {
+      const router = route.instance.constructor.name;
+      this.logger.debug(
+        `Mapped ${router}.${route.methodName} → ${route.updateType}`,
+      );
+    }
 
     if (this.options.polling) {
       const pollingOptions =
@@ -69,23 +77,31 @@ export class NestgramBootstrap
   private validateToken(): void {
     const token = this.options.token;
     if (typeof token !== 'string' || token.trim() === '') {
-      throw new Error(
-        'Nestgram: a bot token is required — pass it to NestgramModule.forRoot({ token }).',
+      throw new NestgramConfigError(
+        'A bot token is required — pass it to NestgramModule.forRoot({ token }).',
       );
     }
-    if (!TELEGRAM_TOKEN_PATTERN.test(token)) {
+    if (!NestgramBootstrap.TOKEN_PATTERN.test(token)) {
       this.logger.warn(
         'Bot token does not look like a Telegram token (expected "<id>:<secret>").',
       );
     }
   }
 
-  /** A webhook without a secret token lets anyone who learns the URL spoof updates. */
   private warnOnInsecureWebhook(): void {
     const webhook = this.options.webhook;
-    if (webhook && !webhook.secretToken) {
+    if (!webhook) {
+      return;
+    }
+    if (!webhook.secretToken) {
       this.logger.warn(
         `Webhook ${webhook.url} is configured without a secretToken — anyone who learns the URL can spoof updates. Set webhook.secretToken.`,
+      );
+    }
+    // A bot token in the webhook URL leaks full control to anyone with the URL.
+    if (this.options.token && webhook.url.includes(this.options.token)) {
+      this.logger.warn(
+        'Webhook URL contains the bot token — anyone who sees the URL gets your token. Remove it from the URL.',
       );
     }
   }
