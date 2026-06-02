@@ -1,6 +1,0 @@
-export enum Metadata {
-  LISTENERS = 'LISTENERS',
-  ROUTER = 'ROUTER',
-  PARAMS = 'PARAMS',
-  NO_AUTO_ANSWER = 'NO_AUTO_ANSWER',
-}

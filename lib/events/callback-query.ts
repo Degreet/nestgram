@@ -33,4 +33,9 @@ export class CallbackQuery extends TelegramObject {
     // Positional `text` is the explicit arg, so it wins over any `options.text`.
     return this.botService.answerCallbackQuery(this.id, { ...options, text });
   }
+
+  /** Answer with a modal alert — shortcut for `answer(text, { show_alert: true })`. */
+  alert(text: string, options?: Partial<AnswerCallbackQueryOptions>) {
+    return this.answer(text, { ...options, show_alert: true });
+  }
 }

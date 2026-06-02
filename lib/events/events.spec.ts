@@ -99,4 +99,13 @@ describe('CallbackQuery actions', () => {
       args: ['cb1', { text: undefined }],
     });
   });
+
+  it('alert(text) answers with show_alert', () => {
+    const { bot, calls } = fakeBot();
+    query(bot).alert('Heads up');
+    expect(calls[0]).toEqual({
+      method: 'answerCallbackQuery',
+      args: ['cb1', { show_alert: true, text: 'Heads up' }],
+    });
+  });
 });
