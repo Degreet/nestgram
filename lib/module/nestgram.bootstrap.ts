@@ -8,7 +8,7 @@ import {
 
 import { BotService } from '../api';
 import { RouteExplorer, RouteTable } from '../engine/discovery';
-import { Providers } from '../enums';
+import { Providers } from '../providers';
 import { UpdateDispatcher } from '../engine/dispatcher';
 import { PollingUpdateSource, UpdateSource } from '../engine/source';
 import { NestgramModuleOptions } from './nestgram-module.types';

@@ -10,3 +10,4 @@ export * from './no-auto-answer.decorator';
 // `undefined` at decoration time. Params are public API via the top-level
 // `lib/index.ts` instead.
 export * from './listener-options';
+export * from './metadata.enum';

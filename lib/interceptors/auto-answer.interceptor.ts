@@ -11,7 +11,8 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 import { TelegramExecutionContext } from '../engine/context';
-import { Metadata, Providers } from '../enums';
+import { Metadata } from '../decorators/metadata.enum';
+import { Providers } from '../providers';
 import type { CallbackQuery } from '../events';
 import type { NestgramModuleOptions } from '../module/nestgram-module.types';
 

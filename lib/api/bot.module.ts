@@ -3,7 +3,7 @@ import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
 import { BotService } from './bot.service';
 
 import { BotAsyncOptions, BotOptions } from './bot-options';
-import { Providers } from '../enums';
+import { Providers } from '../providers';
 
 @Global()
 @Module({})

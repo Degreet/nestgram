@@ -1,6 +1,6 @@
 import { SetMetadata } from '@nestjs/common';
 
-import { Metadata } from '../enums';
+import { Metadata } from './metadata.enum';
 
 /**
  * Opt a callback handler out of auto-answering. When the global auto-answer is

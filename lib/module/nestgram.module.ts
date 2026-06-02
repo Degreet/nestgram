@@ -4,7 +4,7 @@ import { APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core';
 import { BotModule } from '../api';
 import { ContextFactory, EventFactory } from '../engine/context';
 import { RouteExplorer, RouteMatcher, RouteTable } from '../engine/discovery';
-import { Providers } from '../enums';
+import { Providers } from '../providers';
 import { HandlerExecutorFactory, ResultHandler } from '../engine/execution';
 import { UpdateDispatcher } from '../engine/dispatcher';
 import { AutoAnswerCallbackInterceptor } from '../interceptors';

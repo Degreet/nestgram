@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import { BotOptions } from './bot-options';
 import { InputFile } from './input-file';
-import { Providers } from '../enums';
+import { Providers } from '../providers';
 
 import {
   SendMessage,

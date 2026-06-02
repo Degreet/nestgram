@@ -3,7 +3,7 @@ import {
   MetadataScanner,
 } from '@nestjs/core';
 
-import { Metadata } from '../../enums';
+import { Metadata } from '../../decorators/metadata.enum';
 import { ListenerOptions } from '../../decorators/listener-options';
 import { RouteExplorer } from './route-explorer';
 import { RouteTable } from './route-table';

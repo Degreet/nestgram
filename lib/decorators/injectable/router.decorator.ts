@@ -1,6 +1,6 @@
 import { SetMetadata } from '@nestjs/common';
 
-import { Metadata } from '../../enums';
+import { Metadata } from '../metadata.enum';
 
 /**
  * Options for `@Router()`.

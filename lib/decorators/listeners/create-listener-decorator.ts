@@ -2,7 +2,7 @@ import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
 
 import { RoutePredicate } from '../../engine/matching';
 import { ListenerOptions } from '../listener-options';
-import { Metadata } from '../../enums';
+import { Metadata } from '../metadata.enum';
 import { Event } from '../params/event.decorator';
 
 export const createListenerDecorator = (
