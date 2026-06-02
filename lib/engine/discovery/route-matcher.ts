@@ -11,9 +11,10 @@ import { RouteTable } from './route-table';
  * the framework may want swappable: a project can override `RouteMatcher` via DI
  * to change how routes are selected. `UpdateDispatcher` injects it.
  *
- * A route matches when its `updateType` equals the resolved kind and every
- * declared predicate passes. Predicates receive the execution context, may be
- * async, run sequentially, and short-circuit on the first rejection.
+ * The table is pre-indexed by update type, so candidates already share the
+ * update's kind; a route matches when every declared predicate passes.
+ * Predicates receive the execution context, may be async, run sequentially, and
+ * short-circuit on the first rejection.
  */
 @Injectable()
 export class RouteMatcher {
@@ -21,7 +22,7 @@ export class RouteMatcher {
    * All routes that match the update, in declaration order.
    *
    * Only walks the candidates for the update's kind (the table is pre-indexed by
-   * type), so an update never evaluates filters for unrelated handlers.
+   * type), so an update never evaluates predicates for unrelated handlers.
    * First-match routing takes `[0]`; the ordered remainder is what a future
    * `@Next()`/skip mechanism falls through to.
    */
@@ -44,10 +45,6 @@ export class RouteMatcher {
     route: Route,
     ctx: TelegramExecutionContext,
   ): Promise<boolean> {
-    if (route.updateType !== ctx.kind) {
-      return false;
-    }
-
     for (const predicate of route.predicates) {
       const passed = await predicate.matches(ctx);
       if (!passed) {
