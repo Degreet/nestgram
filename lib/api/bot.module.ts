@@ -3,6 +3,7 @@ import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
 import { BotService } from './bot.service';
 
 import { BotAsyncOptions, BotOptions } from './bot-options';
+import { NestgramConfigError } from '../exceptions';
 import { Providers } from '../providers';
 
 @Global()
@@ -53,7 +54,7 @@ export class BotModule {
 
     const optionsClass = options.useClass ?? options.useExisting;
     if (!optionsClass) {
-      throw new Error(
+      throw new NestgramConfigError(
         'BotModule.forRootAsync requires one of useFactory, useClass or useExisting',
       );
     }

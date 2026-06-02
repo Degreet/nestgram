@@ -1,3 +1,5 @@
+import { NestgramConfigError } from '../exceptions/config.exception';
+
 /**
  * Shared row layout for the keyboard builders.
  *
@@ -18,7 +20,7 @@ export abstract class KeyboardBuilder<TButton> {
    */
   columns(count: number): this {
     if (count < 1) {
-      throw new RangeError('columns(count) requires count >= 1');
+      throw new NestgramConfigError('columns(count) requires count >= 1');
     }
     this.columnLimit = count;
     return this;

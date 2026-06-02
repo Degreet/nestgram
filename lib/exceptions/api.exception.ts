@@ -1,6 +1,7 @@
 import { ApiError, ResponseParameters } from '../api/api-response';
+import { NestgramError } from './nestgram.error';
 
-export class ApiException extends Error {
+export class ApiException extends NestgramError {
   readonly name = 'ApiError';
 
   readonly ok = false;

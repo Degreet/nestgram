@@ -1,4 +1,5 @@
 import { CommandPredicate, RoutePredicate } from '../../engine/matching';
+import { NestgramConfigError } from '../../exceptions';
 import { createListenerDecorator } from './create-listener-decorator';
 
 const UPDATE_TYPE = 'message';
@@ -16,7 +17,7 @@ export const Command = (
   ...predicates: RoutePredicate[]
 ): MethodDecorator => {
   if (!command) {
-    throw new Error('@Command requires a non-empty command name');
+    throw new NestgramConfigError('@Command requires a non-empty command name');
   }
 
   return createListenerDecorator(

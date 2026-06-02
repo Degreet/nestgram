@@ -2,6 +2,7 @@ import { InlineKeyboard } from './inline-keyboard';
 import { ReplyKeyboard } from './reply-keyboard';
 import { RemoveKeyboard } from './remove-keyboard';
 import { createAttachedData } from '../api/form-data';
+import { NestgramConfigError } from '../exceptions';
 
 // Serialize the way a send payload does: JSON.stringify invokes toJSON().
 function serialize(markup: unknown): unknown {
@@ -109,7 +110,7 @@ describe('InlineKeyboard', () => {
   });
 
   it('columns(0) is rejected', () => {
-    expect(() => new InlineKeyboard().columns(0)).toThrow(RangeError);
+    expect(() => new InlineKeyboard().columns(0)).toThrow(NestgramConfigError);
   });
 
   it('hidden buttons are excluded (and an all-hidden row collapses)', () => {

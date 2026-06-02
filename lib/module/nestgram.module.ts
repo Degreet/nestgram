@@ -4,6 +4,7 @@ import { APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core';
 import { BotModule } from '../api';
 import { ContextFactory, EventFactory } from '../engine/context';
 import { RouteExplorer, RouteMatcher, RouteTable } from '../engine/discovery';
+import { NestgramConfigError } from '../exceptions';
 import { Providers } from '../providers';
 import { HandlerExecutorFactory, ResultHandler } from '../engine/execution';
 import { UpdateDispatcher } from '../engine/dispatcher';
@@ -116,7 +117,7 @@ export class NestgramModule {
 
     const optionsFactory = options.useClass ?? options.useExisting;
     if (!optionsFactory) {
-      throw new Error(
+      throw new NestgramConfigError(
         'NestgramModule.forRootAsync requires one of useFactory, useClass or useExisting',
       );
     }
