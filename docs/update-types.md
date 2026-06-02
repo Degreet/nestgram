@@ -34,18 +34,20 @@ Telegram has an update field, Nestgram has an `@On*` for it.
 ## Several types, one handler
 
 Usually you write one handler per type and share a private method. When a single
-method genuinely fits several types, opt into a union with `@On([...])` — and the
-compiler forces you to narrow before using type-specific fields.
+method genuinely fits several types, **stack the decorators** — each one binds
+the method to its update type. The parameter becomes a union, and you narrow it
+with a plain `instanceof` (events are real classes).
 
 :::code[feedback.router.ts]
 ```ts
-import { On, UpdateType, Message, CallbackQuery } from 'nestgram';
+import { Router, OnMessage, OnCallbackQuery, Message, CallbackQuery } from 'nestgram';
 
 @Router()
 export class FeedbackRouter {
-  @On([UpdateType.Message, UpdateType.CallbackQuery])
+  @OnMessage()
+  @OnCallbackQuery()
   handle(event: Message | CallbackQuery) {
-    if (event.is(UpdateType.Message)) {
+    if (event instanceof Message) {
       // narrowed to Message here
       return event.answer(`You said: ${event.text}`);
     }
@@ -57,14 +59,13 @@ export class FeedbackRouter {
 :::
 
 :::anno
-1. `@On([...])` lists the update types this method accepts.
+1. Stacking `@OnMessage()` and `@OnCallbackQuery()` binds one method to both update types — no special union decorator needed.
 2. The parameter is a **union** of the matching event types — no hidden optionals.
-3. `event.is(UpdateType.Message)` narrows the union, so you only reach
-   type-specific fields after a conscious check.
+3. `instanceof Message` narrows the union, so you only reach type-specific fields after a conscious check — standard TypeScript, no framework-specific API.
 :::
 
 :::tip
 Prefer separate handlers calling a shared method — it keeps each handler's type
-exact. Reach for `@On([...])` only when the branching genuinely belongs in one
-place.
+exact. Reach for stacked decorators only when the branching genuinely belongs in
+one place.
 :::
