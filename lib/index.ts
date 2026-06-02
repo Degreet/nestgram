@@ -6,6 +6,7 @@ export * from './exceptions';
 export * from './api/methods';
 export * from './events';
 export * from './keyboards';
+export * from './formatting';
 export * from './interceptors';
 
 // Engine public surface (the update -> dispatch pipeline).
