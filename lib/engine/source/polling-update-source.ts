@@ -92,7 +92,7 @@ export class PollingUpdateSource implements UpdateSource {
       drop_pending_updates: this.options.dropPendingUpdates,
     });
     const me = await this.botService.getMe();
-    this.logger.debug(`Bot @${me.username} ready to poll`);
+    this.logger.log(`Connected as @${me.username}`);
   }
 
   private async loop(

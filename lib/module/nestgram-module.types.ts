@@ -8,6 +8,17 @@ import { PollingOptions } from '../engine/source';
  * Note there is no `routers` list: routers are discovered from the Nest provider
  * graph (`@Router()` classes), so adding one never means editing the module too.
  */
+/** Webhook transport configuration. */
+export interface WebhookOptions {
+  /** Public HTTPS URL Telegram should deliver updates to. */
+  url: string;
+  /**
+   * Secret token sent as `X-Telegram-Bot-Api-Secret-Token` so the bot can
+   * verify updates really come from Telegram. Strongly recommended.
+   */
+  secretToken?: string;
+}
+
 export interface NestgramModuleOptions {
   /** Bot API token. */
   token: string;
@@ -18,6 +29,13 @@ export interface NestgramModuleOptions {
    * later phase via its own update source.
    */
   polling?: boolean | PollingOptions;
+  /**
+   * Webhook transport config. The receiving controller lands in a later phase;
+   * declaring it now lets the bot warn at startup when `secretToken` is missing.
+   * Always set `secretToken` in production — without it, anyone who learns the
+   * URL can spoof updates.
+   */
+  webhook?: WebhookOptions;
   /**
    * Auto-answer callback queries a handler left unanswered, so buttons never
    * spin. On by default; set `false` to disable globally (or use

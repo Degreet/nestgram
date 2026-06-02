@@ -1,4 +1,4 @@
-import { Injectable, Module } from '@nestjs/common';
+import { Injectable, Logger, Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { BotService } from '../api';
@@ -240,5 +240,65 @@ describe('parameter decorators (integration)', () => {
     });
 
     await app.close();
+  });
+});
+
+@Module({ imports: [NestgramModule.forRoot({ token: '' })] })
+class EmptyTokenAppModule {}
+
+@Module({ imports: [NestgramModule.forRoot({ token: 'not-a-token' })] })
+class MalformedTokenAppModule {}
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      token: '123456:VALID',
+      webhook: { url: 'https://bot.example/tg' },
+    }),
+  ],
+})
+class InsecureWebhookAppModule {}
+
+describe('production baseline', () => {
+  it('throws at boot when the token is missing', async () => {
+    await expect(
+      NestFactory.createApplicationContext(EmptyTokenAppModule, {
+        logger: false,
+      }),
+    ).rejects.toThrow(/token is required/);
+  });
+
+  it('warns when the token is malformed', async () => {
+    const warn = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
+
+    const app = await NestFactory.createApplicationContext(
+      MalformedTokenAppModule,
+      { logger: false },
+    );
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('Telegram token'),
+    );
+
+    await app.close();
+    warn.mockRestore();
+  });
+
+  it('warns when a webhook is configured without a secretToken', async () => {
+    const warn = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
+
+    const app = await NestFactory.createApplicationContext(
+      InsecureWebhookAppModule,
+      { logger: false },
+    );
+
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('secretToken'));
+
+    await app.close();
+    warn.mockRestore();
   });
 });

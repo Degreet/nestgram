@@ -13,6 +13,9 @@ import { UpdateDispatcher } from '../engine/dispatcher';
 import { PollingUpdateSource, UpdateSource } from '../engine/source';
 import { NestgramModuleOptions } from './nestgram-module.types';
 
+/** Telegram bot tokens look like `123456789:AA...` (id colon secret). */
+const TELEGRAM_TOKEN_PATTERN = /^\d+:[\w-]+$/;
+
 /**
  * Wires the engine together at application boot and tears it down on shutdown.
  *
@@ -39,6 +42,9 @@ export class NestgramBootstrap
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
+    this.validateToken();
+    this.warnOnInsecureWebhook();
+
     this.routeTable.set(this.routeExplorer.explore());
     this.logger.log(`Route table built: ${this.routeTable.size} route(s)`);
 
@@ -52,5 +58,35 @@ export class NestgramBootstrap
 
   async onApplicationShutdown(): Promise<void> {
     await this.source?.stop();
+  }
+
+  /**
+   * A token is mandatory; a malformed one is a likely misconfiguration.
+   *
+   * Runs at boot (not in `forRoot`) on purpose: `forRootAsync` resolves the
+   * token via DI, so boot is the only place that covers both entry points.
+   */
+  private validateToken(): void {
+    const token = this.options.token;
+    if (typeof token !== 'string' || token.trim() === '') {
+      throw new Error(
+        'Nestgram: a bot token is required — pass it to NestgramModule.forRoot({ token }).',
+      );
+    }
+    if (!TELEGRAM_TOKEN_PATTERN.test(token)) {
+      this.logger.warn(
+        'Bot token does not look like a Telegram token (expected "<id>:<secret>").',
+      );
+    }
+  }
+
+  /** A webhook without a secret token lets anyone who learns the URL spoof updates. */
+  private warnOnInsecureWebhook(): void {
+    const webhook = this.options.webhook;
+    if (webhook && !webhook.secretToken) {
+      this.logger.warn(
+        `Webhook ${webhook.url} is configured without a secretToken — anyone who learns the URL can spoof updates. Set webhook.secretToken.`,
+      );
+    }
   }
 }
