@@ -22,12 +22,12 @@ already know from HTTP.
 
 ## Pages
 
-1. [Quickstart](./01-quickstart.md) — install and run an echo bot.
-2. [Commands, parameters & keyboards](./02-commands-and-keyboards.md) —
+1. [Quickstart](./quickstart.md) — install and run an echo bot.
+2. [Commands, parameters & keyboards](./commands-and-keyboards.md) —
    `@Command`, parameter decorators, inline & reply keyboards.
-3. [Callbacks](./03-callbacks.md) — `@Action`, editing messages, answering
+3. [Callbacks](./callbacks.md) — `@Action`, editing messages, answering
    callback queries.
-4. [Guards & the Nest pipeline](./04-guards-and-pipeline.md) — an admin-only
+4. [Guards & the Nest pipeline](./guards-and-pipeline.md) — an admin-only
    guard, and why the standard Nest primitives just work.
 
 ## Conventions used in these docs
