@@ -78,6 +78,13 @@ async function serializeObject(
     return `attach://${id}`;
   }
 
+  // Honor `toJSON()` (e.g. keyboard builders) before walking own keys, so the
+  // serialized shape matches the JSON path's `JSON.stringify`.
+  const toJSON = (value as { toJSON?: () => unknown }).toJSON;
+  if (typeof toJSON === 'function') {
+    return serializeObject(toJSON.call(value), formData);
+  }
+
   if (Array.isArray(value)) {
     return Promise.all(value.map((item) => serializeObject(item, formData)));
   }
