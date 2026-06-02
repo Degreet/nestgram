@@ -5,6 +5,7 @@ import { BotService } from '../api';
 import { Event } from '../decorators/params/event.decorator';
 import { Command } from '../decorators/listeners/command.decorator';
 import { OnMessage } from '../decorators/listeners/on-message.decorator';
+import { OnCallbackQuery } from '../decorators/listeners/on-callback-query.decorator';
 import { Router } from '../decorators/injectable/router.decorator';
 import { RouteTable } from '../engine/discovery';
 import { UpdateDispatcher } from '../engine/dispatcher';
@@ -153,6 +154,45 @@ describe('match predicates (integration)', () => {
     await dispatcher.dispatch(messageUpdate(2, 'just chatting'));
 
     expect(router.hits).toEqual(['start', 'echo']);
+
+    await app.close();
+  });
+});
+
+// Stacking listener decorators on one method binds it to several update types —
+// no @On([...]) union needed (listener metadata is an array).
+@Router()
+class MultiRouter {
+  hits: string[] = [];
+
+  @OnMessage()
+  @OnCallbackQuery()
+  handle(): void {
+    this.hits.push('hit');
+  }
+}
+
+@Module({
+  imports: [NestgramModule.forRoot({ token: 'TEST' })],
+  providers: [MultiRouter],
+})
+class MultiAppModule {}
+
+describe('stacked listener decorators (integration)', () => {
+  it('binds one method to several update types', async () => {
+    const app = await NestFactory.createApplicationContext(MultiAppModule, {
+      logger: false,
+    });
+    const table = app.get(RouteTable);
+    const dispatcher = app.get(UpdateDispatcher);
+    const router = app.get(MultiRouter);
+
+    // Two routes for the one method: one per stacked decorator.
+    expect(table.ofType('message')).toHaveLength(1);
+    expect(table.ofType('callback_query')).toHaveLength(1);
+
+    await dispatcher.dispatch(messageUpdate(1, 'hi'));
+    expect(router.hits).toEqual(['hit']);
 
     await app.close();
   });

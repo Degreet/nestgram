@@ -6,8 +6,12 @@ export const createListenerDecorator = (
   updateType: string,
   ...predicates: RoutePredicate[]
 ): MethodDecorator => {
-  return (target: any, _key: string, descriptor: PropertyDescriptor) => {
-    const existingMetadata = Reflect.getMetadata(
+  return (
+    _target: object,
+    _key: string | symbol,
+    descriptor: PropertyDescriptor,
+  ) => {
+    const existingMetadata: ListenerOptions[] | undefined = Reflect.getMetadata(
       Metadata.LISTENERS,
       descriptor.value,
     );
@@ -18,6 +22,8 @@ export const createListenerDecorator = (
 
     Reflect.defineMetadata(Metadata.LISTENERS, newMetadata, descriptor.value);
 
-    return target;
+    // A method decorator must NOT return the target: a returned value becomes
+    // the descriptor for the next decorator in a stack, which breaks stacking
+    // (`@OnMessage() @OnCallbackQuery() handle()`). Return void.
   };
 };
