@@ -14,6 +14,9 @@ export class CallbackQuery extends TelegramObject {
   data?: string;
   game_short_name?: string;
 
+  /** Whether `answer()` has been called — auto-answer checks this. */
+  answered = false;
+
   constructor(
     private readonly botService: BotService,
     from: Partial<CallbackQuery>,
@@ -26,6 +29,7 @@ export class CallbackQuery extends TelegramObject {
   }
 
   answer(text?: string, options?: Partial<AnswerCallbackQueryOptions>) {
+    this.answered = true;
     // Positional `text` is the explicit arg, so it wins over any `options.text`.
     return this.botService.answerCallbackQuery(this.id, { ...options, text });
   }

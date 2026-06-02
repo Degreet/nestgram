@@ -33,9 +33,26 @@ import {
 @Injectable()
 export class BotService {
   readonly token: string;
+  private readonly defaultParseMode?: string;
 
   constructor(@Inject(Providers.BOT_OPTIONS) options: BotOptions) {
     this.token = options.token;
+    this.defaultParseMode = options.parseMode;
+  }
+
+  /**
+   * Apply the default `parse_mode` to a send that omits one. An explicit
+   * `parse_mode` key (any value, including `undefined`) is left untouched, so a
+   * call can override the default or opt out per call.
+   */
+  private withParseMode<T extends { parse_mode?: string }>(
+    options: Partial<T> | undefined,
+  ): Partial<T> {
+    const opts = (options ?? {}) as Partial<T>;
+    if (!this.defaultParseMode || 'parse_mode' in opts) {
+      return opts;
+    }
+    return { ...opts, parse_mode: this.defaultParseMode };
   }
 
   deleteWebhook(options?: Partial<DeleteWebhookOptions>) {
@@ -58,7 +75,7 @@ export class BotService {
     return new SendMessage(this, {
       chat_id,
       text,
-      ...(options ?? {}),
+      ...this.withParseMode(options),
     }).fetch();
   }
 
@@ -70,7 +87,7 @@ export class BotService {
     return new SendPhoto(this, {
       chat_id,
       photo,
-      ...(options ?? {}),
+      ...this.withParseMode(options),
     }).fetch();
   }
 
@@ -108,7 +125,7 @@ export class BotService {
       chat_id,
       message_id,
       text,
-      ...(options ?? {}),
+      ...this.withParseMode(options),
     }).fetch();
   }
 

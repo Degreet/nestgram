@@ -6,6 +6,7 @@ export * from './exceptions';
 export * from './api/methods';
 export * from './events';
 export * from './keyboards';
+export * from './interceptors';
 
 // Engine public surface (the new pipeline; the legacy dispatcher/executor was
 // removed at cutover).

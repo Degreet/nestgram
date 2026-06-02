@@ -18,6 +18,18 @@ export interface NestgramModuleOptions {
    * later phase via its own update source.
    */
   polling?: boolean | PollingOptions;
+  /**
+   * Auto-answer callback queries a handler left unanswered, so buttons never
+   * spin. On by default; set `false` to disable globally (or use
+   * `@NoAutoAnswer()` per handler). A thrown error skips auto-answer.
+   */
+  autoAnswerCallbackQueries?: boolean;
+  /**
+   * Default `parse_mode` for outgoing sends. Applied when a call omits
+   * `parse_mode`; pass `parse_mode` explicitly on a call to override, or
+   * `parse_mode: undefined` to opt that call out.
+   */
+  parseMode?: string;
 }
 
 /** A class that can produce `NestgramModuleOptions` (for `useClass`/`useExisting`). */

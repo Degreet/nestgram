@@ -1,5 +1,5 @@
 import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
-import { DiscoveryModule } from '@nestjs/core';
+import { APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core';
 
 import { BotModule } from '../api';
 import { ContextFactory, EventFactory } from '../engine/context';
@@ -7,6 +7,7 @@ import { RouteExplorer, RouteMatcher, RouteTable } from '../engine/discovery';
 import { Providers } from '../enums';
 import { HandlerExecutorFactory, ResultHandler } from '../engine/execution';
 import { UpdateDispatcher } from '../engine/dispatcher';
+import { AutoAnswerCallbackInterceptor } from '../interceptors';
 import { NestgramBootstrap } from './nestgram.bootstrap';
 import {
   NestgramModuleAsyncOptions,
@@ -25,6 +26,10 @@ const ENGINE_PROVIDERS: Provider[] = [
   ResultHandler,
   UpdateDispatcher,
   NestgramBootstrap,
+  // Built-ins as ordinary public providers (no privileged core). Auto-answer is
+  // a global interceptor that self-disables when the option is off, so it stays
+  // uniform across forRoot / forRootAsync.
+  { provide: APP_INTERCEPTOR, useClass: AutoAnswerCallbackInterceptor },
 ];
 
 /**
@@ -56,7 +61,13 @@ export class NestgramModule {
   static forRoot(options: NestgramModuleOptions): DynamicModule {
     return {
       module: NestgramModule,
-      imports: [BotModule.forRoot({ token: options.token }), DiscoveryModule],
+      imports: [
+        BotModule.forRoot({
+          token: options.token,
+          parseMode: options.parseMode,
+        }),
+        DiscoveryModule,
+      ],
       providers: [
         { provide: Providers.NESTGRAM_OPTIONS, useValue: options },
         ...ENGINE_PROVIDERS,
@@ -74,6 +85,7 @@ export class NestgramModule {
           inject: [Providers.NESTGRAM_OPTIONS],
           useFactory: (resolved: NestgramModuleOptions) => ({
             token: resolved.token,
+            parseMode: resolved.parseMode,
           }),
         }),
         DiscoveryModule,
