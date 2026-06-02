@@ -10,7 +10,7 @@ import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-import { TelegramExecutionContext } from '../engine/context';
+import { TelegramExecutionContext, UpdateKind } from '../engine/context';
 import { Metadata } from '../decorators/metadata.enum';
 import { Providers } from '../providers';
 import type { CallbackQuery } from '../events';
@@ -42,7 +42,7 @@ export class AutoAnswerCallbackInterceptor implements NestInterceptor {
     }
 
     const ctx = TelegramExecutionContext.of(context);
-    if (ctx.kind !== 'callback_query') {
+    if (ctx.kind !== UpdateKind.CallbackQuery) {
       return next.handle();
     }
 

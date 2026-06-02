@@ -1,4 +1,5 @@
 import { TelegramExecutionContext } from '../context/telegram-execution-context';
+import { UpdateKind } from '../context/update-kind';
 import { User } from '../../events/user';
 import { RawChat, RawMessage } from '../../events/raw-update.types';
 
@@ -12,7 +13,7 @@ import { RawChat, RawMessage } from '../../events/raw-update.types';
 
 /** The raw message carried by the update, if its kind has one. */
 function messageOf(ctx: TelegramExecutionContext): RawMessage | undefined {
-  if (ctx.kind === 'callback_query') {
+  if (ctx.kind === UpdateKind.CallbackQuery) {
     return ctx.update.callback_query?.message;
   }
 
@@ -21,7 +22,7 @@ function messageOf(ctx: TelegramExecutionContext): RawMessage | undefined {
 
 /** The user who sent the update (absent for e.g. channel posts). */
 export function extractSender(ctx: TelegramExecutionContext): User | undefined {
-  if (ctx.kind === 'callback_query') {
+  if (ctx.kind === UpdateKind.CallbackQuery) {
     return ctx.update.callback_query?.from;
   }
 
@@ -37,7 +38,7 @@ export function extractChat(
 
 /** The text the update carries (message text, or callback-query data). */
 function textOf(ctx: TelegramExecutionContext): string | undefined {
-  if (ctx.kind === 'callback_query') {
+  if (ctx.kind === UpdateKind.CallbackQuery) {
     return ctx.update.callback_query?.data;
   }
 

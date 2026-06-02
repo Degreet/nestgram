@@ -1,26 +1,33 @@
 import { RawUpdate } from '../../events/raw-update.types';
 
 /**
- * The set of update kinds the Phase 1 engine resolves and routes on.
+ * The update kinds the Phase 1 engine resolves and routes on. Each value is the
+ * raw Bot API update-field name, so resolution can index the update by it.
  *
- * Deliberately a closed whitelist: unknown / future top-level update fields are
- * ignored rather than guessed at (unlike the legacy `extractUpdateType`, which
- * took the first non-`update_id` key). The checked order also fixes routing
- * priority when an update somehow carries more than one known field.
- *
- * Single source of truth — the `UpdateKind` type is derived from this list.
+ * A closed whitelist: unknown / future top-level fields are ignored rather than
+ * guessed at. The single source of truth for kind comparisons across the engine
+ * — compare against `UpdateKind.X`, never a bare string.
  */
-const KNOWN_KINDS = [
-  'message',
-  'edited_message',
-  'channel_post',
-  'edited_channel_post',
-  'business_message',
-  'edited_business_message',
-  'callback_query',
-] as const;
+export enum UpdateKind {
+  Message = 'message',
+  EditedMessage = 'edited_message',
+  ChannelPost = 'channel_post',
+  EditedChannelPost = 'edited_channel_post',
+  BusinessMessage = 'business_message',
+  EditedBusinessMessage = 'edited_business_message',
+  CallbackQuery = 'callback_query',
+}
 
-export type UpdateKind = (typeof KNOWN_KINDS)[number];
+/** Checked in priority order if an update somehow carries more than one field. */
+const KIND_ORDER: readonly UpdateKind[] = [
+  UpdateKind.Message,
+  UpdateKind.EditedMessage,
+  UpdateKind.ChannelPost,
+  UpdateKind.EditedChannelPost,
+  UpdateKind.BusinessMessage,
+  UpdateKind.EditedBusinessMessage,
+  UpdateKind.CallbackQuery,
+];
 
 /**
  * Resolve the kind of a raw update by checking known fields in priority order.
@@ -29,7 +36,7 @@ export type UpdateKind = (typeof KNOWN_KINDS)[number];
  * field (the caller should then skip it — no handler can match).
  */
 export function resolveKind(update: RawUpdate): UpdateKind | null {
-  for (const kind of KNOWN_KINDS) {
+  for (const kind of KIND_ORDER) {
     if (update[kind] !== undefined) {
       return kind;
     }
