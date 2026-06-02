@@ -15,33 +15,6 @@ import {
   NestgramOptionsFactory,
 } from './nestgram-module.types';
 
-/** Engine providers — identical for the sync and async entry points. */
-const ENGINE_PROVIDERS: Provider[] = [
-  EventFactory,
-  ContextFactory,
-  RouteExplorer,
-  RouteTable,
-  RouteMatcher,
-  HandlerExecutorFactory,
-  ResultHandler,
-  UpdateDispatcher,
-  NestgramBootstrap,
-  // Built-ins as ordinary public providers (no privileged core). Auto-answer is
-  // a global interceptor that self-disables when the option is off, so it stays
-  // uniform across forRoot / forRootAsync.
-  { provide: APP_INTERCEPTOR, useClass: AutoAnswerCallbackInterceptor },
-];
-
-/**
- * `NESTGRAM_OPTIONS` is exported so the (internal) `BotModule` can inject it in
- * the async path to read the resolved token.
- */
-const ENGINE_EXPORTS = [
-  UpdateDispatcher,
-  RouteTable,
-  Providers.NESTGRAM_OPTIONS,
-];
-
 /**
  * The framework entry point. `forRoot`/`forRootAsync` configure the bot (token,
  * transport) and register the engine providers; routers are discovered, not
@@ -58,6 +31,33 @@ const ENGINE_EXPORTS = [
 @Global()
 @Module({})
 export class NestgramModule {
+  /** Engine providers — identical for the sync and async entry points. */
+  private static readonly engineProviders: Provider[] = [
+    EventFactory,
+    ContextFactory,
+    RouteExplorer,
+    RouteTable,
+    RouteMatcher,
+    HandlerExecutorFactory,
+    ResultHandler,
+    UpdateDispatcher,
+    NestgramBootstrap,
+    // Built-ins as ordinary public providers (no privileged core). Auto-answer
+    // is a global interceptor that self-disables when the option is off, so it
+    // stays uniform across forRoot / forRootAsync.
+    { provide: APP_INTERCEPTOR, useClass: AutoAnswerCallbackInterceptor },
+  ];
+
+  /**
+   * `NESTGRAM_OPTIONS` is exported so the (internal) `BotModule` can inject it
+   * in the async path to read the resolved token.
+   */
+  private static readonly engineExports = [
+    UpdateDispatcher,
+    RouteTable,
+    Providers.NESTGRAM_OPTIONS,
+  ];
+
   static forRoot(options: NestgramModuleOptions): DynamicModule {
     return {
       module: NestgramModule,
@@ -70,9 +70,9 @@ export class NestgramModule {
       ],
       providers: [
         { provide: Providers.NESTGRAM_OPTIONS, useValue: options },
-        ...ENGINE_PROVIDERS,
+        ...this.engineProviders,
       ],
-      exports: ENGINE_EXPORTS,
+      exports: this.engineExports,
     };
   }
 
@@ -92,9 +92,9 @@ export class NestgramModule {
       ],
       providers: [
         ...this.createAsyncOptionsProviders(options),
-        ...ENGINE_PROVIDERS,
+        ...this.engineProviders,
       ],
-      exports: ENGINE_EXPORTS,
+      exports: this.engineExports,
     };
   }
 
