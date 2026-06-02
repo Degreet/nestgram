@@ -1,8 +1,8 @@
 /**
  * The custom Nest `contextType` the engine passes to `ExternalContextCreator`.
  *
- * Proven safe in ECC-NOTES.md (Q-CONTEXTTYPE): guards/interceptors see it
- * via `ctx.getType()` and execution is unaffected.
+ * Guards and interceptors read it via `ctx.getType()` to tell a Telegram update
+ * apart from an HTTP/WS/RPC context.
  */
 export const NESTGRAM_CONTEXT_TYPE = 'telegram' as const;
 

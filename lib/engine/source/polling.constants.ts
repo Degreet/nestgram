@@ -1,9 +1,8 @@
 /**
  * How long to wait after a failed `getUpdates` before retrying.
  *
- * Keeps a transient network error from spinning the poll loop hot. The legacy
- * dispatcher rethrew and killed the loop on the first blip; the new source backs
- * off and keeps running.
+ * Keeps a transient network error from spinning the poll loop hot: the source
+ * backs off for this long and keeps running instead of crashing on a blip.
  */
 export const DEFAULT_POLLING_BACKOFF_MS = 1000;
 

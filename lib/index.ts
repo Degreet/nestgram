@@ -8,8 +8,7 @@ export * from './events';
 export * from './keyboards';
 export * from './interceptors';
 
-// Engine public surface (the new pipeline; the legacy dispatcher/executor was
-// removed at cutover).
+// Engine public surface (the update -> dispatch pipeline).
 export * from './engine/matching';
 export * from './engine/context';
 export * from './engine/discovery';

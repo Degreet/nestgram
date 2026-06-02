@@ -27,24 +27,21 @@ export const createListenerDecorator = (
 
     ensureEventOnFirstParam(target, key, descriptor);
 
-    // A method decorator must NOT return the target: a returned value becomes
-    // the descriptor for the next decorator in a stack, which breaks stacking
-    // (`@OnMessage() @OnCallbackQuery() handle()`). Return void.
+    // A method decorator must return void: a returned value becomes the
+    // descriptor for the next decorator in a stack, which breaks stacking
+    // (`@OnMessage() @OnCallbackQuery() handle()`).
   };
 };
 
 /**
- * Auto-apply `@Event()` to the handler's first parameter unless the author
+ * Auto-applies `@Event()` to the handler's first parameter unless the author
  * already decorated it.
  *
- * ECC param resolution is all-or-nothing (ECC-NOTES.md): with a
- * `ParamsFactory` present, any undecorated parameter resolves to `undefined`.
- * Backing the positional event with an implicit `@Event()` lets the bot author
- * write `handle(message: Message)` (no decorator) and still receive the event,
- * while `@Sender()`/`@Args()`/… on later params keep working. Parameter
- * decorators run before method decorators, so a param 0 the author decorated
- * themselves is already recorded and we leave it alone. Idempotent across
- * stacked listener decorators.
+ * This lets the bot author write `handle(message: Message)` with no decorator
+ * and still receive the event, while `@Sender()`/`@Args()`/… on later params
+ * keep working. Parameter decorators run before method decorators, so a param 0
+ * the author decorated themselves is already recorded and we leave it alone.
+ * Idempotent across stacked listener decorators.
  */
 function ensureEventOnFirstParam(
   target: object,

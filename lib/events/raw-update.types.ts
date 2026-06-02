@@ -2,11 +2,8 @@ import { User } from './user';
 
 /**
  * Raw Telegram Bot API payload types — the wire shape, distinct from the rich
- * event classes in `lib/events`.
- *
- * These intentionally do NOT carry the `_updateType` / `_telegramObject`
- * mutation fields of the legacy `lib/types/Update.ts` interface: the new engine
- * wraps the update in a `TelegramExecutionContext` instead of mutating it.
+ * event classes in `lib/events`. The engine wraps these in a
+ * `TelegramExecutionContext` rather than mutating them.
  *
  * Hand-written for Phase 1 (a minimal, accurate subset). Phase 2 replaces this
  * file with types generated from a community Bot API spec.
@@ -34,7 +31,7 @@ export interface RawMessageEntity {
 }
 
 /**
- * Bot API `Message` — the raw wire shape (NOT the rich `Message` class).
+ * Bot API `Message` — the raw wire shape, distinct from the rich `Message` class.
  *
  * `from` is optional per the Bot API (e.g. channel posts have no sender);
  * `chat` is always present on a message.

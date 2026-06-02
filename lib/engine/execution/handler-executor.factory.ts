@@ -11,23 +11,23 @@ export type HandlerInvoker = (
 ) => Promise<unknown>;
 
 /**
- * Builds a per-handler invoker via `ExternalContextCreator`, ONCE at boot.
+ * Builds a per-handler invoker via `ExternalContextCreator`, once at boot.
  *
  * The returned invoker runs the handler through the full Nest pipeline
  * (guards -> interceptors -> pipes -> handler -> exception filters), exactly as
- * an HTTP route would. The call signature follows ECC-NOTES.md's "minimal
- * correct call": a real `ParamsFactory` is required, and the invoker is fed
- * `(event, ctx)` so param decorators read `args[0]` (event) / `args[1]` (ctx).
+ * an HTTP route would. A `ParamsFactory` must be supplied for ECC to resolve
+ * params at all, and the invoker is fed `(event, ctx)` so param decorators read
+ * the event at `args[0]` and the execution context at `args[1]`.
  *
- * `ExternalContextCreator` lives in Nest's `InternalCoreModule`, not in our
- * module's context, so it can't be constructor-injected directly. We pull it
- * from `ModuleRef` (`strict: false` searches the whole container) — it is a
- * core singleton already instantiated by the time this provider is built, so
- * resolving it in the constructor is safe.
+ * `ExternalContextCreator` lives in Nest's `InternalCoreModule`, outside this
+ * module's context, so it is pulled from `ModuleRef` (`strict: false` searches
+ * the whole container) rather than constructor-injected. It is a core singleton
+ * already instantiated by the time this provider is built, so resolving it in
+ * the constructor is safe.
  *
  * Takes the router instance directly (the route table carries instances, not
- * `InstanceWrapper`s). The inquirer id is omitted: routers are singletons for
- * now (Q-SCOPE), so there is no request-scoped inquirer to thread through.
+ * `InstanceWrapper`s). The inquirer id is omitted: routers are singletons, so
+ * there is no request-scoped inquirer to thread through.
  */
 @Injectable()
 export class HandlerExecutorFactory {

@@ -11,13 +11,11 @@ import { UpdateKind } from './update-kind';
 /**
  * Immutable wrapper around a raw Telegram update.
  *
- * Replaces the legacy `mutateUpdateObject` approach: instead of writing
- * `_updateType` / `_telegramObject` back onto the payload, the engine carries
- * the resolved kind and a lazily-built, cached rich event here. The raw update
- * is exposed `Readonly` and never written to.
+ * Carries the resolved update kind and a lazily-built, cached rich event
+ * alongside the raw payload, which is exposed `Readonly` and never written to.
  *
- * This is also the public execution context the docs reference: guards, param
- * decorators and filters reach it via `TelegramExecutionContext.of(ctx)`.
+ * This is the execution context the rest of the pipeline reads: guards, param
+ * decorators and matchers reach it via `TelegramExecutionContext.of(ctx)`.
  */
 export class TelegramExecutionContext {
   private cachedEvent?: TelegramEvent;
@@ -35,7 +33,7 @@ export class TelegramExecutionContext {
     private readonly eventFactory: EventFactory,
   ) {}
 
-  /** The rich, typed event (built once, cached; nothing is written to `update`). */
+  /** The rich, typed event, built once and cached on first access. */
   get event(): TelegramEvent {
     if (this.cachedEvent === undefined) {
       this.cachedEvent = this.eventFactory.build(

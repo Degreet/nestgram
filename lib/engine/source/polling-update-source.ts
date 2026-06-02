@@ -157,9 +157,9 @@ export class PollingUpdateSource implements UpdateSource {
       timeout: this.options.timeout,
       allowed_updates: this.options.allowed_updates,
     });
-    // The legacy GetUpdates is typed `Update[]`, but the wire result is the raw
-    // shape (no `_updateType`/`_telegramObject` — those are legacy mutations).
-    // This is the single boundary cast between legacy transport and raw types.
+    // `GetUpdates` is typed `Update[]`, but the wire result is the raw update
+    // shape. This is the single boundary cast between the transport and the
+    // raw types the engine works with.
     return getUpdates.fetch(signal) as unknown as Promise<RawUpdate[]>;
   }
 }

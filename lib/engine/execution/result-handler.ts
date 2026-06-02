@@ -18,13 +18,10 @@ interface Command {
 }
 
 /**
- * The return-value contract for handlers:
+ * Applies the return-value contract for handlers, after the invoker returns:
  *   - `string`         -> reply that string to the same chat
  *   - command object   -> execute it (`.fetch()`)
  *   - anything else    -> noop
- *
- * Centralises what the legacy path never actually did (it discarded the return
- * value). Runs after the handler invoker returns (Q-RESULT-LOC: after `invoke`).
  *
  * Non-string, non-command results are ignored silently — `return message.answer(...)`
  * is idiomatic (especially in arrow handlers) and has already sent the message,
@@ -59,10 +56,10 @@ export class ResultHandler {
   }
 
   /**
-   * Structural check on `fetch` (the loose, duck-typed variant): a plain object
-   * a handler returns will not have it. The tight `instanceof ApiMethod` variant
-   * is avoided because `ApiMethod` is an abstract class merged with a same-named
-   * interface, which does not import cleanly as a value.
+   * Duck-types on `fetch`: a plain object a handler returns will not have it.
+   * A structural check (rather than `instanceof ApiMethod`) is used because
+   * `ApiMethod` is an abstract class merged with a same-named interface, which
+   * does not import cleanly as a value.
    */
   private isCommand(value: unknown): value is Command {
     return (
