@@ -1,5 +1,7 @@
 export * from './answer-callback-query';
 export * from './delete-webhook';
+export * from './edit-message-text';
+export * from './edit-message-reply-markup';
 export * from './get-me';
 export * from './get-updates';
 export * from './send-media-group';

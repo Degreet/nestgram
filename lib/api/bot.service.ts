@@ -18,6 +18,10 @@ import {
   SendPhoto,
   SendMediaGroup,
   SendMediaGroupOptions,
+  EditMessageText,
+  EditMessageTextOptions,
+  EditMessageReplyMarkup,
+  EditMessageReplyMarkupOptions,
 } from './methods';
 import {
   InputMediaAudio,
@@ -90,6 +94,34 @@ export class BotService {
   ) {
     return new AnswerCallbackQuery(this, {
       callback_query_id,
+      ...(options ?? {}),
+    }).fetch();
+  }
+
+  editMessageText(
+    chat_id: number | string,
+    message_id: number,
+    text: string,
+    options?: Partial<EditMessageTextOptions>,
+  ) {
+    return new EditMessageText(this, {
+      chat_id,
+      message_id,
+      text,
+      ...(options ?? {}),
+    }).fetch();
+  }
+
+  editMessageReplyMarkup(
+    chat_id: number | string,
+    message_id: number,
+    reply_markup: unknown,
+    options?: Partial<EditMessageReplyMarkupOptions>,
+  ) {
+    return new EditMessageReplyMarkup(this, {
+      chat_id,
+      message_id,
+      reply_markup,
       ...(options ?? {}),
     }).fetch();
   }

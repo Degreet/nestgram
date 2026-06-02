@@ -1,6 +1,8 @@
 import { TelegramObject } from './telegram-object';
 import { BotService } from '../api';
 import {
+  EditMessageReplyMarkupOptions,
+  EditMessageTextOptions,
   SendMediaGroupOptions,
   SendMessageOptions,
   SendPhotoOptions,
@@ -60,6 +62,27 @@ export class Message extends TelegramObject {
       reply_parameters: { message_id: this.message_id },
       ...options,
     });
+  }
+
+  editText(text: string, options?: Partial<EditMessageTextOptions>) {
+    return this.botService.editMessageText(
+      this.chat.id,
+      this.message_id,
+      text,
+      options,
+    );
+  }
+
+  editReplyMarkup(
+    reply_markup: unknown,
+    options?: Partial<EditMessageReplyMarkupOptions>,
+  ) {
+    return this.botService.editMessageReplyMarkup(
+      this.chat.id,
+      this.message_id,
+      reply_markup,
+      options,
+    );
   }
 
   replyPhoto(photo: string | InputFile, options?: Partial<SendPhotoOptions>) {

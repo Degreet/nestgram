@@ -25,7 +25,8 @@ export class CallbackQuery extends TelegramObject {
     });
   }
 
-  answer(options?: Partial<AnswerCallbackQueryOptions>) {
-    return this.botService.answerCallbackQuery(this.id, options);
+  answer(text?: string, options?: Partial<AnswerCallbackQueryOptions>) {
+    // Positional `text` is the explicit arg, so it wins over any `options.text`.
+    return this.botService.answerCallbackQuery(this.id, { ...options, text });
   }
 }
