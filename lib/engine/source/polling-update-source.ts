@@ -1,8 +1,9 @@
-import { Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 
 import { BotService } from '../../api';
-import { GetUpdates } from '../../api/methods';
 import { RawUpdate } from '../../events/raw-update.types';
+import { Providers } from '../../providers';
+import type { NestgramModuleOptions } from '../../module/nestgram-module.types';
 import {
   DEFAULT_POLLING_BACKOFF_MS,
   DEFAULT_POLLING_IDLE_MS,
@@ -23,27 +24,21 @@ export interface PollingOptions {
 }
 
 /**
- * Fetches one batch of updates from `offset`, honouring the abort signal so a
- * long poll can be cancelled promptly on stop. Extracted as a seam so the loop
- * can be driven in tests without hitting the network.
- */
-export type BatchFetcher = (
-  offset: number,
-  signal: AbortSignal,
-) => Promise<RawUpdate[]>;
-
-/**
  * Long-polling update source.
  *
- * Owns only the poll loop and the `getUpdates` offset; it does not route or
- * execute. On start it prepares the transport (clears any webhook so polling is
- * allowed, then a `getMe` health check that fails fast on a bad token), then
- * loops: fetch a batch, advance the offset to acknowledge receipt, emit each
- * update. A failed fetch backs off instead of killing the loop.
+ * Owns the poll loop and the `getUpdates` offset; it does not route or execute.
+ * On start it prepares the transport (clears any webhook so polling is allowed,
+ * then a `getMe` health check that fails fast on a bad token) and loops: fetch a
+ * batch, advance the offset to acknowledge receipt, emit each update. A failed
+ * fetch backs off instead of killing the loop.
+ *
+ * It reads its own polling options off the module config, so starting it is just
+ * `start(onUpdate)` — see `NestgramBootstrap`.
  */
+@Injectable()
 export class PollingUpdateSource implements UpdateSource {
   private readonly logger = new Logger(PollingUpdateSource.name);
-  private readonly fetcher: BatchFetcher;
+  private readonly options: PollingOptions;
   private readonly backoffMs: number;
   private readonly idleMs: number;
 
@@ -53,14 +48,14 @@ export class PollingUpdateSource implements UpdateSource {
   private running = false;
 
   constructor(
+    @Inject(Providers.NESTGRAM_OPTIONS) moduleOptions: NestgramModuleOptions,
     private readonly botService: BotService,
-    private readonly options: PollingOptions = {},
-    fetcher?: BatchFetcher,
   ) {
-    this.offset = options.offset ?? 0;
-    this.backoffMs = options.backoffMs ?? DEFAULT_POLLING_BACKOFF_MS;
-    this.idleMs = options.idleMs ?? DEFAULT_POLLING_IDLE_MS;
-    this.fetcher = fetcher ?? this.fetchBatch.bind(this);
+    this.options =
+      typeof moduleOptions.polling === 'object' ? moduleOptions.polling : {};
+    this.offset = this.options.offset ?? 0;
+    this.backoffMs = this.options.backoffMs ?? DEFAULT_POLLING_BACKOFF_MS;
+    this.idleMs = this.options.idleMs ?? DEFAULT_POLLING_IDLE_MS;
   }
 
   async start(onUpdate: UpdateListener): Promise<void> {
@@ -102,7 +97,7 @@ export class PollingUpdateSource implements UpdateSource {
     while (!signal.aborted) {
       let batch: RawUpdate[];
       try {
-        batch = await this.fetcher(this.offset, signal);
+        batch = await this.fetchBatch(signal);
       } catch (error) {
         if (signal.aborted || (error as Error)?.name === 'AbortError') {
           break;
@@ -147,19 +142,17 @@ export class PollingUpdateSource implements UpdateSource {
     });
   }
 
-  private fetchBatch(
-    offset: number,
-    signal: AbortSignal,
-  ): Promise<RawUpdate[]> {
-    const getUpdates = new GetUpdates(this.botService, {
-      offset,
-      limit: this.options.limit,
-      timeout: this.options.timeout,
-      allowed_updates: this.options.allowed_updates,
-    });
-    // `GetUpdates` is typed `Update[]`, but the wire result is the raw update
-    // shape. This is the single boundary cast between the transport and the
-    // raw types the engine works with.
-    return getUpdates.fetch(signal) as unknown as Promise<RawUpdate[]>;
+  private fetchBatch(signal: AbortSignal): Promise<RawUpdate[]> {
+    // `getUpdates` is typed `Update[]`, but the wire result is the raw update
+    // shape the engine works with — the single boundary cast.
+    return this.botService.getUpdates(
+      {
+        offset: this.offset,
+        limit: this.options.limit,
+        timeout: this.options.timeout,
+        allowed_updates: this.options.allowed_updates,
+      },
+      signal,
+    ) as unknown as Promise<RawUpdate[]>;
   }
 }

@@ -63,8 +63,8 @@ export class BotService {
     return new GetMe(this).fetch();
   }
 
-  getUpdates(options?: Partial<GetUpdatesOptions>) {
-    return new GetUpdates(this, options).fetch();
+  getUpdates(options?: Partial<GetUpdatesOptions>, signal?: AbortSignal) {
+    return new GetUpdates(this, options).fetch(signal);
   }
 
   sendMessage(

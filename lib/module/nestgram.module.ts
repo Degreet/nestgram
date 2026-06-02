@@ -7,6 +7,7 @@ import { RouteExplorer, RouteMatcher, RouteTable } from '../engine/discovery';
 import { Providers } from '../providers';
 import { HandlerExecutorFactory, ResultHandler } from '../engine/execution';
 import { UpdateDispatcher } from '../engine/dispatcher';
+import { PollingUpdateSource } from '../engine/source';
 import { AutoAnswerCallbackInterceptor } from '../interceptors';
 import { NestgramBootstrap } from './nestgram.bootstrap';
 import {
@@ -41,6 +42,7 @@ export class NestgramModule {
     HandlerExecutorFactory,
     ResultHandler,
     UpdateDispatcher,
+    PollingUpdateSource,
     NestgramBootstrap,
     // Built-ins as ordinary public providers (no privileged core). Auto-answer
     // is a global interceptor that self-disables when the option is off, so it

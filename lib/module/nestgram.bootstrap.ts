@@ -6,12 +6,11 @@ import {
   OnApplicationShutdown,
 } from '@nestjs/common';
 
-import { BotService } from '../api';
 import { RouteExplorer, RouteTable } from '../engine/discovery';
 import { NestgramConfigError } from '../exceptions';
 import { Providers } from '../providers';
 import { UpdateDispatcher } from '../engine/dispatcher';
-import { PollingUpdateSource, UpdateSource } from '../engine/source';
+import { PollingUpdateSource } from '../engine/source';
 import { NestgramModuleOptions } from './nestgram-module.types';
 
 /**
@@ -31,7 +30,6 @@ export class NestgramBootstrap
   private static readonly TOKEN_PATTERN = /^\d+:[\w-]+$/;
 
   private readonly logger = new Logger(NestgramBootstrap.name);
-  private source?: UpdateSource;
 
   constructor(
     @Inject(Providers.NESTGRAM_OPTIONS)
@@ -39,7 +37,7 @@ export class NestgramBootstrap
     private readonly routeExplorer: RouteExplorer,
     private readonly routeTable: RouteTable,
     private readonly dispatcher: UpdateDispatcher,
-    private readonly botService: BotService,
+    private readonly source: PollingUpdateSource,
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
@@ -57,15 +55,12 @@ export class NestgramBootstrap
     }
 
     if (this.options.polling) {
-      const pollingOptions =
-        this.options.polling === true ? {} : this.options.polling;
-      this.source = new PollingUpdateSource(this.botService, pollingOptions);
       await this.source.start((update) => this.dispatcher.dispatch(update));
     }
   }
 
   async onApplicationShutdown(): Promise<void> {
-    await this.source?.stop();
+    await this.source.stop();
   }
 
   /**

@@ -1,13 +1,6 @@
 import { BotService } from '../../api';
 import { RawUpdate } from '../../events/raw-update.types';
-import { BatchFetcher, PollingUpdateSource } from './polling-update-source';
-
-function fakeBot(): BotService {
-  return {
-    deleteWebhook: jest.fn().mockResolvedValue(undefined),
-    getMe: jest.fn().mockResolvedValue({ username: 'test_bot' }),
-  } as unknown as BotService;
-}
+import { PollingOptions, PollingUpdateSource } from './polling-update-source';
 
 /** A listener that ignores updates — for tests that only assert loop control. */
 const noop = (): void => undefined;
@@ -19,32 +12,38 @@ function msg(update_id: number): RawUpdate {
   };
 }
 
-/**
- * A fetcher that serves a scripted sequence of batches, one per call, then only
- * empty batches. Records the offset it was asked for each call.
- */
-function scriptedFetcher(batches: RawUpdate[][]): {
-  fetch: BatchFetcher;
+interface Harness {
+  source: PollingUpdateSource;
+  bot: BotService;
   offsets: number[];
-} {
+}
+
+/**
+ * Build a source whose `bot.getUpdates` serves a scripted sequence of batches
+ * (one per call, then only empty batches) and records the offset asked for.
+ */
+function harness(
+  polling: PollingOptions,
+  batches: RawUpdate[][] = [],
+): Harness {
   const offsets: number[] = [];
   let call = 0;
-  const fetch: BatchFetcher = async (offset) => {
-    offsets.push(offset);
-    return batches[call++] ?? [];
-  };
-  return { fetch, offsets };
+  const bot = {
+    deleteWebhook: jest.fn().mockResolvedValue(undefined),
+    getMe: jest.fn().mockResolvedValue({ username: 'test_bot' }),
+    getUpdates: jest.fn(async (options: { offset?: number }) => {
+      offsets.push(options.offset ?? 0);
+      return batches[call++] ?? [];
+    }),
+  } as unknown as BotService;
+
+  const source = new PollingUpdateSource({ token: 't', polling }, bot);
+  return { source, bot, offsets };
 }
 
 describe('PollingUpdateSource', () => {
   it('prepares the transport before polling (clear webhook + health check)', async () => {
-    const bot = fakeBot();
-    const { fetch } = scriptedFetcher([]);
-    const source = new PollingUpdateSource(
-      bot,
-      { dropPendingUpdates: true },
-      fetch,
-    );
+    const { source, bot } = harness({ dropPendingUpdates: true });
 
     await source.start(noop);
     await source.stop();
@@ -56,8 +55,7 @@ describe('PollingUpdateSource', () => {
   });
 
   it('emits each update in order', async () => {
-    const { fetch } = scriptedFetcher([[msg(1), msg(2)], [msg(3)]]);
-    const source = new PollingUpdateSource(fakeBot(), { idleMs: 1 }, fetch);
+    const { source } = harness({ idleMs: 1 }, [[msg(1), msg(2)], [msg(3)]]);
 
     const seen: number[] = [];
     await source.start((u) => {
@@ -70,12 +68,10 @@ describe('PollingUpdateSource', () => {
   });
 
   it('advances the offset to last update_id + 1 after a batch', async () => {
-    const { fetch, offsets } = scriptedFetcher([[msg(10), msg(11)], [msg(12)]]);
-    const source = new PollingUpdateSource(
-      fakeBot(),
-      { offset: 5, idleMs: 1 },
-      fetch,
-    );
+    const { source, offsets } = harness({ offset: 5, idleMs: 1 }, [
+      [msg(10), msg(11)],
+      [msg(12)],
+    ]);
 
     const seen: number[] = [];
     await source.start((u) => {
@@ -90,16 +86,19 @@ describe('PollingUpdateSource', () => {
 
   it('keeps polling after a failed fetch instead of dying', async () => {
     let call = 0;
-    const fetch: BatchFetcher = async () => {
-      call++;
-      if (call === 1) throw new Error('network blip');
-      if (call === 2) return [msg(1)];
-      return [];
-    };
+    const bot = {
+      deleteWebhook: jest.fn().mockResolvedValue(undefined),
+      getMe: jest.fn().mockResolvedValue({ username: 'test_bot' }),
+      getUpdates: jest.fn(async () => {
+        call++;
+        if (call === 1) throw new Error('network blip');
+        if (call === 2) return [msg(1)];
+        return [];
+      }),
+    } as unknown as BotService;
     const source = new PollingUpdateSource(
-      fakeBot(),
-      { backoffMs: 1, idleMs: 1 },
-      fetch,
+      { token: 't', polling: { backoffMs: 1, idleMs: 1 } },
+      bot,
     );
 
     const seen: number[] = [];
@@ -113,21 +112,17 @@ describe('PollingUpdateSource', () => {
   });
 
   it('is idempotent: a second start() is ignored while running', async () => {
-    const bot = fakeBot();
-    const { fetch } = scriptedFetcher([]);
-    const source = new PollingUpdateSource(bot, {}, fetch);
+    const { source, bot } = harness({});
 
     await source.start(noop);
     await source.start(noop);
     await source.stop();
 
-    // prepare() ran only once despite two start() calls.
     expect(bot.getMe).toHaveBeenCalledTimes(1);
   });
 
   it('stop() resolves and halts the loop', async () => {
-    const fetch: BatchFetcher = async () => [];
-    const source = new PollingUpdateSource(fakeBot(), {}, fetch);
+    const { source } = harness({});
 
     await source.start(noop);
     await expect(source.stop()).resolves.toBeUndefined();
