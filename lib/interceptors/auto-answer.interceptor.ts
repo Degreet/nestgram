@@ -57,7 +57,7 @@ export class AutoAnswerCallbackInterceptor implements NestInterceptor {
     const query = ctx.event as CallbackQuery;
     return next.handle().pipe(
       tap(() => {
-        if (!query.answered) {
+        if (!query.isAnswered) {
           // Fire-and-forget, but never let a rejected auto-answer (e.g. "query
           // too old") become an unhandled rejection that noises up the process.
           query

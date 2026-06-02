@@ -4,6 +4,7 @@ import { BotService } from '../../api';
 import { TelegramObject } from '../../events';
 import { getTelegramObjectByUpdateType } from '../../decorators';
 import { RawUpdate } from '../../events/raw-update.types';
+import { EventState } from './event-state';
 import { UpdateKind } from './update-kind';
 
 /**
@@ -27,10 +28,13 @@ export class EventFactory {
     update: Readonly<RawUpdate>,
     kind: UpdateKind,
     botService: BotService,
+    state: EventState,
   ): TelegramEvent {
     const Ctor = getTelegramObjectByUpdateType(kind);
     const raw = update[kind] as unknown as Record<string, unknown>;
 
-    return Ctor ? new Ctor(botService, raw) : raw;
+    // The extra `state` arg is used by events whose actions record into the
+    // per-update store (e.g. CallbackQuery.answer); others ignore it.
+    return Ctor ? new Ctor(botService, raw, state) : raw;
   }
 }

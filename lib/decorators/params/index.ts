@@ -5,3 +5,4 @@ export * from './args.decorator';
 export * from './payload.decorator';
 export * from './callback-data.decorator';
 export * from './session.decorator';
+export * from './state.decorator';

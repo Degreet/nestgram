@@ -1,3 +1,5 @@
+import { Logger } from '@nestjs/common';
+
 import { Message } from './message';
 import { CallbackQuery } from './callback-query';
 import { BotService } from '../api';
@@ -107,5 +109,28 @@ describe('CallbackQuery actions', () => {
       method: 'answerCallbackQuery',
       args: ['cb1', { show_alert: true, text: 'Heads up' }],
     });
+  });
+
+  it('tracks answered via per-update state and warns on a double answer', () => {
+    const { bot } = fakeBot();
+    const state = new Map();
+    const q = new CallbackQuery(
+      bot,
+      { id: 'cb1', chat_instance: 'x' } as Partial<CallbackQuery>,
+      state,
+    );
+    const warn = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
+
+    expect(q.isAnswered).toBe(false);
+    q.answer();
+    expect(q.isAnswered).toBe(true);
+    q.answer();
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('more than once'),
+    );
+    warn.mockRestore();
   });
 });

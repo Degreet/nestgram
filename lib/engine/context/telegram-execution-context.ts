@@ -5,6 +5,7 @@ import { User } from '../../events/user';
 import { RawChat, RawUpdate } from '../../events/raw-update.types';
 import { extractChat, extractSender } from '../execution/extractors';
 import { EventFactory, TelegramEvent } from './event-factory';
+import { EventState } from './event-state';
 import { UpdateKind } from './update-kind';
 
 /**
@@ -21,6 +22,12 @@ import { UpdateKind } from './update-kind';
 export class TelegramExecutionContext {
   private cachedEvent?: TelegramEvent;
 
+  /**
+   * Per-update store: write/read your own flags or context anywhere in the
+   * pipeline (also `@State()`). Lives for this update only, then is discarded.
+   */
+  readonly state: EventState = new Map();
+
   constructor(
     readonly update: Readonly<RawUpdate>,
     readonly kind: UpdateKind,
@@ -35,6 +42,7 @@ export class TelegramExecutionContext {
         this.update,
         this.kind,
         this.botService,
+        this.state,
       );
     }
 

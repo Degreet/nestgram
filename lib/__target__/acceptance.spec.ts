@@ -10,6 +10,7 @@ import {
   CanActivate,
   Catch,
   ExceptionFilter,
+  ExecutionContext,
   Injectable,
   Module,
   UseFilters,
@@ -23,6 +24,7 @@ import {
   CallbackData,
   CallbackQuery,
   Command,
+  EventState,
   Hears,
   Message,
   NestgramModule,
@@ -30,6 +32,8 @@ import {
   RouteTable,
   Router,
   Sender,
+  State,
+  TelegramExecutionContext,
   UpdateDispatcher,
   User,
 } from '..';
@@ -207,6 +211,46 @@ class PipelineRouter {
   providers: [PipelineRouter],
 })
 class PipelineAppModule {}
+
+@Injectable()
+class StampGuard implements CanActivate {
+  canActivate(context: ExecutionContext): boolean {
+    TelegramExecutionContext.of(context).state.set('stamp', 'from-guard');
+    return true;
+  }
+}
+
+@Router()
+class StateRouter {
+  seen?: unknown;
+
+  @UseGuards(StampGuard)
+  @OnMessage()
+  handle(_message: Message, @State() state: EventState) {
+    this.seen = state.get('stamp');
+  }
+}
+
+@Module({
+  imports: [NestgramModule.forRoot({ token: '123456:TEST' })],
+  providers: [StateRouter],
+})
+class StateAppModule {}
+
+describe('per-update ctx.state (booted app)', () => {
+  it('shares state a guard writes with the handler (via @State)', async () => {
+    const app = await NestFactory.createApplicationContext(StateAppModule, {
+      logger: false,
+    });
+    const dispatcher = app.get(UpdateDispatcher);
+    const router = app.get(StateRouter);
+
+    await dispatcher.dispatch(messageUpdate(1, 'hi'));
+
+    expect(router.seen).toBe('from-guard');
+    await app.close();
+  });
+});
 
 describe('Nest pipeline via ECC (booted app)', () => {
   let app: INestApplicationContext;

@@ -6,17 +6,17 @@ import { AutoAnswerCallbackInterceptor } from './auto-answer.interceptor';
 import { NestgramModuleOptions } from '../module/nestgram-module.types';
 
 interface FakeQuery {
-  answered: boolean;
+  isAnswered: boolean;
   answer: () => Promise<void>;
   answerCalls: number;
 }
 
 function fakeQuery(answered = false): FakeQuery {
   const query: FakeQuery = {
-    answered,
+    isAnswered: answered,
     answerCalls: 0,
     answer() {
-      this.answered = true;
+      this.isAnswered = true;
       this.answerCalls += 1;
       return Promise.resolve();
     },
