@@ -56,6 +56,15 @@ describe('entitiesToHtml', () => {
     expect(html).toBe('<pre><code class="language-python">x=1</code></pre>');
   });
 
+  it('escapes the pre language attribute', () => {
+    const html = entitiesToHtml('x', [
+      entity('pre', 0, 1, { language: '"><script>' }),
+    ]);
+    expect(html).toBe(
+      '<pre><code class="language-&quot;&gt;&lt;script&gt;">x</code></pre>',
+    );
+  });
+
   it('drops a crossing entity rather than emitting invalid tags', () => {
     // bold [0,3) and italic [1,4) cross — italic is left as plain text.
     const html = entitiesToHtml('abcd', [

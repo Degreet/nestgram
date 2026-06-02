@@ -108,7 +108,7 @@ function tagsFor(
   if (entity.type === 'pre') {
     return entity.language
       ? {
-          open: `<pre><code class="language-${entity.language}">`,
+          open: `<pre><code class="language-${escapeHref(entity.language)}">`,
           close: '</code></pre>',
         }
       : { open: '<pre>', close: '</pre>' };
