@@ -1,4 +1,4 @@
-import { entitiesToHtml } from './html';
+import { entitiesToHtml, htmlToEntities } from './html';
 import { RawMessageEntity } from '../events/raw-update.types';
 
 function entity(
@@ -79,4 +79,83 @@ describe('entitiesToHtml', () => {
       'see x.com',
     );
   });
+});
+
+describe('htmlToEntities', () => {
+  it('parses a simple bold tag', () => {
+    expect(htmlToEntities('<b>hi</b>')).toEqual({
+      text: 'hi',
+      entities: [{ type: 'bold', offset: 0, length: 2 }],
+    });
+  });
+
+  it('parses nested tags (inner closes first)', () => {
+    expect(htmlToEntities('<b><i>a</i>b</b>')).toEqual({
+      text: 'ab',
+      entities: [
+        { type: 'italic', offset: 0, length: 1 },
+        { type: 'bold', offset: 0, length: 2 },
+      ],
+    });
+  });
+
+  it('maps tag aliases (strong/em/...) to entity types', () => {
+    expect(htmlToEntities('<strong>x</strong>').entities[0].type).toBe('bold');
+    expect(htmlToEntities('<em>x</em>').entities[0].type).toBe('italic');
+  });
+
+  it('decodes HTML references in text', () => {
+    expect(htmlToEntities('a &lt;b&gt; &amp; c').text).toBe('a <b> & c');
+  });
+
+  it('parses a link with a decoded href', () => {
+    expect(
+      htmlToEntities('<a href="https://x.com/?a=1&amp;b=2">go</a>'),
+    ).toEqual({
+      text: 'go',
+      entities: [
+        {
+          type: 'text_link',
+          offset: 0,
+          length: 2,
+          url: 'https://x.com/?a=1&b=2',
+        },
+      ],
+    });
+  });
+
+  it('parses pre with a language', () => {
+    expect(
+      htmlToEntities('<pre><code class="language-py">x=1</code></pre>'),
+    ).toEqual({
+      text: 'x=1',
+      entities: [{ type: 'pre', offset: 0, length: 3, language: 'py' }],
+    });
+  });
+
+  it('ignores unknown tags but keeps their text', () => {
+    expect(htmlToEntities('<div>hi</div>')).toEqual({
+      text: 'hi',
+      entities: [],
+    });
+  });
+});
+
+describe('HTML round-trip (parse then serialize)', () => {
+  const cases = [
+    'plain text',
+    'a &lt;b&gt; &amp; c',
+    '<b>hi</b>',
+    '<b><i>a</i>b</b>',
+    '<b>ab</b> <i>cd</i>',
+    '<a href="https://x.com/?a=1&amp;b=2">site</a>',
+    '<pre><code class="language-python">x=1</code></pre>',
+  ];
+
+  for (const html of cases) {
+    it(`round-trips: ${html}`, () => {
+      const { text, entities } = htmlToEntities(html);
+      expect(entitiesToHtml(text, entities)).toBe(html);
+    });
+  }
 });

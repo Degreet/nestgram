@@ -131,3 +131,153 @@ function tagsFor(
 function escapeHref(url: string): string {
   return escapeHtml(url).replace(/"/g, '&quot;');
 }
+
+/** Telegram-supported tags → entity type (with their HTML aliases). */
+const TYPE_BY_TAG: Record<string, string> = {
+  b: 'bold',
+  strong: 'bold',
+  i: 'italic',
+  em: 'italic',
+  u: 'underline',
+  ins: 'underline',
+  s: 'strikethrough',
+  strike: 'strikethrough',
+  del: 'strikethrough',
+  'tg-spoiler': 'spoiler',
+  code: 'code',
+  pre: 'pre',
+  blockquote: 'blockquote',
+};
+
+interface OpenTag {
+  tag: string;
+  /** Entity type to emit on close, or null to just track for matching. */
+  type: string | null;
+  offset: number;
+  url?: string;
+  language?: string;
+  /** A `<code>` inside `<pre>` only carries the language — it emits no entity. */
+  skip?: boolean;
+}
+
+const TAG = /<(\/)?\s*([a-zA-Z0-9-]+)((?:\s+[^>]*)?)\/?>/g;
+const HREF = /href\s*=\s*"([^"]*)"/i;
+const CLASS = /class\s*=\s*"([^"]*)"/i;
+
+/**
+ * Parse an HTML string (as accepted by `parse_mode: 'HTML'`) into plain text +
+ * Telegram `MessageEntity[]` — the inverse of {@link entitiesToHtml}. Supports
+ * the Bot API's tag set and aliases (b/strong, i/em, u/ins, s/strike/del, code,
+ * pre + `<code class="language-…">`, a, tg-spoiler, blockquote). Unknown tags
+ * are ignored (their text is kept). Expects well-nested input.
+ *
+ * Caveats: every `<a>` becomes a `text_link` — HTML can't carry the full `User`
+ * a `text_mention` needs, but a `tg://user?id=…` link works the same. Only the
+ * core references (`&lt; &gt; &amp; &quot; &#39;`) are decoded, and a raw `>`
+ * inside an attribute value isn't supported (Telegram never emits one).
+ */
+export function htmlToEntities(html: string): {
+  text: string;
+  entities: RawMessageEntity[];
+} {
+  const entities: RawMessageEntity[] = [];
+  const stack: OpenTag[] = [];
+  let text = '';
+  let last = 0;
+  let match: RegExpExecArray | null;
+
+  TAG.lastIndex = 0;
+  while ((match = TAG.exec(html)) !== null) {
+    text += decodeHtml(html.slice(last, match.index));
+    last = TAG.lastIndex;
+
+    const closing = match[1] === '/';
+    const tag = match[2].toLowerCase();
+    const attrs = match[3] ?? '';
+
+    if (closing) {
+      closeTag(tag, stack, entities, text.length);
+    } else {
+      openTag(tag, attrs, stack, text.length);
+    }
+  }
+  text += decodeHtml(html.slice(last));
+
+  return { text, entities };
+}
+
+function openTag(
+  tag: string,
+  attrs: string,
+  stack: OpenTag[],
+  offset: number,
+): void {
+  if (tag === 'a') {
+    const href = HREF.exec(attrs)?.[1];
+    stack.push({
+      tag,
+      type: 'text_link',
+      offset,
+      url: href === undefined ? undefined : decodeHtml(href),
+    });
+    return;
+  }
+  if (tag === 'span') {
+    const spoiler = CLASS.exec(attrs)?.[1]?.includes('tg-spoiler');
+    stack.push({ tag, type: spoiler ? 'spoiler' : null, offset });
+    return;
+  }
+  if (tag === 'code' && stack[stack.length - 1]?.tag === 'pre') {
+    // `<code class="language-x">` inside `<pre>` sets the pre's language.
+    const cls = CLASS.exec(attrs)?.[1] ?? '';
+    const language = /(?:^|\s)language-(\S+)/.exec(cls)?.[1];
+    if (language) {
+      stack[stack.length - 1].language = language;
+    }
+    stack.push({ tag, type: null, offset, skip: true });
+    return;
+  }
+  stack.push({ tag, type: TYPE_BY_TAG[tag] ?? null, offset });
+}
+
+function closeTag(
+  tag: string,
+  stack: OpenTag[],
+  entities: RawMessageEntity[],
+  offset: number,
+): void {
+  // Find the matching open (nearest), tolerating stray/unknown closers.
+  let i = stack.length - 1;
+  while (i >= 0 && stack[i].tag !== tag) {
+    i--;
+  }
+  if (i < 0) {
+    return;
+  }
+  const open = stack.splice(i, 1)[0];
+
+  if (open.skip || open.type === null || offset <= open.offset) {
+    return;
+  }
+  const entity: RawMessageEntity = {
+    type: open.type,
+    offset: open.offset,
+    length: offset - open.offset,
+  };
+  if (open.url !== undefined) {
+    entity.url = open.url;
+  }
+  if (open.language !== undefined) {
+    entity.language = open.language;
+  }
+  entities.push(entity);
+}
+
+function decodeHtml(value: string): string {
+  return value
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&');
+}
