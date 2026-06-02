@@ -25,7 +25,7 @@ import {
   'edited_business_message',
 )
 export class Message extends TelegramObject {
-  message_id: number;
+  message_id!: number;
   message_thread_id?: number;
   from: any;
   chat: any;

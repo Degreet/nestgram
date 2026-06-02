@@ -29,7 +29,7 @@ export class SendPhoto extends ApiMethod<SendPhotoOptions, Message> {
   }
 
   get hasMedia() {
-    return this.options.photo instanceof InputFile;
+    return this.options?.photo instanceof InputFile;
   }
 
   interceptor(object: Message) {

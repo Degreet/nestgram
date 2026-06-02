@@ -35,7 +35,10 @@ export class SendMediaGroup extends ApiMethod<
   }
 
   get hasMedia() {
-    return this.options.media.some((media) => media.media instanceof InputFile);
+    return (
+      this.options?.media.some((media) => media.media instanceof InputFile) ??
+      false
+    );
   }
 
   interceptor(objects: Message[]) {

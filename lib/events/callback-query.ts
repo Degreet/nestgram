@@ -6,11 +6,11 @@ import { UpdateType } from '../decorators';
 
 @UpdateType('callback_query')
 export class CallbackQuery extends TelegramObject {
-  id: string;
+  id!: string;
   from: any;
   message?: Message;
   inline_message_id?: string;
-  chat_instance: string;
+  chat_instance!: string;
   data?: string;
   game_short_name?: string;
 

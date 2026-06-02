@@ -51,17 +51,25 @@ export class BotModule {
       ];
     }
 
-    const useClass = options.useClass ?? options.useExisting;
-    return [
+    const optionsClass = options.useClass ?? options.useExisting;
+    if (!optionsClass) {
+      throw new Error(
+        'BotModule.forRootAsync requires one of useFactory, useClass or useExisting',
+      );
+    }
+
+    const providers: Provider[] = [
       {
         provide: Providers.BOT_OPTIONS,
-        useFactory: async (options: BotOptions) => options,
-        inject: [useClass],
-      },
-      {
-        provide: useClass,
-        useClass,
+        useFactory: async (factory: BotOptions) => factory,
+        inject: [optionsClass],
       },
     ];
+
+    if (options.useClass) {
+      providers.push({ provide: options.useClass, useClass: options.useClass });
+    }
+
+    return providers;
   }
 }

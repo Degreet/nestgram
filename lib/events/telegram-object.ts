@@ -9,8 +9,9 @@ export abstract class TelegramObject {
       new (botService: BotService, from: any) => TelegramObject
     >,
   ) {
+    const target = instance as unknown as Record<string, unknown>;
     for (const [key, value] of Object.entries(objects)) {
-      instance[key] = new value(botService, instance[key]);
+      target[key] = new value(botService, target[key]);
     }
   }
 }
