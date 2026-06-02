@@ -2,27 +2,30 @@ import { Injectable, Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { BotService } from '../api';
-import { Event } from '../decorators/params/event.decorator';
 import { Command } from '../decorators/listeners/command.decorator';
 import { OnMessage } from '../decorators/listeners/on-message.decorator';
 import { OnCallbackQuery } from '../decorators/listeners/on-callback-query.decorator';
 import { Router } from '../decorators/injectable/router.decorator';
+import { Sender } from '../decorators/params/sender.decorator';
+import { Args } from '../decorators/params/args.decorator';
 import { RouteTable } from '../engine/discovery';
 import { UpdateDispatcher } from '../engine/dispatcher';
 import { RawUpdate } from '../events/raw-update.types';
+import { User } from '../events/user';
 import { NestgramModule } from './nestgram.module';
 
 /**
  * A real router: discovered via the provider graph (no `routers` list), invoked
- * through the full ECC pipeline. Uses an explicit `@Event()` since auto-apply is
- * a later step. Records what it saw instead of replying, so no network is hit.
+ * through the full ECC pipeline. The first parameter is an undecorated typed
+ * event — the framework auto-applies `@Event()` to it. Records what it saw
+ * instead of replying, so no network is hit.
  */
 @Router()
 class GreetRouter {
   seen: RawUpdate['message'][] = [];
 
   @OnMessage()
-  onMessage(@Event() message: RawUpdate['message']): void {
+  onMessage(message: RawUpdate['message']): void {
     this.seen.push(message);
   }
 }
@@ -193,6 +196,48 @@ describe('stacked listener decorators (integration)', () => {
 
     await dispatcher.dispatch(messageUpdate(1, 'hi'));
     expect(router.hits).toEqual(['hit']);
+
+    await app.close();
+  });
+});
+
+// Parameter decorators resolve through ECC: the undecorated event (auto-@Event)
+// and @Sender/@Args coexist on one handler.
+@Router()
+class ParamsRouter {
+  seen?: { text?: string; userId?: number; args: string[] };
+
+  @Command('echo')
+  echo(
+    message: RawUpdate['message'],
+    @Sender() user: User,
+    @Args() args: string[],
+  ): void {
+    this.seen = { text: message?.text, userId: user?.id, args };
+  }
+}
+
+@Module({
+  imports: [NestgramModule.forRoot({ token: 'TEST' })],
+  providers: [ParamsRouter],
+})
+class ParamsAppModule {}
+
+describe('parameter decorators (integration)', () => {
+  it('resolves the auto-@Event first param alongside @Sender and @Args', async () => {
+    const app = await NestFactory.createApplicationContext(ParamsAppModule, {
+      logger: false,
+    });
+    const dispatcher = app.get(UpdateDispatcher);
+    const router = app.get(ParamsRouter);
+
+    await dispatcher.dispatch(messageUpdate(1, '/echo a b'));
+
+    expect(router.seen).toEqual({
+      text: '/echo a b',
+      userId: 7,
+      args: ['a', 'b'],
+    });
 
     await app.close();
   });
