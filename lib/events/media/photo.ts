@@ -8,7 +8,7 @@ const area = (size: RawPhotoSize): number => size.width * size.height;
 
 /**
  * A photo — Telegram delivers it as several `PhotoSize`s (different qualities).
- * `largest`/`smallest` pick a size to download; `save`/`download`/`buffer`
+ * `largest`/`smallest` pick a size to download; `save`/`stream`/`buffer`
  * default to the largest, which is what you almost always want.
  */
 export class Photo {
@@ -39,8 +39,8 @@ export class Photo {
     return this.largest.save(destinationPath, options);
   }
 
-  download(options?: DownloadOptions): Promise<Readable> {
-    return this.largest.download(options);
+  stream(options?: DownloadOptions): Promise<Readable> {
+    return this.largest.stream(options);
   }
 
   buffer(options?: DownloadOptions): Promise<Buffer> {

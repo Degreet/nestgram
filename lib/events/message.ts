@@ -54,7 +54,7 @@ export class Message extends TelegramObject {
   caption_entities?: any[];
 
   // Content (one is present per message). Downloadable media is wrapped into a
-  // rich object with `.save(path)` / `.download()`; non-file content stays raw.
+  // rich object with `.save(path)` / `.stream()`; non-file content stays raw.
   photo?: Photo;
   video?: Video;
   animation?: Animation;

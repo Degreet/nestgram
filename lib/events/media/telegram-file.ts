@@ -31,7 +31,7 @@ export class TelegramFile {
   }
 
   /** Open the file as a readable stream (preferred for large files). */
-  download(options?: DownloadOptions): Promise<Readable> {
+  stream(options?: DownloadOptions): Promise<Readable> {
     return this.bot.fileStream(this.file_id, options);
   }
 

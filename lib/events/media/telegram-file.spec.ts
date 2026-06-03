@@ -29,9 +29,9 @@ describe('TelegramFile delegates to BotService', () => {
     expect(bot.fileLink).toHaveBeenCalledWith('f', { signal: undefined });
   });
 
-  it('download -> bot.fileStream(file_id)', async () => {
+  it('stream -> bot.fileStream(file_id)', async () => {
     const bot = botMock();
-    await new TelegramFile(bot, raw).download();
+    await new TelegramFile(bot, raw).stream();
     expect(bot.fileStream).toHaveBeenCalledWith('f', undefined);
   });
 

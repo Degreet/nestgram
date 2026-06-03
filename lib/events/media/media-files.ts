@@ -2,7 +2,7 @@ import { TelegramFile } from './telegram-file';
 
 /**
  * Single-file media types. Each is a {@link TelegramFile} (so it has
- * `save`/`download`/`buffer`) plus the Bot API metadata for that kind — the
+ * `save`/`stream`/`buffer`) plus the Bot API metadata for that kind — the
  * fields are populated by the base constructor's `Object.assign`.
  */
 
