@@ -5,6 +5,9 @@ export * from './command.decorator';
 export * from './hears.decorator';
 export * from './action.decorator';
 
+// Content-type listeners (@OnText, @OnPhoto, @OnMedia, ...).
+export * from './content.decorators';
+
 export * from './on-business-connection.decorator';
 export * from './on-business-message.decorator';
 export * from './on-callback-query.decorator';

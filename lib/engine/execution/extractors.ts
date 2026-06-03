@@ -87,3 +87,15 @@ export function extractCallbackData(
 ): string | undefined {
   return ctx.update.callback_query?.data;
 }
+
+/** The message's text (a plain-text message), if any. */
+export function extractText(ctx: TelegramExecutionContext): string | undefined {
+  return messageOf(ctx)?.text;
+}
+
+/** The message's media caption, if any. */
+export function extractCaption(
+  ctx: TelegramExecutionContext,
+): string | undefined {
+  return messageOf(ctx)?.caption;
+}

@@ -15,6 +15,21 @@ import {
   InputMediaPhoto,
   InputMediaVideo,
 } from '../api/input-media';
+import type {
+  RawAnimation,
+  RawAudio,
+  RawContact,
+  RawDice,
+  RawDocument,
+  RawLocation,
+  RawPhotoSize,
+  RawPoll,
+  RawSticker,
+  RawVenue,
+  RawVideo,
+  RawVideoNote,
+  RawVoice,
+} from './raw-update.types';
 
 @UpdateType(
   'message',
@@ -34,6 +49,22 @@ export class Message extends TelegramObject {
   reply_markup?: any;
   entities?: any[];
   caption_entities?: any[];
+
+  // Content (one is present per message). Media stays raw here; the rich
+  // download helpers (`photo.save(...)`) land with the media task.
+  photo?: RawPhotoSize[];
+  video?: RawVideo;
+  animation?: RawAnimation;
+  audio?: RawAudio;
+  voice?: RawVoice;
+  document?: RawDocument;
+  video_note?: RawVideoNote;
+  sticker?: RawSticker;
+  dice?: RawDice;
+  location?: RawLocation;
+  contact?: RawContact;
+  poll?: RawPoll;
+  venue?: RawVenue;
 
   constructor(private readonly botService: BotService, from: Partial<Message>) {
     super();
