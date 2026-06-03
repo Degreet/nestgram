@@ -8,6 +8,7 @@ export * from './events';
 export * from './keyboards';
 export * from './formatting';
 export * from './interceptors';
+export * from './callback-data';
 
 // Engine public surface (the update -> dispatch pipeline).
 export * from './engine/matching';

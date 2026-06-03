@@ -23,7 +23,9 @@ import {
   Action,
   CallbackData,
   CallbackQuery,
+  callbackData,
   Command,
+  Data,
   EventState,
   Hears,
   Message,
@@ -249,6 +251,80 @@ describe('per-update ctx.state (booted app)', () => {
 
     expect(router.seen).toBe('from-guard');
     await app.close();
+  });
+});
+
+const Buy = callbackData('buy', { productId: Number });
+// Two definitions deliberately share a prefix but differ in schema. They both
+// match `dup:42`; first-match routing must decode with the WINNER's own
+// definition, never a sibling route the matcher merely evaluated.
+const DupNumber = callbackData('dup', { n: Number });
+const DupString = callbackData('dup', { n: String });
+
+@Router()
+class TypedCallbackRouter {
+  readonly log: string[] = [];
+
+  @Action(Buy.filter())
+  buy(_query: CallbackQuery, @Data() data: { productId: number }) {
+    this.log.push(
+      `buy product=${data.productId} type=${typeof data.productId}`,
+    );
+  }
+
+  @Action(DupNumber.filter())
+  dupNumber(_query: CallbackQuery, @Data() data: { n: number }) {
+    this.log.push(`dup n=${data.n} type=${typeof data.n}`);
+  }
+
+  @Action(DupString.filter())
+  dupString(_query: CallbackQuery, @Data() data: { n: string }) {
+    this.log.push(`dupString n=${data.n} type=${typeof data.n}`);
+  }
+}
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      token: '123456:TEST',
+      autoAnswerCallbackQueries: false,
+    }),
+  ],
+  providers: [TypedCallbackRouter],
+})
+class TypedCallbackAppModule {}
+
+describe('typed callback data (booted app)', () => {
+  let app: INestApplicationContext;
+  let dispatcher: UpdateDispatcher;
+  let router: TypedCallbackRouter;
+
+  beforeAll(async () => {
+    app = await NestFactory.createApplicationContext(TypedCallbackAppModule, {
+      logger: false,
+    });
+    dispatcher = app.get(UpdateDispatcher);
+    router = app.get(TypedCallbackRouter);
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  beforeEach(() => {
+    router.log.length = 0;
+  });
+
+  it('matches filter() and injects @Data() with the typed values', async () => {
+    await dispatcher.dispatch(callbackUpdate(1, Buy.pack({ productId: 42 })));
+    expect(router.log).toEqual(['buy product=42 type=number']);
+  });
+
+  it('decodes @Data() with the winning route definition, never a sibling', async () => {
+    await dispatcher.dispatch(callbackUpdate(2, 'dup:42'));
+    // First-match wins (dupNumber), and it decodes `42` as a number with its
+    // own schema — not the String schema of the overlapping dupString route.
+    expect(router.log).toEqual(['dup n=42 type=number']);
   });
 });
 
