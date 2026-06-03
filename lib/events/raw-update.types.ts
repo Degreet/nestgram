@@ -37,6 +37,11 @@ export interface RawFileBase {
   file_size?: number;
 }
 
+/** Bot API `File` (returned by `getFile`) — carries the temporary `file_path`. */
+export interface RawFile extends RawFileBase {
+  file_path?: string;
+}
+
 /** Bot API `PhotoSize` — one resolution of a photo. */
 export interface RawPhotoSize extends RawFileBase {
   width: number;

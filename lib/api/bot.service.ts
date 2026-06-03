@@ -12,6 +12,8 @@ import {
   ApiMethod,
   SendMessage,
   GetMe,
+  GetFile,
+  GetFileOptions,
   GetUpdates,
   SendMessageOptions,
   GetUpdatesOptions,
@@ -123,6 +125,11 @@ export class BotService {
   getMe(options?: MethodOptions) {
     const { token, signal } = options ?? {};
     return this.call(new GetMe(), { token, signal });
+  }
+
+  getFile(file_id: string, options?: MethodOptions<GetFileOptions>) {
+    const { token, signal, ...payload } = options ?? {};
+    return this.call(new GetFile({ file_id, ...payload }), { token, signal });
   }
 
   getUpdates(options?: MethodOptions<GetUpdatesOptions>) {

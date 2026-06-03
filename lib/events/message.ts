@@ -16,20 +16,23 @@ import {
   InputMediaVideo,
 } from '../api/input-media';
 import type {
-  RawAnimation,
-  RawAudio,
   RawContact,
   RawDice,
-  RawDocument,
   RawLocation,
-  RawPhotoSize,
+  RawMessage,
   RawPoll,
-  RawSticker,
   RawVenue,
-  RawVideo,
-  RawVideoNote,
-  RawVoice,
 } from './raw-update.types';
+import {
+  Animation,
+  Audio,
+  Document,
+  Photo,
+  Sticker,
+  Video,
+  VideoNote,
+  Voice,
+} from './media';
 
 @UpdateType(
   'message',
@@ -50,16 +53,16 @@ export class Message extends TelegramObject {
   entities?: any[];
   caption_entities?: any[];
 
-  // Content (one is present per message). Media stays raw here; the rich
-  // download helpers (`photo.save(...)`) land with the media task.
-  photo?: RawPhotoSize[];
-  video?: RawVideo;
-  animation?: RawAnimation;
-  audio?: RawAudio;
-  voice?: RawVoice;
-  document?: RawDocument;
-  video_note?: RawVideoNote;
-  sticker?: RawSticker;
+  // Content (one is present per message). Downloadable media is wrapped into a
+  // rich object with `.save(path)` / `.download()`; non-file content stays raw.
+  photo?: Photo;
+  video?: Video;
+  animation?: Animation;
+  audio?: Audio;
+  voice?: Voice;
+  document?: Document;
+  video_note?: VideoNote;
+  sticker?: Sticker;
   dice?: RawDice;
   location?: RawLocation;
   contact?: RawContact;
@@ -69,6 +72,21 @@ export class Message extends TelegramObject {
   constructor(private readonly botService: BotService, from: Partial<Message>) {
     super();
     Object.assign(this, from);
+
+    // `from` is the raw wire message; wrap its downloadable media into rich,
+    // self-downloading objects (the raw/rich boundary, like the event factory).
+    // `from` may be absent (e.g. a callback query with no message).
+    const raw = (from ?? {}) as unknown as RawMessage;
+    if (raw.photo) this.photo = new Photo(botService, raw.photo);
+    if (raw.video) this.video = new Video(botService, raw.video);
+    if (raw.animation)
+      this.animation = new Animation(botService, raw.animation);
+    if (raw.audio) this.audio = new Audio(botService, raw.audio);
+    if (raw.voice) this.voice = new Voice(botService, raw.voice);
+    if (raw.document) this.document = new Document(botService, raw.document);
+    if (raw.video_note)
+      this.video_note = new VideoNote(botService, raw.video_note);
+    if (raw.sticker) this.sticker = new Sticker(botService, raw.sticker);
   }
 
   answer(text: string, options?: MethodOptions<SendMessageOptions>) {
