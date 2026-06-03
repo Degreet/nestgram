@@ -8,14 +8,22 @@ import { DefaultParseModeTransformer } from './request/default-parse-mode.transf
 interface FetchCall {
   url: string;
   body: Record<string, unknown>;
+  signal?: AbortSignal;
 }
 
 const originalFetch = global.fetch;
 
 function mockFetch(): FetchCall[] {
   const calls: FetchCall[] = [];
-  global.fetch = (async (url: string, init: { body?: string }) => {
-    calls.push({ url, body: init.body ? JSON.parse(init.body) : {} });
+  global.fetch = (async (
+    url: string,
+    init: { body?: string; signal?: AbortSignal },
+  ) => {
+    calls.push({
+      url,
+      body: init.body ? JSON.parse(init.body) : {},
+      signal: init.signal,
+    });
     return { json: async () => ({ ok: true, result: {} }) } as Response;
   }) as typeof fetch;
   return calls;
@@ -94,6 +102,28 @@ describe('BotService per-call token override', () => {
     expect(calls[0].url).toBe(
       'https://api.telegram.org/botDEFAULT/sendMessage',
     );
+  });
+});
+
+describe('BotService per-call abort signal', () => {
+  let calls: FetchCall[];
+
+  beforeEach(() => {
+    calls = mockFetch();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it('threads an abort signal through to fetch without leaking it', async () => {
+    const controller = new AbortController();
+    await bot({ token: 'T' }).sendMessage(1, 'hi', {
+      signal: controller.signal,
+    });
+
+    expect(calls[0].signal).toBe(controller.signal);
+    expect('signal' in calls[0].body).toBe(false);
   });
 });
 

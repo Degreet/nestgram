@@ -37,20 +37,20 @@ import {
 
 const TELEGRAM_API_BASE = 'https://api.telegram.org';
 
-/** Per-call overrides for {@link BotService.call}. */
+/** Per-call overrides for {@link BotService.call}, kept out of the API payload. */
 export interface CallOptions {
   /** Send against a different bot token, without a second client instance. */
   token?: string;
-  /** Abort the in-flight request (used by long polling). */
+  /** Abort the in-flight request (e.g. on shutdown or a timeout). */
   signal?: AbortSignal;
 }
 
 /**
- * A method's options plus an optional per-call `token` override. The sugar
- * methods accept this and split the `token` out of the payload, so a single
- * call can target another bot: `bot.sendMessage(id, 'hi', { token })`.
+ * A method's options plus the per-call controls (`token`, `signal`). The sugar
+ * methods accept this and split the controls out of the payload, so one call can
+ * target another bot or be aborted: `bot.sendMessage(id, 'hi', { token, signal })`.
  */
-export type WithToken<T = unknown> = Partial<T> & { token?: string };
+export type MethodOptions<T = unknown> = Partial<T> & CallOptions;
 
 @Injectable()
 export class BotService {
@@ -115,36 +115,43 @@ export class BotService {
     };
   }
 
-  deleteWebhook(options?: WithToken<DeleteWebhookOptions>) {
-    const { token, ...payload } = options ?? {};
-    return this.call(new DeleteWebhook(payload), { token });
+  deleteWebhook(options?: MethodOptions<DeleteWebhookOptions>) {
+    const { token, signal, ...payload } = options ?? {};
+    return this.call(new DeleteWebhook(payload), { token, signal });
   }
 
-  getMe(options?: WithToken) {
-    return this.call(new GetMe(), { token: options?.token });
+  getMe(options?: MethodOptions) {
+    const { token, signal } = options ?? {};
+    return this.call(new GetMe(), { token, signal });
   }
 
-  getUpdates(options?: WithToken<GetUpdatesOptions>, signal?: AbortSignal) {
-    const { token, ...payload } = options ?? {};
+  getUpdates(options?: MethodOptions<GetUpdatesOptions>) {
+    const { token, signal, ...payload } = options ?? {};
     return this.call(new GetUpdates(payload), { token, signal });
   }
 
   sendMessage(
     chat_id: number | string,
     text: string,
-    options?: WithToken<SendMessageOptions>,
+    options?: MethodOptions<SendMessageOptions>,
   ) {
-    const { token, ...payload } = options ?? {};
-    return this.call(new SendMessage({ chat_id, text, ...payload }), { token });
+    const { token, signal, ...payload } = options ?? {};
+    return this.call(new SendMessage({ chat_id, text, ...payload }), {
+      token,
+      signal,
+    });
   }
 
   sendPhoto(
     chat_id: number | string,
     photo: string | InputFile,
-    options?: WithToken<SendPhotoOptions>,
+    options?: MethodOptions<SendPhotoOptions>,
   ) {
-    const { token, ...payload } = options ?? {};
-    return this.call(new SendPhoto({ chat_id, photo, ...payload }), { token });
+    const { token, signal, ...payload } = options ?? {};
+    return this.call(new SendPhoto({ chat_id, photo, ...payload }), {
+      token,
+      signal,
+    });
   }
 
   sendMediaGroup(
@@ -152,23 +159,25 @@ export class BotService {
     media: Array<
       InputMediaAudio | InputMediaDocument | InputMediaPhoto | InputMediaVideo
     >,
-    options?: WithToken<SendMediaGroupOptions>,
+    options?: MethodOptions<SendMediaGroupOptions>,
   ) {
-    const { token, ...payload } = options ?? {};
+    const { token, signal, ...payload } = options ?? {};
     return this.call(new SendMediaGroup({ chat_id, media, ...payload }), {
       token,
+      signal,
     });
   }
 
   answerCallbackQuery(
     callback_query_id: string,
-    options?: WithToken<AnswerCallbackQueryOptions>,
+    options?: MethodOptions<AnswerCallbackQueryOptions>,
   ) {
-    const { token, ...payload } = options ?? {};
+    const { token, signal, ...payload } = options ?? {};
     return this.call(
       new AnswerCallbackQuery({ callback_query_id, ...payload }),
       {
         token,
+        signal,
       },
     );
   }
@@ -177,12 +186,12 @@ export class BotService {
     chat_id: number | string,
     message_id: number,
     text: string,
-    options?: WithToken<EditMessageTextOptions>,
+    options?: MethodOptions<EditMessageTextOptions>,
   ) {
-    const { token, ...payload } = options ?? {};
+    const { token, signal, ...payload } = options ?? {};
     return this.call(
       new EditMessageText({ chat_id, message_id, text, ...payload }),
-      { token },
+      { token, signal },
     );
   }
 
@@ -190,9 +199,9 @@ export class BotService {
     chat_id: number | string,
     message_id: number,
     reply_markup: unknown,
-    options?: WithToken<EditMessageReplyMarkupOptions>,
+    options?: MethodOptions<EditMessageReplyMarkupOptions>,
   ) {
-    const { token, ...payload } = options ?? {};
+    const { token, signal, ...payload } = options ?? {};
     return this.call(
       new EditMessageReplyMarkup({
         chat_id,
@@ -200,7 +209,7 @@ export class BotService {
         reply_markup,
         ...payload,
       }),
-      { token },
+      { token, signal },
     );
   }
 }

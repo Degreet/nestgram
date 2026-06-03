@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 
 import { Message } from './message';
-import { BotService, WithToken } from '../api';
+import { BotService, MethodOptions } from '../api';
 import { AnswerCallbackQueryOptions } from '../api/methods';
 import type { EventState } from '../engine/context/event-state';
 import { TelegramObject } from './telegram-object';
@@ -43,7 +43,7 @@ export class CallbackQuery extends TelegramObject {
     return this.state?.get(ANSWERED) === true;
   }
 
-  answer(text?: string, options?: WithToken<AnswerCallbackQueryOptions>) {
+  answer(text?: string, options?: MethodOptions<AnswerCallbackQueryOptions>) {
     if (this.isAnswered) {
       // Telegram rejects a second answer for the same query — surface the
       // likely mistake. (Exact API behaviour to be confirmed live, task #13.)
@@ -55,7 +55,7 @@ export class CallbackQuery extends TelegramObject {
   }
 
   /** Answer with a modal alert — shortcut for `answer(text, { show_alert: true })`. */
-  alert(text: string, options?: WithToken<AnswerCallbackQueryOptions>) {
+  alert(text: string, options?: MethodOptions<AnswerCallbackQueryOptions>) {
     return this.answer(text, { ...options, show_alert: true });
   }
 }

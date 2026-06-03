@@ -145,14 +145,12 @@ export class PollingUpdateSource implements UpdateSource {
   private fetchBatch(signal: AbortSignal): Promise<RawUpdate[]> {
     // `getUpdates` is typed `Update[]`, but the wire result is the raw update
     // shape the engine works with — the single boundary cast.
-    return this.botService.getUpdates(
-      {
-        offset: this.offset,
-        limit: this.options.limit,
-        timeout: this.options.timeout,
-        allowed_updates: this.options.allowed_updates,
-      },
+    return this.botService.getUpdates({
+      offset: this.offset,
+      limit: this.options.limit,
+      timeout: this.options.timeout,
+      allowed_updates: this.options.allowed_updates,
       signal,
-    ) as unknown as Promise<RawUpdate[]>;
+    }) as unknown as Promise<RawUpdate[]>;
   }
 }
