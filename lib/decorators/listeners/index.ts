@@ -8,6 +8,9 @@ export * from './action.decorator';
 // Content-type listeners (@OnText, @OnPhoto, @OnMedia, ...).
 export * from './content.decorators';
 
+// Entity listeners (@OnEntity, @OnEmail, @OnUrl, ...).
+export * from './entity.decorators';
+
 export * from './on-business-connection.decorator';
 export * from './on-business-message.decorator';
 export * from './on-callback-query.decorator';

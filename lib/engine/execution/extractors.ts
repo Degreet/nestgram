@@ -1,7 +1,11 @@
 import { TelegramExecutionContext } from '../context/telegram-execution-context';
 import { UpdateKind } from '../context/update-kind';
 import { User } from '../../events/user';
-import { RawChat, RawMessage } from '../../events/raw-update.types';
+import {
+  RawChat,
+  RawMessage,
+  RawMessageEntity,
+} from '../../events/raw-update.types';
 
 /**
  * Pure derivations of cross-cutting values from a wrapped update.
@@ -98,4 +102,44 @@ export function extractCaption(
   ctx: TelegramExecutionContext,
 ): string | undefined {
   return messageOf(ctx)?.caption;
+}
+
+/** Slice the text of each `type` entity out of its source string. */
+function sliceEntities(
+  source: string | undefined,
+  entities: RawMessageEntity[] | undefined,
+  type: string,
+): string[] {
+  if (!source || !entities) {
+    return [];
+  }
+  // Entity offsets/lengths are UTF-16 code units, matching JS string indices.
+  return entities
+    .filter((entity) => entity.type === type)
+    .map((entity) =>
+      source.slice(entity.offset, entity.offset + entity.length),
+    );
+}
+
+/** The text of every entity of `type`, from both message text and caption. */
+export function extractEntities(
+  ctx: TelegramExecutionContext,
+  type: string,
+): string[] {
+  const message = messageOf(ctx);
+  if (!message) {
+    return [];
+  }
+  return [
+    ...sliceEntities(message.text, message.entities, type),
+    ...sliceEntities(message.caption, message.caption_entities, type),
+  ];
+}
+
+/** The text of the first entity of `type`, if any. */
+export function extractEntity(
+  ctx: TelegramExecutionContext,
+  type: string,
+): string | undefined {
+  return extractEntities(ctx, type)[0];
 }
