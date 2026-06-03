@@ -1,6 +1,6 @@
 import { ApiMethod } from './api-method';
 import { Message } from '../../events';
-import { BotService } from '../bot.service';
+import type { BotService } from '../bot.service';
 import { InputFile } from '../input-file';
 import {
   InputMediaAudio,
@@ -27,21 +27,23 @@ export class SendMediaGroup extends ApiMethod<
   SendMediaGroupOptions,
   Message[]
 > {
-  protected readonly methodName = 'sendMediaGroup';
+  readonly method = 'sendMediaGroup';
   readonly isAttachMedia = true;
 
-  constructor(readonly botService: BotService, options: SendMediaGroupOptions) {
-    super(botService.token, options);
+  constructor(payload: SendMediaGroupOptions) {
+    super(payload);
   }
 
-  get hasMedia() {
+  get hasMedia(): boolean {
     return (
-      this.options?.media.some((media) => media.media instanceof InputFile) ??
+      this.payload?.media.some((media) => media.media instanceof InputFile) ??
       false
     );
   }
 
-  interceptor(objects: Message[]) {
-    return objects.map((object) => new Message(this.botService, object));
+  wrap(raw: unknown, bot: BotService): Message[] {
+    return (raw as Partial<Message>[]).map(
+      (object) => new Message(bot, object),
+    );
   }
 }

@@ -26,7 +26,7 @@ export class DefaultParseModeTransformer implements RequestTransformer {
   private readonly logger = new Logger(DefaultParseModeTransformer.name);
   private readonly defaultParseMode?: string;
 
-  constructor(@Inject(Providers.NESTGRAM_OPTIONS) options: ParseModeOptions) {
+  constructor(@Inject(Providers.BOT_OPTIONS) options: ParseModeOptions) {
     this.defaultParseMode = options.parseMode;
   }
 

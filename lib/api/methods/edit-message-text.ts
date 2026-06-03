@@ -1,6 +1,6 @@
 import { ApiMethod } from './api-method';
 import { Message } from '../../events';
-import { BotService } from '../bot.service';
+import type { BotService } from '../bot.service';
 
 export interface EditMessageTextOptions {
   business_connection_id?: string;
@@ -19,18 +19,15 @@ export class EditMessageText extends ApiMethod<
   EditMessageTextOptions,
   Message | true
 > {
-  protected readonly methodName = 'editMessageText';
+  readonly method = 'editMessageText';
 
-  constructor(
-    readonly botService: BotService,
-    options: EditMessageTextOptions,
-  ) {
-    super(botService.token, options);
+  constructor(payload: EditMessageTextOptions) {
+    super(payload);
   }
 
-  interceptor(result: Message | true) {
-    return typeof result === 'object'
-      ? new Message(this.botService, result)
-      : result;
+  wrap(raw: unknown, bot: BotService): Message | true {
+    return typeof raw === 'object' && raw !== null
+      ? new Message(bot, raw as Partial<Message>)
+      : true;
   }
 }

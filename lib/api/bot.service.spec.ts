@@ -2,6 +2,8 @@ import { Logger } from '@nestjs/common';
 
 import { BotService } from './bot.service';
 import { BotOptions } from './bot-options';
+import { RequestPipeline } from './request/request-pipeline';
+import { DefaultParseModeTransformer } from './request/default-parse-mode.transformer';
 
 interface FetchCall {
   url: string;
@@ -19,8 +21,13 @@ function mockFetch(): FetchCall[] {
   return calls;
 }
 
+// Wire the real default-parse-mode transformer so these exercise the whole
+// call -> pipeline -> serialize path, not just BotService in isolation.
 function bot(options: BotOptions): BotService {
-  return new BotService(options);
+  const pipeline = new RequestPipeline([
+    new DefaultParseModeTransformer(options),
+  ]);
+  return new BotService(options, pipeline);
 }
 
 describe('BotService default parse mode', () => {
@@ -37,6 +44,11 @@ describe('BotService default parse mode', () => {
   it('applies the default parse_mode when a send omits it', async () => {
     await bot({ token: 'T', parseMode: 'HTML' }).sendMessage(1, 'hi');
     expect(calls[0].body.parse_mode).toBe('HTML');
+  });
+
+  it('targets the right URL with the bot token', async () => {
+    await bot({ token: 'T' }).sendMessage(1, 'hi');
+    expect(calls[0].url).toBe('https://api.telegram.org/botT/sendMessage');
   });
 
   it('lets a call override the default', async () => {
@@ -78,14 +90,6 @@ describe('BotService parse_mode + entities', () => {
     });
     expect(calls[0].body.parse_mode).toBeUndefined();
     expect(calls[0].body.entities).toEqual(entities);
-  });
-
-  it('does not inject the default when caption_entities are supplied', async () => {
-    await bot({ token: 'T', parseMode: 'HTML' }).sendPhoto(1, 'file_id', {
-      caption: 'hi',
-      caption_entities: entities,
-    });
-    expect(calls[0].body.parse_mode).toBeUndefined();
   });
 
   it('warns when a call supplies both parse_mode and entities', async () => {

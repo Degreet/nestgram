@@ -1,6 +1,6 @@
 import { ApiMethod } from './api-method';
 import { Message } from '../../events';
-import { BotService } from '../bot.service';
+import type { BotService } from '../bot.service';
 
 export interface SendMessageOptions {
   business_connection_id?: string;
@@ -18,13 +18,13 @@ export interface SendMessageOptions {
 }
 
 export class SendMessage extends ApiMethod<SendMessageOptions, Message> {
-  protected readonly methodName = 'sendMessage';
+  readonly method = 'sendMessage';
 
-  constructor(readonly botService: BotService, options: SendMessageOptions) {
-    super(botService.token, options);
+  constructor(payload: SendMessageOptions) {
+    super(payload);
   }
 
-  interceptor(object: Message) {
-    return new Message(this.botService, object);
+  wrap(raw: unknown, bot: BotService): Message {
+    return new Message(bot, raw as Partial<Message>);
   }
 }

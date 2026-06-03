@@ -1,64 +1,29 @@
-import { ApiException } from '../../exceptions';
+import type { BotService } from '../bot.service';
 
-import { ApiError, ApiResponse } from '../api-response';
-import { createAttachedData, createInlineData } from '../form-data';
-
-export interface ApiMethod<T, R> {
-  interceptor?(object: R): R;
+/**
+ * A pure description of a Bot API call: its method name, payload, and how to
+ * enrich the raw result. It holds no token and performs no I/O — the transport
+ * ({@link BotService.call}) runs the request pipeline, serializes, sends, and
+ * then calls {@link wrap}. Keeping the command a plain value object means a
+ * handler can `return new SendMessage(...)` and a test can assert on
+ * `method`/`payload` with no network mocks — and nothing can bypass the
+ * pipeline by sending itself.
+ */
+export interface ApiMethod<TOptions, TResult> {
+  /** Enrich Telegram's raw result (e.g. wrap it in a rich `Message`). */
+  wrap?(raw: unknown, bot: BotService): TResult;
+  /** The payload carries a file part, so it must be sent as multipart form-data. */
   hasMedia?: boolean;
+  /** Files are nested in the payload and need `attach://` references. */
   isAttachMedia?: boolean;
 }
 
-export abstract class ApiMethod<T, R> {
-  protected abstract readonly methodName: string;
+export abstract class ApiMethod<TOptions, TResult> {
+  /** Bot API method name, e.g. `sendMessage`. */
+  abstract readonly method: string;
+  readonly payload?: TOptions;
 
-  protected constructor(readonly token: string, readonly options?: T) {}
-
-  private createJSONPayload(): RequestInit {
-    return {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', connection: 'keep-alive' },
-      body: this.options && JSON.stringify(this.options),
-    };
-  }
-
-  private async createFormDataPayload(): Promise<RequestInit> {
-    const options = (this.options ?? {}) as Record<string, unknown>;
-    return {
-      method: 'POST',
-      headers: {
-        connection: 'keep-alive',
-      },
-      body: this.isAttachMedia
-        ? await createAttachedData(options)
-        : await createInlineData(options),
-    };
-  }
-
-  private async createPayload() {
-    if (this.hasMedia) {
-      return await this.createFormDataPayload();
-    } else {
-      return this.createJSONPayload();
-    }
-  }
-
-  async fetch(signal?: AbortSignal): Promise<R> {
-    const payload = await this.createPayload();
-
-    const response = await fetch(
-      `https://api.telegram.org/bot${this.token}/${this.methodName}`,
-      { ...payload, signal },
-    );
-
-    const data: ApiResponse<R> = (await response.json()) as ApiResponse<R>;
-
-    if (!data.ok) {
-      throw new ApiException(data as ApiError, this.options);
-    }
-
-    const { result } = data;
-
-    return this.interceptor?.(result) ?? result;
+  protected constructor(payload?: TOptions) {
+    this.payload = payload;
   }
 }

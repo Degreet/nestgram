@@ -1,3 +1,4 @@
+export * from './api-method';
 export * from './answer-callback-query';
 export * from './delete-webhook';
 export * from './edit-message-text';

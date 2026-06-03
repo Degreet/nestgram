@@ -1,10 +1,15 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import { BotOptions } from './bot-options';
 import { InputFile } from './input-file';
 import { Providers } from '../providers';
+import { ApiException } from '../exceptions';
 
+import { ApiError, ApiResponse } from './api-response';
+import { createAttachedData, createInlineData } from './form-data';
+import { ApiRequest, RequestPipeline } from './request';
 import {
+  ApiMethod,
   SendMessage,
   GetMe,
   GetUpdates,
@@ -30,61 +35,89 @@ import {
   InputMediaVideo,
 } from './input-media';
 
+const TELEGRAM_API_BASE = 'https://api.telegram.org';
+
+/** Per-call overrides for {@link BotService.call}. */
+export interface CallOptions {
+  /** Send against a different bot token, without a second client instance. */
+  token?: string;
+  /** Abort the in-flight request (used by long polling). */
+  signal?: AbortSignal;
+}
+
 @Injectable()
 export class BotService {
   readonly token: string;
-  private readonly defaultParseMode?: string;
-  private readonly logger = new Logger(BotService.name);
 
-  constructor(@Inject(Providers.BOT_OPTIONS) options: BotOptions) {
+  constructor(
+    @Inject(Providers.BOT_OPTIONS) options: BotOptions,
+    private readonly pipeline: RequestPipeline,
+  ) {
     this.token = options.token;
-    this.defaultParseMode = options.parseMode;
   }
 
   /**
-   * Apply the default `parse_mode` to a send that omits one. An explicit
-   * `parse_mode` key (any value, including `undefined`) is left untouched, so a
-   * call can override the default or opt out per call.
-   *
-   * `entities` / `caption_entities` are Telegram's alternative to `parse_mode`
-   * ("specified instead of parse_mode") — when present, the default is not
-   * injected, so it can't shadow caller-provided entities. Supplying both an
-   * explicit `parse_mode` and entities on one call is a mistake (Telegram
-   * ignores `parse_mode` in that case), so it is warned about.
+   * Execute any API method: build the request, run it through the request
+   * pipeline (default parse mode, user transformers, ...), serialize, send, and
+   * enrich the result. Every send funnels through here — the typed sugar below,
+   * `message.answer(...)`, and a returned `new SendMessage(...)` alike — so a
+   * transformer can never be bypassed.
    */
-  private withParseMode<T extends { parse_mode?: string }>(
-    options: Partial<T> | undefined,
-  ): Partial<T> {
-    const opts = (options ?? {}) as Partial<T> & {
-      entities?: unknown;
-      caption_entities?: unknown;
+  async call<R>(
+    method: ApiMethod<unknown, R>,
+    options?: CallOptions,
+  ): Promise<R> {
+    const request: ApiRequest = {
+      method: method.method,
+      payload: { ...((method.payload as Record<string, unknown>) ?? {}) },
+      token: options?.token ?? this.token,
     };
-    const hasEntities = 'entities' in opts || 'caption_entities' in opts;
-    const hasParseMode = 'parse_mode' in opts;
+    await this.pipeline.run(request);
 
-    if (hasEntities && hasParseMode) {
-      this.logger.warn(
-        'A send was given both parse_mode and entities; Telegram ignores ' +
-          'parse_mode and uses the entities. Pass only one.',
-      );
-    }
+    const init = await this.serialize(method, request.payload);
+    const response = await fetch(
+      `${TELEGRAM_API_BASE}/bot${request.token}/${request.method}`,
+      { ...init, signal: options?.signal },
+    );
+    const data = (await response.json()) as ApiResponse<R>;
 
-    if (!this.defaultParseMode || hasParseMode || hasEntities) {
-      return opts;
+    if (!data.ok) {
+      throw new ApiException(data as ApiError, request.payload);
     }
-    return { ...opts, parse_mode: this.defaultParseMode };
+    return method.wrap ? method.wrap(data.result, this) : data.result;
+  }
+
+  /** Serialize a payload as JSON, or as form-data when the method carries files. */
+  private async serialize(
+    method: ApiMethod<unknown, unknown>,
+    payload: Record<string, unknown>,
+  ): Promise<RequestInit> {
+    if (method.hasMedia) {
+      return {
+        method: 'POST',
+        headers: { connection: 'keep-alive' },
+        body: method.isAttachMedia
+          ? await createAttachedData(payload)
+          : await createInlineData(payload),
+      };
+    }
+    return {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', connection: 'keep-alive' },
+      body: JSON.stringify(payload),
+    };
   }
 
   deleteWebhook(options?: Partial<DeleteWebhookOptions>) {
-    return new DeleteWebhook(this, options).fetch();
+    return this.call(new DeleteWebhook(options));
   }
 
   getMe() {
-    return new GetMe(this).fetch();
+    return this.call(new GetMe());
   }
 
   getUpdates(options?: Partial<GetUpdatesOptions>, signal?: AbortSignal) {
-    return new GetUpdates(this, options).fetch(signal);
+    return this.call(new GetUpdates(options), { signal });
   }
 
   sendMessage(
@@ -92,11 +125,7 @@ export class BotService {
     text: string,
     options?: Partial<SendMessageOptions>,
   ) {
-    return new SendMessage(this, {
-      chat_id,
-      text,
-      ...this.withParseMode(options),
-    }).fetch();
+    return this.call(new SendMessage({ chat_id, text, ...options }));
   }
 
   sendPhoto(
@@ -104,11 +133,7 @@ export class BotService {
     photo: string | InputFile,
     options?: Partial<SendPhotoOptions>,
   ) {
-    return new SendPhoto(this, {
-      chat_id,
-      photo,
-      ...this.withParseMode(options),
-    }).fetch();
+    return this.call(new SendPhoto({ chat_id, photo, ...options }));
   }
 
   sendMediaGroup(
@@ -118,21 +143,16 @@ export class BotService {
     >,
     options?: Partial<SendMediaGroupOptions>,
   ) {
-    return new SendMediaGroup(this, {
-      chat_id,
-      media,
-      ...(options ?? {}),
-    }).fetch();
+    return this.call(new SendMediaGroup({ chat_id, media, ...options }));
   }
 
   answerCallbackQuery(
     callback_query_id: string,
     options?: Partial<AnswerCallbackQueryOptions>,
   ) {
-    return new AnswerCallbackQuery(this, {
-      callback_query_id,
-      ...(options ?? {}),
-    }).fetch();
+    return this.call(
+      new AnswerCallbackQuery({ callback_query_id, ...options }),
+    );
   }
 
   editMessageText(
@@ -141,12 +161,9 @@ export class BotService {
     text: string,
     options?: Partial<EditMessageTextOptions>,
   ) {
-    return new EditMessageText(this, {
-      chat_id,
-      message_id,
-      text,
-      ...this.withParseMode(options),
-    }).fetch();
+    return this.call(
+      new EditMessageText({ chat_id, message_id, text, ...options }),
+    );
   }
 
   editMessageReplyMarkup(
@@ -155,11 +172,13 @@ export class BotService {
     reply_markup: unknown,
     options?: Partial<EditMessageReplyMarkupOptions>,
   ) {
-    return new EditMessageReplyMarkup(this, {
-      chat_id,
-      message_id,
-      reply_markup,
-      ...(options ?? {}),
-    }).fetch();
+    return this.call(
+      new EditMessageReplyMarkup({
+        chat_id,
+        message_id,
+        reply_markup,
+        ...options,
+      }),
+    );
   }
 }

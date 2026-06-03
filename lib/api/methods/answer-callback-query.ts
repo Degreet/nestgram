@@ -1,5 +1,4 @@
 import { ApiMethod } from './api-method';
-import { BotService } from '../bot.service';
 
 export interface AnswerCallbackQueryOptions {
   callback_query_id: string;
@@ -13,12 +12,9 @@ export class AnswerCallbackQuery extends ApiMethod<
   AnswerCallbackQueryOptions,
   true
 > {
-  protected readonly methodName = 'answerCallbackQuery';
+  readonly method = 'answerCallbackQuery';
 
-  constructor(
-    readonly botService: BotService,
-    options: AnswerCallbackQueryOptions,
-  ) {
-    super(botService.token, options);
+  constructor(payload: AnswerCallbackQueryOptions) {
+    super(payload);
   }
 }

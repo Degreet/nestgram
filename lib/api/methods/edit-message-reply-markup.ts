@@ -1,6 +1,6 @@
 import { ApiMethod } from './api-method';
 import { Message } from '../../events';
-import { BotService } from '../bot.service';
+import type { BotService } from '../bot.service';
 
 export interface EditMessageReplyMarkupOptions {
   business_connection_id?: string;
@@ -15,18 +15,15 @@ export class EditMessageReplyMarkup extends ApiMethod<
   EditMessageReplyMarkupOptions,
   Message | true
 > {
-  protected readonly methodName = 'editMessageReplyMarkup';
+  readonly method = 'editMessageReplyMarkup';
 
-  constructor(
-    readonly botService: BotService,
-    options: EditMessageReplyMarkupOptions,
-  ) {
-    super(botService.token, options);
+  constructor(payload: EditMessageReplyMarkupOptions) {
+    super(payload);
   }
 
-  interceptor(result: Message | true) {
-    return typeof result === 'object'
-      ? new Message(this.botService, result)
-      : result;
+  wrap(raw: unknown, bot: BotService): Message | true {
+    return typeof raw === 'object' && raw !== null
+      ? new Message(bot, raw as Partial<Message>)
+      : true;
   }
 }

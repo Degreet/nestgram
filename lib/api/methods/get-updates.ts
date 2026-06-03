@@ -1,6 +1,5 @@
 import { ApiMethod } from './api-method';
 import { Update } from '../update.types';
-import { BotService } from '../bot.service';
 
 export interface GetUpdatesOptions {
   offset?: number;
@@ -10,9 +9,9 @@ export interface GetUpdatesOptions {
 }
 
 export class GetUpdates extends ApiMethod<GetUpdatesOptions, Update[]> {
-  protected readonly methodName = 'getUpdates';
+  readonly method = 'getUpdates';
 
-  constructor(readonly botService: BotService, options?: GetUpdatesOptions) {
-    super(botService.token, options);
+  constructor(payload?: GetUpdatesOptions) {
+    super(payload);
   }
 }

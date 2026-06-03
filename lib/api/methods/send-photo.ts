@@ -1,6 +1,6 @@
 import { ApiMethod } from './api-method';
 import { Message } from '../../events';
-import { BotService } from '../bot.service';
+import type { BotService } from '../bot.service';
 import { InputFile } from '../input-file';
 
 export interface SendPhotoOptions {
@@ -22,17 +22,17 @@ export interface SendPhotoOptions {
 }
 
 export class SendPhoto extends ApiMethod<SendPhotoOptions, Message> {
-  protected readonly methodName = 'sendPhoto';
+  readonly method = 'sendPhoto';
 
-  constructor(readonly botService: BotService, options: SendPhotoOptions) {
-    super(botService.token, options);
+  constructor(payload: SendPhotoOptions) {
+    super(payload);
   }
 
-  get hasMedia() {
-    return this.options?.photo instanceof InputFile;
+  get hasMedia(): boolean {
+    return this.payload?.photo instanceof InputFile;
   }
 
-  interceptor(object: Message) {
-    return new Message(this.botService, object);
+  wrap(raw: unknown, bot: BotService): Message {
+    return new Message(bot, raw as Partial<Message>);
   }
 }

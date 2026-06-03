@@ -1,12 +1,26 @@
 import { ResultHandler } from './result-handler';
 import { TelegramExecutionContext } from '../context';
+import { BotService } from '../../api';
+import { ApiMethod, GetMe } from '../../api/methods';
 
 function ctxWith(event: unknown): TelegramExecutionContext {
   return { kind: 'message', event } as unknown as TelegramExecutionContext;
 }
 
 describe('ResultHandler', () => {
-  const handler = new ResultHandler();
+  let called: ApiMethod<unknown, unknown>[];
+  let handler: ResultHandler;
+
+  beforeEach(() => {
+    called = [];
+    const bot = {
+      call: (method: ApiMethod<unknown, unknown>) => {
+        called.push(method);
+        return Promise.resolve();
+      },
+    } as unknown as BotService;
+    handler = new ResultHandler(bot);
+  });
 
   it('sends a returned string via the event', async () => {
     const answered: string[] = [];
@@ -17,18 +31,12 @@ describe('ResultHandler', () => {
     expect(answered).toEqual(['hello']);
   });
 
-  it('executes a returned command object', async () => {
-    let fetched = false;
-    const command = {
-      fetch: () => {
-        fetched = true;
-        return Promise.resolve();
-      },
-    };
+  it('executes a returned command object via bot.call', async () => {
+    const command = new GetMe();
 
     await handler.handle(command, ctxWith({}));
 
-    expect(fetched).toBe(true);
+    expect(called).toEqual([command]);
   });
 
   it('does nothing for void / undefined', async () => {
@@ -40,6 +48,7 @@ describe('ResultHandler', () => {
     await expect(
       handler.handle(undefined, ctxWith(event)),
     ).resolves.toBeUndefined();
+    expect(called).toEqual([]);
   });
 
   it('ignores a non-string, non-command value (e.g. an already-sent result)', async () => {
@@ -47,5 +56,6 @@ describe('ResultHandler', () => {
     await expect(
       handler.handle({ message_id: 7 }, ctxWith({})),
     ).resolves.toBeUndefined();
+    expect(called).toEqual([]);
   });
 });

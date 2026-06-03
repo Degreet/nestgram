@@ -88,6 +88,14 @@ describe('DefaultParseModeTransformer', () => {
     expect('parse_mode' in payload).toBe(false);
   });
 
+  it('does not inject when caption_entities are present', () => {
+    const payload = run('HTML', 'sendPhoto', {
+      caption: 'hi',
+      caption_entities: [{ type: 'bold', offset: 0, length: 2 }],
+    });
+    expect('parse_mode' in payload).toBe(false);
+  });
+
   it('does nothing when no default is configured', () => {
     expect('parse_mode' in run(undefined, 'sendMessage', { text: 'hi' })).toBe(
       false,
