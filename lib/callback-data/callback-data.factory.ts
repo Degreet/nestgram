@@ -2,18 +2,13 @@ import { Logger } from '@nestjs/common';
 
 import type { RoutePredicate } from '../engine/matching';
 import {
-  CallbackDataCodec,
   CallbackDataDecoder,
   CallbackDataFactory,
   CallbackDataSchema,
   CallbackDataValues,
 } from './callback-data.types';
-import {
-  CallbackDecodeError,
-  joinSegments,
-  resolveCodec,
-  splitSegments,
-} from './codecs';
+import { joinSegments, splitSegments } from './segments';
+import { resolveCodec, ValueCodec, ValueDecodeError } from '../encoding';
 import { MAX_CALLBACK_DATA_BYTES } from './callback-data.constants';
 import { CallbackDataPredicate } from './callback-data.predicate';
 import { NestgramConfigError } from '../exceptions/config.exception';
@@ -23,7 +18,7 @@ class TypedCallbackData<S extends CallbackDataSchema>
   implements CallbackDataFactory<S>, CallbackDataDecoder
 {
   private readonly logger = new Logger('CallbackData');
-  private readonly fields: ReadonlyArray<[string, CallbackDataCodec<unknown>]>;
+  private readonly fields: ReadonlyArray<[string, ValueCodec<unknown>]>;
 
   constructor(readonly prefix: string, schema: S) {
     if (prefix.trim().length === 0) {
@@ -64,7 +59,7 @@ class TypedCallbackData<S extends CallbackDataSchema>
         values[key] = codec.decode(rest[index]);
       });
     } catch (error) {
-      if (error instanceof CallbackDecodeError) {
+      if (error instanceof ValueDecodeError) {
         // A segment didn't fit its codec — same prefix/arity, different data.
         return null;
       }

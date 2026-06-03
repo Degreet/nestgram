@@ -1,24 +1,18 @@
 import type { RoutePredicate } from '../engine/matching';
+import type { CodecSpec, ValueCodec } from '../encoding';
 
 /**
- * Encodes a value to / decodes a value from one callback-data segment. The
- * built-in `Number`/`String`/`Boolean` schema entries are backed by internal
- * codecs of this shape; the contract is exported so the mechanism is documented.
+ * Encodes a value to / decodes a value from one callback-data segment. Alias of
+ * the shared {@link ValueCodec}; kept as a named export for the public surface.
  */
-export interface CallbackDataCodec<T> {
-  encode(value: T): string;
-  decode(raw: string): T;
-}
+export type CallbackDataCodec<T> = ValueCodec<T>;
 
 /**
  * The schema passed to `callbackData(prefix, schema)`: each field names a value
  * and how it (de)serializes, via its constructor (`Number`/`String`/`Boolean`).
  * Field order is the encoding order (object insertion order).
  */
-export type CallbackDataSchema = Record<
-  string,
-  NumberConstructor | StringConstructor | BooleanConstructor
->;
+export type CallbackDataSchema = Record<string, CodecSpec>;
 
 /** The typed value object for a schema — what `pack` takes and `parse`/`@Data` give. */
 export type CallbackDataValues<S extends CallbackDataSchema> = {

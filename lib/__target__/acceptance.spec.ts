@@ -26,6 +26,7 @@ import {
   callbackData,
   Command,
   Data,
+  deepLinkData,
   EventState,
   Hears,
   Message,
@@ -34,6 +35,7 @@ import {
   RouteTable,
   Router,
   Sender,
+  StartPayload,
   State,
   TelegramExecutionContext,
   UpdateDispatcher,
@@ -362,5 +364,61 @@ describe('Nest pipeline via ECC (booted app)', () => {
   it('@UseFilters catches an error thrown inside a handler', async () => {
     await dispatcher.dispatch(messageUpdate(3, '/boom'));
     expect(PipelineRouter.events).toEqual(['caught:kaboom']);
+  });
+});
+
+const StartRef = deepLinkData('ref', { userId: Number });
+
+@Router()
+class StartPayloadRouter {
+  seen: unknown = 'unset';
+
+  @Command('start')
+  start(
+    _message: Message,
+    @StartPayload(StartRef) data: { userId: number } | null,
+  ) {
+    this.seen = data;
+  }
+}
+
+@Module({
+  imports: [NestgramModule.forRoot({ token: '123456:TEST' })],
+  providers: [StartPayloadRouter],
+})
+class StartPayloadAppModule {}
+
+describe('@StartPayload deep-link data (booted app)', () => {
+  let app: INestApplicationContext;
+  let dispatcher: UpdateDispatcher;
+  let router: StartPayloadRouter;
+
+  beforeAll(async () => {
+    app = await NestFactory.createApplicationContext(StartPayloadAppModule, {
+      logger: false,
+    });
+    dispatcher = app.get(UpdateDispatcher);
+    router = app.get(StartPayloadRouter);
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('decodes the /start payload with the definition', async () => {
+    await dispatcher.dispatch(
+      messageUpdate(1, `/start ${StartRef.pack({ userId: 42 })}`),
+    );
+    expect(router.seen).toEqual({ userId: 42 });
+  });
+
+  it('is null when /start carries no payload', async () => {
+    await dispatcher.dispatch(messageUpdate(2, '/start'));
+    expect(router.seen).toBeNull();
+  });
+
+  it('is null when the payload is a different definition', async () => {
+    await dispatcher.dispatch(messageUpdate(3, '/start other_1'));
+    expect(router.seen).toBeNull();
   });
 });
