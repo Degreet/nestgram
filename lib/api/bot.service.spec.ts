@@ -71,6 +71,32 @@ describe('BotService default parse mode', () => {
   });
 });
 
+describe('BotService per-call token override', () => {
+  let calls: FetchCall[];
+
+  beforeEach(() => {
+    calls = mockFetch();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it('sends against the override token without leaking it into the payload', async () => {
+    await bot({ token: 'DEFAULT' }).sendMessage(1, 'hi', { token: 'OTHER' });
+
+    expect(calls[0].url).toBe('https://api.telegram.org/botOTHER/sendMessage');
+    expect('token' in calls[0].body).toBe(false);
+  });
+
+  it('falls back to the configured token when none is given', async () => {
+    await bot({ token: 'DEFAULT' }).sendMessage(1, 'hi');
+    expect(calls[0].url).toBe(
+      'https://api.telegram.org/botDEFAULT/sendMessage',
+    );
+  });
+});
+
 describe('BotService parse_mode + entities', () => {
   let calls: FetchCall[];
 

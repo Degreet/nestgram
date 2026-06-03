@@ -1,5 +1,5 @@
 import { TelegramObject } from './telegram-object';
-import { BotService } from '../api';
+import { BotService, WithToken } from '../api';
 import {
   EditMessageReplyMarkupOptions,
   EditMessageTextOptions,
@@ -40,11 +40,14 @@ export class Message extends TelegramObject {
     Object.assign(this, from);
   }
 
-  answer(text: string, options?: Partial<SendMessageOptions>) {
+  answer(text: string, options?: WithToken<SendMessageOptions>) {
     return this.botService.sendMessage(this.chat.id, text, options);
   }
 
-  answerPhoto(photo: string | InputFile, options?: Partial<SendPhotoOptions>) {
+  answerPhoto(
+    photo: string | InputFile,
+    options?: WithToken<SendPhotoOptions>,
+  ) {
     return this.botService.sendPhoto(this.chat.id, photo, options);
   }
 
@@ -52,19 +55,19 @@ export class Message extends TelegramObject {
     media: Array<
       InputMediaAudio | InputMediaDocument | InputMediaPhoto | InputMediaVideo
     >,
-    options?: Partial<SendMediaGroupOptions>,
+    options?: WithToken<SendMediaGroupOptions>,
   ) {
     return this.botService.sendMediaGroup(this.chat.id, media, options);
   }
 
-  reply(text: string, options?: Partial<SendMessageOptions>) {
+  reply(text: string, options?: WithToken<SendMessageOptions>) {
     return this.botService.sendMessage(this.chat.id, text, {
       reply_parameters: { message_id: this.message_id },
       ...options,
     });
   }
 
-  editText(text: string, options?: Partial<EditMessageTextOptions>) {
+  editText(text: string, options?: WithToken<EditMessageTextOptions>) {
     return this.botService.editMessageText(
       this.chat.id,
       this.message_id,
@@ -75,7 +78,7 @@ export class Message extends TelegramObject {
 
   editReplyMarkup(
     reply_markup: unknown,
-    options?: Partial<EditMessageReplyMarkupOptions>,
+    options?: WithToken<EditMessageReplyMarkupOptions>,
   ) {
     return this.botService.editMessageReplyMarkup(
       this.chat.id,
@@ -85,7 +88,7 @@ export class Message extends TelegramObject {
     );
   }
 
-  replyPhoto(photo: string | InputFile, options?: Partial<SendPhotoOptions>) {
+  replyPhoto(photo: string | InputFile, options?: WithToken<SendPhotoOptions>) {
     return this.botService.sendPhoto(this.chat.id, photo, {
       reply_parameters: { message_id: this.message_id },
       ...options,
@@ -96,7 +99,7 @@ export class Message extends TelegramObject {
     media: Array<
       InputMediaAudio | InputMediaDocument | InputMediaPhoto | InputMediaVideo
     >,
-    options?: Partial<SendMediaGroupOptions>,
+    options?: WithToken<SendMediaGroupOptions>,
   ) {
     return this.botService.sendMediaGroup(this.chat.id, media, {
       reply_parameters: { message_id: this.message_id },
