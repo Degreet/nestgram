@@ -4,6 +4,7 @@ import { BotService } from './bot.service';
 import { BotOptions } from './bot-options';
 import { RequestPipeline } from './request/request-pipeline';
 import { DefaultParseModeTransformer } from './request/default-parse-mode.transformer';
+import { NestgramError } from '../exceptions';
 
 interface FetchCall {
   url: string;
@@ -173,5 +174,63 @@ describe('BotService parse_mode + entities', () => {
 
     expect(warn).not.toHaveBeenCalled();
     warn.mockRestore();
+  });
+});
+
+describe('BotService identity & deepLink', () => {
+  let getMeCalls: number;
+
+  beforeEach(() => {
+    getMeCalls = 0;
+    global.fetch = (async (url: string) => {
+      if (url.endsWith('/getMe')) {
+        getMeCalls += 1;
+      }
+      return {
+        json: async () => ({
+          ok: true,
+          result: { id: 1, is_bot: true, first_name: 'Bot', username: 'mybot' },
+        }),
+      } as Response;
+    }) as typeof fetch;
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it('caches the bot identity: a second getMe makes no extra request', async () => {
+    const b = bot({ token: 'T' });
+
+    const first = await b.getMe();
+    const second = await b.getMe();
+
+    expect(first.username).toBe('mybot');
+    expect(second).toBe(first);
+    expect(getMeCalls).toBe(1);
+  });
+
+  it('queries live for a custom token (never cached)', async () => {
+    const b = bot({ token: 'T' });
+
+    await b.getMe();
+    await b.getMe({ token: 'OTHER' });
+
+    expect(getMeCalls).toBe(2);
+  });
+
+  it('builds a deep link to the bot without a hard-coded username', async () => {
+    const b = bot({ token: 'T' });
+    await b.getMe(); // the launch health check warms the identity
+
+    expect(b.deepLink({ start: 'ref_42' })).toBe(
+      'https://t.me/mybot?start=ref_42',
+    );
+    expect(b.username).toBe('mybot');
+  });
+
+  it('throws a clear error if the identity is not loaded yet', () => {
+    const b = bot({ token: 'T' });
+    expect(() => b.deepLink({ start: 'x' })).toThrow(NestgramError);
   });
 });
