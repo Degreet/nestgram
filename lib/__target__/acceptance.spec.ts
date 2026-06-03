@@ -422,3 +422,64 @@ describe('@StartPayload deep-link data (booted app)', () => {
     expect(router.seen).toBeNull();
   });
 });
+
+@Router()
+class StartFilterRouter {
+  readonly log: string[] = [];
+
+  // More specific first: only a /start carrying a Ref link reaches this handler.
+  @Command('start', StartRef.filter())
+  withRef(_message: Message, @StartPayload(StartRef) data: { userId: number }) {
+    this.log.push(`ref ${data.userId}`);
+  }
+
+  @Command('start')
+  plain() {
+    this.log.push('plain');
+  }
+}
+
+@Module({
+  imports: [NestgramModule.forRoot({ token: '123456:TEST' })],
+  providers: [StartFilterRouter],
+})
+class StartFilterAppModule {}
+
+describe('deepLinkData filter() routes /start by deep-link (booted app)', () => {
+  let app: INestApplicationContext;
+  let dispatcher: UpdateDispatcher;
+  let router: StartFilterRouter;
+
+  beforeAll(async () => {
+    app = await NestFactory.createApplicationContext(StartFilterAppModule, {
+      logger: false,
+    });
+    dispatcher = app.get(UpdateDispatcher);
+    router = app.get(StartFilterRouter);
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  beforeEach(() => {
+    router.log.length = 0;
+  });
+
+  it('routes a Ref /start to the filtered handler', async () => {
+    await dispatcher.dispatch(
+      messageUpdate(1, `/start ${StartRef.pack({ userId: 42 })}`),
+    );
+    expect(router.log).toEqual(['ref 42']);
+  });
+
+  it('routes a plain /start to the catch-all handler', async () => {
+    await dispatcher.dispatch(messageUpdate(2, '/start'));
+    expect(router.log).toEqual(['plain']);
+  });
+
+  it('routes a non-Ref /start to the catch-all handler', async () => {
+    await dispatcher.dispatch(messageUpdate(3, '/start other_1'));
+    expect(router.log).toEqual(['plain']);
+  });
+});

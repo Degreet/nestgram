@@ -1,3 +1,4 @@
+import type { RoutePredicate } from '../engine/matching';
 import {
   booleanCodec,
   integerCodec,
@@ -13,6 +14,7 @@ import {
   DeepLinkDataSchema,
   DeepLinkDataValues,
 } from './deep-link-data.types';
+import { DeepLinkDataPredicate } from './deep-link-data.predicate';
 import { NestgramConfigError } from '../exceptions/config.exception';
 
 /**
@@ -82,6 +84,10 @@ class TypedDeepLinkData<S extends DeepLinkDataSchema>
 
     // Built field-by-field from the schema, so the shape matches the values type.
     return values as DeepLinkDataValues<S>;
+  }
+
+  filter(): RoutePredicate {
+    return new DeepLinkDataPredicate(this);
   }
 }
 

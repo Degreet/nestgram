@@ -1,3 +1,5 @@
+import type { RoutePredicate } from '../engine/matching';
+
 /**
  * The schema passed to `deepLinkData(prefix, schema)`. `Number`/`Boolean` only:
  * their encoded forms (`[0-9-]`, `0`/`1`) never contain the `_` separator, so a
@@ -40,6 +42,16 @@ export interface DeepLinkData<
 
   /** Decode a `start` payload, or `null` if it isn't this definition's. */
   parse(data: string): DeepLinkDataValues<S> | null;
+
+  /**
+   * A `RoutePredicate` for `@Command(...)` that matches only when the command's
+   * payload is this definition's — e.g. `@Command('start', Ref.filter())` runs
+   * for a `/start` carrying a `Ref` link, leaving plain `/start` to others.
+   *
+   * First-match wins, so declare the filtered handler BEFORE the catch-all
+   * `@Command('start')` (within the same router) for it to take priority.
+   */
+  filter(): RoutePredicate;
 }
 
 /**
