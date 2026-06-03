@@ -1,3 +1,9 @@
+import { existsSync } from 'fs';
+import { readFile, rm } from 'fs/promises';
+import { tmpdir } from 'os';
+import { join } from 'path';
+import { Readable } from 'stream';
+
 import { Logger } from '@nestjs/common';
 
 import { BotService } from './bot.service';
@@ -232,5 +238,121 @@ describe('BotService identity & deepLink', () => {
   it('throws a clear error if the identity is not loaded yet', () => {
     const b = bot({ token: 'T' });
     expect(() => b.deepLink({ start: 'x' })).toThrow(NestgramError);
+  });
+});
+
+describe('BotService file download', () => {
+  const FILE_PATH = 'photos/f.jpg';
+  const CONTENT = 'IMG-BYTES';
+
+  /** Mock getFile (-> file_path) and the file CDN fetch (-> bytes). */
+  function mockFileFetch(fileOk = true): void {
+    global.fetch = (async (url: string) => {
+      if (url.endsWith('/getFile')) {
+        return {
+          json: async () => ({
+            ok: true,
+            result: { file_id: 'f', file_unique_id: 'u', file_path: FILE_PATH },
+          }),
+        } as Response;
+      }
+      return fileOk
+        ? new Response(CONTENT)
+        : new Response('no', { status: 404 });
+    }) as typeof fetch;
+  }
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it('fileLink resolves a fresh URL via getFile', async () => {
+    mockFileFetch();
+    expect(await bot({ token: 'T' }).fileLink('f')).toBe(
+      'https://api.telegram.org/file/botT/photos/f.jpg',
+    );
+  });
+
+  it('fileBuffer downloads the bytes', async () => {
+    mockFileFetch();
+    expect((await bot({ token: 'T' }).fileBuffer('f')).toString()).toBe(
+      CONTENT,
+    );
+  });
+
+  it('re-resolves the link every call (file_path is temporary)', async () => {
+    let getFileCalls = 0;
+    global.fetch = (async (url: string) => {
+      if (url.endsWith('/getFile')) {
+        getFileCalls += 1;
+        return {
+          json: async () => ({
+            ok: true,
+            result: { file_id: 'f', file_unique_id: 'u', file_path: FILE_PATH },
+          }),
+        } as Response;
+      }
+      return new Response(CONTENT);
+    }) as typeof fetch;
+
+    const b = bot({ token: 'T' });
+    await b.fileLink('f');
+    await b.fileLink('f');
+    expect(getFileCalls).toBe(2);
+  });
+
+  it('download streams the file to a local path', async () => {
+    mockFileFetch();
+    const dest = join(
+      tmpdir(),
+      `nestgram-bot-${process.pid}-${Date.now()}.bin`,
+    );
+    try {
+      await bot({ token: 'T' }).download('f', dest);
+      expect((await readFile(dest)).toString()).toBe(CONTENT);
+    } finally {
+      await rm(dest, { force: true });
+    }
+  });
+
+  it('throws when getFile returns no file_path (e.g. too large)', async () => {
+    global.fetch = (async (url: string) =>
+      url.endsWith('/getFile')
+        ? ({
+            json: async () => ({
+              ok: true,
+              result: { file_id: 'f', file_unique_id: 'u' },
+            }),
+          } as Response)
+        : new Response(CONTENT)) as typeof fetch;
+
+    await expect(bot({ token: 'T' }).fileLink('f')).rejects.toBeInstanceOf(
+      NestgramError,
+    );
+  });
+
+  it('throws on a failed download response', async () => {
+    mockFileFetch(false);
+    await expect(bot({ token: 'T' }).fileBuffer('f')).rejects.toBeInstanceOf(
+      NestgramError,
+    );
+  });
+
+  it('does not leave a truncated file when the stream fails mid-save', async () => {
+    const b = bot({ token: 'T' });
+    jest.spyOn(b, 'fileStream').mockResolvedValue(
+      Readable.from(
+        (async function* () {
+          throw new Error('boom');
+        })(),
+      ),
+    );
+    const dest = join(tmpdir(), `nestgram-bot-fail-${Date.now()}.bin`);
+    try {
+      await expect(b.download('f', dest)).rejects.toThrow('boom');
+      expect(existsSync(dest)).toBe(false);
+    } finally {
+      await rm(dest, { force: true });
+    }
   });
 });

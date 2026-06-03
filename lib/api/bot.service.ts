@@ -1,3 +1,8 @@
+import { createWriteStream } from 'fs';
+import { rm } from 'fs/promises';
+import { Readable } from 'stream';
+import { pipeline } from 'stream/promises';
+
 import { Inject, Injectable } from '@nestjs/common';
 
 import { BotOptions } from './bot-options';
@@ -176,6 +181,73 @@ export class BotService {
   getFile(file_id: string, options?: MethodOptions<GetFileOptions>) {
     const { token, signal, ...payload } = options ?? {};
     return this.call(new GetFile({ file_id, ...payload }), { token, signal });
+  }
+
+  /**
+   * Resolve a fresh, temporary download URL for a file. `getFile`'s `file_path`
+   * is short-lived, so this re-resolves it every call — there is no stale-link
+   * window. Throws if the file is too large to download (no `file_path`).
+   */
+  async fileLink(fileId: string, options?: CallOptions): Promise<string> {
+    const token = options?.token ?? this.token;
+    const file = await this.getFile(fileId, options);
+    if (!file.file_path) {
+      throw new NestgramError(
+        `getFile returned no file_path for "${fileId}" ` +
+          '(the file may be too large to download)',
+      );
+    }
+    return `${TELEGRAM_API_BASE}/file/bot${token}/${file.file_path}`;
+  }
+
+  /** Open a file as a readable stream by its `file_id` (preferred for large files). */
+  async fileStream(fileId: string, options?: CallOptions): Promise<Readable> {
+    const response = await this.fetchFile(fileId, options);
+    if (!response.body) {
+      throw new NestgramError(`Empty download body for "${fileId}"`);
+    }
+    return Readable.fromWeb(
+      response.body as Parameters<typeof Readable.fromWeb>[0],
+    );
+  }
+
+  /** Read a whole file into a Buffer by its `file_id`. */
+  async fileBuffer(fileId: string, options?: CallOptions): Promise<Buffer> {
+    const response = await this.fetchFile(fileId, options);
+    return Buffer.from(await response.arrayBuffer());
+  }
+
+  /**
+   * Download a file by its `file_id` straight to a local path — the file_id
+   * pattern: a service injects `BotService` and saves without a rich event.
+   */
+  async download(
+    fileId: string,
+    destinationPath: string,
+    options?: CallOptions,
+  ): Promise<void> {
+    const stream = await this.fileStream(fileId, options);
+    try {
+      await pipeline(stream, createWriteStream(destinationPath));
+    } catch (error) {
+      // Don't leave a truncated file behind if the download fails mid-stream.
+      await rm(destinationPath, { force: true });
+      throw error;
+    }
+  }
+
+  private async fetchFile(
+    fileId: string,
+    options?: CallOptions,
+  ): Promise<Response> {
+    const link = await this.fileLink(fileId, options);
+    const response = await fetch(link, { signal: options?.signal });
+    if (!response.ok) {
+      throw new NestgramError(
+        `Failed to download "${fileId}": ${response.status} ${response.statusText}`,
+      );
+    }
+    return response;
   }
 
   getUpdates(options?: MethodOptions<GetUpdatesOptions>) {
