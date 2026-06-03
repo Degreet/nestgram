@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 
 import { BotOptions } from './bot-options';
 import { InputFile } from './input-file';
@@ -34,6 +34,7 @@ import {
 export class BotService {
   readonly token: string;
   private readonly defaultParseMode?: string;
+  private readonly logger = new Logger(BotService.name);
 
   constructor(@Inject(Providers.BOT_OPTIONS) options: BotOptions) {
     this.token = options.token;
@@ -44,12 +45,31 @@ export class BotService {
    * Apply the default `parse_mode` to a send that omits one. An explicit
    * `parse_mode` key (any value, including `undefined`) is left untouched, so a
    * call can override the default or opt out per call.
+   *
+   * `entities` / `caption_entities` are Telegram's alternative to `parse_mode`
+   * ("specified instead of parse_mode") — when present, the default is not
+   * injected, so it can't shadow caller-provided entities. Supplying both an
+   * explicit `parse_mode` and entities on one call is a mistake (Telegram
+   * ignores `parse_mode` in that case), so it is warned about.
    */
   private withParseMode<T extends { parse_mode?: string }>(
     options: Partial<T> | undefined,
   ): Partial<T> {
-    const opts = (options ?? {}) as Partial<T>;
-    if (!this.defaultParseMode || 'parse_mode' in opts) {
+    const opts = (options ?? {}) as Partial<T> & {
+      entities?: unknown;
+      caption_entities?: unknown;
+    };
+    const hasEntities = 'entities' in opts || 'caption_entities' in opts;
+    const hasParseMode = 'parse_mode' in opts;
+
+    if (hasEntities && hasParseMode) {
+      this.logger.warn(
+        'A send was given both parse_mode and entities; Telegram ignores ' +
+          'parse_mode and uses the entities. Pass only one.',
+      );
+    }
+
+    if (!this.defaultParseMode || hasParseMode || hasEntities) {
       return opts;
     }
     return { ...opts, parse_mode: this.defaultParseMode };
