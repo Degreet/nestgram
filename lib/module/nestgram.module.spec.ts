@@ -366,6 +366,31 @@ class UserTransformerAppModule {}
 })
 class WebhookAppModule {}
 
+// Proves the enabling mechanism of the "register the controller yourself"
+// contract: WebhookUpdateSource is exported from the (global) module and
+// injectable from another module. This is an @Injectable provider standing in
+// for a controller — controllers need an HTTP driver (@nestjs/platform-*), which
+// isn't in the test deps, so the controller-over-HTTP round-trip isn't exercised
+// here (the route metadata itself is covered in webhook.controller.spec).
+@Injectable()
+class WebhookConsumer {
+  constructor(readonly source: WebhookUpdateSource) {}
+}
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      token: '123456:TEST',
+      webhook: {
+        url: 'https://bot.example.com/telegram/webhook',
+        secretToken: 's3cret',
+      },
+    }),
+  ],
+  providers: [WebhookConsumer],
+})
+class WebhookConsumerModule {}
+
 describe('webhook transport (real-module DI)', () => {
   afterEach(() => {
     global.fetch = originalFetch;
@@ -386,6 +411,23 @@ describe('webhook transport (real-module DI)', () => {
     expect(source).toBeInstanceOf(WebhookUpdateSource);
     expect(source.verifySecret('s3cret')).toBe(true);
     expect(source.verifySecret('wrong')).toBe(false);
+
+    await app.close();
+  });
+
+  it('exports WebhookUpdateSource so a user-registered receiver can inject it', async () => {
+    global.fetch = (async () => ({
+      json: async () => ({ ok: true, result: {} }),
+    })) as unknown as typeof fetch;
+
+    // Boots only if WebhookUpdateSource resolves in the consumer module — i.e.
+    // it is exported from the global NestgramModule.
+    const app = await NestFactory.createApplicationContext(
+      WebhookConsumerModule,
+      { logger: false },
+    );
+
+    expect(app.get(WebhookConsumer).source).toBeInstanceOf(WebhookUpdateSource);
 
     await app.close();
   });

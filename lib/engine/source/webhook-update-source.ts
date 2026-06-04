@@ -8,16 +8,16 @@ import type {
   WebhookOptions,
 } from '../../module/nestgram-module.types';
 import { UpdateListener, UpdateSource } from './update-source';
-import { WEBHOOK_PATH } from './webhook.constants';
 
 /**
  * Webhook update source.
  *
  * On start it registers the webhook with Telegram (with the secret token) and
- * warns about an insecure config; updates then arrive over HTTP via
- * `WebhookController`, which calls {@link verifySecret} then {@link deliver}.
- * Implements the same {@link UpdateSource} contract as polling, so the
- * dispatcher and the rest of the engine are unchanged.
+ * warns about an insecure config; updates then arrive over HTTP via a webhook
+ * controller (the ready-made `WebhookController` or one the author wrote), which
+ * calls {@link verifySecret} then {@link deliver}. Implements the same
+ * {@link UpdateSource} contract as polling, so the dispatcher and the rest of the
+ * engine are unchanged.
  */
 @Injectable()
 export class WebhookUpdateSource implements UpdateSource {
@@ -41,7 +41,13 @@ export class WebhookUpdateSource implements UpdateSource {
     await this.botService.setWebhook(this.config.url, {
       secret_token: this.config.secretToken,
     });
-    this.logger.log(`Webhook registered: ${this.config.url}`);
+    // The framework registers the webhook with Telegram, but it does NOT mount
+    // a controller — the author does. Remind here (the one moment we know a
+    // webhook is configured) so a missing controller isn't a silent 404.
+    this.logger.log(
+      `Webhook registered: ${this.config.url} — a controller must serve this ` +
+        'URL (register WebhookController or your own).',
+    );
   }
 
   async stop(): Promise<void> {
@@ -79,28 +85,6 @@ export class WebhookUpdateSource implements UpdateSource {
       this.logger.warn(
         'Webhook URL contains the bot token — anyone who sees the URL gets ' +
           'your token. Remove it from the URL.',
-      );
-    }
-    this.warnOnPathMismatch(config.url);
-  }
-
-  /**
-   * The controller serves a fixed `/${WEBHOOK_PATH}`; if `webhook.url` points
-   * elsewhere, Telegram's POSTs 404 and the bot silently gets no updates. Warn
-   * at boot so the mismatch is visible.
-   */
-  private warnOnPathMismatch(url: string): void {
-    let pathname: string;
-    try {
-      pathname = new URL(url).pathname;
-    } catch {
-      return; // malformed URL — setWebhook will surface that itself
-    }
-    if (pathname !== `/${WEBHOOK_PATH}`) {
-      this.logger.warn(
-        `Webhook URL path "${pathname}" does not match the route this app ` +
-          `serves ("/${WEBHOOK_PATH}") — Telegram's updates will 404. Set ` +
-          `webhook.url to end in /${WEBHOOK_PATH}.`,
       );
     }
   }

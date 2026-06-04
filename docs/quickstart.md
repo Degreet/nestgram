@@ -150,7 +150,6 @@ NestgramModule.forRoot({
 NestgramModule.forRoot({
   token: process.env.BOT_TOKEN,
   webhook: {
-    // The controller serves /telegram/webhook — point the URL there.
     url: 'https://bot.example.com/telegram/webhook',
     secretToken: process.env.WH_SECRET, // ← guardrail satisfied
   },
@@ -158,6 +157,24 @@ NestgramModule.forRoot({
 ```
 
 :::
+
+Webhook delivery arrives over HTTP, so register a receiver: add the ready-made
+`WebhookController` to your module's `controllers` (it serves `/telegram/webhook`
+— point `url` there). Need a different route, or extra processing the moment an
+update lands? Register `createWebhookController('your/path')`, or write your own
+controller and forward updates via `WebhookUpdateSource`. Nothing here is
+privileged — the built-in controller is the same one you could write yourself.
+
+```ts
+import { Module } from '@nestjs/common';
+import { NestgramModule, WebhookController } from 'nestgram';
+
+@Module({
+  imports: [NestgramModule.forRoot({ token: process.env.BOT_TOKEN, webhook })],
+  controllers: [WebhookController],
+})
+export class AppModule {}
+```
 
 Then start it:
 

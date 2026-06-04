@@ -62,16 +62,6 @@ describe('WebhookUpdateSource', () => {
     expect(source.verifySecret('whatever')).toBe(true);
   });
 
-  it('warns when the URL path does not match the served route', async () => {
-    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
-    await make({ url: 'https://x/wrong-path', secretToken: 's' }).source.start(
-      () => undefined,
-    );
-    expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('telegram/webhook'),
-    );
-  });
-
   it('deliver forwards the update to the listener set in start', async () => {
     const { source } = make({
       url: 'https://x/telegram/webhook',

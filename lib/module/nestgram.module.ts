@@ -11,7 +11,6 @@ import { UpdateDispatcher } from '../engine/dispatcher';
 import {
   PollingUpdateSource,
   UpdateSource,
-  WebhookController,
   WebhookUpdateSource,
 } from '../engine/source';
 import { AutoAnswerCallbackInterceptor } from '../interceptors';
@@ -75,11 +74,14 @@ export class NestgramModule {
 
   /**
    * `NESTGRAM_OPTIONS` is exported so the (internal) `BotModule` can inject it
-   * in the async path to read the resolved token.
+   * in the async path to read the resolved token. `WebhookUpdateSource` is
+   * exported so a webhook controller the author registers in their own module
+   * (the ready-made one or a custom one) can inject it to verify + deliver.
    */
   private static readonly engineExports = [
     UpdateDispatcher,
     RouteTable,
+    WebhookUpdateSource,
     Providers.NESTGRAM_OPTIONS,
   ];
 
@@ -94,9 +96,9 @@ export class NestgramModule {
         }),
         DiscoveryModule,
       ],
-      // The webhook receiver. Registered only when webhook is configured here
-      // (it's inert otherwise); it serves on an HTTP app, ignored otherwise.
-      controllers: options.webhook ? [WebhookController] : [],
+      // No controllers: the webhook receiver isn't auto-registered. The author
+      // adds `WebhookController` (or their own) to a module's `controllers` — see
+      // the WebhookOptions docs.
       providers: [
         { provide: Providers.NESTGRAM_OPTIONS, useValue: options },
         ...this.engineProviders,
@@ -120,9 +122,9 @@ export class NestgramModule {
         }),
         DiscoveryModule,
       ],
-      // Webhook config is resolved asynchronously, so it isn't known here;
-      // always register the receiver (inert unless webhook is configured).
-      controllers: [WebhookController],
+      // No controllers: same as forRoot — the author registers the webhook
+      // receiver themselves. Uniform across sync/async (the async config never
+      // had to be known here to wire a route).
       providers: [
         ...this.createAsyncOptionsProviders(options),
         ...this.engineProviders,

@@ -31,9 +31,13 @@ export interface NestgramModuleOptions {
    */
   polling?: boolean | PollingOptions;
   /**
-   * Webhook transport config. When set, the bot receives updates over HTTP via
-   * the built-in controller (served at `/telegram/webhook` — point `url` there)
-   * instead of polling. Always set `secretToken` in production — without it,
+   * Webhook transport config. When set, the bot registers the webhook with
+   * Telegram on boot and receives updates over HTTP instead of polling. You
+   * register the receiver yourself (no privileged core): add the ready-made
+   * `WebhookController` to a module's `controllers` (served at
+   * `/telegram/webhook` — point `url` there), use `createWebhookController(path)`
+   * for a custom route, or write your own controller and forward updates via
+   * `WebhookUpdateSource`. Always set `secretToken` in production — without it,
    * anyone who learns the URL can spoof updates (the bot warns at startup).
    */
   webhook?: WebhookOptions;
