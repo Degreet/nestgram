@@ -1,0 +1,3 @@
+# Vendored Telegram Bot API spec — pinned data, must stay byte-identical to
+# match tools/codegen/spec/hash.txt. Never reformat it.
+tools/codegen/spec/custom_v2.min.json

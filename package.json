@@ -28,6 +28,8 @@
     "lint": "eslint \"lib/**/*.ts\"",
     "format": "prettier --write \"lib/**/*.ts\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "generate": "ts-node --project tools/codegen/tsconfig.json tools/codegen/index.ts",
+    "spec:update": "ts-node --project tools/codegen/tsconfig.json tools/codegen/spec-update.ts",
     "prepare": "husky",
     "prepublishOnly": "npm run build"
   },
