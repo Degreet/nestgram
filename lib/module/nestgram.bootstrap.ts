@@ -6,6 +6,7 @@ import {
   OnApplicationShutdown,
 } from '@nestjs/common';
 
+import { BotService } from '../api';
 import { RouteExplorer, RouteTable } from '../engine/discovery';
 import { NestgramConfigError } from '../exceptions';
 import { Providers } from '../providers';
@@ -38,6 +39,7 @@ export class NestgramBootstrap
     private readonly routeTable: RouteTable,
     private readonly dispatcher: UpdateDispatcher,
     private readonly source: PollingUpdateSource,
+    private readonly botService: BotService,
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
@@ -54,9 +56,27 @@ export class NestgramBootstrap
       );
     }
 
+    await this.warmBotIdentity();
+
     if (this.options.polling) {
       await this.source.start((update) => this.dispatcher.dispatch(update));
     }
+  }
+
+  /**
+   * Load the bot's identity once, before the transport starts, so `bot.username`
+   * / `bot.deepLink()` work inside any handler (the `getMe` result is cached on
+   * `BotService`) and a bad token fails fast. This is the transport-agnostic
+   * home for identity warming — gated on polling for now (the only transport
+   * that processes updates); the webhook source (Phase 2) warms it the same way,
+   * by extending this gate. A no-transport boot (e.g. tests) hits no network.
+   */
+  private async warmBotIdentity(): Promise<void> {
+    if (!this.options.polling) {
+      return;
+    }
+    const me = await this.botService.getMe();
+    this.logger.log(`Connected as @${me.username}`);
   }
 
   async onApplicationShutdown(): Promise<void> {

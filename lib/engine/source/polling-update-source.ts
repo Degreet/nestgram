@@ -27,10 +27,10 @@ export interface PollingOptions {
  * Long-polling update source.
  *
  * Owns the poll loop and the `getUpdates` offset; it does not route or execute.
- * On start it prepares the transport (clears any webhook so polling is allowed,
- * then a `getMe` health check that fails fast on a bad token) and loops: fetch a
- * batch, advance the offset to acknowledge receipt, emit each update. A failed
- * fetch backs off instead of killing the loop.
+ * On start it prepares the transport (clears any webhook so polling is allowed)
+ * and loops: fetch a batch, advance the offset to acknowledge receipt, emit each
+ * update. A failed fetch backs off instead of killing the loop. The bot identity
+ * / health check (`getMe`) is warmed transport-agnostically in `NestgramBootstrap`.
  *
  * It reads its own polling options off the module config, so starting it is just
  * `start(onUpdate)` — see `NestgramBootstrap`.
@@ -83,11 +83,11 @@ export class PollingUpdateSource implements UpdateSource {
   }
 
   private async prepare(): Promise<void> {
+    // Clear any webhook so getUpdates is allowed. The identity/health check
+    // (getMe) is warmed transport-agnostically in NestgramBootstrap, not here.
     await this.botService.deleteWebhook({
       drop_pending_updates: this.options.dropPendingUpdates,
     });
-    const me = await this.botService.getMe();
-    this.logger.log(`Connected as @${me.username}`);
   }
 
   private async loop(

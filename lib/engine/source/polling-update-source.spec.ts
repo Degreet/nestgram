@@ -42,7 +42,7 @@ function harness(
 }
 
 describe('PollingUpdateSource', () => {
-  it('prepares the transport before polling (clear webhook + health check)', async () => {
+  it('prepares the transport before polling (clears the webhook)', async () => {
     const { source, bot } = harness({ dropPendingUpdates: true });
 
     await source.start(noop);
@@ -51,7 +51,8 @@ describe('PollingUpdateSource', () => {
     expect(bot.deleteWebhook).toHaveBeenCalledWith({
       drop_pending_updates: true,
     });
-    expect(bot.getMe).toHaveBeenCalledTimes(1);
+    // Identity/health (getMe) is warmed by NestgramBootstrap, not the source.
+    expect(bot.getMe).not.toHaveBeenCalled();
   });
 
   it('emits each update in order', async () => {
@@ -118,7 +119,7 @@ describe('PollingUpdateSource', () => {
     await source.start(noop);
     await source.stop();
 
-    expect(bot.getMe).toHaveBeenCalledTimes(1);
+    expect(bot.deleteWebhook).toHaveBeenCalledTimes(1);
   });
 
   it('stop() resolves and halts the loop', async () => {
