@@ -9,25 +9,30 @@ import {
   DefaultParseModeTransformer,
   REQUEST_TRANSFORMERS,
   RequestPipeline,
+  RequestTransformer,
 } from './request';
 
 @Global()
 @Module({})
 export class BotModule {
   /**
-   * Providers for the outbound request pipeline. The default parse-mode hook is
-   * registered as an ordinary transformer (multi-provider) — users add their
-   * own through the same {@link REQUEST_TRANSFORMERS} token. (`multi` is a valid
-   * runtime option; Nest 10's provider types just omit it, so this isn't a
-   * `Provider[]`-annotated literal.)
+   * Providers for the outbound request pipeline. `REQUEST_TRANSFORMERS` is the
+   * array of transformers `RequestPipeline` runs; the default parse-mode hook is
+   * the only built-in. Supplied as an explicit array (not a `multi` provider):
+   * Nest 10.4.1's `multi: true` does not aggregate here — it collapses to a
+   * single instance, which then isn't iterable. Restoring user-extension via the
+   * token is tracked separately.
    */
-  private static readonly pipelineProviders = [
-    RequestPipeline,
+  private static readonly pipelineProviders: Provider[] = [
+    DefaultParseModeTransformer,
     {
       provide: REQUEST_TRANSFORMERS,
-      useClass: DefaultParseModeTransformer,
-      multi: true,
+      useFactory: (
+        defaultParseMode: DefaultParseModeTransformer,
+      ): RequestTransformer[] => [defaultParseMode],
+      inject: [DefaultParseModeTransformer],
     },
+    RequestPipeline,
   ];
 
   static forRoot(options: BotOptions): DynamicModule {

@@ -12,7 +12,10 @@ import { RouteTable } from '../engine/discovery';
 import { UpdateDispatcher } from '../engine/dispatcher';
 import { RawUpdate } from '../events/raw-update.types';
 import { User } from '../events/user';
+import { Message } from '../events';
 import { NestgramModule } from './nestgram.module';
+
+const originalFetch = global.fetch;
 
 /**
  * A real router: discovered via the provider graph (no `routers` list), invoked
@@ -300,5 +303,34 @@ describe('production baseline', () => {
 
     await app.close();
     warn.mockRestore();
+  });
+});
+
+describe('request pipeline (real-module DI)', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  // Regression: REQUEST_TRANSFORMERS must inject as an ARRAY. Nest 10.4.1's
+  // `multi: true` collapsed it to a single instance, so every bot.call crashed
+  // with "transformers is not iterable" in a real (DI-wired) module — a path the
+  // hand-built-pipeline unit tests never exercised.
+  it('runs a bot.call through the DI request pipeline without crashing', async () => {
+    global.fetch = (async () => ({
+      json: async () => ({
+        ok: true,
+        result: { message_id: 1, chat: { id: 1, type: 'private' } },
+      }),
+    })) as unknown as typeof fetch;
+
+    const app = await NestFactory.createApplicationContext(AppModule, {
+      logger: false,
+    });
+
+    await expect(
+      app.get(BotService).sendMessage(1, 'hi'),
+    ).resolves.toBeInstanceOf(Message);
+
+    await app.close();
   });
 });
