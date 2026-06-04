@@ -1,8 +1,11 @@
 import { TelegramObject } from './telegram-object';
 import { BotService, MethodOptions } from '../api';
 import {
+  CopyMessageOptions,
+  DeleteMessageOptions,
   EditMessageReplyMarkupOptions,
   EditMessageTextOptions,
+  ForwardMessageOptions,
   SendMediaGroupOptions,
   SendMessageOptions,
   SendPhotoOptions,
@@ -157,5 +160,37 @@ export class Message extends TelegramObject {
       reply_parameters: { message_id: this.message_id },
       ...options,
     });
+  }
+
+  /** Delete this message. */
+  delete(options?: MethodOptions<DeleteMessageOptions>) {
+    return this.botService.deleteMessage(
+      this.chat.id,
+      this.message_id,
+      options,
+    );
+  }
+
+  /** Forward this message to another chat (returns the forwarded `Message`). */
+  forward(
+    chat_id: number | string,
+    options?: MethodOptions<ForwardMessageOptions>,
+  ) {
+    return this.botService.forwardMessage(
+      chat_id,
+      this.chat.id,
+      this.message_id,
+      options,
+    );
+  }
+
+  /** Copy this message to another chat without a forward header. */
+  copy(chat_id: number | string, options?: MethodOptions<CopyMessageOptions>) {
+    return this.botService.copyMessage(
+      chat_id,
+      this.chat.id,
+      this.message_id,
+      options,
+    );
   }
 }

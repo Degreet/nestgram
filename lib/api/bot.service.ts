@@ -36,6 +36,12 @@ import {
   EditMessageTextOptions,
   EditMessageReplyMarkup,
   EditMessageReplyMarkupOptions,
+  DeleteMessage,
+  DeleteMessageOptions,
+  ForwardMessage,
+  ForwardMessageOptions,
+  CopyMessage,
+  CopyMessageOptions,
 } from './methods';
 import {
   InputMediaAudio,
@@ -334,6 +340,44 @@ export class BotService {
         reply_markup,
         ...payload,
       }),
+      { token, signal },
+    );
+  }
+
+  deleteMessage(
+    chat_id: number | string,
+    message_id: number,
+    options?: MethodOptions<DeleteMessageOptions>,
+  ) {
+    const { token, signal, ...payload } = options ?? {};
+    return this.call(new DeleteMessage({ chat_id, message_id, ...payload }), {
+      token,
+      signal,
+    });
+  }
+
+  forwardMessage(
+    chat_id: number | string,
+    from_chat_id: number | string,
+    message_id: number,
+    options?: MethodOptions<ForwardMessageOptions>,
+  ) {
+    const { token, signal, ...payload } = options ?? {};
+    return this.call(
+      new ForwardMessage({ chat_id, from_chat_id, message_id, ...payload }),
+      { token, signal },
+    );
+  }
+
+  copyMessage(
+    chat_id: number | string,
+    from_chat_id: number | string,
+    message_id: number,
+    options?: MethodOptions<CopyMessageOptions>,
+  ) {
+    const { token, signal, ...payload } = options ?? {};
+    return this.call(
+      new CopyMessage({ chat_id, from_chat_id, message_id, ...payload }),
       { token, signal },
     );
   }

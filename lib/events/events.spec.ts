@@ -24,6 +24,9 @@ function fakeBot(): { bot: BotService; calls: Call[] } {
     answerCallbackQuery: record('answerCallbackQuery'),
     editMessageText: record('editMessageText'),
     editMessageReplyMarkup: record('editMessageReplyMarkup'),
+    deleteMessage: record('deleteMessage'),
+    forwardMessage: record('forwardMessage'),
+    copyMessage: record('copyMessage'),
   } as unknown as BotService;
 
   return { bot, calls };
@@ -72,6 +75,33 @@ describe('Message actions', () => {
     expect(calls[0]).toEqual({
       method: 'editMessageReplyMarkup',
       args: [1, 5, markup, undefined],
+    });
+  });
+
+  it('delete() removes this message', () => {
+    const { bot, calls } = fakeBot();
+    message(bot).delete();
+    expect(calls[0]).toEqual({
+      method: 'deleteMessage',
+      args: [1, 5, undefined],
+    });
+  });
+
+  it('forward() forwards this message to another chat', () => {
+    const { bot, calls } = fakeBot();
+    message(bot).forward(99);
+    expect(calls[0]).toEqual({
+      method: 'forwardMessage',
+      args: [99, 1, 5, undefined],
+    });
+  });
+
+  it('copy() copies this message to another chat', () => {
+    const { bot, calls } = fakeBot();
+    message(bot).copy(99);
+    expect(calls[0]).toEqual({
+      method: 'copyMessage',
+      args: [99, 1, 5, undefined],
     });
   });
 });

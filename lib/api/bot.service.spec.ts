@@ -11,6 +11,7 @@ import { BotOptions } from './bot-options';
 import { RequestPipeline } from './request/request-pipeline';
 import { DefaultParseModeTransformer } from './request/default-parse-mode.transformer';
 import { NestgramError } from '../exceptions';
+import { Message } from '../events';
 
 interface FetchCall {
   url: string;
@@ -354,5 +355,51 @@ describe('BotService file download', () => {
     } finally {
       await rm(dest, { force: true });
     }
+  });
+});
+
+describe('BotService message actions (delete/forward/copy + chaining)', () => {
+  let calls: FetchCall[];
+
+  beforeEach(() => {
+    calls = mockFetch();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it('deleteMessage targets deleteMessage with chat_id + message_id', async () => {
+    await bot({ token: 'T' }).deleteMessage(1, 5);
+    expect(calls[0].url).toBe('https://api.telegram.org/botT/deleteMessage');
+    expect(calls[0].body).toEqual({ chat_id: 1, message_id: 5 });
+  });
+
+  it('forwardMessage carries from_chat_id and returns a rich Message', async () => {
+    const result = await bot({ token: 'T' }).forwardMessage(2, 1, 5);
+    expect(calls[0].url).toBe('https://api.telegram.org/botT/forwardMessage');
+    expect(calls[0].body).toEqual({
+      chat_id: 2,
+      from_chat_id: 1,
+      message_id: 5,
+    });
+    expect(result).toBeInstanceOf(Message);
+  });
+
+  it('copyMessage targets copyMessage with from_chat_id', async () => {
+    await bot({ token: 'T' }).copyMessage(2, 1, 5);
+    expect(calls[0].url).toBe('https://api.telegram.org/botT/copyMessage');
+    expect(calls[0].body).toEqual({
+      chat_id: 2,
+      from_chat_id: 1,
+      message_id: 5,
+    });
+  });
+
+  it('sendMessage returns a rich Message you can chain on', async () => {
+    const sent = await bot({ token: 'T' }).sendMessage(1, 'hi');
+    expect(sent).toBeInstanceOf(Message);
+    expect(typeof sent.reply).toBe('function');
+    expect(typeof sent.delete).toBe('function');
   });
 });
