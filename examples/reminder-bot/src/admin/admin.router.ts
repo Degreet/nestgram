@@ -1,7 +1,13 @@
 import { UseGuards } from '@nestjs/common';
-import { BotService, Command, Message, Payload, Router } from 'nestgram';
+import {
+  BotService,
+  Command,
+  escapeHtml,
+  Message,
+  Payload,
+  Router,
+} from 'nestgram';
 
-import { escapeHtml } from '../common/escape-html';
 import { ReminderService } from '../reminders/reminder.service';
 import { AdminGuard } from './admin.guard';
 

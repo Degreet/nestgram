@@ -1,9 +1,8 @@
 import { Logger } from '@nestjs/common';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { BotService } from 'nestgram';
+import { BotService, escapeHtml } from 'nestgram';
 import { Job } from 'bullmq';
 
-import { escapeHtml } from '../common/escape-html';
 import { REMINDER_QUEUE } from './reminder.constants';
 import { ReminderService, DeliverJob } from './reminder.service';
 

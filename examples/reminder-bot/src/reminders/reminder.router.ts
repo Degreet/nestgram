@@ -4,6 +4,7 @@ import {
   CallbackQuery,
   Command,
   Data,
+  escapeHtml,
   Hears,
   InlineKeyboard,
   Message,
@@ -13,7 +14,6 @@ import {
   User,
 } from 'nestgram';
 
-import { escapeHtml } from '../common/escape-html';
 import { mainMenu, MENU } from '../common/keyboards';
 import { LoggingInterceptor } from '../common/logging.interceptor';
 import { DeleteCb, DoneCb } from './reminder.callbacks';
