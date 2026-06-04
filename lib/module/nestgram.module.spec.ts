@@ -252,21 +252,17 @@ class EmptyTokenAppModule {}
 @Module({ imports: [NestgramModule.forRoot({ token: 'not-a-token' })] })
 class MalformedTokenAppModule {}
 
-@Module({
-  imports: [
-    NestgramModule.forRoot({
-      token: '123456:VALID',
-      webhook: { url: 'https://bot.example/tg' },
-    }),
-  ],
-})
-class InsecureWebhookAppModule {}
-
+// Token validation now lives in BotService (so it can't be bypassed by using
+// BotService directly); webhook secret-token validation moves to setWebhook in
+// Phase 2 (#36). These boot tests prove the BotService checks fire at startup.
 describe('production baseline', () => {
   it('throws at boot when the token is missing', async () => {
+    // BotService throws from its constructor (DI init); abortOnError:false makes
+    // Nest reject instead of process.exit so the error is catchable here.
     await expect(
       NestFactory.createApplicationContext(EmptyTokenAppModule, {
         logger: false,
+        abortOnError: false,
       }),
     ).rejects.toThrow(/token is required/);
   });
@@ -284,22 +280,6 @@ describe('production baseline', () => {
     expect(warn).toHaveBeenCalledWith(
       expect.stringContaining('Telegram token'),
     );
-
-    await app.close();
-    warn.mockRestore();
-  });
-
-  it('warns when a webhook is configured without a secretToken', async () => {
-    const warn = jest
-      .spyOn(Logger.prototype, 'warn')
-      .mockImplementation(() => undefined);
-
-    const app = await NestFactory.createApplicationContext(
-      InsecureWebhookAppModule,
-      { logger: false },
-    );
-
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('secretToken'));
 
     await app.close();
     warn.mockRestore();

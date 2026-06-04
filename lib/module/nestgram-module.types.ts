@@ -30,10 +30,11 @@ export interface NestgramModuleOptions {
    */
   polling?: boolean | PollingOptions;
   /**
-   * Webhook transport config. The receiving controller lands in a later phase;
-   * declaring it now lets the bot warn at startup when `secretToken` is missing.
-   * Always set `secretToken` in production — without it, anyone who learns the
-   * URL can spoof updates.
+   * Webhook transport config. The receiving controller and the missing-
+   * `secretToken` startup warning land in a later phase (in `setWebhook`, #36);
+   * the field is declared now to freeze the public option shape. Always set
+   * `secretToken` in production — without it, anyone who learns the URL can
+   * spoof updates.
    */
   webhook?: WebhookOptions;
   /**

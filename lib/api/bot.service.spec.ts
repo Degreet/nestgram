@@ -10,7 +10,7 @@ import { BotService } from './bot.service';
 import { BotOptions } from './bot-options';
 import { RequestPipeline } from './request/request-pipeline';
 import { DefaultParseModeTransformer } from './request/default-parse-mode.transformer';
-import { NestgramError } from '../exceptions';
+import { NestgramConfigError, NestgramError } from '../exceptions';
 import { Message } from '../events';
 
 interface FetchCall {
@@ -58,31 +58,31 @@ describe('BotService default parse mode', () => {
   });
 
   it('applies the default parse_mode when a send omits it', async () => {
-    await bot({ token: 'T', parseMode: 'HTML' }).sendMessage(1, 'hi');
+    await bot({ token: '1:T', parseMode: 'HTML' }).sendMessage(1, 'hi');
     expect(calls[0].body.parse_mode).toBe('HTML');
   });
 
   it('targets the right URL with the bot token', async () => {
-    await bot({ token: 'T' }).sendMessage(1, 'hi');
-    expect(calls[0].url).toBe('https://api.telegram.org/botT/sendMessage');
+    await bot({ token: '1:T' }).sendMessage(1, 'hi');
+    expect(calls[0].url).toBe('https://api.telegram.org/bot1:T/sendMessage');
   });
 
   it('lets a call override the default', async () => {
-    await bot({ token: 'T', parseMode: 'HTML' }).sendMessage(1, 'hi', {
+    await bot({ token: '1:T', parseMode: 'HTML' }).sendMessage(1, 'hi', {
       parse_mode: 'MarkdownV2',
     });
     expect(calls[0].body.parse_mode).toBe('MarkdownV2');
   });
 
   it('opts a call out with an explicit undefined parse_mode', async () => {
-    await bot({ token: 'T', parseMode: 'HTML' }).sendMessage(1, 'hi', {
+    await bot({ token: '1:T', parseMode: 'HTML' }).sendMessage(1, 'hi', {
       parse_mode: undefined,
     });
     expect(calls[0].body.parse_mode).toBeUndefined();
   });
 
   it('sends no parse_mode when no default is configured', async () => {
-    await bot({ token: 'T' }).sendMessage(1, 'hi');
+    await bot({ token: '1:T' }).sendMessage(1, 'hi');
     expect(calls[0].body.parse_mode).toBeUndefined();
   });
 });
@@ -99,16 +99,20 @@ describe('BotService per-call token override', () => {
   });
 
   it('sends against the override token without leaking it into the payload', async () => {
-    await bot({ token: 'DEFAULT' }).sendMessage(1, 'hi', { token: 'OTHER' });
+    await bot({ token: '1:DEFAULT' }).sendMessage(1, 'hi', {
+      token: '2:OTHER',
+    });
 
-    expect(calls[0].url).toBe('https://api.telegram.org/botOTHER/sendMessage');
+    expect(calls[0].url).toBe(
+      'https://api.telegram.org/bot2:OTHER/sendMessage',
+    );
     expect('token' in calls[0].body).toBe(false);
   });
 
   it('falls back to the configured token when none is given', async () => {
-    await bot({ token: 'DEFAULT' }).sendMessage(1, 'hi');
+    await bot({ token: '1:DEFAULT' }).sendMessage(1, 'hi');
     expect(calls[0].url).toBe(
-      'https://api.telegram.org/botDEFAULT/sendMessage',
+      'https://api.telegram.org/bot1:DEFAULT/sendMessage',
     );
   });
 });
@@ -126,7 +130,7 @@ describe('BotService per-call abort signal', () => {
 
   it('threads an abort signal through to fetch without leaking it', async () => {
     const controller = new AbortController();
-    await bot({ token: 'T' }).sendMessage(1, 'hi', {
+    await bot({ token: '1:T' }).sendMessage(1, 'hi', {
       signal: controller.signal,
     });
 
@@ -149,7 +153,7 @@ describe('BotService parse_mode + entities', () => {
   const entities = [{ type: 'bold', offset: 0, length: 2 }];
 
   it('does not inject the default parse_mode when entities are supplied', async () => {
-    await bot({ token: 'T', parseMode: 'HTML' }).sendMessage(1, 'hi', {
+    await bot({ token: '1:T', parseMode: 'HTML' }).sendMessage(1, 'hi', {
       entities,
     });
     expect(calls[0].body.parse_mode).toBeUndefined();
@@ -161,7 +165,7 @@ describe('BotService parse_mode + entities', () => {
       .spyOn(Logger.prototype, 'warn')
       .mockImplementation(() => undefined);
 
-    await bot({ token: 'T' }).sendMessage(1, 'hi', {
+    await bot({ token: '1:T' }).sendMessage(1, 'hi', {
       parse_mode: 'HTML',
       entities,
     });
@@ -175,7 +179,7 @@ describe('BotService parse_mode + entities', () => {
       .spyOn(Logger.prototype, 'warn')
       .mockImplementation(() => undefined);
 
-    await bot({ token: 'T', parseMode: 'HTML' }).sendMessage(1, 'hi', {
+    await bot({ token: '1:T', parseMode: 'HTML' }).sendMessage(1, 'hi', {
       entities,
     });
 
@@ -207,7 +211,7 @@ describe('BotService identity & deepLink', () => {
   });
 
   it('caches the bot identity: a second getMe makes no extra request', async () => {
-    const b = bot({ token: 'T' });
+    const b = bot({ token: '1:T' });
 
     const first = await b.getMe();
     const second = await b.getMe();
@@ -218,16 +222,16 @@ describe('BotService identity & deepLink', () => {
   });
 
   it('queries live for a custom token (never cached)', async () => {
-    const b = bot({ token: 'T' });
+    const b = bot({ token: '1:T' });
 
     await b.getMe();
-    await b.getMe({ token: 'OTHER' });
+    await b.getMe({ token: '2:OTHER' });
 
     expect(getMeCalls).toBe(2);
   });
 
   it('builds a deep link to the bot without a hard-coded username', async () => {
-    const b = bot({ token: 'T' });
+    const b = bot({ token: '1:T' });
     await b.getMe(); // the launch health check warms the identity
 
     expect(b.deepLink({ start: 'ref_42' })).toBe(
@@ -237,7 +241,7 @@ describe('BotService identity & deepLink', () => {
   });
 
   it('throws a clear error if the identity is not loaded yet', () => {
-    const b = bot({ token: 'T' });
+    const b = bot({ token: '1:T' });
     expect(() => b.deepLink({ start: 'x' })).toThrow(NestgramError);
   });
 });
@@ -269,14 +273,14 @@ describe('BotService file download', () => {
 
   it('fileLink resolves a fresh URL via getFile', async () => {
     mockFileFetch();
-    expect(await bot({ token: 'T' }).fileLink('f')).toBe(
-      'https://api.telegram.org/file/botT/photos/f.jpg',
+    expect(await bot({ token: '1:T' }).fileLink('f')).toBe(
+      'https://api.telegram.org/file/bot1:T/photos/f.jpg',
     );
   });
 
   it('fileBuffer downloads the bytes', async () => {
     mockFileFetch();
-    expect((await bot({ token: 'T' }).fileBuffer('f')).toString()).toBe(
+    expect((await bot({ token: '1:T' }).fileBuffer('f')).toString()).toBe(
       CONTENT,
     );
   });
@@ -296,7 +300,7 @@ describe('BotService file download', () => {
       return new Response(CONTENT);
     }) as typeof fetch;
 
-    const b = bot({ token: 'T' });
+    const b = bot({ token: '1:T' });
     await b.fileLink('f');
     await b.fileLink('f');
     expect(getFileCalls).toBe(2);
@@ -309,7 +313,7 @@ describe('BotService file download', () => {
       `nestgram-bot-${process.pid}-${Date.now()}.bin`,
     );
     try {
-      await bot({ token: 'T' }).download('f', dest);
+      await bot({ token: '1:T' }).download('f', dest);
       expect((await readFile(dest)).toString()).toBe(CONTENT);
     } finally {
       await rm(dest, { force: true });
@@ -327,20 +331,20 @@ describe('BotService file download', () => {
           } as Response)
         : new Response(CONTENT)) as typeof fetch;
 
-    await expect(bot({ token: 'T' }).fileLink('f')).rejects.toBeInstanceOf(
+    await expect(bot({ token: '1:T' }).fileLink('f')).rejects.toBeInstanceOf(
       NestgramError,
     );
   });
 
   it('throws on a failed download response', async () => {
     mockFileFetch(false);
-    await expect(bot({ token: 'T' }).fileBuffer('f')).rejects.toBeInstanceOf(
+    await expect(bot({ token: '1:T' }).fileBuffer('f')).rejects.toBeInstanceOf(
       NestgramError,
     );
   });
 
   it('does not leave a truncated file when the stream fails mid-save', async () => {
-    const b = bot({ token: 'T' });
+    const b = bot({ token: '1:T' });
     jest.spyOn(b, 'fileStream').mockResolvedValue(
       Readable.from(
         (async function* () {
@@ -370,14 +374,14 @@ describe('BotService message actions (delete/forward/copy + chaining)', () => {
   });
 
   it('deleteMessage targets deleteMessage with chat_id + message_id', async () => {
-    await bot({ token: 'T' }).deleteMessage(1, 5);
-    expect(calls[0].url).toBe('https://api.telegram.org/botT/deleteMessage');
+    await bot({ token: '1:T' }).deleteMessage(1, 5);
+    expect(calls[0].url).toBe('https://api.telegram.org/bot1:T/deleteMessage');
     expect(calls[0].body).toEqual({ chat_id: 1, message_id: 5 });
   });
 
   it('forwardMessage carries from_chat_id and returns a rich Message', async () => {
-    const result = await bot({ token: 'T' }).forwardMessage(2, 1, 5);
-    expect(calls[0].url).toBe('https://api.telegram.org/botT/forwardMessage');
+    const result = await bot({ token: '1:T' }).forwardMessage(2, 1, 5);
+    expect(calls[0].url).toBe('https://api.telegram.org/bot1:T/forwardMessage');
     expect(calls[0].body).toEqual({
       chat_id: 2,
       from_chat_id: 1,
@@ -387,8 +391,8 @@ describe('BotService message actions (delete/forward/copy + chaining)', () => {
   });
 
   it('copyMessage targets copyMessage with from_chat_id', async () => {
-    await bot({ token: 'T' }).copyMessage(2, 1, 5);
-    expect(calls[0].url).toBe('https://api.telegram.org/botT/copyMessage');
+    await bot({ token: '1:T' }).copyMessage(2, 1, 5);
+    expect(calls[0].url).toBe('https://api.telegram.org/bot1:T/copyMessage');
     expect(calls[0].body).toEqual({
       chat_id: 2,
       from_chat_id: 1,
@@ -397,9 +401,52 @@ describe('BotService message actions (delete/forward/copy + chaining)', () => {
   });
 
   it('sendMessage returns a rich Message you can chain on', async () => {
-    const sent = await bot({ token: 'T' }).sendMessage(1, 'hi');
+    const sent = await bot({ token: '1:T' }).sendMessage(1, 'hi');
     expect(sent).toBeInstanceOf(Message);
     expect(typeof sent.reply).toBe('function');
     expect(typeof sent.delete).toBe('function');
+  });
+});
+
+describe('BotService token validation', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it('throws when the configured token is missing', () => {
+    expect(() => bot({ token: '' })).toThrow(NestgramConfigError);
+  });
+
+  it('warns when the configured token is malformed', () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    bot({ token: 'not-a-token' });
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('Telegram token'),
+    );
+    warn.mockRestore();
+  });
+
+  it('does not warn for a well-formed token', () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    bot({ token: '123456:VALID-token' });
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('throws on an empty per-call override token (not bypassable via call)', async () => {
+    mockFetch();
+    await expect(
+      bot({ token: '1:T' }).sendMessage(1, 'hi', { token: '' }),
+    ).rejects.toThrow(NestgramConfigError);
+  });
+
+  it('warns on a malformed per-call override token', async () => {
+    mockFetch();
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    await bot({ token: '1:T' }).sendMessage(1, 'hi', { token: 'bad-override' });
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('Telegram token'),
+    );
+    warn.mockRestore();
   });
 });
