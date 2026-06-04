@@ -204,19 +204,13 @@ body {
   text-decoration: none;
   font-weight: 400;
   margin-right: 0.3em;
-  opacity: 0;
-  transition: opacity 0.12s, color 0.12s;
-}
-.dx-content :is(h2, h3):hover > a.anchor,
-.dx-content :is(h2, h3) > a.anchor:focus-visible {
-  opacity: 1;
+  transition: color 0.12s;
 }
 .dx-content :is(h2, h3) > a.anchor:hover {
   color: var(--a1);
 }
 .dx-content :is(h2, h3) > a.anchor.is-copied {
   color: #8ee6a8;
-  opacity: 1;
 }
 .dx-content p,
 .dx-content li {
