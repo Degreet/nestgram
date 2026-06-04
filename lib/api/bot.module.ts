@@ -1,4 +1,4 @@
-import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
+import { DynamicModule, Global, Module, Provider, Type } from '@nestjs/common';
 
 import { BotService } from './bot.service';
 
@@ -18,26 +18,36 @@ import {
 export class BotModule {
   /**
    * Providers for the outbound request pipeline. `REQUEST_TRANSFORMERS` is the
-   * ordered array of transformers `RequestPipeline` runs: token validation first
-   * (its constructor also fail-fasts on a missing configured token at boot),
-   * then the default parse-mode hook. Supplied as an explicit array (not a
-   * `multi` provider): Nest 10.4.1's `multi: true` does not aggregate here — it
-   * collapses to a single instance, which then isn't iterable. Restoring
-   * user-extension via the token is tracked separately.
+   * ordered array `RequestPipeline` runs: the built-ins (token validation first —
+   * its constructor also fail-fasts on a missing configured token at boot — then
+   * the default parse-mode hook), followed by any user-supplied transformers.
+   *
+   * Built as an explicit array via `useFactory` (not a `multi` provider): Nest
+   * 10.4.1's `multi: true` does not aggregate here (it collapses to a single,
+   * non-iterable instance), so the factory injects every transformer and returns
+   * them as the array — which also lets users extend the pipeline.
    */
-  private static readonly pipelineProviders: Provider[] = [
-    TokenValidationTransformer,
-    DefaultParseModeTransformer,
-    {
-      provide: REQUEST_TRANSFORMERS,
-      useFactory: (
-        tokenValidation: TokenValidationTransformer,
-        defaultParseMode: DefaultParseModeTransformer,
-      ): RequestTransformer[] => [tokenValidation, defaultParseMode],
-      inject: [TokenValidationTransformer, DefaultParseModeTransformer],
-    },
-    RequestPipeline,
-  ];
+  private static pipelineProviders(
+    userTransformers: Type<RequestTransformer>[],
+  ): Provider[] {
+    return [
+      TokenValidationTransformer,
+      DefaultParseModeTransformer,
+      ...userTransformers,
+      {
+        provide: REQUEST_TRANSFORMERS,
+        useFactory: (
+          ...transformers: RequestTransformer[]
+        ): RequestTransformer[] => transformers,
+        inject: [
+          TokenValidationTransformer,
+          DefaultParseModeTransformer,
+          ...userTransformers,
+        ],
+      },
+      RequestPipeline,
+    ];
+  }
 
   static forRoot(options: BotOptions): DynamicModule {
     return {
@@ -47,7 +57,7 @@ export class BotModule {
           provide: Providers.BOT_OPTIONS,
           useValue: options,
         },
-        ...this.pipelineProviders,
+        ...this.pipelineProviders(options.transformers ?? []),
         {
           provide: BotService,
           useClass: BotService,
@@ -63,7 +73,7 @@ export class BotModule {
       imports: options.imports ?? [],
       providers: [
         ...this.createAsyncProviders(options),
-        ...this.pipelineProviders,
+        ...this.pipelineProviders(options.transformers ?? []),
         {
           provide: BotService,
           useClass: BotService,

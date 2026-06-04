@@ -13,6 +13,7 @@ import { UpdateDispatcher } from '../engine/dispatcher';
 import { RawUpdate } from '../events/raw-update.types';
 import { User } from '../events/user';
 import { Message } from '../events';
+import { ApiRequest, RequestTransformer } from '../api/request';
 import { NestgramModule } from './nestgram.module';
 
 const originalFetch = global.fetch;
@@ -315,4 +316,38 @@ describe('request pipeline (real-module DI)', () => {
 
     await app.close();
   });
+
+  it('runs a user-supplied transformer alongside the built-ins', async () => {
+    let body: Record<string, unknown> = {};
+    global.fetch = (async (_url: string, init: { body?: string }) => {
+      body = init.body ? JSON.parse(init.body) : {};
+      return { json: async () => ({ ok: true, result: {} }) } as Response;
+    }) as typeof fetch;
+
+    const app = await NestFactory.createApplicationContext(
+      UserTransformerAppModule,
+      { logger: false },
+    );
+    await app.get(BotService).sendMessage(1, 'hi');
+
+    expect(body.tagged).toBe(true);
+    await app.close();
+  });
 });
+
+@Injectable()
+class TagTransformer implements RequestTransformer {
+  transform(request: ApiRequest): void {
+    request.payload.tagged = true;
+  }
+}
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      token: '123456:TEST',
+      transformers: [TagTransformer],
+    }),
+  ],
+})
+class UserTransformerAppModule {}

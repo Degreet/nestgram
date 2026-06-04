@@ -1,6 +1,7 @@
 import { ModuleMetadata, Type } from '@nestjs/common';
 
 import { PollingOptions } from '../engine/source';
+import type { RequestTransformer } from '../api/request';
 
 /**
  * Options for `NestgramModule.forRoot`.
@@ -49,6 +50,13 @@ export interface NestgramModuleOptions {
    * `parse_mode: undefined` to opt that call out.
    */
   parseMode?: string;
+  /**
+   * Extra outbound {@link RequestTransformer}s — run after the built-ins (token
+   * validation, default parse mode) on every API call. The framework's own
+   * send-time behaviours are just transformers; this is the same hook, no
+   * privileged core.
+   */
+  transformers?: Type<RequestTransformer>[];
 }
 
 /** A class that can produce `NestgramModuleOptions` (for `useClass`/`useExisting`). */
@@ -70,4 +78,6 @@ export interface NestgramModuleAsyncOptions
   useFactory?: (
     ...args: any[]
   ) => Promise<NestgramModuleOptions> | NestgramModuleOptions;
+  /** Extra outbound request transformers (static — not resolved via the factory). */
+  transformers?: Type<RequestTransformer>[];
 }

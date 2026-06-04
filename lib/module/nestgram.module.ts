@@ -68,6 +68,7 @@ export class NestgramModule {
         BotModule.forRoot({
           token: options.token,
           parseMode: options.parseMode,
+          transformers: options.transformers,
         }),
         DiscoveryModule,
       ],
@@ -90,6 +91,7 @@ export class NestgramModule {
             token: resolved.token,
             parseMode: resolved.parseMode,
           }),
+          transformers: options.transformers,
         }),
         DiscoveryModule,
       ],
