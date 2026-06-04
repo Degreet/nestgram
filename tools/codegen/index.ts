@@ -4,7 +4,10 @@
  * jest (jest's rootDir is `lib`, and the suite's baseline count must stay
  * stable), so the foundation is verifiable before any code is emitted.
  */
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { basename, join, resolve } from 'node:path';
 import { UpdateKind } from '../../lib/engine/context/update-kind';
+import { detectMedia, emitMethod } from './emit-methods';
 import { buildIr, IrType } from './ir';
 import { loadSpec } from './spec-loader';
 import { irTypeToTs } from './type-resolver';
@@ -152,15 +155,55 @@ function selfTest(): void {
   );
 }
 
+function parseFlagValue(name: string): string | undefined {
+  const prefix = `${name}=`;
+  const found = process.argv.find((arg) => arg.startsWith(prefix));
+  return found ? found.slice(prefix.length) : undefined;
+}
+
+function generateMethods(outDir: string, only?: string[]): void {
+  const ir = buildIr(loadSpec());
+  const absoluteOut = resolve(process.cwd(), outDir);
+  const apiMethodImport =
+    basename(absoluteOut) === 'methods'
+      ? './api-method'
+      : '../methods/api-method';
+  mkdirSync(absoluteOut, { recursive: true });
+
+  const selected = only
+    ? ir.methods.filter((method) => only.includes(method.name))
+    : ir.methods;
+  for (const method of selected) {
+    if (method.maybeMultipart && detectMedia(method) === null) {
+      process.stderr.write(
+        `warning: ${method.name} is maybe_multipart but no file field was detected\n`,
+      );
+    }
+    writeFileSync(
+      join(absoluteOut, `${method.fileName}.ts`),
+      emitMethod(method, { apiMethodImport }),
+    );
+  }
+  process.stdout.write(
+    `Emitted ${selected.length} method class(es) to ${outDir}\n`,
+  );
+}
+
 function main(): void {
-  const argv = process.argv.slice(2);
-  if (argv.includes('--self-test')) {
+  if (process.argv.includes('--self-test')) {
     selfTest();
     return;
   }
-  throw new Error(
-    'Code emission is wired in a later step. Run with --self-test for now.',
-  );
+  const methodsOut = parseFlagValue('--methods-out');
+  if (methodsOut !== undefined) {
+    const only = parseFlagValue('--only')
+      ?.split(',')
+      .map((name) => name.trim())
+      .filter(Boolean);
+    generateMethods(methodsOut, only);
+    return;
+  }
+  throw new Error('Specify --self-test or --methods-out=<dir> [--only=a,b,c].');
 }
 
 try {

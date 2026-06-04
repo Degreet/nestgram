@@ -45,3 +45,7 @@ lerna-debug.log*
 dev-debug.log
 .env
 # Task files are tracked in git (tasks.json + .backlog/tasks/) on purpose.
+
+# Codegen dry-run scratch (real output lives in lib/api/methods + lib/events)
+lib/api/methods.generated/
+lib/events/raw-update.generated.ts
