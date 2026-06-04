@@ -22,10 +22,11 @@ export class BotModule {
    * its constructor also fail-fasts on a missing configured token at boot — then
    * the default parse-mode hook), followed by any user-supplied transformers.
    *
-   * Built as an explicit array via `useFactory` (not a `multi` provider): Nest
-   * 10.4.1's `multi: true` does not aggregate here (it collapses to a single,
-   * non-iterable instance), so the factory injects every transformer and returns
-   * them as the array — which also lets users extend the pipeline.
+   * Built as an explicit array via `useFactory`, not a `multi`-provider token:
+   * Nest has no generic `multi: true` aggregation (a `multi` token collapses to a
+   * single, last-wins instance — `APP_*` enhancers are special-cased separately),
+   * so the factory injects every transformer and returns them as the array —
+   * which also lets users extend the pipeline.
    */
   private static pipelineProviders(
     userTransformers: Type<RequestTransformer>[],

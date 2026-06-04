@@ -295,10 +295,10 @@ describe('request pipeline (real-module DI)', () => {
     global.fetch = originalFetch;
   });
 
-  // Regression: REQUEST_TRANSFORMERS must inject as an ARRAY. Nest 10.4.1's
-  // `multi: true` collapsed it to a single instance, so every bot.call crashed
-  // with "transformers is not iterable" in a real (DI-wired) module — a path the
-  // hand-built-pipeline unit tests never exercised.
+  // Regression: REQUEST_TRANSFORMERS must inject as an ARRAY. Nest has no generic
+  // `multi: true` aggregation (a multi token collapses to a single instance), so
+  // every bot.call crashed with "transformers is not iterable" in a real
+  // (DI-wired) module — a path the hand-built-pipeline unit tests never exercised.
   it('runs a bot.call through the DI request pipeline without crashing', async () => {
     global.fetch = (async () => ({
       json: async () => ({
