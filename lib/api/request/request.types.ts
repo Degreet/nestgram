@@ -27,7 +27,7 @@ export interface RequestTransformer {
 
 /**
  * DI token for the ordered array of {@link RequestTransformer}s the pipeline
- * runs. Currently the built-in default-parse-mode hook only — see #35 for
- * restoring user-supplied transformers.
+ * runs. Built-ins: token validation, then the default parse-mode hook — see #35
+ * for restoring user-supplied transformers.
  */
 export const REQUEST_TRANSFORMERS = 'nestgram:request_transformers';

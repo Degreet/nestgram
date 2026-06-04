@@ -3,16 +3,12 @@ import { rm } from 'fs/promises';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import { BotOptions } from './bot-options';
 import { InputFile } from './input-file';
 import { Providers } from '../providers';
-import {
-  ApiException,
-  NestgramConfigError,
-  NestgramError,
-} from '../exceptions';
+import { ApiException, NestgramError } from '../exceptions';
 import { deepLink as createDeepLink, DeepLinkParams } from '../deep-links';
 import type { User } from '../events/user';
 
@@ -75,41 +71,12 @@ export type MethodOptions<T = unknown> = Partial<T> & CallOptions;
 export class BotService {
   readonly token: string;
   private cachedMe?: User;
-  private readonly logger = new Logger(BotService.name);
-  private readonly warnedTokens = new Set<string>();
-
-  /** Telegram bot tokens look like `123456789:AA...` (id colon secret). */
-  private static readonly TOKEN_PATTERN = /^\d+:[\w-]+$/;
 
   constructor(
     @Inject(Providers.BOT_OPTIONS) options: BotOptions,
     private readonly pipeline: RequestPipeline,
   ) {
     this.token = options.token;
-    this.assertValidToken(this.token);
-  }
-
-  /**
-   * Validate a bot token where it is actually used — the constructor (the
-   * configured token) and {@link call} (a per-call override) — so the checks
-   * can't be bypassed by talking to `BotService` directly. Throws on a missing
-   * token; warns once per token that doesn't look like a Telegram token.
-   */
-  private assertValidToken(token: string): void {
-    if (typeof token !== 'string' || token.trim() === '') {
-      throw new NestgramConfigError(
-        'A bot token is required — pass it to NestgramModule.forRoot({ token }).',
-      );
-    }
-    if (
-      !BotService.TOKEN_PATTERN.test(token) &&
-      !this.warnedTokens.has(token)
-    ) {
-      this.warnedTokens.add(token);
-      this.logger.warn(
-        'Bot token does not look like a Telegram token (expected "<id>:<secret>").',
-      );
-    }
   }
 
   /**
@@ -123,9 +90,6 @@ export class BotService {
     method: ApiMethod<unknown, R>,
     options?: CallOptions,
   ): Promise<R> {
-    if (options?.token !== undefined) {
-      this.assertValidToken(options.token);
-    }
     const request: ApiRequest = {
       method: method.method,
       payload: { ...((method.payload as Record<string, unknown>) ?? {}) },

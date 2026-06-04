@@ -10,6 +10,7 @@ import {
   REQUEST_TRANSFORMERS,
   RequestPipeline,
   RequestTransformer,
+  TokenValidationTransformer,
 } from './request';
 
 @Global()
@@ -17,20 +18,23 @@ import {
 export class BotModule {
   /**
    * Providers for the outbound request pipeline. `REQUEST_TRANSFORMERS` is the
-   * array of transformers `RequestPipeline` runs; the default parse-mode hook is
-   * the only built-in. Supplied as an explicit array (not a `multi` provider):
-   * Nest 10.4.1's `multi: true` does not aggregate here — it collapses to a
-   * single instance, which then isn't iterable. Restoring user-extension via the
-   * token is tracked separately.
+   * ordered array of transformers `RequestPipeline` runs: token validation first
+   * (its constructor also fail-fasts on a missing configured token at boot),
+   * then the default parse-mode hook. Supplied as an explicit array (not a
+   * `multi` provider): Nest 10.4.1's `multi: true` does not aggregate here — it
+   * collapses to a single instance, which then isn't iterable. Restoring
+   * user-extension via the token is tracked separately.
    */
   private static readonly pipelineProviders: Provider[] = [
+    TokenValidationTransformer,
     DefaultParseModeTransformer,
     {
       provide: REQUEST_TRANSFORMERS,
       useFactory: (
+        tokenValidation: TokenValidationTransformer,
         defaultParseMode: DefaultParseModeTransformer,
-      ): RequestTransformer[] => [defaultParseMode],
-      inject: [DefaultParseModeTransformer],
+      ): RequestTransformer[] => [tokenValidation, defaultParseMode],
+      inject: [TokenValidationTransformer, DefaultParseModeTransformer],
     },
     RequestPipeline,
   ];

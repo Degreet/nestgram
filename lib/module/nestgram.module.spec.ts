@@ -252,13 +252,15 @@ class EmptyTokenAppModule {}
 @Module({ imports: [NestgramModule.forRoot({ token: 'not-a-token' })] })
 class MalformedTokenAppModule {}
 
-// Token validation now lives in BotService (so it can't be bypassed by using
-// BotService directly); webhook secret-token validation moves to setWebhook in
-// Phase 2 (#36). These boot tests prove the BotService checks fire at startup.
+// Token validation lives in TokenValidationTransformer (constructed at boot via
+// the request pipeline, so it can't be bypassed by going through BotService
+// directly); webhook secret-token validation moves to setWebhook in Phase 2
+// (#36). These boot tests prove the token checks fire at startup.
 describe('production baseline', () => {
   it('throws at boot when the token is missing', async () => {
-    // BotService throws from its constructor (DI init); abortOnError:false makes
-    // Nest reject instead of process.exit so the error is catchable here.
+    // TokenValidationTransformer throws from its constructor (DI init);
+    // abortOnError:false makes Nest reject instead of process.exit, so the
+    // error is catchable here.
     await expect(
       NestFactory.createApplicationContext(EmptyTokenAppModule, {
         logger: false,

@@ -10,7 +10,7 @@ import { BotService } from './bot.service';
 import { BotOptions } from './bot-options';
 import { RequestPipeline } from './request/request-pipeline';
 import { DefaultParseModeTransformer } from './request/default-parse-mode.transformer';
-import { NestgramConfigError, NestgramError } from '../exceptions';
+import { NestgramError } from '../exceptions';
 import { Message } from '../events';
 
 interface FetchCall {
@@ -405,48 +405,5 @@ describe('BotService message actions (delete/forward/copy + chaining)', () => {
     expect(sent).toBeInstanceOf(Message);
     expect(typeof sent.reply).toBe('function');
     expect(typeof sent.delete).toBe('function');
-  });
-});
-
-describe('BotService token validation', () => {
-  afterEach(() => {
-    global.fetch = originalFetch;
-  });
-
-  it('throws when the configured token is missing', () => {
-    expect(() => bot({ token: '' })).toThrow(NestgramConfigError);
-  });
-
-  it('warns when the configured token is malformed', () => {
-    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
-    bot({ token: 'not-a-token' });
-    expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('Telegram token'),
-    );
-    warn.mockRestore();
-  });
-
-  it('does not warn for a well-formed token', () => {
-    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
-    bot({ token: '123456:VALID-token' });
-    expect(warn).not.toHaveBeenCalled();
-    warn.mockRestore();
-  });
-
-  it('throws on an empty per-call override token (not bypassable via call)', async () => {
-    mockFetch();
-    await expect(
-      bot({ token: '1:T' }).sendMessage(1, 'hi', { token: '' }),
-    ).rejects.toThrow(NestgramConfigError);
-  });
-
-  it('warns on a malformed per-call override token', async () => {
-    mockFetch();
-    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
-    await bot({ token: '1:T' }).sendMessage(1, 'hi', { token: 'bad-override' });
-    expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('Telegram token'),
-    );
-    warn.mockRestore();
   });
 });
