@@ -16,14 +16,18 @@ export interface ApiRequest {
  * outbound counterpart to a Nest interceptor (which only sees inbound updates).
  *
  * The framework's own send-time behaviours (e.g. the default `parse_mode`) are
- * ordinary transformers; register your own via the {@link REQUEST_TRANSFORMERS}
- * multi-provider token to add cross-cutting behaviour — throttling, a custom
- * header, an injected field — without touching framework code. Every API call
- * funnels through the same pipeline, including ones built by hand.
+ * ordinary transformers run for every API call — including ones built by hand —
+ * so the pipeline is the single send chokepoint. (User-registered transformers
+ * are not wired yet: the `multi`-provider token that would allow it does not
+ * aggregate in Nest 10.4.1; restoring that extension is tracked in task #35.)
  */
 export interface RequestTransformer {
   transform(request: ApiRequest): void | Promise<void>;
 }
 
-/** Multi-provider DI token for the ordered list of {@link RequestTransformer}s. */
+/**
+ * DI token for the ordered array of {@link RequestTransformer}s the pipeline
+ * runs. Currently the built-in default-parse-mode hook only — see #35 for
+ * restoring user-supplied transformers.
+ */
 export const REQUEST_TRANSFORMERS = 'nestgram:request_transformers';
