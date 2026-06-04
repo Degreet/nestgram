@@ -8,7 +8,12 @@ import { NestgramConfigError } from '../exceptions';
 import { Providers } from '../providers';
 import { HandlerExecutorFactory, ResultHandler } from '../engine/execution';
 import { UpdateDispatcher } from '../engine/dispatcher';
-import { PollingUpdateSource } from '../engine/source';
+import {
+  PollingUpdateSource,
+  UpdateSource,
+  WebhookController,
+  WebhookUpdateSource,
+} from '../engine/source';
 import { AutoAnswerCallbackInterceptor } from '../interceptors';
 import { NestgramBootstrap } from './nestgram.bootstrap';
 import {
@@ -44,6 +49,23 @@ export class NestgramModule {
     ResultHandler,
     UpdateDispatcher,
     PollingUpdateSource,
+    WebhookUpdateSource,
+    // The active transport, chosen by config: webhook if configured, else
+    // polling. Bootstrap injects UPDATE_SOURCE and only starts it when a
+    // transport is set.
+    {
+      provide: Providers.UPDATE_SOURCE,
+      useFactory: (
+        options: NestgramModuleOptions,
+        polling: PollingUpdateSource,
+        webhook: WebhookUpdateSource,
+      ): UpdateSource => (options.webhook ? webhook : polling),
+      inject: [
+        Providers.NESTGRAM_OPTIONS,
+        PollingUpdateSource,
+        WebhookUpdateSource,
+      ],
+    },
     NestgramBootstrap,
     // Built-ins as ordinary public providers (no privileged core). Auto-answer
     // is a global interceptor that self-disables when the option is off, so it
@@ -72,6 +94,9 @@ export class NestgramModule {
         }),
         DiscoveryModule,
       ],
+      // The webhook receiver. Registered only when webhook is configured here
+      // (it's inert otherwise); it serves on an HTTP app, ignored otherwise.
+      controllers: options.webhook ? [WebhookController] : [],
       providers: [
         { provide: Providers.NESTGRAM_OPTIONS, useValue: options },
         ...this.engineProviders,
@@ -95,6 +120,9 @@ export class NestgramModule {
         }),
         DiscoveryModule,
       ],
+      // Webhook config is resolved asynchronously, so it isn't known here;
+      // always register the receiver (inert unless webhook is configured).
+      controllers: [WebhookController],
       providers: [
         ...this.createAsyncOptionsProviders(options),
         ...this.engineProviders,

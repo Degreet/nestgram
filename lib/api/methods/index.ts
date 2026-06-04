@@ -12,3 +12,4 @@ export * from './get-updates';
 export * from './send-media-group';
 export * from './send-message';
 export * from './send-photo';
+export * from './set-webhook';

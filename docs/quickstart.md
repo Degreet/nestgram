@@ -12,7 +12,7 @@ updates instead of routes. By the end of this page you'll have a running bot
 that greets users on `/start` and echoes everything else back.
 
 :::mental
-Telegram update -> @Router() controller* -> handler -> reply
+Telegram update -> @Router() controller\* -> handler -> reply
 :::
 
 ## Install
@@ -30,6 +30,7 @@ Write a class, decorate it with `@Router()`, and bind methods to update
 types. Whatever a handler returns is sent back to the chat.
 
 :::code[greet.router.ts]{mark="6"}
+
 ```ts
 import { Router, Command, OnMessage, Message } from 'nestgram';
 
@@ -46,13 +47,15 @@ export class GreetRouter {
   }
 }
 ```
+
 :::
 
 :::anno
+
 1. The handler receives a **typed `Message`** as its first argument — no decorator, no guessing what's on it. You named the type, so you know exactly what arrived.
 2. `@Command('start')` matches the `/start` command; `@OnMessage()` matches any message. Nestgram tries handlers in order and runs the first match.
 3. Returning a `string` sends it as a reply — sugar over `message.answer(text)`, which you can call directly when you need options.
-:::
+   :::
 
 :::tip
 Most handlers stay one line. When you need more control, return a command
@@ -66,6 +69,7 @@ Routers are plain Nest providers. List them in `providers` and Nestgram
 discovers them automatically — there's no separate registry to maintain.
 
 :::code[app.module.ts]{mark="10"}
+
 ```ts
 import { Module } from '@nestjs/common';
 import { NestgramModule } from 'nestgram';
@@ -82,6 +86,7 @@ import { GreetRouter } from './greet.router';
 })
 export class AppModule {}
 ```
+
 :::
 
 `NestgramModule.forRoot()` configures the bot itself (token, transport). It
@@ -106,6 +111,7 @@ A Nestgram bot is a standard Nest application context — no HTTP server
 required for polling.
 
 :::code[main.ts]
+
 ```ts
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -117,6 +123,7 @@ async function bootstrap() {
 
 bootstrap();
 ```
+
 :::
 
 `enableShutdownHooks()` lets Nestgram stop polling cleanly on shutdown
@@ -129,22 +136,27 @@ The same router runs unchanged in development (long polling) and production
 
 :::tabs{name="run"}
 ::tab[polling · dev]
+
 ```ts
 NestgramModule.forRoot({
   token: process.env.BOT_TOKEN,
   polling: true, // dev: long polling
 });
 ```
+
 ::tab[webhook · prod]
+
 ```ts
 NestgramModule.forRoot({
   token: process.env.BOT_TOKEN,
   webhook: {
-    url: 'https://bot.example.com/tg',
+    // The controller serves /telegram/webhook — point the URL there.
+    url: 'https://bot.example.com/telegram/webhook',
     secretToken: process.env.WH_SECRET, // ← guardrail satisfied
   },
 });
 ```
+
 :::
 
 Then start it:
@@ -160,8 +172,9 @@ a greeting and an echo.
 :::warn[Nestgram warning]
 [WebhookModule] You set a webhook with no **secret_token**.
 Anyone who learns your URL can spoof updates.
+
 > pass `secretToken` to `setWebhook()`
-:::
+> :::
 
 :::caution[Heading to production?]
 Polling is great for development. For production you'll switch to a webhook —

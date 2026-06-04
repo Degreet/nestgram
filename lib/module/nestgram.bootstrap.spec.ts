@@ -5,7 +5,7 @@ import { NestgramModuleOptions } from './nestgram-module.types';
 import { BotService } from '../api';
 import { RouteExplorer, RouteTable } from '../engine/discovery';
 import { UpdateDispatcher } from '../engine/dispatcher';
-import { PollingUpdateSource } from '../engine/source';
+import { UpdateSource } from '../engine/source';
 
 function makeBootstrap(options: Partial<NestgramModuleOptions>) {
   const getMe = jest.fn().mockResolvedValue({ username: 'mybot' });
@@ -16,7 +16,7 @@ function makeBootstrap(options: Partial<NestgramModuleOptions>) {
     { explore: jest.fn().mockReturnValue([]) } as unknown as RouteExplorer,
     { set: jest.fn() } as unknown as RouteTable,
     { dispatch: jest.fn() } as unknown as UpdateDispatcher,
-    { start, stop: jest.fn() } as unknown as PollingUpdateSource,
+    { start, stop: jest.fn() } as unknown as UpdateSource,
     { getMe } as unknown as BotService,
   );
 
@@ -46,9 +46,7 @@ describe('NestgramBootstrap identity warming', () => {
     expect(start).toHaveBeenCalledTimes(1);
   });
 
-  it('does not warm identity for a webhook-only config yet (Phase 2)', async () => {
-    // The webhook source isn't implemented; it will warm identity the same way
-    // (extending the gate) when it lands. A webhook config alone hits no network.
+  it('warms identity and starts the source for a webhook config', async () => {
     const { bootstrap, getMe, start } = makeBootstrap({
       token: '123:abc',
       webhook: { url: 'https://example.com/hook', secretToken: 's' },
@@ -56,8 +54,8 @@ describe('NestgramBootstrap identity warming', () => {
 
     await bootstrap.onApplicationBootstrap();
 
-    expect(getMe).not.toHaveBeenCalled();
-    expect(start).not.toHaveBeenCalled();
+    expect(getMe).toHaveBeenCalledTimes(1);
+    expect(start).toHaveBeenCalledTimes(1);
   });
 
   it('hits no network when no transport is configured (e.g. tests)', async () => {

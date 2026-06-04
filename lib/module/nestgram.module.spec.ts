@@ -14,6 +14,8 @@ import { RawUpdate } from '../events/raw-update.types';
 import { User } from '../events/user';
 import { Message } from '../events';
 import { ApiRequest, RequestTransformer } from '../api/request';
+import { Providers } from '../providers';
+import { WebhookUpdateSource } from '../engine/source';
 import { NestgramModule } from './nestgram.module';
 
 const originalFetch = global.fetch;
@@ -255,8 +257,7 @@ class MalformedTokenAppModule {}
 
 // Token validation lives in TokenValidationTransformer (constructed at boot via
 // the request pipeline, so it can't be bypassed by going through BotService
-// directly); webhook secret-token validation moves to setWebhook in Phase 2
-// (#36). These boot tests prove the token checks fire at startup.
+// directly). These boot tests prove the token checks fire at startup.
 describe('production baseline', () => {
   it('throws at boot when the token is missing', async () => {
     // TokenValidationTransformer throws from its constructor (DI init);
@@ -351,3 +352,41 @@ class TagTransformer implements RequestTransformer {
   ],
 })
 class UserTransformerAppModule {}
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      token: '123456:TEST',
+      webhook: {
+        url: 'https://bot.example.com/telegram/webhook',
+        secretToken: 's3cret',
+      },
+    }),
+  ],
+})
+class WebhookAppModule {}
+
+describe('webhook transport (real-module DI)', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it('selects the webhook source as UPDATE_SOURCE and validates the secret', async () => {
+    // getMe (identity warm) + setWebhook (start) + deleteWebhook (shutdown) all
+    // hit fetch at boot/close; stub it so no network is touched.
+    global.fetch = (async () => ({
+      json: async () => ({ ok: true, result: {} }),
+    })) as unknown as typeof fetch;
+
+    const app = await NestFactory.createApplicationContext(WebhookAppModule, {
+      logger: false,
+    });
+    const source = app.get<WebhookUpdateSource>(Providers.UPDATE_SOURCE);
+
+    expect(source).toBeInstanceOf(WebhookUpdateSource);
+    expect(source.verifySecret('s3cret')).toBe(true);
+    expect(source.verifySecret('wrong')).toBe(false);
+
+    await app.close();
+  });
+});

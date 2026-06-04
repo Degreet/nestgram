@@ -31,11 +31,10 @@ export interface NestgramModuleOptions {
    */
   polling?: boolean | PollingOptions;
   /**
-   * Webhook transport config. The receiving controller and the missing-
-   * `secretToken` startup warning land in a later phase (in `setWebhook`, #36);
-   * the field is declared now to freeze the public option shape. Always set
-   * `secretToken` in production — without it, anyone who learns the URL can
-   * spoof updates.
+   * Webhook transport config. When set, the bot receives updates over HTTP via
+   * the built-in controller (served at `/telegram/webhook` — point `url` there)
+   * instead of polling. Always set `secretToken` in production — without it,
+   * anyone who learns the URL can spoof updates (the bot warns at startup).
    */
   webhook?: WebhookOptions;
   /**

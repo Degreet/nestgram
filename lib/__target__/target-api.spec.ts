@@ -83,6 +83,7 @@ describe('Not yet implemented (Phase 2+ / deferred)', () => {
   it.todo('message.react(emoji) reacts to the incoming message');
   it.todo('request-scoped providers resolve per update (contextId per update)');
   it.todo('updates are processed with bounded concurrency');
-  it.todo('a webhook update source (controller + secret-token validation)');
-  it.todo('typed callback-data factory: pack / filter / typed parse');
+  // Shipped: webhook transport (webhook-update-source.spec, webhook.controller.spec,
+  // nestgram.module.spec wiring) and the typed callback-data factory
+  // (callback-data.factory.spec, acceptance.spec).
 });

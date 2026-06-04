@@ -26,6 +26,8 @@ import {
   GetUpdatesOptions,
   DeleteWebhookOptions,
   DeleteWebhook,
+  SetWebhook,
+  SetWebhookOptions,
   AnswerCallbackQuery,
   AnswerCallbackQueryOptions,
   SendPhotoOptions,
@@ -134,6 +136,14 @@ export class BotService {
   deleteWebhook(options?: MethodOptions<DeleteWebhookOptions>) {
     const { token, signal, ...payload } = options ?? {};
     return this.call(new DeleteWebhook(payload), { token, signal });
+  }
+
+  setWebhook(
+    url: string,
+    options?: MethodOptions<Omit<SetWebhookOptions, 'url'>>,
+  ) {
+    const { token, signal, ...payload } = options ?? {};
+    return this.call(new SetWebhook({ url, ...payload }), { token, signal });
   }
 
   /**
