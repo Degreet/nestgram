@@ -17,8 +17,8 @@ acceptance criteria for the implementation.
 
 ## Phase 1 — MVP (prove the thesis)
 
-A minimal but real framework that proves the core claim: *a Telegram bot is
-just another Nest app, with the full Nest pipeline.*
+A minimal but real framework that proves the core claim: _a Telegram bot is
+just another Nest app, with the full Nest pipeline._
 
 - [ ] Boot-time route table via `DiscoveryService` + `MetadataScanner`
 - [ ] Long polling with bounded concurrency and per-update failure isolation
@@ -46,15 +46,16 @@ just another Nest app, with the full Nest pipeline.*
 
 Everything needed to ship a production bot.
 
-- [ ] Webhook source: a Nest controller + secret-token validation
+- [x] Webhook source: a Nest controller + secret-token validation
 - [ ] Pipes + `class-validator` DTOs for payloads
 - [ ] Sessions (in-memory + Redis stores), `@Session()`
-- [ ] Typed callback-data factory (`pack` / `filter` / typed `parse`) — kills
+- [x] Typed callback-data factory (`pack` / `filter` / typed `parse`) — kills
       the magic-string triad of literal + regex + `split`
 - [ ] i18n via `AsyncLocalStorage` (`nestjs-cls`): ambient `t()` / locale,
       explicit pass-through across worker/queue boundaries
-- [ ] Type + method **code generation** from a community spec
-- [ ] Full update-type coverage
+- [x] Type + method **code generation** from a community spec — `tools/codegen/`
+      over a vendored `ark0f/tg-bot-api` spec; `npm run generate`
+- [x] Full update-type coverage — 135 methods + 225 `Raw*` types generated
 - [ ] Send throttler (global 30/s, 1/s per chat, `429 retry_after`)
 
 ## Phase 3 — Conversations

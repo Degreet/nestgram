@@ -61,6 +61,51 @@ export function applyFieldTypeOverride(
   return tsType;
 }
 
+// --- Multipart media handling ------------------------------------------------
+
+/** Multipart-transport shape for a method's file field(s). */
+export type MediaConfig =
+  | { kind: 'flat'; fields: string[] }
+  | { kind: 'nested'; field: string; itemField: string; array: boolean };
+
+/**
+ * Multipart methods whose nested file field the spec-driven derivation can't
+ * infer: the spec models the inner file as a plain `string` (attach://) even
+ * though the hand-written / generated type accepts an `InputFile`. Declared
+ * explicitly. (`sendPaidMedia` is intentionally absent — `InputPaidMedia` has
+ * no InputFile-typed field at all, so there is nothing to detect.)
+ */
+const MEDIA_OVERRIDES: Readonly<Record<string, MediaConfig>> = {
+  editMessageMedia: {
+    kind: 'nested',
+    field: 'media',
+    itemField: 'media',
+    array: false,
+  },
+  createNewStickerSet: {
+    kind: 'nested',
+    field: 'stickers',
+    itemField: 'sticker',
+    array: true,
+  },
+  addStickerToSet: {
+    kind: 'nested',
+    field: 'sticker',
+    itemField: 'sticker',
+    array: false,
+  },
+  replaceStickerInSet: {
+    kind: 'nested',
+    field: 'sticker',
+    itemField: 'sticker',
+    array: false,
+  },
+};
+
+export function getMediaOverride(methodName: string): MediaConfig | undefined {
+  return MEDIA_OVERRIDES[methodName];
+}
+
 // --- Per-method rich-event overrides -----------------------------------------
 
 const WRAP_SINGLE = `wrap(raw: unknown, bot: BotService): Message {

@@ -1,4 +1,5 @@
 import { ApiMethod } from './api-method';
+import { InputFile } from '../input-file';
 import type { RawInputSticker } from '../../events/raw-update.types';
 
 export interface CreateNewStickerSetOptions {
@@ -16,7 +17,17 @@ export class CreateNewStickerSet extends ApiMethod<
 > {
   readonly method = 'createNewStickerSet';
 
+  readonly isAttachMedia = true;
+
   constructor(payload: CreateNewStickerSetOptions) {
     super(payload);
+  }
+
+  get hasMedia(): boolean {
+    return (
+      this.payload?.stickers.some(
+        (item) => item.sticker instanceof InputFile,
+      ) ?? false
+    );
   }
 }

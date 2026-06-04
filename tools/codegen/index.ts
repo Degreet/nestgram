@@ -4,14 +4,14 @@
  * jest (jest's rootDir is `lib`, and the suite's baseline count must stay
  * stable), so the foundation is verifiable before any code is emitted.
  */
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { UpdateKind } from '../../lib/engine/context/update-kind';
 import { emitMethodsBarrel } from './emit-barrel';
 import { detectMedia, emitMethod } from './emit-methods';
 import { emitTypesFile } from './emit-types';
+import { formatTs } from './format';
 import { buildIr, IrType } from './ir';
-import { SKIP_OBJECTS } from './manifest';
 import { loadSpec } from './spec-loader';
 import { irTypeToTs } from './type-resolver';
 
@@ -164,48 +164,80 @@ function parseFlagValue(name: string): string | undefined {
   return found ? found.slice(prefix.length) : undefined;
 }
 
-function generateMethods(outDir: string, only?: string[]): void {
+const CANONICAL_METHODS_DIR = 'lib/api/methods';
+const CANONICAL_TYPES_FILE = 'lib/events/raw-update.types.ts';
+
+/** Builds the method-class files (+ barrel on a full run) as path → formatted source. */
+function buildMethodFiles(
+  outDir: string,
+  only?: string[],
+): Map<string, string> {
   const ir = buildIr(loadSpec());
   const absoluteOut = resolve(process.cwd(), outDir);
   const apiMethodImport =
     basename(absoluteOut) === 'methods'
       ? './api-method'
       : '../methods/api-method';
-  mkdirSync(absoluteOut, { recursive: true });
 
   const selected = only
     ? ir.methods.filter((method) => only.includes(method.name))
     : ir.methods;
+  const files = new Map<string, string>();
   for (const method of selected) {
     if (method.maybeMultipart && detectMedia(method) === null) {
       process.stderr.write(
         `warning: ${method.name} is maybe_multipart but no file field was detected\n`,
       );
     }
-    writeFileSync(
-      join(absoluteOut, `${method.fileName}.ts`),
-      emitMethod(method, { apiMethodImport }),
-    );
+    const path = join(absoluteOut, `${method.fileName}.ts`);
+    files.set(path, formatTs(emitMethod(method, { apiMethodImport }), path));
   }
-  // Regenerate the barrel only on a full emission (a filtered dry run must not
-  // rewrite it to a subset).
+  // The barrel is only rewritten on a full emission — a filtered dry run must
+  // not clobber it with a subset.
   if (!only) {
-    writeFileSync(join(absoluteOut, 'index.ts'), emitMethodsBarrel(ir.methods));
+    const barrelPath = join(absoluteOut, 'index.ts');
+    files.set(barrelPath, formatTs(emitMethodsBarrel(ir.methods), barrelPath));
   }
-  process.stdout.write(
-    `Emitted ${selected.length} method class(es) to ${outDir}\n`,
-  );
+  return files;
 }
 
-function generateTypes(outFile: string): void {
-  const ir = buildIr(loadSpec());
+/** Builds the single raw-types file as path → formatted source. */
+function buildTypeFile(outFile: string): Map<string, string> {
   const absolute = resolve(process.cwd(), outFile);
-  mkdirSync(dirname(absolute), { recursive: true });
-  writeFileSync(absolute, emitTypesFile(ir));
-  const emitted = ir.objects.filter(
-    (object) => !SKIP_OBJECTS.has(object.name),
-  ).length;
-  process.stdout.write(`Emitted ${emitted} raw type(s) to ${outFile}\n`);
+  return new Map([
+    [absolute, formatTs(emitTypesFile(buildIr(loadSpec())), absolute)],
+  ]);
+}
+
+function writeFiles(files: Map<string, string>): void {
+  for (const [path, content] of files) {
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, content);
+  }
+  process.stdout.write(`Wrote ${files.size} file(s).\n`);
+}
+
+/** Fails (exit 1) if any committed file differs from a fresh generation. */
+function checkFiles(files: Map<string, string>): void {
+  const stale: string[] = [];
+  for (const [path, content] of files) {
+    const current = existsSync(path) ? readFileSync(path, 'utf8') : null;
+    if (current !== content) {
+      stale.push(path);
+    }
+  }
+  if (stale.length > 0) {
+    process.stderr.write(
+      `Generated output is stale — run \`npm run generate\`:\n${stale
+        .map((path) => `  ${path}`)
+        .join('\n')}\n`,
+    );
+    process.exitCode = 1;
+    return;
+  }
+  process.stdout.write(
+    `Generated output is up to date (${files.size} files).\n`,
+  );
 }
 
 function main(): void {
@@ -213,23 +245,33 @@ function main(): void {
     selfTest();
     return;
   }
+  const only = parseFlagValue('--only')
+    ?.split(',')
+    .map((name) => name.trim())
+    .filter(Boolean);
+
+  // Targeted dry runs (used during development / review).
   const methodsOut = parseFlagValue('--methods-out');
   if (methodsOut !== undefined) {
-    const only = parseFlagValue('--only')
-      ?.split(',')
-      .map((name) => name.trim())
-      .filter(Boolean);
-    generateMethods(methodsOut, only);
+    writeFiles(buildMethodFiles(methodsOut, only));
     return;
   }
   const typesOut = parseFlagValue('--types-out');
   if (typesOut !== undefined) {
-    generateTypes(typesOut);
+    writeFiles(buildTypeFile(typesOut));
     return;
   }
-  throw new Error(
-    'Specify --self-test, --methods-out=<dir> [--only=…], or --types-out=<file>.',
-  );
+
+  // Default: full canonical generation, or `--check` freshness guard.
+  const files = new Map([
+    ...buildMethodFiles(CANONICAL_METHODS_DIR),
+    ...buildTypeFile(CANONICAL_TYPES_FILE),
+  ]);
+  if (process.argv.includes('--check')) {
+    checkFiles(files);
+  } else {
+    writeFiles(files);
+  }
 }
 
 try {

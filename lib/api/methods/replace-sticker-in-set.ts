@@ -1,4 +1,5 @@
 import { ApiMethod } from './api-method';
+import { InputFile } from '../input-file';
 import type { RawInputSticker } from '../../events/raw-update.types';
 
 export interface ReplaceStickerInSetOptions {
@@ -14,7 +15,13 @@ export class ReplaceStickerInSet extends ApiMethod<
 > {
   readonly method = 'replaceStickerInSet';
 
+  readonly isAttachMedia = true;
+
   constructor(payload: ReplaceStickerInSetOptions) {
     super(payload);
+  }
+
+  get hasMedia(): boolean {
+    return this.payload?.sticker.sticker instanceof InputFile;
   }
 }

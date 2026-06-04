@@ -11,8 +11,10 @@
 import { collectReferences, IrMethod, IrType } from './ir';
 import {
   applyFieldTypeOverride,
+  getMediaOverride,
   getMethodOverride,
   isInputMediaName,
+  MediaConfig,
   MethodOverride,
   resolveReference,
 } from './manifest';
@@ -23,10 +25,6 @@ export interface MethodEmitConfig {
   apiMethodImport: string;
 }
 
-type MediaConfig =
-  | { kind: 'flat'; fields: string[] }
-  | { kind: 'nested'; field: string };
-
 function references(type: IrType): Set<string> {
   const names = new Set<string>();
   collectReferences(type, names);
@@ -34,19 +32,28 @@ function references(type: IrType): Set<string> {
 }
 
 /**
- * Derives multipart handling from the spec: a flat file field is an argument
- * whose type references `InputFile`; a nested field is an array of the bare,
- * hand-written `InputMedia*` (whose `.media` is a known `string | InputFile`,
- * so the `media.media instanceof InputFile` getter type-checks). Other multipart
- * shapes (single `InputMedia`, `InputPaidMedia`, `InputSticker`) are not handled
- * here — the orchestrator warns so they are visible, not silently broken.
+ * Derives multipart handling. A hand-owned override (manifest) wins. Otherwise:
+ * a flat file field is an argument that references `InputFile` directly; a
+ * nested field is an array of the bare `InputMedia*` (whose `.media` is a known
+ * `string | InputFile`). Shapes the spec models as plain `string` inside (single
+ * InputMedia, InputSticker) are covered by the overrides; the orchestrator warns
+ * on any remaining `maybe_multipart` method, so a gap is visible not silent.
  */
 export function detectMedia(method: IrMethod): MediaConfig | null {
+  const override = getMediaOverride(method.name);
+  if (override) {
+    return override;
+  }
   const flat: string[] = [];
   for (const arg of method.args) {
     if (arg.type.kind === 'array') {
       if ([...references(arg.type.element)].some(isInputMediaName)) {
-        return { kind: 'nested', field: arg.name };
+        return {
+          kind: 'nested',
+          field: arg.name,
+          itemField: 'media',
+          array: true,
+        };
       }
     } else if (references(arg.type).has('InputFile')) {
       flat.push(arg.name);
@@ -154,7 +161,10 @@ function emitHasMedia(media: MediaConfig): string {
       .join(' || ');
     return `get hasMedia(): boolean {\n  return ${checks};\n}`;
   }
-  return `get hasMedia(): boolean {\n  return (\n    this.payload?.${media.field}.some((media) => media.media instanceof InputFile) ?? false\n  );\n}`;
+  if (media.array) {
+    return `get hasMedia(): boolean {\n  return (\n    this.payload?.${media.field}.some((item) => item.${media.itemField} instanceof InputFile) ?? false\n  );\n}`;
+  }
+  return `get hasMedia(): boolean {\n  return this.payload?.${media.field}.${media.itemField} instanceof InputFile;\n}`;
 }
 
 function emitClass(

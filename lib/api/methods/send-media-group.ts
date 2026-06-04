@@ -41,7 +41,7 @@ export class SendMediaGroup extends ApiMethod<
 
   get hasMedia(): boolean {
     return (
-      this.payload?.media.some((media) => media.media instanceof InputFile) ??
+      this.payload?.media.some((item) => item.media instanceof InputFile) ??
       false
     );
   }

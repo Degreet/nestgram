@@ -1,4 +1,5 @@
 import { ApiMethod } from './api-method';
+import { InputFile } from '../input-file';
 import type {
   RawInlineKeyboardMarkup,
   RawInputMedia,
@@ -20,7 +21,13 @@ export class EditMessageMedia extends ApiMethod<
 > {
   readonly method = 'editMessageMedia';
 
+  readonly isAttachMedia = true;
+
   constructor(payload: EditMessageMediaOptions) {
     super(payload);
+  }
+
+  get hasMedia(): boolean {
+    return this.payload?.media.media instanceof InputFile;
   }
 }
