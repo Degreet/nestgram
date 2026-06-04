@@ -2,7 +2,7 @@ import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
 import { TelegramExecutionContext } from '../../engine/context';
 import { extractEntities, extractEntity } from '../../engine/execution';
-import { EntityType } from '../../events/entity-type';
+import { EntityType } from '../../engine/matching';
 
 /** Injects the text of the first entity of the given type (`@Entity('email')`). */
 export const Entity = createParamDecorator(

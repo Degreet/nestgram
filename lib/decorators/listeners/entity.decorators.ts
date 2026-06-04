@@ -1,5 +1,8 @@
-import { EntityPredicate, RoutePredicate } from '../../engine/matching';
-import { EntityType } from '../../events/entity-type';
+import {
+  EntityPredicate,
+  EntityType,
+  RoutePredicate,
+} from '../../engine/matching';
 import { createListenerDecorator } from './create-listener-decorator';
 
 const MESSAGE = 'message';
