@@ -44,6 +44,23 @@ export interface Ir {
   objectsByName: Map<string, IrObject>;
 }
 
+/** Collects every spec-object reference name reachable in a type tree. */
+export function collectReferences(type: IrType, into: Set<string>): void {
+  switch (type.kind) {
+    case 'reference':
+      into.add(type.name);
+      return;
+    case 'array':
+      collectReferences(type.element, into);
+      return;
+    case 'union':
+      type.variants.forEach((variant) => collectReferences(variant, into));
+      return;
+    default:
+      return;
+  }
+}
+
 /**
  * `literalDefaults` distinguishes object properties (where a string `default`
  * is a discriminator → literal, and a bool `default:true` is an always-True

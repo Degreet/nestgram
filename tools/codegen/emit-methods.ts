@@ -8,7 +8,7 @@
  * Output is unformatted; the orchestrator runs it through the project's
  * Prettier so committed files match lint-staged.
  */
-import { IrMethod, IrType } from './ir';
+import { collectReferences, IrMethod, IrType } from './ir';
 import {
   getMethodOverride,
   isInputMediaName,
@@ -25,22 +25,6 @@ export interface MethodEmitConfig {
 type MediaConfig =
   | { kind: 'flat'; fields: string[] }
   | { kind: 'nested'; field: string };
-
-function collectReferences(type: IrType, into: Set<string>): void {
-  switch (type.kind) {
-    case 'reference':
-      into.add(type.name);
-      return;
-    case 'array':
-      collectReferences(type.element, into);
-      return;
-    case 'union':
-      type.variants.forEach((variant) => collectReferences(variant, into));
-      return;
-    default:
-      return;
-  }
-}
 
 function references(type: IrType): Set<string> {
   const names = new Set<string>();

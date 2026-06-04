@@ -5,10 +5,12 @@
  * stable), so the foundation is verifiable before any code is emitted.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { basename, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { UpdateKind } from '../../lib/engine/context/update-kind';
 import { detectMedia, emitMethod } from './emit-methods';
+import { emitTypesFile } from './emit-types';
 import { buildIr, IrType } from './ir';
+import { SKIP_OBJECTS } from './manifest';
 import { loadSpec } from './spec-loader';
 import { irTypeToTs } from './type-resolver';
 
@@ -189,6 +191,17 @@ function generateMethods(outDir: string, only?: string[]): void {
   );
 }
 
+function generateTypes(outFile: string): void {
+  const ir = buildIr(loadSpec());
+  const absolute = resolve(process.cwd(), outFile);
+  mkdirSync(dirname(absolute), { recursive: true });
+  writeFileSync(absolute, emitTypesFile(ir));
+  const emitted = ir.objects.filter(
+    (object) => !SKIP_OBJECTS.has(object.name),
+  ).length;
+  process.stdout.write(`Emitted ${emitted} raw type(s) to ${outFile}\n`);
+}
+
 function main(): void {
   if (process.argv.includes('--self-test')) {
     selfTest();
@@ -203,7 +216,14 @@ function main(): void {
     generateMethods(methodsOut, only);
     return;
   }
-  throw new Error('Specify --self-test or --methods-out=<dir> [--only=a,b,c].');
+  const typesOut = parseFlagValue('--types-out');
+  if (typesOut !== undefined) {
+    generateTypes(typesOut);
+    return;
+  }
+  throw new Error(
+    'Specify --self-test, --methods-out=<dir> [--only=…], or --types-out=<file>.',
+  );
 }
 
 try {
