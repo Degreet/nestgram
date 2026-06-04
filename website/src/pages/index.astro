@@ -82,7 +82,18 @@ const pipeline = [
         </p>
         <div class="cta">
           <a class="btn btn-primary" href={docsUrl}>Read the docs →</a>
-          <span class="cmd"><span><span class="pfx">$</span> npm i nestgram</span></span>
+          <button
+            class="cmd"
+            type="button"
+            data-copy="npm i nestgram"
+            aria-label="Copy install command"
+          >
+            <span><span class="pfx">$</span> npm i nestgram</span>
+            <span class="cmd-copy">
+              <span class="cmd-copy__copy">Copy</span>
+              <span class="cmd-copy__done">Copied ✓</span>
+            </span>
+          </button>
         </div>
       </section>
 
@@ -308,5 +319,20 @@ const pipeline = [
         </div>
       </footer>
     </main>
+
+    <script>
+      // Click-to-copy for any [data-copy] element (the hero install command).
+      document.querySelectorAll<HTMLElement>('[data-copy]').forEach((el) => {
+        el.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(el.dataset.copy ?? '');
+            el.classList.add('is-copied');
+            window.setTimeout(() => el.classList.remove('is-copied'), 1600);
+          } catch {
+            /* clipboard blocked (insecure context) — fail silently */
+          }
+        });
+      });
+    </script>
   </body>
 </html>

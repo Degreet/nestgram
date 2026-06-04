@@ -204,6 +204,34 @@ const githubUrl = 'https://github.com/Degreet/nestgram-v2';
         });
         host.appendChild(btn);
       });
+
+      // Heading anchors: a "#" deep-link before each h2/h3 (reusing the id Astro
+      // already generated, so it matches the TOC), click-to-copy the full URL.
+      document
+        .querySelectorAll<HTMLHeadingElement>('.dx-content h2[id], .dx-content h3[id]')
+        .forEach((heading) => {
+          if (heading.querySelector('a.anchor')) return;
+          const id = heading.id;
+          const anchor = document.createElement('a');
+          anchor.className = 'anchor';
+          anchor.href = '#' + id;
+          anchor.textContent = '#';
+          anchor.setAttribute('aria-label', 'Link to this section');
+          anchor.addEventListener('click', async (event) => {
+            event.preventDefault();
+            history.replaceState(null, '', '#' + id);
+            try {
+              await navigator.clipboard.writeText(
+                location.origin + location.pathname + '#' + id,
+              );
+              anchor.classList.add('is-copied');
+              window.setTimeout(() => anchor.classList.remove('is-copied'), COPIED_MS);
+            } catch {
+              /* clipboard blocked (insecure context) — the hash still updates */
+            }
+          });
+          heading.prepend(anchor);
+        });
     </script>
   </body>
 </html>

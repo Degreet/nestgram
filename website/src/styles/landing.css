@@ -311,9 +311,35 @@ body {
   border-radius: 12px;
   background: rgba(8, 10, 15, 0.6);
   white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.hero .cmd:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+.hero .cmd:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 .hero .cmd .pfx {
   color: var(--accent);
+}
+.hero .cmd .cmd-copy {
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.hero .cmd .cmd-copy__done {
+  display: none;
+  color: #8ee6a8;
+}
+.hero .cmd.is-copied .cmd-copy__copy {
+  display: none;
+}
+.hero .cmd.is-copied .cmd-copy__done {
+  display: inline;
 }
 
 /* versus strip (C) */

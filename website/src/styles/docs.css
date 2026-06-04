@@ -194,11 +194,29 @@ body {
   font-size: 1.25rem;
   margin-top: 2.75rem;
 }
+/* "#" deep-link before each heading — revealed on hover, click-to-copy (the
+   anchor element + copy are wired client-side in DocsLayout). */
+.dx-content :is(h2, h3) {
+  position: relative;
+}
 .dx-content :is(h2, h3) > a.anchor {
   color: var(--faint);
   text-decoration: none;
   font-weight: 400;
-  margin-right: 0.15em;
+  margin-right: 0.3em;
+  opacity: 0;
+  transition: opacity 0.12s, color 0.12s;
+}
+.dx-content :is(h2, h3):hover > a.anchor,
+.dx-content :is(h2, h3) > a.anchor:focus-visible {
+  opacity: 1;
+}
+.dx-content :is(h2, h3) > a.anchor:hover {
+  color: var(--a1);
+}
+.dx-content :is(h2, h3) > a.anchor.is-copied {
+  color: #8ee6a8;
+  opacity: 1;
 }
 .dx-content p,
 .dx-content li {
@@ -209,6 +227,51 @@ body {
 }
 .dx-content li + li {
   margin-top: 0.5rem;
+}
+
+/* ---- prose lists: accent bullets + blue-circle numbers (matches .anno) ---- */
+.dx-content ul {
+  list-style: none;
+  padding-left: 1.35rem;
+}
+.dx-content ul > li {
+  position: relative;
+}
+.dx-content ul > li::before {
+  content: '';
+  position: absolute;
+  left: -1.15rem;
+  top: 0.62em;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+.dx-content ol {
+  list-style: none;
+  counter-reset: ng-ol;
+  padding-left: 0;
+}
+.dx-content ol > li {
+  counter-increment: ng-ol;
+  position: relative;
+  padding-left: 2.2rem;
+}
+.dx-content ol > li::before {
+  content: counter(ng-ol);
+  position: absolute;
+  left: 0;
+  top: 0.12em;
+  width: 1.45rem;
+  height: 1.45rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #04121d;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.78rem;
+  display: grid;
+  place-items: center;
 }
 .dx-content a {
   color: var(--a1);
