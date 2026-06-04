@@ -10,6 +10,7 @@
  */
 import { collectReferences, IrMethod, IrType } from './ir';
 import {
+  applyFieldTypeOverride,
   getMethodOverride,
   isInputMediaName,
   MethodOverride,
@@ -32,21 +33,19 @@ function references(type: IrType): Set<string> {
   return names;
 }
 
-function isInputMediaFamily(name: string): boolean {
-  return name.startsWith('InputMedia') || name.startsWith('InputPaidMedia');
-}
-
 /**
  * Derives multipart handling from the spec: a flat file field is an argument
- * whose type references `InputFile`; a nested field is an array of `InputMedia*`
- * (the files live inside each element's `media`). Returns null for non-file
- * methods. Callers should warn if a `maybe_multipart` method yields null.
+ * whose type references `InputFile`; a nested field is an array of the bare,
+ * hand-written `InputMedia*` (whose `.media` is a known `string | InputFile`,
+ * so the `media.media instanceof InputFile` getter type-checks). Other multipart
+ * shapes (single `InputMedia`, `InputPaidMedia`, `InputSticker`) are not handled
+ * here — the orchestrator warns so they are visible, not silently broken.
  */
 export function detectMedia(method: IrMethod): MediaConfig | null {
   const flat: string[] = [];
   for (const arg of method.args) {
     if (arg.type.kind === 'array') {
-      if ([...references(arg.type.element)].some(isInputMediaFamily)) {
+      if ([...references(arg.type.element)].some(isInputMediaName)) {
         return { kind: 'nested', field: arg.name };
       }
     } else if (references(arg.type).has('InputFile')) {
@@ -125,7 +124,10 @@ function emitOptions(method: IrMethod): string {
   const fields = method.args
     .map(
       (arg) =>
-        `  ${arg.name}${arg.optional ? '?' : ''}: ${irTypeToTs(arg.type)};`,
+        `  ${arg.name}${arg.optional ? '?' : ''}: ${applyFieldTypeOverride(
+          arg.name,
+          irTypeToTs(arg.type),
+        )};`,
     )
     .join('\n');
   return `export interface ${method.className}Options {\n${fields}\n}`;

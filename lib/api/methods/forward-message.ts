@@ -4,14 +4,14 @@ import type { BotService } from '../bot.service';
 
 export interface ForwardMessageOptions {
   chat_id: number | string;
-  from_chat_id: number | string;
-  message_id: number;
   message_thread_id?: number;
+  from_chat_id: number | string;
+  video_start_timestamp?: number;
   disable_notification?: boolean;
   protect_content?: boolean;
+  message_id: number;
 }
 
-/** Forwards a message to another chat. Returns the forwarded `Message`. */
 export class ForwardMessage extends ApiMethod<ForwardMessageOptions, Message> {
   readonly method = 'forwardMessage';
 

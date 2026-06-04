@@ -29,6 +29,7 @@ describe('Context by wrapping (no mutation)', () => {
       update_id: 1,
       message: {
         message_id: 10,
+        date: 1,
         chat: { id: 5, type: 'private' },
         text: 'hi',
       },
@@ -48,6 +49,7 @@ describe('Context by wrapping (no mutation)', () => {
   it('the typed event is produced by wrapping, leaving the original object untouched', () => {
     const rawMessage = {
       message_id: 10,
+      date: 1,
       chat: { id: 5, type: 'private' as const },
       text: 'hi',
     };

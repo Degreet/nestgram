@@ -1,5 +1,5 @@
 import { ApiMethod } from './api-method';
-import { Update } from '../update.types';
+import type { RawUpdate } from '../../events/raw-update.types';
 
 export interface GetUpdatesOptions {
   offset?: number;
@@ -8,7 +8,7 @@ export interface GetUpdatesOptions {
   allowed_updates?: string[];
 }
 
-export class GetUpdates extends ApiMethod<GetUpdatesOptions, Update[]> {
+export class GetUpdates extends ApiMethod<GetUpdatesOptions, RawUpdate[]> {
   readonly method = 'getUpdates';
 
   constructor(payload?: GetUpdatesOptions) {

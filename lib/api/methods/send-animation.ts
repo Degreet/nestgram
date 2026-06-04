@@ -1,0 +1,53 @@
+import { ApiMethod } from './api-method';
+import { InputFile } from '../input-file';
+import type {
+  RawForceReply,
+  RawInlineKeyboardMarkup,
+  RawMessage,
+  RawMessageEntity,
+  RawReplyKeyboardMarkup,
+  RawReplyKeyboardRemove,
+  RawReplyParameters,
+} from '../../events/raw-update.types';
+
+export interface SendAnimationOptions {
+  business_connection_id?: string;
+  chat_id: number | string;
+  message_thread_id?: number;
+  animation: InputFile | string;
+  duration?: number;
+  width?: number;
+  height?: number;
+  thumbnail?: InputFile | string;
+  caption?: string;
+  parse_mode?: string;
+  caption_entities?: RawMessageEntity[];
+  show_caption_above_media?: boolean;
+  has_spoiler?: boolean;
+  disable_notification?: boolean;
+  protect_content?: boolean;
+  allow_paid_broadcast?: boolean;
+  message_effect_id?: string;
+  reply_parameters?: RawReplyParameters;
+  reply_markup?:
+    | RawInlineKeyboardMarkup
+    | RawReplyKeyboardMarkup
+    | RawReplyKeyboardRemove
+    | RawForceReply
+    | { toJSON(): unknown };
+}
+
+export class SendAnimation extends ApiMethod<SendAnimationOptions, RawMessage> {
+  readonly method = 'sendAnimation';
+
+  constructor(payload: SendAnimationOptions) {
+    super(payload);
+  }
+
+  get hasMedia(): boolean {
+    return (
+      this.payload?.animation instanceof InputFile ||
+      this.payload?.thumbnail instanceof InputFile
+    );
+  }
+}

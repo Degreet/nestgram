@@ -45,6 +45,22 @@ export function isInputMediaName(name: string): boolean {
   return INPUT_MEDIA_NAMES.has(name);
 }
 
+/**
+ * Widens specific field types beyond their literal spec shape. The keyboard
+ * builders (`InlineKeyboard`, …) are passed as `reply_markup` and serialize via
+ * `toJSON()`, so they are not structurally the raw markup union — accept any
+ * `{ toJSON() }` alongside it so a builder instance type-checks.
+ */
+export function applyFieldTypeOverride(
+  fieldName: string,
+  tsType: string,
+): string {
+  if (fieldName === 'reply_markup') {
+    return `${tsType} | { toJSON(): unknown }`;
+  }
+  return tsType;
+}
+
 // --- Per-method rich-event overrides -----------------------------------------
 
 const WRAP_SINGLE = `wrap(raw: unknown, bot: BotService): Message {

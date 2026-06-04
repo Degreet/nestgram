@@ -119,7 +119,7 @@ function escapeUrl(url: string): string {
 }
 
 interface OpenDelim {
-  type: string;
+  type: RawMessageEntity['type'];
   offset: number;
 }
 
@@ -145,7 +145,7 @@ export function markdownToEntities(md: string): {
   let i = 0;
   const len = md.length;
 
-  const toggle = (type: string): void => {
+  const toggle = (type: RawMessageEntity['type']): void => {
     const top = open[open.length - 1];
     if (top && top.type === type) {
       open.pop();

@@ -1,7 +1,17 @@
 import type { Readable } from 'stream';
 
 import type { BotService } from '../../api';
-import type { RawFileBase } from '../raw-update.types';
+
+/**
+ * The fields every downloadable file shares (`PhotoSize`, `Video`, `Document`,
+ * …). A framework abstraction, not a Bot API wire type — every generated
+ * `Raw*` file type carries these fields, so it is structurally assignable here.
+ */
+export interface RawFileBase {
+  file_id: string;
+  file_unique_id: string;
+  file_size?: number;
+}
 
 /** Per-download controls. */
 export interface DownloadOptions {

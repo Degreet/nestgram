@@ -16,6 +16,7 @@ function messageUpdate(update_id: number, text: string): RawUpdate {
     update_id,
     message: {
       message_id: update_id,
+      date: 1,
       chat: { id: 1, type: 'private' },
       from: { id: 7, is_bot: false, first_name: 'Alice' },
       text,

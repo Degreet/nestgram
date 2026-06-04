@@ -5,7 +5,7 @@ describe('resolveKind', () => {
   it('resolves a message update', () => {
     const update: RawUpdate = {
       update_id: 1,
-      message: { message_id: 1, chat: { id: 1, type: 'private' } },
+      message: { message_id: 1, date: 1, chat: { id: 1, type: 'private' } },
     };
     expect(resolveKind(update)).toBe('message');
   });
@@ -26,7 +26,11 @@ describe('resolveKind', () => {
   it('resolves an edited_message update', () => {
     const update: RawUpdate = {
       update_id: 1,
-      edited_message: { message_id: 1, chat: { id: 1, type: 'private' } },
+      edited_message: {
+        message_id: 1,
+        date: 1,
+        chat: { id: 1, type: 'private' },
+      },
     };
     expect(resolveKind(update)).toBe('edited_message');
   });

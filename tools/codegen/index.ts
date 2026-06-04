@@ -7,6 +7,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { UpdateKind } from '../../lib/engine/context/update-kind';
+import { emitMethodsBarrel } from './emit-barrel';
 import { detectMedia, emitMethod } from './emit-methods';
 import { emitTypesFile } from './emit-types';
 import { buildIr, IrType } from './ir';
@@ -185,6 +186,11 @@ function generateMethods(outDir: string, only?: string[]): void {
       join(absoluteOut, `${method.fileName}.ts`),
       emitMethod(method, { apiMethodImport }),
     );
+  }
+  // Regenerate the barrel only on a full emission (a filtered dry run must not
+  // rewrite it to a subset).
+  if (!only) {
+    writeFileSync(join(absoluteOut, 'index.ts'), emitMethodsBarrel(ir.methods));
   }
   process.stdout.write(
     `Emitted ${selected.length} method class(es) to ${outDir}\n`,

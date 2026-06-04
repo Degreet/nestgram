@@ -5,7 +5,6 @@ export interface DeleteMessageOptions {
   message_id: number;
 }
 
-/** Deletes a message. Returns `true` on success. */
 export class DeleteMessage extends ApiMethod<DeleteMessageOptions, true> {
   readonly method = 'deleteMessage';
 

@@ -8,7 +8,11 @@ const noop = (): void => undefined;
 function msg(update_id: number): RawUpdate {
   return {
     update_id,
-    message: { message_id: update_id, chat: { id: 1, type: 'private' } },
+    message: {
+      message_id: update_id,
+      date: 1,
+      chat: { id: 1, type: 'private' },
+    },
   };
 }
 

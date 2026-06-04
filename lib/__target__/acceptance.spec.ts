@@ -94,6 +94,7 @@ function messageUpdate(id: number, text: string): RawUpdate {
     update_id: id,
     message: {
       message_id: id,
+      date: 1,
       chat: { id: 1, type: 'private' },
       from: { id: 7, is_bot: false, first_name: 'Alice' },
       text,

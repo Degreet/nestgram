@@ -129,7 +129,7 @@ export class Message extends TelegramObject {
   }
 
   editReplyMarkup(
-    reply_markup: unknown,
+    reply_markup: EditMessageReplyMarkupOptions['reply_markup'],
     options?: MethodOptions<EditMessageReplyMarkupOptions>,
   ) {
     return this.botService.editMessageReplyMarkup(

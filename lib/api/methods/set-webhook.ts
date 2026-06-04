@@ -1,19 +1,24 @@
 import { ApiMethod } from './api-method';
+import { InputFile } from '../input-file';
 
 export interface SetWebhookOptions {
   url: string;
-  secret_token?: string;
+  certificate?: InputFile;
+  ip_address?: string;
+  max_connections?: number;
   allowed_updates?: string[];
   drop_pending_updates?: boolean;
-  max_connections?: number;
-  ip_address?: string;
+  secret_token?: string;
 }
 
-/** Registers a webhook URL with Telegram. Returns `true` on success. */
 export class SetWebhook extends ApiMethod<SetWebhookOptions, true> {
   readonly method = 'setWebhook';
 
   constructor(payload: SetWebhookOptions) {
     super(payload);
+  }
+
+  get hasMedia(): boolean {
+    return this.payload?.certificate instanceof InputFile;
   }
 }

@@ -1,6 +1,11 @@
 import { ApiMethod } from './api-method';
 import { Message } from '../../events';
 import type { BotService } from '../bot.service';
+import type {
+  RawInlineKeyboardMarkup,
+  RawLinkPreviewOptions,
+  RawMessageEntity,
+} from '../../events/raw-update.types';
 
 export interface EditMessageTextOptions {
   business_connection_id?: string;
@@ -9,12 +14,11 @@ export interface EditMessageTextOptions {
   inline_message_id?: string;
   text: string;
   parse_mode?: string;
-  entities?: any[];
-  link_preview_options?: any;
-  reply_markup?: any;
+  entities?: RawMessageEntity[];
+  link_preview_options?: RawLinkPreviewOptions;
+  reply_markup?: RawInlineKeyboardMarkup | { toJSON(): unknown };
 }
 
-/** Edits a message's text. Returns the edited `Message`, or `true` for inline. */
 export class EditMessageText extends ApiMethod<
   EditMessageTextOptions,
   Message | true

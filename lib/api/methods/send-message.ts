@@ -1,6 +1,15 @@
 import { ApiMethod } from './api-method';
 import { Message } from '../../events';
 import type { BotService } from '../bot.service';
+import type {
+  RawForceReply,
+  RawInlineKeyboardMarkup,
+  RawLinkPreviewOptions,
+  RawMessageEntity,
+  RawReplyKeyboardMarkup,
+  RawReplyKeyboardRemove,
+  RawReplyParameters,
+} from '../../events/raw-update.types';
 
 export interface SendMessageOptions {
   business_connection_id?: string;
@@ -8,13 +17,19 @@ export interface SendMessageOptions {
   message_thread_id?: number;
   text: string;
   parse_mode?: string;
-  entities?: any[];
-  link_preview_options?: any;
+  entities?: RawMessageEntity[];
+  link_preview_options?: RawLinkPreviewOptions;
   disable_notification?: boolean;
   protect_content?: boolean;
+  allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  reply_parameters?: any;
-  reply_markup?: any;
+  reply_parameters?: RawReplyParameters;
+  reply_markup?:
+    | RawInlineKeyboardMarkup
+    | RawReplyKeyboardMarkup
+    | RawReplyKeyboardRemove
+    | RawForceReply
+    | { toJSON(): unknown };
 }
 
 export class SendMessage extends ApiMethod<SendMessageOptions, Message> {

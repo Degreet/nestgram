@@ -2,23 +2,36 @@ import { ApiMethod } from './api-method';
 import { Message } from '../../events';
 import type { BotService } from '../bot.service';
 import { InputFile } from '../input-file';
+import type {
+  RawForceReply,
+  RawInlineKeyboardMarkup,
+  RawMessageEntity,
+  RawReplyKeyboardMarkup,
+  RawReplyKeyboardRemove,
+  RawReplyParameters,
+} from '../../events/raw-update.types';
 
 export interface SendPhotoOptions {
   business_connection_id?: string;
   chat_id: number | string;
   message_thread_id?: number;
-  photo: string | InputFile;
+  photo: InputFile | string;
   caption?: string;
   parse_mode?: string;
-  caption_entities?: any[];
-  show_caption_above_media?: any;
+  caption_entities?: RawMessageEntity[];
+  show_caption_above_media?: boolean;
   has_spoiler?: boolean;
   disable_notification?: boolean;
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  reply_parameters?: any;
-  reply_markup?: any;
+  reply_parameters?: RawReplyParameters;
+  reply_markup?:
+    | RawInlineKeyboardMarkup
+    | RawReplyKeyboardMarkup
+    | RawReplyKeyboardRemove
+    | RawForceReply
+    | { toJSON(): unknown };
 }
 
 export class SendPhoto extends ApiMethod<SendPhotoOptions, Message> {

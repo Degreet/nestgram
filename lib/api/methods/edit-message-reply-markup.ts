@@ -1,23 +1,23 @@
 import { ApiMethod } from './api-method';
 import { Message } from '../../events';
 import type { BotService } from '../bot.service';
+import type { RawInlineKeyboardMarkup } from '../../events/raw-update.types';
 
 export interface EditMessageReplyMarkupOptions {
   business_connection_id?: string;
   chat_id?: number | string;
   message_id?: number;
   inline_message_id?: string;
-  reply_markup?: any;
+  reply_markup?: RawInlineKeyboardMarkup | { toJSON(): unknown };
 }
 
-/** Edits only a message's inline keyboard. Returns the `Message`, or `true`. */
 export class EditMessageReplyMarkup extends ApiMethod<
   EditMessageReplyMarkupOptions,
   Message | true
 > {
   readonly method = 'editMessageReplyMarkup';
 
-  constructor(payload: EditMessageReplyMarkupOptions) {
+  constructor(payload?: EditMessageReplyMarkupOptions) {
     super(payload);
   }
 

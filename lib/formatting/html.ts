@@ -133,7 +133,7 @@ function escapeHref(url: string): string {
 }
 
 /** Telegram-supported tags → entity type (with their HTML aliases). */
-const TYPE_BY_TAG: Record<string, string> = {
+const TYPE_BY_TAG: Record<string, RawMessageEntity['type']> = {
   b: 'bold',
   strong: 'bold',
   i: 'italic',
@@ -152,7 +152,7 @@ const TYPE_BY_TAG: Record<string, string> = {
 interface OpenTag {
   tag: string;
   /** Entity type to emit on close, or null to just track for matching. */
-  type: string | null;
+  type: RawMessageEntity['type'] | null;
   offset: number;
   url?: string;
   language?: string;

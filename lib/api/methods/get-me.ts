@@ -1,6 +1,5 @@
 import { ApiMethod } from './api-method';
-
-import { User } from '../../events/user';
+import type { User } from '../../events/user';
 
 export class GetMe extends ApiMethod<null, User> {
   readonly method = 'getMe';

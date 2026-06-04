@@ -22,6 +22,9 @@ function emitObject(object: IrObject): string {
   const name = resolveReference(object.name);
   switch (object.kind) {
     case 'interface': {
+      // Wire (inbound) types keep the literal spec shape — the reply_markup
+      // builder widening is an OUTPUT-side concern, applied only in method
+      // options (emit-methods), never on a type the engine merely reads.
       const fields = object.fields
         .map(
           (field) =>

@@ -2,7 +2,7 @@ import { entitiesToMarkdown, markdownToEntities } from './markdown';
 import { RawMessageEntity } from '../events/raw-update.types';
 
 function entity(
-  type: string,
+  type: RawMessageEntity['type'],
   offset: number,
   length: number,
   extra: Partial<RawMessageEntity> = {},

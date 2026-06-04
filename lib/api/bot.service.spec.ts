@@ -150,7 +150,7 @@ describe('BotService parse_mode + entities', () => {
     global.fetch = originalFetch;
   });
 
-  const entities = [{ type: 'bold', offset: 0, length: 2 }];
+  const entities = [{ type: 'bold' as const, offset: 0, length: 2 }];
 
   it('does not inject the default parse_mode when entities are supplied', async () => {
     await bot({ token: '1:T', parseMode: 'HTML' }).sendMessage(1, 'hi', {

@@ -339,7 +339,7 @@ export class BotService {
   editMessageReplyMarkup(
     chat_id: number | string,
     message_id: number,
-    reply_markup: unknown,
+    reply_markup: EditMessageReplyMarkupOptions['reply_markup'],
     options?: MethodOptions<EditMessageReplyMarkupOptions>,
   ) {
     const { token, signal, ...payload } = options ?? {};
