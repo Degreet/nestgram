@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 
+import { runAmbient } from '../../ambient';
+import { SessionManager } from '../../sessions';
 import { ContextFactory } from '../context';
 import {
   HandlerExecutorFactory,
@@ -37,28 +39,42 @@ export class UpdateDispatcher {
     private readonly routeMatcher: RouteMatcher,
     private readonly executorFactory: HandlerExecutorFactory,
     private readonly resultHandler: ResultHandler,
+    private readonly sessions: SessionManager,
   ) {}
 
   async dispatch(update: RawUpdate): Promise<void> {
-    try {
-      const ctx = this.contextFactory.wrap(update);
-      if (!ctx) {
-        return;
-      }
+    // Each update runs inside its own ambient context, so sessions (and later
+    // locale/`t()`) are reachable anywhere in the call chain without a ctx arg.
+    await runAmbient(async () => {
+      try {
+        const ctx = this.contextFactory.wrap(update);
+        if (!ctx) {
+          return;
+        }
 
-      const [route] = await this.routeMatcher.findMatches(this.routeTable, ctx);
-      if (!route) {
-        return;
-      }
+        // Load the session before matching, so a future FSM can route on state.
+        await this.sessions.load(ctx);
 
-      const result = await this.invokerFor(route)(ctx);
-      await this.resultHandler.handle(result, ctx);
-    } catch (error) {
-      this.logger.error(
-        `Failed to dispatch update #${update.update_id}`,
-        error as Error,
-      );
-    }
+        const [route] = await this.routeMatcher.findMatches(
+          this.routeTable,
+          ctx,
+        );
+        if (!route) {
+          return;
+        }
+
+        const result = await this.invokerFor(route)(ctx);
+        await this.resultHandler.handle(result, ctx);
+
+        // Persist only on success — a thrown handler leaves the session as-is.
+        await this.sessions.save();
+      } catch (error) {
+        this.logger.error(
+          `Failed to dispatch update #${update.update_id}`,
+          error as Error,
+        );
+      }
+    });
   }
 
   private invokerFor(route: Route): HandlerInvoker {

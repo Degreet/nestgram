@@ -5,10 +5,19 @@ import { Route } from '../discovery/route.types';
 import { RoutePredicate } from '../matching';
 import { RawUpdate } from '../../events/raw-update.types';
 import { BotService } from '../../api';
+import { SessionManager } from '../../sessions';
 import { UpdateDispatcher } from './update-dispatcher';
 
 function fakeBot(): BotService {
   return { token: 'TEST' } as unknown as BotService;
+}
+
+/** Sessions disabled — load/save are no-ops for these pipeline tests. */
+function noSessions(): SessionManager {
+  return {
+    load: () => Promise.resolve(),
+    save: () => Promise.resolve(),
+  } as unknown as SessionManager;
 }
 
 function messageUpdate(update_id: number, text: string): RawUpdate {
@@ -55,6 +64,7 @@ function makeDispatcher(routes: Route[]) {
     new RouteMatcher(),
     executorFactory,
     resultHandler,
+    noSessions(),
   );
   return { dispatcher, calls, handled };
 }
@@ -138,6 +148,7 @@ describe('UpdateDispatcher', () => {
       new RouteMatcher(),
       executorFactory,
       resultHandler,
+      noSessions(),
     );
 
     await expect(
@@ -170,6 +181,7 @@ describe('UpdateDispatcher', () => {
       new RouteMatcher(),
       executorFactory,
       resultHandler,
+      noSessions(),
     );
 
     await dispatcher.dispatch(messageUpdate(1, 'a'));

@@ -10,6 +10,8 @@ export * from './formatting';
 export * from './interceptors';
 export * from './callback-data';
 export * from './deep-links';
+export * from './ambient';
+export * from './sessions';
 
 // Engine public surface (the update -> dispatch pipeline).
 export * from './engine/matching';

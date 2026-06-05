@@ -14,6 +14,7 @@ import {
   WebhookUpdateSource,
 } from '../engine/source';
 import { AutoAnswerCallbackInterceptor } from '../interceptors';
+import { SessionManager } from '../sessions';
 import { NestgramBootstrap } from './nestgram.bootstrap';
 import {
   NestgramModuleAsyncOptions,
@@ -46,6 +47,7 @@ export class NestgramModule {
     RouteMatcher,
     HandlerExecutorFactory,
     ResultHandler,
+    SessionManager,
     UpdateDispatcher,
     PollingUpdateSource,
     WebhookUpdateSource,

@@ -2,6 +2,7 @@ import { ModuleMetadata, Type } from '@nestjs/common';
 
 import { PollingOptions } from '../engine/source';
 import type { RequestTransformer } from '../api/request';
+import type { SessionOptions } from '../sessions/session.types';
 
 /**
  * Options for `NestgramModule.forRoot`.
@@ -53,6 +54,12 @@ export interface NestgramModuleOptions {
    * `parse_mode: undefined` to opt that call out.
    */
   parseMode?: string;
+  /**
+   * Enable persistent per-update sessions, reachable via `@Session()`. Presence
+   * turns them on; the store and key strategy are swappable. Omit to keep
+   * sessions off (`@Session()` then resolves to `undefined`).
+   */
+  session?: SessionOptions;
   /**
    * Extra outbound {@link RequestTransformer}s — run after the built-ins (token
    * validation, default parse mode) on every API call. The framework's own
