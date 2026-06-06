@@ -7,7 +7,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { defer, from } from 'rxjs';
 
 import { BotOptions } from './bot-options';
-import { InputFile } from './input-file';
 import { Providers } from '../providers';
 import { ApiException, NestgramError } from '../exceptions';
 import { deepLink as createDeepLink, DeepLinkParams } from '../deep-links';
@@ -16,42 +15,17 @@ import type { User } from '../events/user';
 import { ApiError, ApiResponse } from './api-response';
 import { createAttachedData, createInlineData } from './form-data';
 import { ApiCallContext, ApiPipeline, ApiRequest } from './request';
+import { GeneratedBotMethods } from './generated-bot-methods';
 import {
   ApiMethod,
-  SendMessage,
   GetMe,
   GetFile,
   GetFileOptions,
-  GetUpdates,
-  SendMessageOptions,
-  GetUpdatesOptions,
-  DeleteWebhookOptions,
-  DeleteWebhook,
-  SetWebhook,
-  SetWebhookOptions,
-  AnswerCallbackQuery,
-  AnswerCallbackQueryOptions,
-  SendPhotoOptions,
-  SendPhoto,
-  SendMediaGroup,
-  SendMediaGroupOptions,
   EditMessageText,
   EditMessageTextOptions,
   EditMessageReplyMarkup,
   EditMessageReplyMarkupOptions,
-  DeleteMessage,
-  DeleteMessageOptions,
-  ForwardMessage,
-  ForwardMessageOptions,
-  CopyMessage,
-  CopyMessageOptions,
 } from './methods';
-import {
-  InputMediaAudio,
-  InputMediaDocument,
-  InputMediaPhoto,
-  InputMediaVideo,
-} from './input-media';
 
 const TELEGRAM_API_BASE = 'https://api.telegram.org';
 
@@ -71,7 +45,7 @@ export interface CallOptions {
 export type MethodOptions<T = unknown> = Partial<T> & CallOptions;
 
 @Injectable()
-export class BotService {
+export class BotService extends GeneratedBotMethods {
   readonly token: string;
   private cachedMe?: User;
 
@@ -79,6 +53,7 @@ export class BotService {
     @Inject(Providers.BOT_OPTIONS) options: BotOptions,
     private readonly pipeline: ApiPipeline,
   ) {
+    super();
     this.token = options.token;
   }
 
@@ -148,19 +123,6 @@ export class BotService {
       headers: { 'Content-Type': 'application/json', connection: 'keep-alive' },
       body: JSON.stringify(payload),
     };
-  }
-
-  deleteWebhook(options?: MethodOptions<DeleteWebhookOptions>) {
-    const { token, signal, ...payload } = options ?? {};
-    return this.call(new DeleteWebhook(payload), { token, signal });
-  }
-
-  setWebhook(
-    url: string,
-    options?: MethodOptions<Omit<SetWebhookOptions, 'url'>>,
-  ) {
-    const { token, signal, ...payload } = options ?? {};
-    return this.call(new SetWebhook({ url, ...payload }), { token, signal });
   }
 
   /**
@@ -283,63 +245,6 @@ export class BotService {
     return response;
   }
 
-  getUpdates(options?: MethodOptions<GetUpdatesOptions>) {
-    const { token, signal, ...payload } = options ?? {};
-    return this.call(new GetUpdates(payload), { token, signal });
-  }
-
-  sendMessage(
-    chat_id: number | string,
-    text: string,
-    options?: MethodOptions<SendMessageOptions>,
-  ) {
-    const { token, signal, ...payload } = options ?? {};
-    return this.call(new SendMessage({ chat_id, text, ...payload }), {
-      token,
-      signal,
-    });
-  }
-
-  sendPhoto(
-    chat_id: number | string,
-    photo: string | InputFile,
-    options?: MethodOptions<SendPhotoOptions>,
-  ) {
-    const { token, signal, ...payload } = options ?? {};
-    return this.call(new SendPhoto({ chat_id, photo, ...payload }), {
-      token,
-      signal,
-    });
-  }
-
-  sendMediaGroup(
-    chat_id: number | string,
-    media: Array<
-      InputMediaAudio | InputMediaDocument | InputMediaPhoto | InputMediaVideo
-    >,
-    options?: MethodOptions<SendMediaGroupOptions>,
-  ) {
-    const { token, signal, ...payload } = options ?? {};
-    return this.call(new SendMediaGroup({ chat_id, media, ...payload }), {
-      token,
-      signal,
-    });
-  }
-
-  answerCallbackQuery(
-    callback_query_id: string,
-    options?: MethodOptions<AnswerCallbackQueryOptions>,
-  ) {
-    const { token, signal, ...payload } = options ?? {};
-    return this.call(
-      new AnswerCallbackQuery({ callback_query_id, ...payload }),
-      {
-        token,
-        signal,
-      },
-    );
-  }
-
   editMessageText(
     chat_id: number | string,
     message_id: number,
@@ -367,44 +272,6 @@ export class BotService {
         reply_markup,
         ...payload,
       }),
-      { token, signal },
-    );
-  }
-
-  deleteMessage(
-    chat_id: number | string,
-    message_id: number,
-    options?: MethodOptions<DeleteMessageOptions>,
-  ) {
-    const { token, signal, ...payload } = options ?? {};
-    return this.call(new DeleteMessage({ chat_id, message_id, ...payload }), {
-      token,
-      signal,
-    });
-  }
-
-  forwardMessage(
-    chat_id: number | string,
-    from_chat_id: number | string,
-    message_id: number,
-    options?: MethodOptions<ForwardMessageOptions>,
-  ) {
-    const { token, signal, ...payload } = options ?? {};
-    return this.call(
-      new ForwardMessage({ chat_id, from_chat_id, message_id, ...payload }),
-      { token, signal },
-    );
-  }
-
-  copyMessage(
-    chat_id: number | string,
-    from_chat_id: number | string,
-    message_id: number,
-    options?: MethodOptions<CopyMessageOptions>,
-  ) {
-    const { token, signal, ...payload } = options ?? {};
-    return this.call(
-      new CopyMessage({ chat_id, from_chat_id, message_id, ...payload }),
       { token, signal },
     );
   }

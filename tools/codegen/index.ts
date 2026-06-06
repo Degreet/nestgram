@@ -8,6 +8,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { UpdateKind } from '../../lib/engine/context/update-kind';
 import { emitMethodsBarrel } from './emit-barrel';
+import { emitBotMethods } from './emit-bot-methods';
 import { detectMedia, emitMethod } from './emit-methods';
 import { emitTypesFile } from './emit-types';
 import { formatTs } from './format';
@@ -166,6 +167,14 @@ function parseFlagValue(name: string): string | undefined {
 
 const CANONICAL_METHODS_DIR = 'lib/api/methods';
 const CANONICAL_TYPES_FILE = 'lib/events/raw-update.types.ts';
+const CANONICAL_BOT_METHODS_FILE = 'lib/api/generated-bot-methods.ts';
+
+/** Builds the generated BotService sugar (the abstract base it extends). */
+function buildBotMethodsFile(outFile: string): Map<string, string> {
+  const absolute = resolve(process.cwd(), outFile);
+  const source = emitBotMethods(buildIr(loadSpec()).methods);
+  return new Map([[absolute, formatTs(source, absolute)]]);
+}
 
 /** Builds the method-class files (+ barrel on a full run) as path → formatted source. */
 function buildMethodFiles(
@@ -261,11 +270,17 @@ function main(): void {
     writeFiles(buildTypeFile(typesOut));
     return;
   }
+  const botMethodsOut = parseFlagValue('--bot-methods-out');
+  if (botMethodsOut !== undefined) {
+    writeFiles(buildBotMethodsFile(botMethodsOut));
+    return;
+  }
 
   // Default: full canonical generation, or `--check` freshness guard.
   const files = new Map([
     ...buildMethodFiles(CANONICAL_METHODS_DIR),
     ...buildTypeFile(CANONICAL_TYPES_FILE),
+    ...buildBotMethodsFile(CANONICAL_BOT_METHODS_FILE),
   ]);
   if (process.argv.includes('--check')) {
     checkFiles(files);

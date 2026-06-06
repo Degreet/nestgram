@@ -106,6 +106,29 @@ export function getMediaOverride(methodName: string): MediaConfig | undefined {
   return MEDIA_OVERRIDES[methodName];
 }
 
+// --- BotService method generation --------------------------------------------
+
+/**
+ * Methods the generator must NOT emit as a `bot.<method>()` wrapper because
+ * BotService hand-owns them with logic the rule can't reproduce:
+ * - `getMe` caches the bot identity (backs `username`/`deepLink`);
+ * - `getFile` anchors the file-download cluster (`fileLink`/`fileStream`/…);
+ * - `editMessageText`/`editMessageReplyMarkup` deliberately promote the
+ *   *optional* `chat_id`/`message_id` to positional args for the common edit —
+ *   the "required → positional" rule would drop them.
+ * Everything else is generated (required args positional, optional via options).
+ */
+const SKIP_BOT_METHODS: ReadonlySet<string> = new Set<string>([
+  'getMe',
+  'getFile',
+  'editMessageText',
+  'editMessageReplyMarkup',
+]);
+
+export function isSkippedBotMethod(methodName: string): boolean {
+  return SKIP_BOT_METHODS.has(methodName);
+}
+
 // --- Per-method rich-event overrides -----------------------------------------
 
 const WRAP_SINGLE = `wrap(raw: unknown, bot: BotService): Message {
