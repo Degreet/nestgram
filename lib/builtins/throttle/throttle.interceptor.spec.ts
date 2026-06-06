@@ -2,13 +2,47 @@ import { lastValueFrom, of } from 'rxjs';
 
 import { ApiError } from '../../api/api-response';
 import { ApiException } from '../../exceptions/api.exception';
+import {
+  ApiCallHandler,
+  ApiExecutionContext,
+  ApiRequest,
+} from '../../api/request';
+import { ChatLimiterRegistry } from './chat-limiter-registry';
+import { Clock } from './clock';
 import { FakeClock } from './clock.fake';
+import { TokenBucket } from './limiters';
 import { ThrottleInterceptor } from './throttle.interceptor';
-import { ApiCallHandler, ApiExecutionContext } from '../../api/request';
-import { ApiRequest } from '../../api/request';
+import {
+  resolveThrottleOptions,
+  ThrottleOptions,
+  ThrottleSettings,
+} from './throttle.types';
 
 const flush = (): Promise<void> =>
   new Promise((resolve) => setImmediate(resolve));
+
+/**
+ * Build a throttler with its collaborators — the composition the ThrottleModule
+ * does in the app, done here for an isolated unit (same-folder internals, no
+ * cross-layer reach).
+ */
+function makeThrottler(
+  throttle: boolean | ThrottleOptions | undefined,
+  clock: Clock,
+): ThrottleInterceptor {
+  const settings: ThrottleSettings = {
+    enabled: throttle !== false,
+    options: resolveThrottleOptions(throttle),
+  };
+  const global = new TokenBucket(
+    settings.options.globalRate,
+    settings.options.globalRate,
+    settings.options.globalIntervalMs,
+    clock,
+  );
+  const chats = new ChatLimiterRegistry(settings.options, clock);
+  return new ThrottleInterceptor(settings, global, chats, clock);
+}
 
 function rateLimit(
   retryAfter?: number,
@@ -41,14 +75,14 @@ function context(
 
 describe('ThrottleInterceptor — gate + retry (run)', () => {
   it('runs the send when slots are free', async () => {
-    const throttler = new ThrottleInterceptor({}, new FakeClock());
+    const throttler = makeThrottler(undefined, new FakeClock());
     await expect(
       throttler.run(123, undefined, () => Promise.resolve('ok')),
     ).resolves.toBe('ok');
   });
 
   it('takes the global-only path for a chatless send', async () => {
-    const throttler = new ThrottleInterceptor({}, new FakeClock());
+    const throttler = makeThrottler(undefined, new FakeClock());
     await expect(
       throttler.run(undefined, undefined, () => Promise.resolve('me')),
     ).resolves.toBe('me');
@@ -56,10 +90,7 @@ describe('ThrottleInterceptor — gate + retry (run)', () => {
 
   it('retries a 429 after waiting retry_after + buffer, then succeeds', async () => {
     const clock = new FakeClock();
-    const throttler = new ThrottleInterceptor(
-      { throttle: { retryBufferMs: 250 } },
-      clock,
-    );
+    const throttler = makeThrottler({ retryBufferMs: 250 }, clock);
     const send = jest
       .fn<Promise<string>, []>()
       .mockRejectedValueOnce(rateLimit(2))
@@ -77,10 +108,7 @@ describe('ThrottleInterceptor — gate + retry (run)', () => {
 
   it('rethrows after exhausting maxRetries', async () => {
     const clock = new FakeClock();
-    const throttler = new ThrottleInterceptor(
-      { throttle: { maxRetries: 2, retryBufferMs: 0 } },
-      clock,
-    );
+    const throttler = makeThrottler({ maxRetries: 2, retryBufferMs: 0 }, clock);
     const send = jest.fn(() => Promise.reject(rateLimit(1)));
 
     const result = throttler.run(123, undefined, send).catch((error) => error);
@@ -91,17 +119,14 @@ describe('ThrottleInterceptor — gate + retry (run)', () => {
   });
 
   it('propagates a non-429 error immediately', async () => {
-    const throttler = new ThrottleInterceptor({}, new FakeClock());
+    const throttler = makeThrottler(undefined, new FakeClock());
     const send = jest.fn(() => Promise.reject(new Error('boom')));
     await expect(throttler.run(123, undefined, send)).rejects.toThrow('boom');
     expect(send).toHaveBeenCalledTimes(1);
   });
 
   it('does not retry when retry is disabled', async () => {
-    const throttler = new ThrottleInterceptor(
-      { throttle: { retry: false } },
-      new FakeClock(),
-    );
+    const throttler = makeThrottler({ retry: false }, new FakeClock());
     const send = jest.fn(() => Promise.reject(rateLimit(5)));
     await expect(throttler.run(123, undefined, send)).rejects.toBeInstanceOf(
       ApiException,
@@ -112,7 +137,7 @@ describe('ThrottleInterceptor — gate + retry (run)', () => {
 
 describe('ThrottleInterceptor — intercept (the RxJS seam)', () => {
   it('gates then yields the inner call result for a send', async () => {
-    const throttler = new ThrottleInterceptor({}, new FakeClock());
+    const throttler = makeThrottler(undefined, new FakeClock());
     const next: ApiCallHandler = { handle: () => of('sent') };
 
     const result = await lastValueFrom(
@@ -122,7 +147,7 @@ describe('ThrottleInterceptor — intercept (the RxJS seam)', () => {
   });
 
   it('passes a read (get*) straight through, ungated', () => {
-    const throttler = new ThrottleInterceptor({}, new FakeClock());
+    const throttler = makeThrottler(undefined, new FakeClock());
     const passthrough = of('updates');
     const next: ApiCallHandler = { handle: () => passthrough };
 
@@ -133,10 +158,7 @@ describe('ThrottleInterceptor — intercept (the RxJS seam)', () => {
   });
 
   it('passes everything through when disabled (throttle: false)', () => {
-    const throttler = new ThrottleInterceptor(
-      { throttle: false },
-      new FakeClock(),
-    );
+    const throttler = makeThrottler(false, new FakeClock());
     const passthrough = of('x');
     const next: ApiCallHandler = { handle: () => passthrough };
 

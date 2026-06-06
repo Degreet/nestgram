@@ -3,30 +3,24 @@ import {
   Injectable,
   OnApplicationBootstrap,
   OnApplicationShutdown,
-  Optional,
 } from '@nestjs/common';
 import { defer, from, lastValueFrom, type Observable } from 'rxjs';
 
 import { ApiException } from '../../exceptions/api.exception';
-import { Providers } from '../../providers';
 import {
   ApiCallHandler,
   ApiExecutionContext,
   ApiInterceptor,
 } from '../../api/request';
 import { ChatLimiterRegistry } from './chat-limiter-registry';
-import { Clock, CLOCK, SystemClock } from './clock';
+import { Clock, CLOCK } from './clock';
 import { TokenBucket } from './limiters';
 import {
+  GLOBAL_TOKEN_BUCKET,
   ResolvedThrottleOptions,
-  resolveThrottleOptions,
-  ThrottleOptions,
+  ThrottleSettings,
+  THROTTLE_SETTINGS,
 } from './throttle.types';
-
-/** The slice of BotOptions this interceptor reads (like DefaultParseModeInterceptor). */
-interface ThrottleConfigSource {
-  throttle?: boolean | ThrottleOptions;
-}
 
 /**
  * Send throttler as an {@link ApiInterceptor}: a global token bucket plus
@@ -36,9 +30,13 @@ interface ThrottleConfigSource {
  * privileged core.
  *
  * The RxJS seam is thin: `intercept` exposes the proven imperative gate+retry
- * (`run`/`withRetry`, Clock-injected for deterministic tests) through
- * `defer(() => from(this.run(...)))`. The gate/limiter state stays imperative —
- * a token bucket is mutable state, not a stream.
+ * (`run`/`withRetry`) through `defer(() => from(this.run(...)))`. The
+ * gate/limiter state stays imperative — a token bucket is mutable state, not a
+ * stream.
+ *
+ * It receives its collaborators (settings, the global bucket, the per-chat
+ * registry, the clock) ready-built — the composition lives in {@link
+ * ThrottleModule}, not this constructor.
  *
  * In-process only: each instance/replica has its own budget, so N replicas can
  * still collectively exceed Telegram's limits. Distributed throttling is a
@@ -50,8 +48,6 @@ export class ThrottleInterceptor
 {
   private readonly enabled: boolean;
   private readonly options: ResolvedThrottleOptions;
-  private readonly global: TokenBucket;
-  private readonly chats: ChatLimiterRegistry;
   private sweeper?: ReturnType<typeof setInterval>;
 
   /** Non-`get*` methods that still don't count against send limits (admin). */
@@ -63,22 +59,13 @@ export class ThrottleInterceptor
   ]);
 
   constructor(
-    @Inject(Providers.BOT_OPTIONS) options: ThrottleConfigSource,
-    @Optional()
-    @Inject(CLOCK)
-    private readonly clock: Clock = new SystemClock(),
+    @Inject(THROTTLE_SETTINGS) settings: ThrottleSettings,
+    @Inject(GLOBAL_TOKEN_BUCKET) private readonly global: TokenBucket,
+    private readonly chats: ChatLimiterRegistry,
+    @Inject(CLOCK) private readonly clock: Clock,
   ) {
-    // `throttle: false` makes this a passthrough — the toggle works uniformly for
-    // forRoot and forRootAsync (where the value is only known after the factory).
-    this.enabled = options.throttle !== false;
-    this.options = resolveThrottleOptions(options.throttle);
-    this.global = new TokenBucket(
-      this.options.globalRate,
-      this.options.globalRate,
-      this.options.globalIntervalMs,
-      this.clock,
-    );
-    this.chats = new ChatLimiterRegistry(this.options, this.clock);
+    this.enabled = settings.enabled;
+    this.options = settings.options;
   }
 
   intercept<T>(

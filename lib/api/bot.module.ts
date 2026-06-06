@@ -10,7 +10,7 @@ import { API_INTERCEPTORS, ApiInterceptor, ApiPipeline } from './request';
 // the barrel also re-exports the handler-side auto-answer interceptor, which
 // would drag the engine/module graph into the api layer (and cycle).
 import { DefaultParseModeInterceptor } from '../builtins/parse-mode';
-import { ThrottleInterceptor } from '../builtins/throttle';
+import { ThrottleInterceptor, ThrottleModule } from '../builtins/throttle';
 import { TokenValidationInterceptor } from '../builtins/token-validation';
 
 @Global()
@@ -30,35 +30,54 @@ export class BotModule {
    * single, last-wins instance — `APP_*` enhancers are special-cased separately),
    * so the factory injects every interceptor and returns them as the array.
    *
-   * The throttle slot uses `throttler ?? ThrottleInterceptor` — a user swaps the
+   * The throttle slot is `throttler ?? ThrottleInterceptor` — a user swaps the
    * rate-limiter with one key (e.g. a Redis-backed distributed one); the default
-   * self-disables on `throttle: false`.
+   * self-disables on `throttle: false`. The default `ThrottleInterceptor` is
+   * provided (with its collaborators) by the imported {@link ThrottleModule}, so
+   * only a custom throttler is provided here.
    */
   private static interceptorProviders(
     userInterceptors: Type<ApiInterceptor>[],
     throttler: Type<ApiInterceptor> | undefined,
   ): Provider[] {
-    const ordered: Type<ApiInterceptor>[] = [
+    // One source of truth for the leading interceptors, reused for both the
+    // provider list and the factory's inject list so they can't drift.
+    const leading: Type<ApiInterceptor>[] = [
       TokenValidationInterceptor,
       DefaultParseModeInterceptor,
       ...userInterceptors,
-      throttler ?? ThrottleInterceptor,
     ];
+    const throttleSlot = throttler ?? ThrottleInterceptor;
     return [
-      ...ordered,
+      ...leading,
+      // The default ThrottleInterceptor comes from the imported ThrottleModule;
+      // only a custom throttler is provided here.
+      ...(throttler ? [throttler] : []),
       {
         provide: API_INTERCEPTORS,
         useFactory: (...interceptors: ApiInterceptor[]): ApiInterceptor[] =>
           interceptors,
-        inject: ordered,
+        inject: [...leading, throttleSlot],
       },
       ApiPipeline,
     ];
   }
 
+  /**
+   * The default throttler lives in {@link ThrottleModule} (its composition root),
+   * so import it unless the user swapped in their own `throttler` (which brings
+   * its own wiring).
+   */
+  private static throttleImports(
+    throttler: Type<ApiInterceptor> | undefined,
+  ): NonNullable<DynamicModule['imports']> {
+    return throttler ? [] : [ThrottleModule];
+  }
+
   static forRoot(options: BotOptions): DynamicModule {
     return {
       module: BotModule,
+      imports: this.throttleImports(options.throttler),
       providers: [
         {
           provide: Providers.BOT_OPTIONS,
@@ -80,7 +99,10 @@ export class BotModule {
   static forRootAsync(options: BotAsyncOptions): DynamicModule {
     return {
       module: BotModule,
-      imports: options.imports ?? [],
+      imports: [
+        ...(options.imports ?? []),
+        ...this.throttleImports(options.throttler),
+      ],
       providers: [
         ...this.createAsyncProviders(options),
         ...this.interceptorProviders(

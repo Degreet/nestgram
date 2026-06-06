@@ -57,3 +57,18 @@ export function resolveThrottleOptions(
   }
   return { ...THROTTLE_DEFAULTS, ...throttle };
 }
+
+/**
+ * Throttle config resolved once at the composition root (the `ThrottleModule`):
+ * the on/off mode plus the merged knobs. The interceptor receives this — it does
+ * not resolve options itself.
+ */
+export interface ThrottleSettings {
+  enabled: boolean;
+  options: ResolvedThrottleOptions;
+}
+
+/** DI token for the resolved {@link ThrottleSettings}. */
+export const THROTTLE_SETTINGS = 'nestgram:throttle_settings';
+/** DI token for the shared global token bucket (one per bot instance). */
+export const GLOBAL_TOKEN_BUCKET = 'nestgram:global_token_bucket';

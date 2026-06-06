@@ -1,8 +1,16 @@
 import { BotService } from './bot.service';
 import { BotOptions } from './bot-options';
-import { FakeClock } from '../builtins/throttle/clock.fake';
-import { ThrottleInterceptor } from '../builtins/throttle';
 import { ApiPipeline } from './request/api-pipeline';
+import {
+  resolveThrottleOptions,
+  ThrottleInterceptor,
+  ThrottleSettings,
+} from '../builtins/throttle';
+// Deep reaches into throttle internals: this api-layer spec rebuilds the
+// throttler the way ThrottleModule does, to exercise the real send path.
+import { ChatLimiterRegistry } from '../builtins/throttle/chat-limiter-registry';
+import { FakeClock } from '../builtins/throttle/clock.fake';
+import { TokenBucket } from '../builtins/throttle/limiters';
 import { Message } from '../events';
 
 const originalFetch = global.fetch;
@@ -20,11 +28,21 @@ function mockFetch(responses: unknown[]): { calls: number } {
 }
 
 function bot(options: BotOptions, clock: FakeClock): BotService {
-  // The throttler is now an interceptor inside the pipeline, not a constructor arg.
-  return new BotService(
-    options,
-    new ApiPipeline([new ThrottleInterceptor(options, clock)]),
+  // Compose the throttler exactly as ThrottleModule does (its collaborators are
+  // injected, not assembled by the interceptor), then run it in the pipeline.
+  const settings: ThrottleSettings = {
+    enabled: options.throttle !== false,
+    options: resolveThrottleOptions(options.throttle),
+  };
+  const global = new TokenBucket(
+    settings.options.globalRate,
+    settings.options.globalRate,
+    settings.options.globalIntervalMs,
+    clock,
   );
+  const chats = new ChatLimiterRegistry(settings.options, clock);
+  const throttle = new ThrottleInterceptor(settings, global, chats, clock);
+  return new BotService(options, new ApiPipeline([throttle]));
 }
 
 describe('BotService send throttling', () => {
