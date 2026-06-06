@@ -3,7 +3,8 @@ import { rm } from 'fs/promises';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 
-import { Inject, Injectable, Optional } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { defer, from } from 'rxjs';
 
 import { BotOptions } from './bot-options';
 import { InputFile } from './input-file';
@@ -14,12 +15,7 @@ import type { User } from '../events/user';
 
 import { ApiError, ApiResponse } from './api-response';
 import { createAttachedData, createInlineData } from './form-data';
-import {
-  ApiRequest,
-  NoopThrottler,
-  RequestPipeline,
-  SendThrottler,
-} from './request';
+import { ApiCallContext, ApiPipeline, ApiRequest } from './request';
 import {
   ApiMethod,
   SendMessage,
@@ -81,23 +77,17 @@ export class BotService {
 
   constructor(
     @Inject(Providers.BOT_OPTIONS) options: BotOptions,
-    private readonly pipeline: RequestPipeline,
-    // Optional with a Noop default so a bare module (and existing specs) can
-    // resolve BotService without wiring a throttler; the real module always
-    // provides one.
-    @Optional()
-    @Inject(Providers.THROTTLER)
-    private readonly throttler: SendThrottler = new NoopThrottler(),
+    private readonly pipeline: ApiPipeline,
   ) {
     this.token = options.token;
   }
 
   /**
-   * Execute any API method: build the request, run it through the request
-   * pipeline (default parse mode, user transformers, ...), serialize, send, and
-   * enrich the result. Every send funnels through here — the typed sugar below,
-   * `message.answer(...)`, and a returned `new SendMessage(...)` alike — so a
-   * transformer can never be bypassed.
+   * Execute any API method: build the request, run it through the API
+   * interceptor pipeline (token validation, default parse mode, throttling, and
+   * any the user added), serialize, send, and enrich the result. Every call
+   * funnels through here — the typed sugar below, `message.answer(...)`, and a
+   * returned `new SendMessage(...)` alike — so an interceptor can't be bypassed.
    */
   async call<R>(
     method: ApiMethod<unknown, R>,
@@ -108,25 +98,19 @@ export class BotService {
       payload: { ...((method.payload as Record<string, unknown>) ?? {}) },
       token: options?.token ?? this.token,
     };
-    await this.pipeline.run(request);
-
-    // Reads (`get*`, incl. long-poll `getUpdates`) and webhook admin don't count
-    // against send limits — skip the throttler so they neither burn the global
-    // budget nor stall behind a send-side 429 backoff.
-    if (method.throttled === false) {
-      return this.send(method, request, options?.signal);
-    }
-
-    // Read the per-chat key after the pipeline, so a transformer-set chat_id is
-    // final. The throttler gates the actual send and retries 429s; it can't be
-    // bypassed because every send funnels through here.
-    const chatId = request.payload.chat_id as number | string | undefined;
-    return this.throttler.run(chatId, options?.signal, () =>
-      this.send(method, request, options?.signal),
+    const context = new ApiCallContext(request, method, options?.signal);
+    // Cold inner call: nothing goes out until the interceptor chain subscribes
+    // it, and a retry re-subscribes it (re-fetch). The pipeline wraps it with the
+    // built-in + user interceptors — the single chokepoint every call funnels
+    // through, so none can be bypassed.
+    const innerCall = defer(() =>
+      from(this.send(method, request, options?.signal)),
     );
+    return this.pipeline.run(context, innerCall);
   }
 
-  /** Serialize, send, and enrich a finalized request. Wrapped by the throttler. */
+  /** Serialize, send, and enrich a finalized request — the cold innermost call
+   * the interceptor pipeline wraps. */
   private async send<R>(
     method: ApiMethod<unknown, R>,
     request: ApiRequest,

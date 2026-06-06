@@ -1,19 +1,29 @@
 import { Logger } from '@nestjs/common';
+import { of } from 'rxjs';
 
-import { TokenValidationTransformer } from './token-validation.transformer';
+import { TokenValidationInterceptor } from './token-validation.interceptor';
+import { ApiCallHandler, ApiExecutionContext } from './api-interceptor.types';
 import { ApiRequest } from './request.types';
 import { BotOptions } from '../bot-options';
 import { NestgramConfigError } from '../../exceptions';
 
-function make(token: string): TokenValidationTransformer {
-  return new TokenValidationTransformer({ token } as BotOptions);
+const noop: ApiCallHandler = { handle: () => of(undefined) };
+
+function make(token: string): TokenValidationInterceptor {
+  return new TokenValidationInterceptor({ token } as BotOptions);
 }
 
-function req(token: string): ApiRequest {
-  return { method: 'sendMessage', payload: {}, token };
+function ctx(token: string): ApiExecutionContext {
+  const request: ApiRequest = { method: 'sendMessage', payload: {}, token };
+  return {
+    getRequest: () => request,
+    getMethod: () => ({ method: 'sendMessage' }),
+    getSignal: () => undefined,
+    getType: () => 'telegram:api',
+  };
 }
 
-describe('TokenValidationTransformer', () => {
+describe('TokenValidationInterceptor', () => {
   describe('configured token (constructor, at boot)', () => {
     it('throws when the token is missing', () => {
       expect(() => make('')).toThrow(NestgramConfigError);
@@ -37,15 +47,17 @@ describe('TokenValidationTransformer', () => {
     });
   });
 
-  describe('per-request token (transform)', () => {
+  describe('per-request token (intercept)', () => {
     it('throws on an empty token (e.g. an empty per-call override)', () => {
-      const transformer = make('123456:VALID');
-      expect(() => transformer.transform(req(''))).toThrow(NestgramConfigError);
+      const interceptor = make('123456:VALID');
+      expect(() => interceptor.intercept(ctx(''), noop)).toThrow(
+        NestgramConfigError,
+      );
     });
 
     it('passes a present token through', () => {
-      const transformer = make('123456:VALID');
-      expect(() => transformer.transform(req('999:OTHER'))).not.toThrow();
+      const interceptor = make('123456:VALID');
+      expect(() => interceptor.intercept(ctx('999:OTHER'), noop)).not.toThrow();
     });
   });
 });

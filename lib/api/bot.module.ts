@@ -6,64 +6,55 @@ import { BotAsyncOptions, BotOptions } from './bot-options';
 import { NestgramConfigError } from '../exceptions';
 import { Providers } from '../providers';
 import {
-  DefaultParseModeTransformer,
-  DefaultSendThrottler,
-  REQUEST_TRANSFORMERS,
-  RequestPipeline,
-  RequestTransformer,
-  SendThrottler,
-  TokenValidationTransformer,
+  API_INTERCEPTORS,
+  ApiInterceptor,
+  ApiPipeline,
+  DefaultParseModeInterceptor,
+  ThrottleInterceptor,
+  TokenValidationInterceptor,
 } from './request';
 
 @Global()
 @Module({})
 export class BotModule {
   /**
-   * Providers for the outbound request pipeline. `REQUEST_TRANSFORMERS` is the
-   * ordered array `RequestPipeline` runs: the built-ins (token validation first —
-   * its constructor also fail-fasts on a missing configured token at boot — then
-   * the default parse-mode hook), followed by any user-supplied transformers.
+   * Providers for the outbound API interceptor pipeline. `API_INTERCEPTORS` is
+   * the ordered array `ApiPipeline` composes into a Nest-style onion, outermost
+   * first: token validation (its constructor also fail-fasts on a missing
+   * configured token at boot), default parse-mode, any user-supplied
+   * interceptors, then the throttler innermost (closest to the wire, so it reads
+   * `chat_id` after the mutators). The built-ins are ordinary `ApiInterceptor`s —
+   * no privileged core; a user can add, reorder, or replace them.
    *
    * Built as an explicit array via `useFactory`, not a `multi`-provider token:
    * Nest has no generic `multi: true` aggregation (a `multi` token collapses to a
    * single, last-wins instance — `APP_*` enhancers are special-cased separately),
-   * so the factory injects every transformer and returns them as the array —
-   * which also lets users extend the pipeline.
+   * so the factory injects every interceptor and returns them as the array.
+   *
+   * The throttle slot uses `throttler ?? ThrottleInterceptor` — a user swaps the
+   * rate-limiter with one key (e.g. a Redis-backed distributed one); the default
+   * self-disables on `throttle: false`.
    */
-  private static pipelineProviders(
-    userTransformers: Type<RequestTransformer>[],
+  private static interceptorProviders(
+    userInterceptors: Type<ApiInterceptor>[],
+    throttler: Type<ApiInterceptor> | undefined,
   ): Provider[] {
-    return [
-      TokenValidationTransformer,
-      DefaultParseModeTransformer,
-      ...userTransformers,
-      {
-        provide: REQUEST_TRANSFORMERS,
-        useFactory: (
-          ...transformers: RequestTransformer[]
-        ): RequestTransformer[] => transformers,
-        inject: [
-          TokenValidationTransformer,
-          DefaultParseModeTransformer,
-          ...userTransformers,
-        ],
-      },
-      RequestPipeline,
+    const ordered: Type<ApiInterceptor>[] = [
+      TokenValidationInterceptor,
+      DefaultParseModeInterceptor,
+      ...userInterceptors,
+      throttler ?? ThrottleInterceptor,
     ];
-  }
-
-  /**
-   * The send throttler — a single swappable strategy (NOT a `multi` list).
-   * Default: DefaultSendThrottler (self-disables when `throttle: false`); a user
-   * can replace it with `throttler`. No privileged core.
-   */
-  private static throttlerProvider(
-    throttler: Type<SendThrottler> | undefined,
-  ): Provider {
-    return {
-      provide: Providers.THROTTLER,
-      useClass: throttler ?? DefaultSendThrottler,
-    };
+    return [
+      ...ordered,
+      {
+        provide: API_INTERCEPTORS,
+        useFactory: (...interceptors: ApiInterceptor[]): ApiInterceptor[] =>
+          interceptors,
+        inject: ordered,
+      },
+      ApiPipeline,
+    ];
   }
 
   static forRoot(options: BotOptions): DynamicModule {
@@ -74,8 +65,10 @@ export class BotModule {
           provide: Providers.BOT_OPTIONS,
           useValue: options,
         },
-        ...this.pipelineProviders(options.transformers ?? []),
-        this.throttlerProvider(options.throttler),
+        ...this.interceptorProviders(
+          options.apiInterceptors ?? [],
+          options.throttler,
+        ),
         {
           provide: BotService,
           useClass: BotService,
@@ -91,8 +84,10 @@ export class BotModule {
       imports: options.imports ?? [],
       providers: [
         ...this.createAsyncProviders(options),
-        ...this.pipelineProviders(options.transformers ?? []),
-        this.throttlerProvider(options.throttler),
+        ...this.interceptorProviders(
+          options.apiInterceptors ?? [],
+          options.throttler,
+        ),
         {
           provide: BotService,
           useClass: BotService,

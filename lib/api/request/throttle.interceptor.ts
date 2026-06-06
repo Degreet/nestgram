@@ -5,37 +5,48 @@ import {
   OnApplicationShutdown,
   Optional,
 } from '@nestjs/common';
+import { defer, from, lastValueFrom, type Observable } from 'rxjs';
 
 import { ApiException } from '../../exceptions/api.exception';
 import { Providers } from '../../providers';
+import {
+  ApiCallHandler,
+  ApiExecutionContext,
+  ApiInterceptor,
+} from './api-interceptor.types';
 import { ChatLimiterRegistry } from './chat-limiter-registry';
 import { Clock, CLOCK, SystemClock } from './clock';
 import { TokenBucket } from './limiters';
 import {
   ResolvedThrottleOptions,
   resolveThrottleOptions,
-  SendThrottler,
   ThrottleOptions,
 } from './throttle.types';
 
-/** The slice of BotOptions this throttler reads (like DefaultParseModeTransformer). */
+/** The slice of BotOptions this interceptor reads (like DefaultParseModeInterceptor). */
 interface ThrottleConfigSource {
   throttle?: boolean | ThrottleOptions;
 }
 
 /**
- * Default send throttler: a global token bucket plus per-chat limiters, with a
- * bounded, scope-aware 429 retry. It is just the public `SendThrottler` — a user
- * can replace it (`throttler: MyThrottler`) or disable it (`throttle: false` →
- * NoopThrottler), no privileged core.
+ * Send throttler as an {@link ApiInterceptor}: a global token bucket plus
+ * per-chat limiters, with a bounded, scope-aware 429 retry. It is just one
+ * public interceptor — a user can replace it (`throttler: MyInterceptor`),
+ * disable it (`throttle: false` → it passes through), or reorder it. No
+ * privileged core.
+ *
+ * The RxJS seam is thin: `intercept` exposes the proven imperative gate+retry
+ * (`run`/`withRetry`, Clock-injected for deterministic tests) through
+ * `defer(() => from(this.run(...)))`. The gate/limiter state stays imperative —
+ * a token bucket is mutable state, not a stream.
  *
  * In-process only: each instance/replica has its own budget, so N replicas can
  * still collectively exceed Telegram's limits. Distributed throttling is a
  * swap-in via this same interface (ROADMAP Phase 4).
  */
 @Injectable()
-export class DefaultSendThrottler
-  implements SendThrottler, OnApplicationBootstrap, OnApplicationShutdown
+export class ThrottleInterceptor
+  implements ApiInterceptor, OnApplicationBootstrap, OnApplicationShutdown
 {
   private readonly enabled: boolean;
   private readonly options: ResolvedThrottleOptions;
@@ -60,6 +71,29 @@ export class DefaultSendThrottler
       this.clock,
     );
     this.chats = new ChatLimiterRegistry(this.options, this.clock);
+  }
+
+  intercept<T>(
+    context: ApiExecutionContext,
+    next: ApiCallHandler<T>,
+  ): Observable<T> {
+    // Reads (`get*`, incl. long-poll getUpdates) and webhook admin don't count
+    // against send limits — pass straight through so they neither burn the
+    // global budget nor stall behind a send-side 429 backoff.
+    if (!this.enabled || context.getMethod().throttled === false) {
+      return next.handle();
+    }
+    // chat_id is read here, after the outer mutating interceptors have run.
+    const chatId = context.getRequest().payload.chat_id as
+      | number
+      | string
+      | undefined;
+    const signal = context.getSignal();
+    // Cold: each subscription re-runs run(); withRetry re-invokes the send
+    // closure, which re-subscribes next.handle() (re-fetch) per attempt.
+    return defer(() =>
+      from(this.run(chatId, signal, () => lastValueFrom(next.handle()))),
+    );
   }
 
   /** Start the one shared, unref'd idle-eviction sweeper (only in a live app). */

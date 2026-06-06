@@ -12,8 +12,8 @@ interface ChatLimiter {
 /**
  * Per-chat rate limiters, created lazily and evicted when idle so the map can't
  * grow without bound as new chats message the bot. The eviction timer lives in
- * SendThrottler (one shared, unref'd interval calling `sweep`); this class owns
- * no timers, so it's pure and fully testable with a fake clock.
+ * the ThrottleInterceptor (one shared, unref'd interval calling `sweep`); this
+ * class owns no timers, so it's pure and fully testable with a fake clock.
  */
 export class ChatLimiterRegistry {
   private readonly limiters = new Map<string, ChatLimiter>();
@@ -37,7 +37,7 @@ export class ChatLimiterRegistry {
     limiter?.groupBucket?.pause(ms);
   }
 
-  /** Delete entries idle past `idleTtlMs`. Driven by SendThrottler's sweeper. */
+  /** Delete entries idle past `idleTtlMs`. Driven by the ThrottleInterceptor's sweeper. */
   sweep(): void {
     const cutoff = this.clock.now() - this.options.idleTtlMs;
     for (const [key, limiter] of this.limiters) {

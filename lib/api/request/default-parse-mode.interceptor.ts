@@ -1,9 +1,14 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import type { Observable } from 'rxjs';
 
-import { ApiRequest, RequestTransformer } from './request.types';
+import {
+  ApiCallHandler,
+  ApiExecutionContext,
+  ApiInterceptor,
+} from './api-interceptor.types';
 import { Providers } from '../../providers';
 
-/** Module options this transformer reads (only the configured default mode). */
+/** Module options this interceptor reads (only the configured default mode). */
 interface ParseModeOptions {
   parseMode?: string;
 }
@@ -11,8 +16,8 @@ interface ParseModeOptions {
 /**
  * Applies the configured default `parse_mode` to sends that format text, when
  * the call didn't set one. This is the "default parse mode" feature implemented
- * as an ordinary {@link RequestTransformer} — no privileged core; a user could
- * write the same hook.
+ * as an ordinary {@link ApiInterceptor} — no privileged core; a user could write
+ * the same hook.
  *
  * It only touches requests whose payload carries `text` or `caption` (the
  * fields `parse_mode` formats), so non-text methods are left alone without a
@@ -22,19 +27,22 @@ interface ParseModeOptions {
  * is warned about (Telegram ignores `parse_mode` in that case).
  */
 @Injectable()
-export class DefaultParseModeTransformer implements RequestTransformer {
-  private readonly logger = new Logger(DefaultParseModeTransformer.name);
+export class DefaultParseModeInterceptor implements ApiInterceptor {
+  private readonly logger = new Logger(DefaultParseModeInterceptor.name);
   private readonly defaultParseMode?: string;
 
   constructor(@Inject(Providers.BOT_OPTIONS) options: ParseModeOptions) {
     this.defaultParseMode = options.parseMode;
   }
 
-  transform(request: ApiRequest): void {
-    const payload = request.payload;
+  intercept(
+    context: ApiExecutionContext,
+    next: ApiCallHandler,
+  ): Observable<unknown> {
+    const payload = context.getRequest().payload;
     const formattable = 'text' in payload || 'caption' in payload;
     if (!formattable) {
-      return;
+      return next.handle();
     }
 
     const hasEntities = 'entities' in payload || 'caption_entities' in payload;
@@ -50,5 +58,6 @@ export class DefaultParseModeTransformer implements RequestTransformer {
     if (this.defaultParseMode && !hasParseMode && !hasEntities) {
       payload.parse_mode = this.defaultParseMode;
     }
+    return next.handle();
   }
 }

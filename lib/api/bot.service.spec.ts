@@ -8,8 +8,8 @@ import { Logger } from '@nestjs/common';
 
 import { BotService } from './bot.service';
 import { BotOptions } from './bot-options';
-import { RequestPipeline } from './request/request-pipeline';
-import { DefaultParseModeTransformer } from './request/default-parse-mode.transformer';
+import { ApiPipeline } from './request/api-pipeline';
+import { DefaultParseModeInterceptor } from './request/default-parse-mode.interceptor';
 import { NestgramError } from '../exceptions';
 import { Message } from '../events';
 
@@ -37,12 +37,10 @@ function mockFetch(): FetchCall[] {
   return calls;
 }
 
-// Wire the real default-parse-mode transformer so these exercise the whole
+// Wire the real default-parse-mode interceptor so these exercise the whole
 // call -> pipeline -> serialize path, not just BotService in isolation.
 function bot(options: BotOptions): BotService {
-  const pipeline = new RequestPipeline([
-    new DefaultParseModeTransformer(options),
-  ]);
+  const pipeline = new ApiPipeline([new DefaultParseModeInterceptor(options)]);
   return new BotService(options, pipeline);
 }
 

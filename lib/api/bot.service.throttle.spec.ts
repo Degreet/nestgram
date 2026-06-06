@@ -1,8 +1,8 @@
 import { BotService } from './bot.service';
 import { BotOptions } from './bot-options';
 import { FakeClock } from './request/clock.fake';
-import { DefaultSendThrottler } from './request/default-send-throttler';
-import { RequestPipeline } from './request/request-pipeline';
+import { ThrottleInterceptor } from './request/throttle.interceptor';
+import { ApiPipeline } from './request/api-pipeline';
 import { Message } from '../events';
 
 const originalFetch = global.fetch;
@@ -20,10 +20,10 @@ function mockFetch(responses: unknown[]): { calls: number } {
 }
 
 function bot(options: BotOptions, clock: FakeClock): BotService {
+  // The throttler is now an interceptor inside the pipeline, not a constructor arg.
   return new BotService(
     options,
-    new RequestPipeline(null),
-    new DefaultSendThrottler(options, clock),
+    new ApiPipeline([new ThrottleInterceptor(options, clock)]),
   );
 }
 

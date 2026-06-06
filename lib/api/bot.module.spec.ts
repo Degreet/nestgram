@@ -1,20 +1,23 @@
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import type { Observable } from 'rxjs';
 
 import { BotModule } from './bot.module';
-import { Providers } from '../providers';
-import { DefaultSendThrottler, SendThrottler } from './request';
+import {
+  API_INTERCEPTORS,
+  ApiCallHandler,
+  ApiInterceptor,
+  DefaultParseModeInterceptor,
+  ThrottleInterceptor,
+  TokenValidationInterceptor,
+} from './request';
 
 @Module({ imports: [BotModule.forRoot({ token: '1:T' })] })
 class DefaultApp {}
 
-class CustomThrottler implements SendThrottler {
-  run<R>(
-    _chatId: number | string | undefined,
-    _signal: AbortSignal | undefined,
-    send: () => Promise<R>,
-  ): Promise<R> {
-    return send();
+class CustomThrottler implements ApiInterceptor {
+  intercept(_ctx: unknown, next: ApiCallHandler): Observable<unknown> {
+    return next.handle();
   }
 }
 
@@ -23,20 +26,33 @@ class CustomThrottler implements SendThrottler {
 })
 class CustomApp {}
 
-describe('BotModule throttler wiring', () => {
-  it('provides the DefaultSendThrottler by default', async () => {
+function interceptors(app: {
+  get: (token: string) => unknown;
+}): ApiInterceptor[] {
+  return app.get(API_INTERCEPTORS) as ApiInterceptor[];
+}
+
+describe('BotModule interceptor wiring', () => {
+  it('orders the built-ins token → parse-mode → throttle (innermost)', async () => {
     const app = await NestFactory.createApplicationContext(DefaultApp, {
       logger: false,
     });
-    expect(app.get(Providers.THROTTLER)).toBeInstanceOf(DefaultSendThrottler);
+    const chain = interceptors(app);
+
+    expect(chain[0]).toBeInstanceOf(TokenValidationInterceptor);
+    expect(chain[1]).toBeInstanceOf(DefaultParseModeInterceptor);
+    expect(chain[chain.length - 1]).toBeInstanceOf(ThrottleInterceptor);
     await app.close();
   });
 
-  it('uses a custom throttler when one is provided', async () => {
+  it('fills the throttle slot with a custom throttler when provided', async () => {
     const app = await NestFactory.createApplicationContext(CustomApp, {
       logger: false,
     });
-    expect(app.get(Providers.THROTTLER)).toBeInstanceOf(CustomThrottler);
+    const chain = interceptors(app);
+
+    expect(chain[chain.length - 1]).toBeInstanceOf(CustomThrottler);
+    expect(chain.some((i) => i instanceof ThrottleInterceptor)).toBe(false);
     await app.close();
   });
 });

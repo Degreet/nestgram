@@ -1,25 +1,6 @@
 /**
- * Strategy that gates outbound Bot API calls to Telegram's rate limits and
- * retries on 429. The framework's own rate-limiting is just this public
- * interface — swap it via the `throttler` option (e.g. a Redis-backed
- * distributed one for multi-instance), or turn it off with `throttle: false`
- * (a NoopThrottler). No privileged core.
- */
-export interface SendThrottler {
-  /**
-   * Run `send` once a rate slot for `chatId` (and the global slot) is free, and
-   * retry it on a 429. `signal` aborts a parked slot-wait without consuming it.
-   */
-  run<R>(
-    chatId: number | string | undefined,
-    signal: AbortSignal | undefined,
-    send: () => Promise<R>,
-  ): Promise<R>;
-}
-
-/**
- * Tunable knobs for the default SendThrottler. Telegram's limits are unofficial
- * and change, so every value is overridable via `throttle: { ... }`.
+ * Tunable knobs for the {@link ThrottleInterceptor}. Telegram's limits are
+ * unofficial and change, so every value is overridable via `throttle: { ... }`.
  */
 export interface ThrottleOptions {
   /** Global allowance: `globalRate` sends per `globalIntervalMs` (default 30 / 1s). */

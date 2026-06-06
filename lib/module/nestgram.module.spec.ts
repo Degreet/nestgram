@@ -13,7 +13,12 @@ import { UpdateDispatcher } from '../engine/dispatcher';
 import { RawUpdate } from '../events/raw-update.types';
 import { User } from '../events/user';
 import { Message } from '../events';
-import { ApiRequest, RequestTransformer } from '../api/request';
+import {
+  ApiCallHandler,
+  ApiExecutionContext,
+  ApiInterceptor,
+} from '../api/request';
+import type { Observable } from 'rxjs';
 import { Providers } from '../providers';
 import { WebhookUpdateSource } from '../engine/source';
 import { NestgramModule } from './nestgram.module';
@@ -296,11 +301,11 @@ describe('request pipeline (real-module DI)', () => {
     global.fetch = originalFetch;
   });
 
-  // Regression: REQUEST_TRANSFORMERS must inject as an ARRAY. Nest has no generic
+  // Regression: API_INTERCEPTORS must inject as an ARRAY. Nest has no generic
   // `multi: true` aggregation (a multi token collapses to a single instance), so
-  // every bot.call crashed with "transformers is not iterable" in a real
+  // every bot.call crashed with "interceptors is not iterable" in a real
   // (DI-wired) module — a path the hand-built-pipeline unit tests never exercised.
-  it('runs a bot.call through the DI request pipeline without crashing', async () => {
+  it('runs a bot.call through the DI interceptor pipeline without crashing', async () => {
     global.fetch = (async () => ({
       json: async () => ({
         ok: true,
@@ -319,7 +324,7 @@ describe('request pipeline (real-module DI)', () => {
     await app.close();
   });
 
-  it('runs a user-supplied transformer alongside the built-ins', async () => {
+  it('runs a user-supplied interceptor alongside the built-ins', async () => {
     let body: Record<string, unknown> = {};
     global.fetch = (async (_url: string, init: { body?: string }) => {
       body = init.body ? JSON.parse(init.body) : {};
@@ -327,7 +332,7 @@ describe('request pipeline (real-module DI)', () => {
     }) as typeof fetch;
 
     const app = await NestFactory.createApplicationContext(
-      UserTransformerAppModule,
+      UserInterceptorAppModule,
       { logger: false },
     );
     await app.get(BotService).sendMessage(1, 'hi');
@@ -338,9 +343,13 @@ describe('request pipeline (real-module DI)', () => {
 });
 
 @Injectable()
-class TagTransformer implements RequestTransformer {
-  transform(request: ApiRequest): void {
-    request.payload.tagged = true;
+class TagInterceptor implements ApiInterceptor {
+  intercept(
+    context: ApiExecutionContext,
+    next: ApiCallHandler,
+  ): Observable<unknown> {
+    context.getRequest().payload.tagged = true;
+    return next.handle();
   }
 }
 
@@ -348,11 +357,11 @@ class TagTransformer implements RequestTransformer {
   imports: [
     NestgramModule.forRoot({
       token: '123456:TEST',
-      transformers: [TagTransformer],
+      apiInterceptors: [TagInterceptor],
     }),
   ],
 })
-class UserTransformerAppModule {}
+class UserInterceptorAppModule {}
 
 @Module({
   imports: [

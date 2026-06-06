@@ -1,11 +1,7 @@
 import { ModuleMetadata, Type } from '@nestjs/common';
 
 import { PollingOptions } from '../engine/source';
-import type {
-  RequestTransformer,
-  SendThrottler,
-  ThrottleOptions,
-} from '../api/request';
+import type { ApiInterceptor, ThrottleOptions } from '../api/request';
 import type { SessionOptions } from '../sessions/session.types';
 
 /**
@@ -65,19 +61,19 @@ export interface NestgramModuleOptions {
    */
   session?: SessionOptions;
   /**
-   * Extra outbound {@link RequestTransformer}s — run after the built-ins (token
-   * validation, default parse mode) on every API call. The framework's own
-   * send-time behaviours are just transformers; this is the same hook, no
-   * privileged core.
+   * Extra outbound {@link ApiInterceptor}s — run after the built-ins (token
+   * validation, default parse mode) and before the throttler, on every API call.
+   * Same `intercept(context, next)` contract as a Nest handler interceptor; the
+   * framework's own send-time behaviours are just interceptors, no privileged core.
    */
-  transformers?: Type<RequestTransformer>[];
+  apiInterceptors?: Type<ApiInterceptor>[];
   /**
    * Send rate-limiting (on by default — the production baseline): `true`/omitted
    * uses Telegram's limits, `false` turns it off, or pass an object to tune.
    */
   throttle?: boolean | ThrottleOptions;
   /** Replace the default throttler entirely (e.g. a Redis-backed distributed one). */
-  throttler?: Type<SendThrottler>;
+  throttler?: Type<ApiInterceptor>;
 }
 
 /** A class that can produce `NestgramModuleOptions` (for `useClass`/`useExisting`). */
@@ -99,8 +95,8 @@ export interface NestgramModuleAsyncOptions
   useFactory?: (
     ...args: any[]
   ) => Promise<NestgramModuleOptions> | NestgramModuleOptions;
-  /** Extra outbound request transformers (static — not resolved via the factory). */
-  transformers?: Type<RequestTransformer>[];
+  /** Extra outbound API interceptors (static — not resolved via the factory). */
+  apiInterceptors?: Type<ApiInterceptor>[];
   /** Replace the default throttler (static — not resolved via the factory). */
-  throttler?: Type<SendThrottler>;
+  throttler?: Type<ApiInterceptor>;
 }
