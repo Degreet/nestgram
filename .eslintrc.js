@@ -27,5 +27,15 @@ module.exports = {
       'error',
       { allowSingleExtends: true },
     ],
+    // Underscore prefix = intentionally unused (e.g. an interface method that
+    // ignores some params, like NoopThrottler.run(_chatId, _signal, send)).
+    '@typescript-eslint/no-unused-vars': [
+      'warn',
+      {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        ignoreRestSiblings: true,
+      },
+    ],
   },
 };

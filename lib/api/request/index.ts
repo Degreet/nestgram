@@ -2,3 +2,8 @@ export * from './request.types';
 export * from './request-pipeline';
 export * from './default-parse-mode.transformer';
 export * from './token-validation.transformer';
+export * from './throttle.types';
+export * from './clock';
+export * from './limiters';
+export * from './noop-throttler';
+export * from './default-send-throttler';

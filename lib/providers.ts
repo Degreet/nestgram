@@ -4,4 +4,6 @@ export enum Providers {
   NESTGRAM_OPTIONS = 'NESTGRAM_OPTIONS',
   /** The active {@link UpdateSource} (polling or webhook), chosen by config. */
   UPDATE_SOURCE = 'UPDATE_SOURCE',
+  /** The active {@link SendThrottler} (default, off, or a user override). */
+  THROTTLER = 'THROTTLER',
 }

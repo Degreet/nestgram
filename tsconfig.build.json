@@ -7,6 +7,7 @@
     "website",
     "examples",
     "tools",
-    "**/*spec.ts"
+    "**/*spec.ts",
+    "**/*.fake.ts"
   ]
 }
