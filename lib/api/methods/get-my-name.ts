@@ -8,8 +8,6 @@ export interface GetMyNameOptions {
 export class GetMyName extends ApiMethod<GetMyNameOptions, RawBotName> {
   readonly method = 'getMyName';
 
-  readonly throttled = false;
-
   constructor(payload?: GetMyNameOptions) {
     super(payload);
   }

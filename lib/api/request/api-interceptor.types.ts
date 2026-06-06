@@ -26,12 +26,12 @@ export interface ApiCallHandler<T = unknown> {
  * `switchToHttp()` are meaningless outbound, and unlike the read-only inbound
  * context this exposes the **mutable** {@link ApiRequest} (rewriting the payload
  * before it goes out is the whole point of the send side). `getMethod()` exposes
- * the command object so an interceptor can read `throttled` / `hasMedia`.
+ * the command object (its `method` name, `hasMedia`, etc.) for policy decisions.
  */
 export interface ApiExecutionContext {
   /** The mutable outbound request; mutate `payload`/`method`/`token` in place. */
   getRequest(): ApiRequest;
-  /** The command object being sent — for `throttled`, `hasMedia`, etc. */
+  /** The command object being sent — for its `method` name, `hasMedia`, etc. */
   getMethod(): ApiMethod<unknown, unknown>;
   /** AbortSignal threaded from the per-call options (shutdown / timeout). */
   getSignal(): AbortSignal | undefined;

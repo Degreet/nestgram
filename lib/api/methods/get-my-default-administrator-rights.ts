@@ -11,8 +11,6 @@ export class GetMyDefaultAdministratorRights extends ApiMethod<
 > {
   readonly method = 'getMyDefaultAdministratorRights';
 
-  readonly throttled = false;
-
   constructor(payload?: GetMyDefaultAdministratorRightsOptions) {
     super(payload);
   }

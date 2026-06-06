@@ -11,8 +11,6 @@ export class GetChatMenuButton extends ApiMethod<
 > {
   readonly method = 'getChatMenuButton';
 
-  readonly throttled = false;
-
   constructor(payload?: GetChatMenuButtonOptions) {
     super(payload);
   }

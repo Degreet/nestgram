@@ -12,8 +12,6 @@ export class GetUserChatBoosts extends ApiMethod<
 > {
   readonly method = 'getUserChatBoosts';
 
-  readonly throttled = false;
-
   constructor(payload: GetUserChatBoostsOptions) {
     super(payload);
   }

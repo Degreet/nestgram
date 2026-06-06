@@ -11,8 +11,6 @@ export interface GetUpdatesOptions {
 export class GetUpdates extends ApiMethod<GetUpdatesOptions, RawUpdate[]> {
   readonly method = 'getUpdates';
 
-  readonly throttled = false;
-
   constructor(payload?: GetUpdatesOptions) {
     super(payload);
   }

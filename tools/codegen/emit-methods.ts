@@ -14,7 +14,6 @@ import {
   getMediaOverride,
   getMethodOverride,
   isInputMediaName,
-  isMethodThrottled,
   MediaConfig,
   MethodOverride,
   resolveReference,
@@ -178,9 +177,6 @@ function emitClass(
   const returnType = returnTypeFor(method, override);
 
   const members: string[] = [`readonly method = '${method.name}';`];
-  if (!isMethodThrottled(method.name)) {
-    members.push('readonly throttled = false;');
-  }
   if (media?.kind === 'nested') {
     members.push('readonly isAttachMedia = true;');
   }

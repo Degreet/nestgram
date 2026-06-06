@@ -13,8 +13,6 @@ export class GetUserProfilePhotos extends ApiMethod<
 > {
   readonly method = 'getUserProfilePhotos';
 
-  readonly throttled = false;
-
   constructor(payload: GetUserProfilePhotosOptions) {
     super(payload);
   }

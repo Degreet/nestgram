@@ -106,28 +106,6 @@ export function getMediaOverride(methodName: string): MediaConfig | undefined {
   return MEDIA_OVERRIDES[methodName];
 }
 
-// --- Send rate-limit classification ------------------------------------------
-
-/**
- * Non-`get*` methods that still don't count against Telegram's send rate limits:
- * webhook/session administration. (`get*` readers — `getUpdates` polling above
- * all — are excluded by the prefix rule.) Routing these through the send
- * throttler would burn the global budget and, worse, couple polling to a
- * send-side 429 backoff. The emitter marks everything here (and every `get*`)
- * with `readonly throttled = false`; all other methods are throttled by default.
- */
-const NON_THROTTLED_ADMIN: ReadonlySet<string> = new Set<string>([
-  'setWebhook',
-  'deleteWebhook',
-  'logOut',
-  'close',
-]);
-
-/** Whether a method counts against Telegram's send rate limits (so it's throttled). */
-export function isMethodThrottled(methodName: string): boolean {
-  return !methodName.startsWith('get') && !NON_THROTTLED_ADMIN.has(methodName);
-}
-
 // --- Per-method rich-event overrides -----------------------------------------
 
 const WRAP_SINGLE = `wrap(raw: unknown, bot: BotService): Message {

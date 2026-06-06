@@ -25,16 +25,15 @@ function rateLimit(
   );
 }
 
-/** Build a context whose method advertises `throttled` and whose payload carries a chat id. */
+/** Build a context for a method whose payload may carry a chat id. */
 function context(
   method: string,
   payload: Record<string, unknown>,
-  throttled?: boolean,
 ): ApiExecutionContext {
   const request: ApiRequest = { method, payload, token: 'T' };
   return {
     getRequest: () => request,
-    getMethod: () => ({ method, throttled }),
+    getMethod: () => ({ method }),
     getSignal: () => undefined,
     getType: () => 'telegram:api',
   };
@@ -122,13 +121,14 @@ describe('ThrottleInterceptor — intercept (the RxJS seam)', () => {
     expect(result).toBe('sent');
   });
 
-  it('passes a read (throttled === false) straight through, ungated', () => {
+  it('passes a read (get*) straight through, ungated', () => {
     const throttler = new ThrottleInterceptor({}, new FakeClock());
     const passthrough = of('updates');
     const next: ApiCallHandler = { handle: () => passthrough };
 
-    // The bypass returns next.handle() verbatim — no defer/gating wrapper.
-    const result = throttler.intercept(context('getUpdates', {}, false), next);
+    // getUpdates is a read — the throttler's own policy skips it; the bypass
+    // returns next.handle() verbatim, no defer/gating wrapper.
+    const result = throttler.intercept(context('getUpdates', {}), next);
     expect(result).toBe(passthrough);
   });
 

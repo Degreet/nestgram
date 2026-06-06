@@ -14,8 +14,6 @@ export class GetGameHighScores extends ApiMethod<
 > {
   readonly method = 'getGameHighScores';
 
-  readonly throttled = false;
-
   constructor(payload: GetGameHighScoresOptions) {
     super(payload);
   }

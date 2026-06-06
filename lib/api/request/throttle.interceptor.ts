@@ -54,6 +54,14 @@ export class ThrottleInterceptor
   private readonly chats: ChatLimiterRegistry;
   private sweeper?: ReturnType<typeof setInterval>;
 
+  /** Non-`get*` methods that still don't count against send limits (admin). */
+  private static readonly UNTHROTTLED_ADMIN: ReadonlySet<string> = new Set([
+    'setWebhook',
+    'deleteWebhook',
+    'logOut',
+    'close',
+  ]);
+
   constructor(
     @Inject(Providers.BOT_OPTIONS) options: ThrottleConfigSource,
     @Optional()
@@ -79,8 +87,9 @@ export class ThrottleInterceptor
   ): Observable<T> {
     // Reads (`get*`, incl. long-poll getUpdates) and webhook admin don't count
     // against send limits — pass straight through so they neither burn the
-    // global budget nor stall behind a send-side 429 backoff.
-    if (!this.enabled || context.getMethod().throttled === false) {
+    // global budget nor stall behind a send-side 429 backoff. The throttler owns
+    // this policy (not a flag on every method), so it's swappable with the rest.
+    if (!this.enabled || !this.isThrottled(context.getMethod().method)) {
       return next.handle();
     }
     // chat_id is read here, after the outer mutating interceptors have run.
@@ -165,5 +174,19 @@ export class ThrottleInterceptor
 
   private isRateLimit(error: unknown): error is ApiException {
     return error instanceof ApiException && error.error_code === 429;
+  }
+
+  /**
+   * Whether a method counts against Telegram's send rate limits. Reads (`get*`,
+   * long-poll `getUpdates` above all) and webhook/session admin don't — routing
+   * them through the throttler would burn the global budget and couple polling to
+   * a send-side 429 backoff. Living here (not as a flag on every method class)
+   * keeps the policy with the one component that owns it.
+   */
+  private isThrottled(method: string): boolean {
+    return (
+      !method.startsWith('get') &&
+      !ThrottleInterceptor.UNTHROTTLED_ADMIN.has(method)
+    );
   }
 }

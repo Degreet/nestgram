@@ -8,8 +8,6 @@ export interface GetChatOptions {
 export class GetChat extends ApiMethod<GetChatOptions, RawChatFullInfo> {
   readonly method = 'getChat';
 
-  readonly throttled = false;
-
   constructor(payload: GetChatOptions) {
     super(payload);
   }
