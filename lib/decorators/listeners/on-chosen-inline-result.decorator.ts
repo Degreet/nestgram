@@ -1,9 +1,9 @@
 import { RoutePredicate } from '../../engine/matching';
 import { createListenerDecorator } from './create-listener-decorator';
 
-const UPDATE_TYPE = 'chosen_query_result';
+const UPDATE_TYPE = 'chosen_inline_result';
 
-export const OnChosenQueryResult = (
+export const OnChosenInlineResult = (
   ...predicates: RoutePredicate[]
 ): MethodDecorator => {
   return createListenerDecorator(UPDATE_TYPE, ...predicates);

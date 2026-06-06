@@ -1,7 +1,7 @@
 import { RoutePredicate } from '../../engine/matching';
 import { createListenerDecorator } from './create-listener-decorator';
 
-const UPDATE_TYPE = 'deleted_business_message';
+const UPDATE_TYPE = 'deleted_business_messages';
 
 export const OnDeletedBusinessMessage = (
   ...predicates: RoutePredicate[]

@@ -1,4 +1,4 @@
-import { resolveKind } from './update-kind';
+import { resolveKind, unmodelledKind } from './update-kind';
 import { RawUpdate } from '../../events/raw-update.types';
 
 describe('resolveKind', () => {
@@ -35,8 +35,45 @@ describe('resolveKind', () => {
     expect(resolveKind(update)).toBe('edited_message');
   });
 
+  it('resolves the non-message kinds too', () => {
+    const cases: Array<keyof RawUpdate> = [
+      'inline_query',
+      'poll',
+      'poll_answer',
+      'chat_member',
+      'my_chat_member',
+      'pre_checkout_query',
+      'shipping_query',
+      'chat_join_request',
+      'business_connection',
+      'deleted_business_messages',
+    ];
+    for (const kind of cases) {
+      expect(resolveKind({ update_id: 1, [kind]: {} } as RawUpdate)).toBe(kind);
+    }
+  });
+
   it('returns null for an update with no recognised field', () => {
     const update = { update_id: 1 } as RawUpdate;
     expect(resolveKind(update)).toBeNull();
+  });
+});
+
+describe('unmodelledKind', () => {
+  it('names a present field newer than UpdateKind (a future Bot API type)', () => {
+    const update = {
+      update_id: 1,
+      brand_new_thing: {},
+    } as unknown as RawUpdate;
+    expect(unmodelledKind(update)).toBe('brand_new_thing');
+  });
+
+  it('returns null when the update is a known kind', () => {
+    const update = { update_id: 1, poll: {} } as RawUpdate;
+    expect(unmodelledKind(update)).toBeNull();
+  });
+
+  it('returns null for an empty update', () => {
+    expect(unmodelledKind({ update_id: 1 } as RawUpdate)).toBeNull();
   });
 });
