@@ -11,6 +11,8 @@ export class GetBusinessConnection extends ApiMethod<
 > {
   readonly method = 'getBusinessConnection';
 
+  readonly throttled = false;
+
   constructor(payload: GetBusinessConnectionOptions) {
     super(payload);
   }

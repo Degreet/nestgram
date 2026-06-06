@@ -14,6 +14,8 @@ export interface SetWebhookOptions {
 export class SetWebhook extends ApiMethod<SetWebhookOptions, true> {
   readonly method = 'setWebhook';
 
+  readonly throttled = false;
+
   constructor(payload: SetWebhookOptions) {
     super(payload);
   }

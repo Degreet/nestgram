@@ -11,6 +11,8 @@ export class GetCustomEmojiStickers extends ApiMethod<
 > {
   readonly method = 'getCustomEmojiStickers';
 
+  readonly throttled = false;
+
   constructor(payload: GetCustomEmojiStickersOptions) {
     super(payload);
   }

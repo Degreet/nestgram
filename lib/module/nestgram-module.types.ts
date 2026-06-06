@@ -1,7 +1,11 @@
 import { ModuleMetadata, Type } from '@nestjs/common';
 
 import { PollingOptions } from '../engine/source';
-import type { RequestTransformer } from '../api/request';
+import type {
+  RequestTransformer,
+  SendThrottler,
+  ThrottleOptions,
+} from '../api/request';
 import type { SessionOptions } from '../sessions/session.types';
 
 /**
@@ -67,6 +71,13 @@ export interface NestgramModuleOptions {
    * privileged core.
    */
   transformers?: Type<RequestTransformer>[];
+  /**
+   * Send rate-limiting (on by default — the production baseline): `true`/omitted
+   * uses Telegram's limits, `false` turns it off, or pass an object to tune.
+   */
+  throttle?: boolean | ThrottleOptions;
+  /** Replace the default throttler entirely (e.g. a Redis-backed distributed one). */
+  throttler?: Type<SendThrottler>;
 }
 
 /** A class that can produce `NestgramModuleOptions` (for `useClass`/`useExisting`). */
@@ -90,4 +101,6 @@ export interface NestgramModuleAsyncOptions
   ) => Promise<NestgramModuleOptions> | NestgramModuleOptions;
   /** Extra outbound request transformers (static — not resolved via the factory). */
   transformers?: Type<RequestTransformer>[];
+  /** Replace the default throttler (static — not resolved via the factory). */
+  throttler?: Type<SendThrottler>;
 }

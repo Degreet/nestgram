@@ -7,9 +7,11 @@ import { NestgramConfigError } from '../exceptions';
 import { Providers } from '../providers';
 import {
   DefaultParseModeTransformer,
+  DefaultSendThrottler,
   REQUEST_TRANSFORMERS,
   RequestPipeline,
   RequestTransformer,
+  SendThrottler,
   TokenValidationTransformer,
 } from './request';
 
@@ -50,6 +52,20 @@ export class BotModule {
     ];
   }
 
+  /**
+   * The send throttler — a single swappable strategy (NOT a `multi` list).
+   * Default: DefaultSendThrottler (self-disables when `throttle: false`); a user
+   * can replace it with `throttler`. No privileged core.
+   */
+  private static throttlerProvider(
+    throttler: Type<SendThrottler> | undefined,
+  ): Provider {
+    return {
+      provide: Providers.THROTTLER,
+      useClass: throttler ?? DefaultSendThrottler,
+    };
+  }
+
   static forRoot(options: BotOptions): DynamicModule {
     return {
       module: BotModule,
@@ -59,6 +75,7 @@ export class BotModule {
           useValue: options,
         },
         ...this.pipelineProviders(options.transformers ?? []),
+        this.throttlerProvider(options.throttler),
         {
           provide: BotService,
           useClass: BotService,
@@ -75,6 +92,7 @@ export class BotModule {
       providers: [
         ...this.createAsyncProviders(options),
         ...this.pipelineProviders(options.transformers ?? []),
+        this.throttlerProvider(options.throttler),
         {
           provide: BotService,
           useClass: BotService,

@@ -15,6 +15,8 @@ export class GetMyCommands extends ApiMethod<
 > {
   readonly method = 'getMyCommands';
 
+  readonly throttled = false;
+
   constructor(payload?: GetMyCommandsOptions) {
     super(payload);
   }

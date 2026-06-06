@@ -11,6 +11,8 @@ export class GetStickerSet extends ApiMethod<
 > {
   readonly method = 'getStickerSet';
 
+  readonly throttled = false;
+
   constructor(payload: GetStickerSetOptions) {
     super(payload);
   }

@@ -12,6 +12,8 @@ export class GetStarTransactions extends ApiMethod<
 > {
   readonly method = 'getStarTransactions';
 
+  readonly throttled = false;
+
   constructor(payload?: GetStarTransactionsOptions) {
     super(payload);
   }

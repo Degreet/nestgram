@@ -10,6 +10,8 @@ export class GetChatMemberCount extends ApiMethod<
 > {
   readonly method = 'getChatMemberCount';
 
+  readonly throttled = false;
+
   constructor(payload: GetChatMemberCountOptions) {
     super(payload);
   }

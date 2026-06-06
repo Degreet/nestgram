@@ -95,6 +95,8 @@ export class NestgramModule {
           token: options.token,
           parseMode: options.parseMode,
           transformers: options.transformers,
+          throttle: options.throttle,
+          throttler: options.throttler,
         }),
         DiscoveryModule,
       ],
@@ -119,8 +121,11 @@ export class NestgramModule {
           useFactory: (resolved: NestgramModuleOptions) => ({
             token: resolved.token,
             parseMode: resolved.parseMode,
+            throttle: resolved.throttle,
           }),
+          // Static (a class can't resolve through the value factory) — like transformers.
           transformers: options.transformers,
+          throttler: options.throttler,
         }),
         DiscoveryModule,
       ],

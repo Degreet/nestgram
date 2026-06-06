@@ -11,6 +11,8 @@ export class GetMyShortDescription extends ApiMethod<
 > {
   readonly method = 'getMyShortDescription';
 
+  readonly throttled = false;
+
   constructor(payload?: GetMyShortDescriptionOptions) {
     super(payload);
   }

@@ -16,6 +16,13 @@ export interface ApiMethod<TOptions, TResult> {
   hasMedia?: boolean;
   /** Files are nested in the payload and need `attach://` references. */
   isAttachMedia?: boolean;
+  /**
+   * Whether this call counts against Telegram's send rate limits. Reads (`get*`)
+   * and webhook/session admin set this `false` so they bypass the throttler;
+   * omitted (the default) means throttled. Long-poll `getUpdates` must not burn
+   * the send budget or be stalled by a send-side 429 backoff.
+   */
+  throttled?: boolean;
 }
 
 export abstract class ApiMethod<TOptions, TResult> {

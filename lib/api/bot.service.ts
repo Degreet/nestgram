@@ -3,7 +3,7 @@ import { rm } from 'fs/promises';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 
 import { BotOptions } from './bot-options';
 import { InputFile } from './input-file';
@@ -14,7 +14,12 @@ import type { User } from '../events/user';
 
 import { ApiError, ApiResponse } from './api-response';
 import { createAttachedData, createInlineData } from './form-data';
-import { ApiRequest, RequestPipeline } from './request';
+import {
+  ApiRequest,
+  NoopThrottler,
+  RequestPipeline,
+  SendThrottler,
+} from './request';
 import {
   ApiMethod,
   SendMessage,
@@ -77,6 +82,12 @@ export class BotService {
   constructor(
     @Inject(Providers.BOT_OPTIONS) options: BotOptions,
     private readonly pipeline: RequestPipeline,
+    // Optional with a Noop default so a bare module (and existing specs) can
+    // resolve BotService without wiring a throttler; the real module always
+    // provides one.
+    @Optional()
+    @Inject(Providers.THROTTLER)
+    private readonly throttler: SendThrottler = new NoopThrottler(),
   ) {
     this.token = options.token;
   }
@@ -99,10 +110,32 @@ export class BotService {
     };
     await this.pipeline.run(request);
 
+    // Reads (`get*`, incl. long-poll `getUpdates`) and webhook admin don't count
+    // against send limits — skip the throttler so they neither burn the global
+    // budget nor stall behind a send-side 429 backoff.
+    if (method.throttled === false) {
+      return this.send(method, request, options?.signal);
+    }
+
+    // Read the per-chat key after the pipeline, so a transformer-set chat_id is
+    // final. The throttler gates the actual send and retries 429s; it can't be
+    // bypassed because every send funnels through here.
+    const chatId = request.payload.chat_id as number | string | undefined;
+    return this.throttler.run(chatId, options?.signal, () =>
+      this.send(method, request, options?.signal),
+    );
+  }
+
+  /** Serialize, send, and enrich a finalized request. Wrapped by the throttler. */
+  private async send<R>(
+    method: ApiMethod<unknown, R>,
+    request: ApiRequest,
+    signal?: AbortSignal,
+  ): Promise<R> {
     const init = await this.serialize(method, request.payload);
     const response = await fetch(
       `${TELEGRAM_API_BASE}/bot${request.token}/${request.method}`,
-      { ...init, signal: options?.signal },
+      { ...init, signal },
     );
     const data = (await response.json()) as ApiResponse<R>;
 

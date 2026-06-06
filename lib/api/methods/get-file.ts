@@ -8,6 +8,8 @@ export interface GetFileOptions {
 export class GetFile extends ApiMethod<GetFileOptions, RawFile> {
   readonly method = 'getFile';
 
+  readonly throttled = false;
+
   constructor(payload: GetFileOptions) {
     super(payload);
   }

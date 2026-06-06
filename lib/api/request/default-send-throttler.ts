@@ -37,6 +37,7 @@ interface ThrottleConfigSource {
 export class DefaultSendThrottler
   implements SendThrottler, OnApplicationBootstrap, OnApplicationShutdown
 {
+  private readonly enabled: boolean;
   private readonly options: ResolvedThrottleOptions;
   private readonly global: TokenBucket;
   private readonly chats: ChatLimiterRegistry;
@@ -48,6 +49,9 @@ export class DefaultSendThrottler
     @Inject(CLOCK)
     private readonly clock: Clock = new SystemClock(),
   ) {
+    // `throttle: false` makes this a passthrough — the toggle works uniformly for
+    // forRoot and forRootAsync (where the value is only known after the factory).
+    this.enabled = options.throttle !== false;
     this.options = resolveThrottleOptions(options.throttle);
     this.global = new TokenBucket(
       this.options.globalRate,
@@ -60,6 +64,9 @@ export class DefaultSendThrottler
 
   /** Start the one shared, unref'd idle-eviction sweeper (only in a live app). */
   onApplicationBootstrap(): void {
+    if (!this.enabled) {
+      return;
+    }
     this.sweeper = setInterval(
       () => this.chats.sweep(),
       this.options.sweepIntervalMs,
@@ -78,6 +85,9 @@ export class DefaultSendThrottler
     signal: AbortSignal | undefined,
     send: () => Promise<R>,
   ): Promise<R> {
+    if (!this.enabled) {
+      return send();
+    }
     // Per-chat before global, so a chat-limited send doesn't burn a global token
     // it can't yet use.
     if (chatId !== undefined) {

@@ -7,6 +7,8 @@ export interface DeleteWebhookOptions {
 export class DeleteWebhook extends ApiMethod<DeleteWebhookOptions, true> {
   readonly method = 'deleteWebhook';
 
+  readonly throttled = false;
+
   constructor(payload?: DeleteWebhookOptions) {
     super(payload);
   }

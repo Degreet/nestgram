@@ -12,6 +12,8 @@ export class GetChatMember extends ApiMethod<
 > {
   readonly method = 'getChatMember';
 
+  readonly throttled = false;
+
   constructor(payload: GetChatMemberOptions) {
     super(payload);
   }
