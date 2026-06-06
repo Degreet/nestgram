@@ -3,14 +3,10 @@ import { NestFactory } from '@nestjs/core';
 import type { Observable } from 'rxjs';
 
 import { BotModule } from './bot.module';
-import {
-  API_INTERCEPTORS,
-  ApiCallHandler,
-  ApiInterceptor,
-  DefaultParseModeInterceptor,
-  ThrottleInterceptor,
-  TokenValidationInterceptor,
-} from './request';
+import { API_INTERCEPTORS, ApiCallHandler, ApiInterceptor } from './request';
+import { DefaultParseModeInterceptor } from '../builtins/parse-mode';
+import { ThrottleInterceptor } from '../builtins/throttle';
+import { TokenValidationInterceptor } from '../builtins/token-validation';
 
 @Module({ imports: [BotModule.forRoot({ token: '1:T' })] })
 class DefaultApp {}

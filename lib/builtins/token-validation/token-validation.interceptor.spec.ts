@@ -2,9 +2,9 @@ import { Logger } from '@nestjs/common';
 import { of } from 'rxjs';
 
 import { TokenValidationInterceptor } from './token-validation.interceptor';
-import { ApiCallHandler, ApiExecutionContext } from './api-interceptor.types';
-import { ApiRequest } from './request.types';
-import { BotOptions } from '../bot-options';
+import { ApiCallHandler, ApiExecutionContext } from '../../api/request';
+import { ApiRequest } from '../../api/request';
+import { BotOptions } from '../../api/bot-options';
 import { NestgramConfigError } from '../../exceptions';
 
 const noop: ApiCallHandler = { handle: () => of(undefined) };

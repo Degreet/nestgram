@@ -5,14 +5,13 @@ import { BotService } from './bot.service';
 import { BotAsyncOptions, BotOptions } from './bot-options';
 import { NestgramConfigError } from '../exceptions';
 import { Providers } from '../providers';
-import {
-  API_INTERCEPTORS,
-  ApiInterceptor,
-  ApiPipeline,
-  DefaultParseModeInterceptor,
-  ThrottleInterceptor,
-  TokenValidationInterceptor,
-} from './request';
+import { API_INTERCEPTORS, ApiInterceptor, ApiPipeline } from './request';
+// Import the send built-ins by feature subpath, not the '../builtins' barrel:
+// the barrel also re-exports the handler-side auto-answer interceptor, which
+// would drag the engine/module graph into the api layer (and cycle).
+import { DefaultParseModeInterceptor } from '../builtins/parse-mode';
+import { ThrottleInterceptor } from '../builtins/throttle';
+import { TokenValidationInterceptor } from '../builtins/token-validation';
 
 @Global()
 @Module({})

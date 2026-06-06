@@ -3,7 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { of, throwError } from 'rxjs';
 
 import { AutoAnswerCallbackInterceptor } from './auto-answer.interceptor';
-import { NestgramModuleOptions } from '../module/nestgram-module.types';
+import { NestgramModuleOptions } from '../../module/nestgram-module.types';
 
 interface FakeQuery {
   isAnswered: boolean;

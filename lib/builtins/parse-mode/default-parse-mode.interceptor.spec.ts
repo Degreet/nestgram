@@ -2,8 +2,8 @@ import { Logger } from '@nestjs/common';
 import { of } from 'rxjs';
 
 import { DefaultParseModeInterceptor } from './default-parse-mode.interceptor';
-import { ApiCallHandler, ApiExecutionContext } from './api-interceptor.types';
-import { ApiRequest } from './request.types';
+import { ApiCallHandler, ApiExecutionContext } from '../../api/request';
+import { ApiRequest } from '../../api/request';
 
 const noop: ApiCallHandler = { handle: () => of(undefined) };
 

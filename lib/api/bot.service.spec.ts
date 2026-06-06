@@ -9,7 +9,7 @@ import { Logger } from '@nestjs/common';
 import { BotService } from './bot.service';
 import { BotOptions } from './bot-options';
 import { ApiPipeline } from './request/api-pipeline';
-import { DefaultParseModeInterceptor } from './request/default-parse-mode.interceptor';
+import { DefaultParseModeInterceptor } from '../builtins/parse-mode';
 import { NestgramError } from '../exceptions';
 import { Message } from '../events';
 

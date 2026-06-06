@@ -5,9 +5,9 @@ import {
   ApiCallHandler,
   ApiExecutionContext,
   ApiInterceptor,
-} from './api-interceptor.types';
+} from '../../api/request';
 import { Providers } from '../../providers';
-import { BotOptions } from '../bot-options';
+import { BotOptions } from '../../api/bot-options';
 import { NestgramConfigError } from '../../exceptions';
 
 /**

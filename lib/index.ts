@@ -7,7 +7,7 @@ export * from './api/methods';
 export * from './events';
 export * from './keyboards';
 export * from './formatting';
-export * from './interceptors';
+export * from './builtins';
 export * from './callback-data';
 export * from './deep-links';
 export * from './ambient';

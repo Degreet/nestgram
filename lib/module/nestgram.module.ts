@@ -13,7 +13,7 @@ import {
   UpdateSource,
   WebhookUpdateSource,
 } from '../engine/source';
-import { AutoAnswerCallbackInterceptor } from '../interceptors';
+import { AutoAnswerCallbackInterceptor } from '../builtins/auto-answer';
 import { SessionManager } from '../sessions';
 import { NestgramBootstrap } from './nestgram.bootstrap';
 import {

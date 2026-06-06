@@ -1,7 +1,7 @@
 import { BotService } from './bot.service';
 import { BotOptions } from './bot-options';
-import { FakeClock } from './request/clock.fake';
-import { ThrottleInterceptor } from './request/throttle.interceptor';
+import { FakeClock } from '../builtins/throttle/clock.fake';
+import { ThrottleInterceptor } from '../builtins/throttle';
 import { ApiPipeline } from './request/api-pipeline';
 import { Message } from '../events';
 

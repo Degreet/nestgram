@@ -10,11 +10,11 @@ import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-import { TelegramExecutionContext, UpdateKind } from '../engine/context';
-import { Metadata } from '../decorators/metadata.enum';
-import { Providers } from '../providers';
-import type { CallbackQuery } from '../events';
-import type { NestgramModuleOptions } from '../module/nestgram-module.types';
+import { TelegramExecutionContext, UpdateKind } from '../../engine/context';
+import { Metadata } from '../../decorators/metadata.enum';
+import { Providers } from '../../providers';
+import type { CallbackQuery } from '../../events';
+import type { NestgramModuleOptions } from '../../module/nestgram-module.types';
 
 /**
  * Answers a callback query the handler left unanswered, so the button never

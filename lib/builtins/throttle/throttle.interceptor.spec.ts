@@ -1,11 +1,11 @@
 import { lastValueFrom, of } from 'rxjs';
 
-import { ApiError } from '../api-response';
+import { ApiError } from '../../api/api-response';
 import { ApiException } from '../../exceptions/api.exception';
 import { FakeClock } from './clock.fake';
 import { ThrottleInterceptor } from './throttle.interceptor';
-import { ApiCallHandler, ApiExecutionContext } from './api-interceptor.types';
-import { ApiRequest } from './request.types';
+import { ApiCallHandler, ApiExecutionContext } from '../../api/request';
+import { ApiRequest } from '../../api/request';
 
 const flush = (): Promise<void> =>
   new Promise((resolve) => setImmediate(resolve));

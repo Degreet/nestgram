@@ -1,6 +1,7 @@
 import { ModuleMetadata, Type } from '@nestjs/common';
 
-import type { ApiInterceptor, ThrottleOptions } from './request';
+import type { ApiInterceptor } from './request';
+import type { ThrottleOptions } from '../builtins/throttle/throttle.types';
 
 export interface BotOptions {
   token: string;

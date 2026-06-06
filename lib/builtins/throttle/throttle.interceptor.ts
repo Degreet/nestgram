@@ -13,7 +13,7 @@ import {
   ApiCallHandler,
   ApiExecutionContext,
   ApiInterceptor,
-} from './api-interceptor.types';
+} from '../../api/request';
 import { ChatLimiterRegistry } from './chat-limiter-registry';
 import { Clock, CLOCK, SystemClock } from './clock';
 import { TokenBucket } from './limiters';

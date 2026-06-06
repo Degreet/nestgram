@@ -5,7 +5,7 @@ import {
   ApiCallHandler,
   ApiExecutionContext,
   ApiInterceptor,
-} from './api-interceptor.types';
+} from '../../api/request';
 import { Providers } from '../../providers';
 
 /** Module options this interceptor reads (only the configured default mode). */

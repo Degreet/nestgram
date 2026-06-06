@@ -1,7 +1,8 @@
 import { ModuleMetadata, Type } from '@nestjs/common';
 
 import { PollingOptions } from '../engine/source';
-import type { ApiInterceptor, ThrottleOptions } from '../api/request';
+import type { ApiInterceptor } from '../api/request';
+import type { ThrottleOptions } from '../builtins/throttle/throttle.types';
 import type { SessionOptions } from '../sessions/session.types';
 
 /**
