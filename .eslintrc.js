@@ -21,5 +21,11 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
+    // Empty `interface X extends RawX {}` is the declaration-merging idiom that
+    // gives a rich event class its raw payload's typed fields — allow it.
+    '@typescript-eslint/no-empty-interface': [
+      'error',
+      { allowSingleExtends: true },
+    ],
   },
 };
