@@ -20,6 +20,9 @@
     "javascript"
   ],
   "license": "MIT",
+  "workspaces": [
+    "examples/reminder-bot"
+  ],
   "scripts": {
     "build": "nest build",
     "start:dev": "nodemon lib/index.ts",

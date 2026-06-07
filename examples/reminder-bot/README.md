@@ -43,21 +43,21 @@ queue boundary.
 ## Setup
 
 ```bash
-# 1. Build the framework once (this example depends on it via `file:../..`).
+# 1. Install everything once, from the repo root. This example is an npm
+#    workspace, so a single root install resolves both the framework and the
+#    example against ONE copy of @nestjs/* (a second copy breaks Nest DI —
+#    duplicate ModuleRef/provider identities). Then build the framework.
 cd ../..            # repo root
 npm install && npm run build
 
-# 2. Install the example's own dependencies.
+# 2. Configure.
 cd examples/reminder-bot
-npm install
-
-# 3. Configure.
 cp .env.example .env      # then put your BOT_TOKEN and ADMIN_IDS in .env
 
-# 4. Start Postgres + Redis.
+# 3. Start Postgres + Redis.
 docker compose up -d
 
-# 5. Run the bot (long polling — no public URL needed).
+# 4. Run the bot (long polling — no public URL needed).
 npm run start:dev
 ```
 
@@ -89,5 +89,8 @@ tunnel like ngrok) so Telegram can reach it.
 
 - `synchronize: true` (TypeORM) auto-creates the schema for convenience — use
   migrations in a real deployment.
-- The example resolves `nestgram` from the local build (`file:../..`); after
-  changing framework code, re-run `npm run build` at the repo root.
+- The example resolves `nestgram` from the local build (`file:../..`, wired as a
+  root npm workspace); after changing framework code, re-run `npm run build` at
+  the repo root. Don't run `npm install` inside this folder — install from the
+  repo root so `@nestjs/*` stays a single shared copy (a duplicate breaks Nest's
+  `ModuleRef`/provider identity at boot).
