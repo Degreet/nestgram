@@ -8,64 +8,108 @@
  * Output is unformatted; the orchestrator runs it through the project's
  * Prettier so committed files match lint-staged.
  */
-import { collectReferences, IrMethod, IrType } from './ir';
+import { collectReferences, IrMethod, IrObject, IrType } from './ir';
 import {
   applyFieldTypeOverride,
-  getMediaOverride,
   getMethodOverride,
   isInputMediaName,
-  MediaConfig,
   MethodOverride,
   resolveReference,
 } from './manifest';
 import { irTypeToTs } from './type-resolver';
 
+const INPUT_FILE = 'InputFile';
+
 export interface MethodEmitConfig {
   /** Import specifier for the hand-written ApiMethod base, relative to output. */
   apiMethodImport: string;
-}
-
-function references(type: IrType): Set<string> {
-  const names = new Set<string>();
-  collectReferences(type, names);
-  return names;
+  /** Every IR object by name — for transitive multipart detection. */
+  objectsByName: Map<string, IrObject>;
 }
 
 /**
- * Derives multipart handling. A hand-owned override (manifest) wins. Otherwise:
- * a flat file field is an argument that references `InputFile` directly; a
- * nested field is an array of the bare `InputMedia*` (whose `.media` is a known
- * `string | InputFile`). Shapes the spec models as plain `string` inside (single
- * InputMedia, InputSticker) are covered by the overrides; the orchestrator warns
- * on any remaining `maybe_multipart` method, so a gap is visible not silent.
+ * How a method carries files, or `null` for none:
+ * - `flat`  — an `InputFile` sits directly on an argument; appended as its own
+ *   part (`createInlineData`).
+ * - `attach` — files live inside referenced objects; serialized recursively as
+ *   `attach://` references (`createAttachedData`).
  */
-export function detectMedia(method: IrMethod): MediaConfig | null {
-  const override = getMediaOverride(method.name);
-  if (override) {
-    return override;
+type MediaKind = 'flat' | 'attach';
+
+/** Does the type itself resolve to `InputFile` (through unions/arrays only)? */
+function hasTopLevelInputFile(type: IrType): boolean {
+  switch (type.kind) {
+    case 'reference':
+      return type.name === INPUT_FILE;
+    case 'array':
+      return hasTopLevelInputFile(type.element);
+    case 'union':
+      return type.variants.some(hasTopLevelInputFile);
+    default:
+      return false;
   }
-  const flat: string[] = [];
-  for (const arg of method.args) {
-    if (arg.type.kind === 'array') {
-      if ([...references(arg.type.element)].some(isInputMediaName)) {
-        return {
-          kind: 'nested',
-          field: arg.name,
-          itemField: 'media',
-          array: true,
-        };
+}
+
+/** Is an `InputFile` reachable anywhere, descending into referenced objects? */
+function reachesInputFile(
+  type: IrType,
+  objects: Map<string, IrObject>,
+  seen: Set<string>,
+): boolean {
+  switch (type.kind) {
+    case 'reference': {
+      if (type.name === INPUT_FILE) {
+        return true;
       }
-    } else if (references(arg.type).has('InputFile')) {
-      flat.push(arg.name);
+      if (seen.has(type.name)) {
+        return false;
+      }
+      seen.add(type.name);
+      const object = objects.get(type.name);
+      if (object?.kind === 'interface') {
+        return object.fields.some((f) =>
+          reachesInputFile(f.type, objects, seen),
+        );
+      }
+      if (object?.kind === 'alias') {
+        return reachesInputFile(object.type, objects, seen);
+      }
+      return false;
     }
+    case 'array':
+      return reachesInputFile(type.element, objects, seen);
+    case 'union':
+      return type.variants.some((v) => reachesInputFile(v, objects, seen));
+    default:
+      return false;
   }
-  return flat.length > 0 ? { kind: 'flat', fields: flat } : null;
+}
+
+/**
+ * Derives multipart handling by reachability, not a hand-list: a top-level
+ * `InputFile` argument is `flat`; an `InputFile` reachable only inside a
+ * referenced object is `attach`. The actual file collection is fully recursive
+ * (see `form-data.ts`), so this only picks the body format.
+ */
+export function detectMedia(
+  method: IrMethod,
+  objects: Map<string, IrObject>,
+): MediaKind | null {
+  if (method.args.some((arg) => hasTopLevelInputFile(arg.type))) {
+    return 'flat';
+  }
+  if (
+    method.args.some((arg) => reachesInputFile(arg.type, objects, new Set()))
+  ) {
+    return 'attach';
+  }
+  return null;
 }
 
 function buildImports(
   method: IrMethod,
   config: MethodEmitConfig,
-  media: MediaConfig | null,
+  media: MediaKind | null,
   override?: MethodOverride,
 ): string {
   const refs = new Set<string>();
@@ -91,7 +135,6 @@ function buildImports(
     }
   }
 
-  const inputFileAsValue = media !== null;
   const lines: string[] = [
     `import { ApiMethod } from '${config.apiMethodImport}';`,
   ];
@@ -99,9 +142,10 @@ function buildImports(
     lines.push(`import { Message } from '../../events';`);
     lines.push(`import type { BotService } from '../bot.service';`);
   }
-  if (inputFileAsValue) {
-    lines.push(`import { InputFile } from '../input-file';`);
-  } else if (needsInputFileType) {
+  if (media !== null) {
+    lines.push(`import { hasInputFile } from '../form-data';`);
+  }
+  if (needsInputFileType) {
     lines.push(`import type { InputFile } from '../input-file';`);
   }
   if (inputMediaTypes.size > 0) {
@@ -154,22 +198,18 @@ function returnTypeFor(method: IrMethod, override?: MethodOverride): string {
   return irTypeToTs(method.returnType);
 }
 
-function emitHasMedia(media: MediaConfig): string {
-  if (media.kind === 'flat') {
-    const checks = media.fields
-      .map((field) => `this.payload?.${field} instanceof InputFile`)
-      .join(' || ');
-    return `get hasMedia(): boolean {\n  return ${checks};\n}`;
-  }
-  if (media.array) {
-    return `get hasMedia(): boolean {\n  return (\n    this.payload?.${media.field}.some((item) => item.${media.itemField} instanceof InputFile) ?? false\n  );\n}`;
-  }
-  return `get hasMedia(): boolean {\n  return this.payload?.${media.field}.${media.itemField} instanceof InputFile;\n}`;
+/**
+ * One getter for every multipart method: a recursive scan that mirrors the file
+ * collection, so it is true exactly when the call carries a file — regardless of
+ * which (possibly nested) field holds it.
+ */
+function emitHasMedia(): string {
+  return `get hasMedia(): boolean {\n  return hasInputFile(this.payload);\n}`;
 }
 
 function emitClass(
   method: IrMethod,
-  media: MediaConfig | null,
+  media: MediaKind | null,
   override?: MethodOverride,
 ): string {
   const hasArgs = method.args.length > 0;
@@ -177,7 +217,7 @@ function emitClass(
   const returnType = returnTypeFor(method, override);
 
   const members: string[] = [`readonly method = '${method.name}';`];
-  if (media?.kind === 'nested') {
+  if (media === 'attach') {
     members.push('readonly isAttachMedia = true;');
   }
   if (!hasArgs) {
@@ -192,7 +232,7 @@ function emitClass(
     );
   }
   if (media) {
-    members.push(emitHasMedia(media));
+    members.push(emitHasMedia());
   }
   if (override) {
     members.push(override.wrap);
@@ -207,7 +247,7 @@ function emitClass(
 
 export function emitMethod(method: IrMethod, config: MethodEmitConfig): string {
   const override = getMethodOverride(method.name);
-  const media = detectMedia(method);
+  const media = detectMedia(method, config.objectsByName);
   const parts = [
     buildImports(method, config, media, override),
     emitOptions(method),

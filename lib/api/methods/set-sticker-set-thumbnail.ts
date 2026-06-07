@@ -1,5 +1,6 @@
 import { ApiMethod } from './api-method';
-import { InputFile } from '../input-file';
+import { hasInputFile } from '../form-data';
+import type { InputFile } from '../input-file';
 
 export interface SetStickerSetThumbnailOptions {
   name: string;
@@ -19,6 +20,6 @@ export class SetStickerSetThumbnail extends ApiMethod<
   }
 
   get hasMedia(): boolean {
-    return this.payload?.thumbnail instanceof InputFile;
+    return hasInputFile(this.payload);
   }
 }

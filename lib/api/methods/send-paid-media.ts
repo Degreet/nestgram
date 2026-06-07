@@ -1,4 +1,5 @@
 import { ApiMethod } from './api-method';
+import { hasInputFile } from '../form-data';
 import type {
   RawForceReply,
   RawInlineKeyboardMarkup,
@@ -39,7 +40,13 @@ export interface SendPaidMediaOptions {
 export class SendPaidMedia extends ApiMethod<SendPaidMediaOptions, RawMessage> {
   readonly method = 'sendPaidMedia';
 
+  readonly isAttachMedia = true;
+
   constructor(payload: SendPaidMediaOptions) {
     super(payload);
+  }
+
+  get hasMedia(): boolean {
+    return hasInputFile(this.payload);
   }
 }

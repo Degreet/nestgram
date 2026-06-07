@@ -56,5 +56,21 @@ describe('Method media flags', () => {
       });
       expect(method.hasMedia).toBe(false);
     });
+
+    it('hasMedia is true when only a nested thumbnail is an InputFile', () => {
+      // The file is the thumbnail, not the primary `media` — the recursive scan
+      // must still find it (a per-field `.media` check used to miss this).
+      const method = new SendMediaGroup({
+        chat_id: 1,
+        media: [
+          {
+            type: 'video',
+            media: 'file_id',
+            thumbnail: new InputFile('t.jpg'),
+          },
+        ],
+      });
+      expect(method.hasMedia).toBe(true);
+    });
   });
 });

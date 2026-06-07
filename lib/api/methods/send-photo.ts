@@ -1,7 +1,8 @@
 import { ApiMethod } from './api-method';
 import { Message } from '../../events';
 import type { BotService } from '../bot.service';
-import { InputFile } from '../input-file';
+import { hasInputFile } from '../form-data';
+import type { InputFile } from '../input-file';
 import type {
   RawForceReply,
   RawInlineKeyboardMarkup,
@@ -45,7 +46,7 @@ export class SendPhoto extends ApiMethod<SendPhotoOptions, Message> {
   }
 
   get hasMedia(): boolean {
-    return this.payload?.photo instanceof InputFile;
+    return hasInputFile(this.payload);
   }
 
   wrap(raw: unknown, bot: BotService): Message {

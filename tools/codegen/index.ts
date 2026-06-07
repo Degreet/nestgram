@@ -132,6 +132,22 @@ function selfTest(): void {
     'getMe is not multipart',
   );
 
+  // Multipart classification (transitive): top-level file = flat, nested = attach.
+  const mediaKind = (name: string): 'flat' | 'attach' | null => {
+    const method = ir.methods.find((m) => m.name === name);
+    return method ? detectMedia(method, ir.objectsByName) : null;
+  };
+  assert(mediaKind('sendPhoto') === 'flat', 'sendPhoto is flat multipart');
+  assert(
+    mediaKind('sendMediaGroup') === 'attach',
+    'sendMediaGroup is attach multipart (nested InputMedia)',
+  );
+  assert(
+    mediaKind('sendPaidMedia') === 'attach',
+    'sendPaidMedia is attach multipart (transitively detected)',
+  );
+  assert(mediaKind('sendMessage') === null, 'sendMessage is not multipart');
+
   // Enum literal-union recovery (manifest table): sendDice.emoji + parse_mode.
   const sendDice = ir.methods.find((m) => m.name === 'sendDice');
   const emoji = sendDice?.args.find((a) => a.name === 'emoji');
@@ -204,13 +220,25 @@ function buildMethodFiles(
     : ir.methods;
   const files = new Map<string, string>();
   for (const method of selected) {
-    if (method.maybeMultipart && detectMedia(method) === null) {
+    if (
+      method.maybeMultipart &&
+      detectMedia(method, ir.objectsByName) === null
+    ) {
       process.stderr.write(
         `warning: ${method.name} is maybe_multipart but no file field was detected\n`,
       );
     }
     const path = join(absoluteOut, `${method.fileName}.ts`);
-    files.set(path, formatTs(emitMethod(method, { apiMethodImport }), path));
+    files.set(
+      path,
+      formatTs(
+        emitMethod(method, {
+          apiMethodImport,
+          objectsByName: ir.objectsByName,
+        }),
+        path,
+      ),
+    );
   }
   // The barrel is only rewritten on a full emission — a filtered dry run must
   // not clobber it with a subset.

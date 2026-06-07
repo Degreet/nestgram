@@ -1,5 +1,5 @@
 import { ApiMethod } from './api-method';
-import { InputFile } from '../input-file';
+import { hasInputFile } from '../form-data';
 import type { RawInputSticker } from '../../events/raw-update.types';
 
 export interface CreateNewStickerSetOptions {
@@ -24,10 +24,6 @@ export class CreateNewStickerSet extends ApiMethod<
   }
 
   get hasMedia(): boolean {
-    return (
-      this.payload?.stickers.some(
-        (item) => item.sticker instanceof InputFile,
-      ) ?? false
-    );
+    return hasInputFile(this.payload);
   }
 }

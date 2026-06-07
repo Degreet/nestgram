@@ -1,5 +1,6 @@
 import { ApiMethod } from './api-method';
-import { InputFile } from '../input-file';
+import { hasInputFile } from '../form-data';
+import type { InputFile } from '../input-file';
 import type { RawFile } from '../../events/raw-update.types';
 
 export interface UploadStickerFileOptions {
@@ -19,6 +20,6 @@ export class UploadStickerFile extends ApiMethod<
   }
 
   get hasMedia(): boolean {
-    return this.payload?.sticker instanceof InputFile;
+    return hasInputFile(this.payload);
   }
 }

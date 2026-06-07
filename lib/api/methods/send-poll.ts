@@ -1,4 +1,5 @@
 import { ApiMethod } from './api-method';
+import { hasInputFile } from '../form-data';
 import type {
   RawForceReply,
   RawInlineKeyboardMarkup,
@@ -56,7 +57,13 @@ export interface SendPollOptions {
 export class SendPoll extends ApiMethod<SendPollOptions, RawMessage> {
   readonly method = 'sendPoll';
 
+  readonly isAttachMedia = true;
+
   constructor(payload: SendPollOptions) {
     super(payload);
+  }
+
+  get hasMedia(): boolean {
+    return hasInputFile(this.payload);
   }
 }

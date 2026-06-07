@@ -1,5 +1,6 @@
 import { ApiMethod } from './api-method';
-import { InputFile } from '../input-file';
+import { hasInputFile } from '../form-data';
+import type { InputFile } from '../input-file';
 import type {
   RawForceReply,
   RawInlineKeyboardMarkup,
@@ -46,9 +47,6 @@ export class SendAudio extends ApiMethod<SendAudioOptions, RawMessage> {
   }
 
   get hasMedia(): boolean {
-    return (
-      this.payload?.audio instanceof InputFile ||
-      this.payload?.thumbnail instanceof InputFile
-    );
+    return hasInputFile(this.payload);
   }
 }

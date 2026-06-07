@@ -1,5 +1,5 @@
 import { ApiMethod } from './api-method';
-import { InputFile } from '../input-file';
+import { hasInputFile } from '../form-data';
 import type {
   RawInlineKeyboardMarkup,
   RawInputMedia,
@@ -28,6 +28,6 @@ export class EditMessageMedia extends ApiMethod<
   }
 
   get hasMedia(): boolean {
-    return this.payload?.media.media instanceof InputFile;
+    return hasInputFile(this.payload);
   }
 }

@@ -1,5 +1,6 @@
 import { ApiMethod } from './api-method';
-import { InputFile } from '../input-file';
+import { hasInputFile } from '../form-data';
+import type { InputFile } from '../input-file';
 import type {
   RawForceReply,
   RawInlineKeyboardMarkup,
@@ -45,9 +46,6 @@ export class SendLivePhoto extends ApiMethod<SendLivePhotoOptions, RawMessage> {
   }
 
   get hasMedia(): boolean {
-    return (
-      this.payload?.live_photo instanceof InputFile ||
-      this.payload?.photo instanceof InputFile
-    );
+    return hasInputFile(this.payload);
   }
 }

@@ -1,7 +1,7 @@
 import { ApiMethod } from './api-method';
 import { Message } from '../../events';
 import type { BotService } from '../bot.service';
-import { InputFile } from '../input-file';
+import { hasInputFile } from '../form-data';
 import type {
   RawInputMedia,
   RawReplyParameters,
@@ -33,10 +33,7 @@ export class SendMediaGroup extends ApiMethod<
   }
 
   get hasMedia(): boolean {
-    return (
-      this.payload?.media.some((item) => item.media instanceof InputFile) ??
-      false
-    );
+    return hasInputFile(this.payload);
   }
 
   wrap(raw: unknown, bot: BotService): Message[] {

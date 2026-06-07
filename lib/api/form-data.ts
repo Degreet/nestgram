@@ -7,6 +7,31 @@ import { InputFile } from './input-file';
  * so this is a small module of functions, not an injectable service.
  */
 
+/**
+ * True if an `InputFile` is reachable anywhere in the payload. Mirrors the
+ * recursive walk the serializers do, so a method's `hasMedia` is an exact "does
+ * this call carry a file" check — no matter how deeply the file is nested, and
+ * regardless of which field name holds it (`media`, `thumbnail`, `photo`, …).
+ */
+export function hasInputFile(value: unknown): boolean {
+  if (value instanceof InputFile) {
+    return true;
+  }
+  // Honor `toJSON()` before own keys, mirroring `serializeObject` — so the file
+  // the serializer would collect is exactly the file this reports.
+  const toJSON = (value as { toJSON?: () => unknown } | null)?.toJSON;
+  if (typeof toJSON === 'function') {
+    return hasInputFile(toJSON.call(value));
+  }
+  if (Array.isArray(value)) {
+    return value.some(hasInputFile);
+  }
+  if (value !== null && typeof value === 'object') {
+    return Object.values(value).some(hasInputFile);
+  }
+  return false;
+}
+
 /** A random `attach://` id for a file part. */
 function getFileId(): string {
   return Math.random().toString(36).substring(2);

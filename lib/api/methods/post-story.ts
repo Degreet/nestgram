@@ -1,4 +1,5 @@
 import { ApiMethod } from './api-method';
+import { hasInputFile } from '../form-data';
 import type {
   RawInputStoryContent,
   RawMessageEntity,
@@ -21,7 +22,13 @@ export interface PostStoryOptions {
 export class PostStory extends ApiMethod<PostStoryOptions, RawStory> {
   readonly method = 'postStory';
 
+  readonly isAttachMedia = true;
+
   constructor(payload: PostStoryOptions) {
     super(payload);
+  }
+
+  get hasMedia(): boolean {
+    return hasInputFile(this.payload);
   }
 }

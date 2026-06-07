@@ -112,6 +112,30 @@ function typeReferencesInputFile(type: IrType): boolean {
   }
 }
 
+const STRING_OR_INPUT_FILE: IrType = {
+  kind: 'union',
+  variants: [
+    { kind: 'primitive', ts: 'string' },
+    { kind: 'reference', name: INPUT_FILE },
+  ],
+};
+
+/**
+ * The source spells file-upload object fields as a bare `String` (e.g.
+ * `InputSticker.sticker`), losing the `InputFile` alternative. Their description
+ * is the reliable signal: an uploadable field always documents the
+ * `attach://…` form. Such fields are widened to `string | InputFile`, which also
+ * lets `detectMedia` find them. (Direct method-arg files are already typed
+ * `InputFile` by the source.)
+ */
+function isFileUploadField(field: SpecField): boolean {
+  return (
+    field.types.length === 1 &&
+    field.types[0] === 'String' &&
+    field.description.includes('attach://')
+  );
+}
+
 function resolveFieldType(owner: string, field: SpecField): IrType {
   const override = overrideFieldType(owner, field.name);
   if (override) {
@@ -120,6 +144,9 @@ function resolveFieldType(owner: string, field: SpecField): IrType {
   const literals = enumLiterals(owner, field.name);
   if (literals) {
     return { kind: 'literalUnion', literals: [...literals] };
+  }
+  if (isFileUploadField(field)) {
+    return STRING_OR_INPUT_FILE;
   }
   return lowerTypes(field.types);
 }

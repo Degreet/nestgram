@@ -1,5 +1,6 @@
 import { ApiMethod } from './api-method';
-import { InputFile } from '../input-file';
+import { hasInputFile } from '../form-data';
+import type { InputFile } from '../input-file';
 
 export interface SetChatPhotoOptions {
   chat_id: number | string;
@@ -14,6 +15,6 @@ export class SetChatPhoto extends ApiMethod<SetChatPhotoOptions, true> {
   }
 
   get hasMedia(): boolean {
-    return this.payload?.photo instanceof InputFile;
+    return hasInputFile(this.payload);
   }
 }

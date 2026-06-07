@@ -1,5 +1,6 @@
 import { ApiMethod } from './api-method';
-import { InputFile } from '../input-file';
+import { hasInputFile } from '../form-data';
+import type { InputFile } from '../input-file';
 import type {
   RawForceReply,
   RawInlineKeyboardMarkup,
@@ -48,9 +49,6 @@ export class SendAnimation extends ApiMethod<SendAnimationOptions, RawMessage> {
   }
 
   get hasMedia(): boolean {
-    return (
-      this.payload?.animation instanceof InputFile ||
-      this.payload?.thumbnail instanceof InputFile
-    );
+    return hasInputFile(this.payload);
   }
 }
