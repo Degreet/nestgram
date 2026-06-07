@@ -54,8 +54,10 @@ Everything needed to ship a production bot.
 - [ ] i18n via `AsyncLocalStorage` (`nestjs-cls`): ambient `t()` / locale,
       explicit pass-through across worker/queue boundaries
 - [x] Type + method **code generation** from a community spec — `tools/codegen/`
-      over a vendored `ark0f/tg-bot-api` spec; `npm run generate`
-- [x] Full update-type coverage — 135 methods + 225 `Raw*` types generated
+      over a vendored `PaulSonOfLars/telegram-bot-api-spec` (daily docs scrape);
+      `npm run generate`
+- [x] Full update-type coverage — Bot API 10.0: 176 methods + 295 `Raw*` types
+      generated
 - [ ] Send throttler (global 30/s, 1/s per chat, `429 retry_after`)
 
 ## Phase 3 — Conversations
