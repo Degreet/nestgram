@@ -1,6 +1,11 @@
 import { getAmbient } from '../ambient';
-import { LOCALE, TRANSLATOR } from './i18n.constants';
-import type { TranslateFn, TranslateParams } from './i18n.types';
+import { LOCALE, TRANSLATOR, TRANSLATOR_FACTORY } from './i18n.constants';
+import type {
+  Translate,
+  TranslateFn,
+  TranslateParams,
+  TranslatorFactory,
+} from './i18n.types';
 
 const PLACEHOLDER = /\{(\w+)\}/g;
 
@@ -28,11 +33,29 @@ export function interpolate(
  * anywhere in the update's call chain via the ambient context, never an injected
  * parameter (the framework's i18n bargain).
  *
+ * Pass a locale string to translate into an explicit locale instead of the
+ * ambient one (`t(key, 'uk')`, `t(key, params, 'uk')`) — useful when one handler
+ * renders text in more than one language. The second argument is read as params
+ * when it's an object, as a locale when it's a string.
+ *
  * Degrades gracefully: with i18n unconfigured, outside an update, or for an
  * unknown key, it returns the key itself — visible, never throwing.
  */
-export const t: TranslateFn = (key, params) => {
-  const translator = getAmbient<TranslateFn>(TRANSLATOR);
+export const t: Translate = (
+  key: string,
+  paramsOrLocale?: TranslateParams | string,
+  explicitLocale?: string,
+): string => {
+  const params =
+    typeof paramsOrLocale === 'object' ? paramsOrLocale : undefined;
+  const locale =
+    typeof paramsOrLocale === 'string' ? paramsOrLocale : explicitLocale;
+
+  const translator =
+    locale === undefined
+      ? getAmbient<TranslateFn>(TRANSLATOR)
+      : getAmbient<TranslatorFactory>(TRANSLATOR_FACTORY)?.(locale);
+
   return translator ? translator(key, params) : key;
 };
 

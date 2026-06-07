@@ -1,10 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 
 import { setAmbient } from '../ambient';
 import { TelegramExecutionContext } from '../engine/context';
 import { Providers } from '../providers';
 import type { NestgramModuleOptions } from '../module/nestgram-module.types';
-import { LOCALE, TRANSLATOR } from './i18n.constants';
+import { LOCALE, TRANSLATOR, TRANSLATOR_FACTORY } from './i18n.constants';
 import { interpolate } from './translate';
 import type { I18nOptions, TranslateFn } from './i18n.types';
 
@@ -19,7 +19,9 @@ import type { I18nOptions, TranslateFn } from './i18n.types';
  */
 @Injectable()
 export class I18nManager {
+  private readonly logger = new Logger('I18n');
   private readonly translators = new Map<string, TranslateFn>();
+  private readonly missingWarned = new Set<string>();
 
   constructor(
     @Inject(Providers.NESTGRAM_OPTIONS)
@@ -35,6 +37,11 @@ export class I18nManager {
     const resolved = this.resolveLocale(ctx, config);
     setAmbient(LOCALE, resolved);
     setAmbient(TRANSLATOR, this.translatorFor(resolved, config));
+    // Lets the free `t(key, locale)` translate into an explicit locale anywhere
+    // in this update's call chain, without DI.
+    setAmbient(TRANSLATOR_FACTORY, (locale: string) =>
+      this.translatorFor(locale, config),
+    );
   }
 
   /**
@@ -70,12 +77,31 @@ export class I18nManager {
     const translator: TranslateFn = (key, params) => {
       const template =
         config.translations[locale]?.[key] ??
-        config.translations[fallback]?.[key] ??
-        key;
+        config.translations[fallback]?.[key];
+      if (template === undefined) {
+        // Returning the key is a safe, visible fallback; warn only when asked,
+        // so a genuine catalog gap is catchable without noise in production.
+        if (config.logMissingKeys) {
+          this.warnMissingKey(locale, key);
+        }
+        return key;
+      }
       return interpolate(template, params);
     };
     this.translators.set(locale, translator);
     return translator;
+  }
+
+  private warnMissingKey(locale: string, key: string): void {
+    const marker = `${locale}:${key}`;
+    if (this.missingWarned.has(marker)) {
+      return;
+    }
+    this.missingWarned.add(marker);
+    this.logger.warn(
+      `Missing i18n key "${key}" for locale "${locale}" (and fallback) — ` +
+        `returning the key verbatim.`,
+    );
   }
 }
 

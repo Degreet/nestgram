@@ -6,3 +6,9 @@ export const LOCALE = Symbol('nestgram:locale');
  * {@link t} helper can translate without DI — `I18nManager` seeds it per update.
  */
 export const TRANSLATOR = Symbol('nestgram:translator');
+
+/**
+ * Ambient-store key for the per-update translator factory (`locale -> translator`),
+ * so `t(key, locale)` can translate into an explicit locale without DI.
+ */
+export const TRANSLATOR_FACTORY = Symbol('nestgram:translator-factory');

@@ -1,3 +1,5 @@
+import { Logger } from '@nestjs/common';
+
 import { runAmbient } from '../ambient';
 import { TelegramExecutionContext } from '../engine/context';
 import { NestgramModuleOptions } from '../module/nestgram-module.types';
@@ -92,6 +94,51 @@ describe('I18nManager.resolve', () => {
       manager({}).resolve(ctxWithLanguage('toString'));
       expect(locale()).toBe('en'); // not 'toString'
     });
+  });
+});
+
+describe('free t() with an explicit locale', () => {
+  it('translates into the given locale, not the ambient one', () => {
+    runAmbient(() => {
+      manager({}).resolve(ctxWithLanguage('en')); // ambient locale = en
+      expect(t('hi', { name: 'Ann' })).toBe('Hello, Ann!'); // ambient
+      expect(t('hi', 'uk')).toBe('Привіт, {name}!'); // explicit, no params
+      expect(t('hi', { name: 'Ann' }, 'uk')).toBe('Привіт, Ann!'); // explicit + params
+    });
+  });
+
+  it('returns the key for an explicit locale outside any ambient context', () => {
+    expect(t('hi', 'uk')).toBe('hi');
+  });
+});
+
+describe('I18nManager logMissingKeys', () => {
+  it('warns once per missing locale+key when enabled, and not otherwise', () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    try {
+      runAmbient(() => {
+        manager({ logMissingKeys: true }).resolve(ctxWithLanguage('en'));
+        expect(t('nope')).toBe('nope');
+        expect(t('nope')).toBe('nope'); // deduped — no second warn
+      });
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0][0]).toContain('nope');
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('does not warn when the flag is off', () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    try {
+      runAmbient(() => {
+        manager({}).resolve(ctxWithLanguage('en'));
+        expect(t('nope')).toBe('nope');
+      });
+      expect(warn).not.toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+    }
   });
 });
 
