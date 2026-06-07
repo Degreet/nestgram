@@ -2,7 +2,10 @@ export * from './create-listener-decorator';
 
 // Match-predicate decorators (sugar over the generic on-* listeners).
 export * from './command.decorator';
+export * from './on-start.decorator';
+export * from './on-help.decorator';
 export * from './hears.decorator';
+export * from './hears-key.decorator';
 export * from './action.decorator';
 
 // Content-type listeners (@OnText, @OnPhoto, @OnMedia, ...).
