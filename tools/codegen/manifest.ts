@@ -11,6 +11,8 @@
  *    needs a new entry here (the deliberate manual step).
  */
 
+import type { IrType } from './ir';
+
 const RAW_PREFIX = 'Raw';
 
 /**
@@ -25,6 +27,7 @@ const INPUT_MEDIA_NAMES: ReadonlySet<string> = new Set([
   'InputMediaPhoto',
   'InputMediaVideo',
   'InputMediaAnimation',
+  'InputMediaLivePhoto',
 ]);
 
 const BARE_REFERENCES: ReadonlySet<string> = new Set<string>([
@@ -61,6 +64,69 @@ export function applyFieldTypeOverride(
   return tsType;
 }
 
+// --- IR-level field-type reconstruction --------------------------------------
+
+/**
+ * The PaulSonOfLars source under-models two things this seam restores at the IR
+ * level (so `collectReferences` resolves the right imports automatically):
+ *
+ * 1. File-upload fields of `Input*` objects are spelled as a bare `String` (the
+ *    "pass attach://… via multipart/form-data" prose), losing the `InputFile`
+ *    alternative ark0f carried. Listed in `FILE_UPLOAD_FIELDS`, widened to
+ *    `string | InputFile` — which also lets `detectMedia` find them.
+ * 2. `sendMediaGroup.media` is a union-of-arrays (`X[] | Y[] | …`); the usable
+ *    shape is one array of the `InputMedia` union, so a mixed-media array
+ *    type-checks.
+ *
+ * The hand-written bare `InputMedia*` classes already type their file fields
+ * correctly, so they are intentionally absent here.
+ */
+const FILE_UPLOAD_FIELDS: ReadonlySet<string> = new Set([
+  'InputSticker.sticker',
+  'InputMediaSticker.media',
+  'InputPaidMediaPhoto.media',
+  'InputPaidMediaVideo.media',
+  'InputPaidMediaVideo.thumbnail',
+  'InputPaidMediaVideo.cover',
+  'InputPaidMediaLivePhoto.media',
+  'InputPaidMediaLivePhoto.photo',
+  'InputProfilePhotoStatic.photo',
+  'InputProfilePhotoAnimated.animation',
+  'InputStoryContentPhoto.photo',
+  'InputStoryContentVideo.video',
+]);
+
+const STRING_OR_INPUT_FILE: IrType = {
+  kind: 'union',
+  variants: [
+    { kind: 'primitive', ts: 'string' },
+    { kind: 'reference', name: 'InputFile' },
+  ],
+};
+
+const INPUT_MEDIA_ARRAY: IrType = {
+  kind: 'array',
+  element: { kind: 'reference', name: 'InputMedia' },
+};
+
+/**
+ * An IR type that replaces a field's source-derived type, or `undefined` to keep
+ * it. Keyed by `<OwnerType|methodName>.<field>`.
+ */
+export function overrideFieldType(
+  owner: string,
+  field: string,
+): IrType | undefined {
+  const key = `${owner}.${field}`;
+  if (key === 'sendMediaGroup.media') {
+    return INPUT_MEDIA_ARRAY;
+  }
+  if (FILE_UPLOAD_FIELDS.has(key)) {
+    return STRING_OR_INPUT_FILE;
+  }
+  return undefined;
+}
+
 // --- Multipart media handling ------------------------------------------------
 
 /** Multipart-transport shape for a method's file field(s). */
@@ -76,6 +142,12 @@ export type MediaConfig =
  * no InputFile-typed field at all, so there is nothing to detect.)
  */
 const MEDIA_OVERRIDES: Readonly<Record<string, MediaConfig>> = {
+  sendMediaGroup: {
+    kind: 'nested',
+    field: 'media',
+    itemField: 'media',
+    array: true,
+  },
   editMessageMedia: {
     kind: 'nested',
     field: 'media',

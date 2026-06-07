@@ -3,23 +3,16 @@ import { Message } from '../../events';
 import type { BotService } from '../bot.service';
 import { InputFile } from '../input-file';
 import type {
-  InputMediaAudio,
-  InputMediaDocument,
-  InputMediaPhoto,
-  InputMediaVideo,
-} from '../input-media';
-import type { RawReplyParameters } from '../../events/raw-update.types';
+  RawInputMedia,
+  RawReplyParameters,
+} from '../../events/raw-update.types';
 
 export interface SendMediaGroupOptions {
   business_connection_id?: string;
   chat_id: number | string;
   message_thread_id?: number;
-  media: (
-    | InputMediaAudio
-    | InputMediaDocument
-    | InputMediaPhoto
-    | InputMediaVideo
-  )[];
+  direct_messages_topic_id?: number;
+  media: RawInputMedia[];
   disable_notification?: boolean;
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;

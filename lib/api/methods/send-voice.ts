@@ -8,12 +8,14 @@ import type {
   RawReplyKeyboardMarkup,
   RawReplyKeyboardRemove,
   RawReplyParameters,
+  RawSuggestedPostParameters,
 } from '../../events/raw-update.types';
 
 export interface SendVoiceOptions {
   business_connection_id?: string;
   chat_id: number | string;
   message_thread_id?: number;
+  direct_messages_topic_id?: number;
   voice: InputFile | string;
   caption?: string;
   parse_mode?: string;
@@ -23,6 +25,7 @@ export interface SendVoiceOptions {
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
+  suggested_post_parameters?: RawSuggestedPostParameters;
   reply_parameters?: RawReplyParameters;
   reply_markup?:
     | RawInlineKeyboardMarkup

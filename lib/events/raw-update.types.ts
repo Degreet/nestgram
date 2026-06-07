@@ -1,5 +1,5 @@
 /**
- * Raw Telegram Bot API wire types — GENERATED from the vendored ark0f spec by
+ * Raw Telegram Bot API wire types — GENERATED from the vendored spec by
  * `npm run generate`. Do not edit by hand. These are the wire shapes the engine
  * wraps into the rich event classes in lib/events; the bare names (User,
  * InputFile, InputMedia*) are hand-written and imported below.
@@ -10,9 +10,18 @@ import {
   InputMediaAnimation,
   InputMediaAudio,
   InputMediaDocument,
+  InputMediaLivePhoto,
   InputMediaPhoto,
   InputMediaVideo,
 } from '../api/input-media';
+
+export interface RawAcceptedGiftTypes {
+  unlimited_gifts: boolean;
+  limited_gifts: boolean;
+  unique_gifts: boolean;
+  premium_subscription: boolean;
+  gifts_from_channels: boolean;
+}
 
 export interface RawAffiliateInfo {
   affiliate_user?: User;
@@ -52,19 +61,19 @@ export type RawBackgroundFill =
   | RawBackgroundFillFreeformGradient;
 
 export interface RawBackgroundFillFreeformGradient {
-  type: 'freeform_gradient';
+  type: string;
   colors: number[];
 }
 
 export interface RawBackgroundFillGradient {
-  type: 'gradient';
+  type: string;
   top_color: number;
   bottom_color: number;
   rotation_angle: number;
 }
 
 export interface RawBackgroundFillSolid {
-  type: 'solid';
+  type: string;
   color: number;
 }
 
@@ -75,37 +84,42 @@ export type RawBackgroundType =
   | RawBackgroundTypeChatTheme;
 
 export interface RawBackgroundTypeChatTheme {
-  type: 'chat_theme';
+  type: string;
   theme_name: string;
 }
 
 export interface RawBackgroundTypeFill {
-  type: 'fill';
+  type: string;
   fill: RawBackgroundFill;
   dark_theme_dimming: number;
 }
 
 export interface RawBackgroundTypePattern {
-  type: 'pattern';
+  type: string;
   document: RawDocument;
   fill: RawBackgroundFill;
   intensity: number;
-  is_inverted?: true;
-  is_moving?: true;
+  is_inverted?: boolean;
+  is_moving?: boolean;
 }
 
 export interface RawBackgroundTypeWallpaper {
-  type: 'wallpaper';
+  type: string;
   document: RawDocument;
   dark_theme_dimming: number;
-  is_blurred?: true;
-  is_moving?: true;
+  is_blurred?: boolean;
+  is_moving?: boolean;
 }
 
 export interface RawBirthdate {
   day: number;
   month: number;
   year?: number;
+}
+
+export interface RawBotAccessSettings {
+  is_access_restricted: boolean;
+  added_users?: User[];
 }
 
 export interface RawBotCommand {
@@ -123,35 +137,35 @@ export type RawBotCommandScope =
   | RawBotCommandScopeChatMember;
 
 export interface RawBotCommandScopeAllChatAdministrators {
-  type: 'all_chat_administrators';
+  type: string;
 }
 
 export interface RawBotCommandScopeAllGroupChats {
-  type: 'all_group_chats';
+  type: string;
 }
 
 export interface RawBotCommandScopeAllPrivateChats {
-  type: 'all_private_chats';
+  type: string;
 }
 
 export interface RawBotCommandScopeChat {
-  type: 'chat';
+  type: string;
   chat_id: number | string;
 }
 
 export interface RawBotCommandScopeChatAdministrators {
-  type: 'chat_administrators';
+  type: string;
   chat_id: number | string;
 }
 
 export interface RawBotCommandScopeChatMember {
-  type: 'chat_member';
+  type: string;
   chat_id: number | string;
   user_id: number;
 }
 
 export interface RawBotCommandScopeDefault {
-  type: 'default';
+  type: string;
 }
 
 export interface RawBotDescription {
@@ -166,12 +180,29 @@ export interface RawBotShortDescription {
   short_description: string;
 }
 
+export interface RawBusinessBotRights {
+  can_reply?: boolean;
+  can_read_messages?: boolean;
+  can_delete_sent_messages?: boolean;
+  can_delete_all_messages?: boolean;
+  can_edit_name?: boolean;
+  can_edit_bio?: boolean;
+  can_edit_profile_photo?: boolean;
+  can_edit_username?: boolean;
+  can_change_gift_settings?: boolean;
+  can_view_gifts_and_stars?: boolean;
+  can_convert_gifts_to_stars?: boolean;
+  can_transfer_and_upgrade_gifts?: boolean;
+  can_transfer_stars?: boolean;
+  can_manage_stories?: boolean;
+}
+
 export interface RawBusinessConnection {
   id: string;
   user: User;
   user_chat_id: number;
   date: number;
-  can_reply: boolean;
+  rights?: RawBusinessBotRights;
   is_enabled: boolean;
 }
 
@@ -216,12 +247,13 @@ export interface RawCallbackQuery {
 
 export interface RawChat {
   id: number;
-  type: 'private' | 'group' | 'supergroup' | 'channel';
+  type: string;
   title?: string;
   username?: string;
   first_name?: string;
   last_name?: string;
-  is_forum?: true;
+  is_forum?: boolean;
+  is_direct_messages?: boolean;
 }
 
 export interface RawChatAdministratorRights {
@@ -240,6 +272,8 @@ export interface RawChatAdministratorRights {
   can_edit_messages?: boolean;
   can_pin_messages?: boolean;
   can_manage_topics?: boolean;
+  can_manage_direct_messages?: boolean;
+  can_manage_tags?: boolean;
 }
 
 export interface RawChatBackground {
@@ -270,20 +304,20 @@ export type RawChatBoostSource =
   | RawChatBoostSourceGiveaway;
 
 export interface RawChatBoostSourceGiftCode {
-  source: 'gift_code';
+  source: string;
   user: User;
 }
 
 export interface RawChatBoostSourceGiveaway {
-  source: 'giveaway';
+  source: string;
   giveaway_message_id: number;
   user?: User;
   prize_star_count?: number;
-  is_unclaimed?: true;
+  is_unclaimed?: boolean;
 }
 
 export interface RawChatBoostSourcePremium {
-  source: 'premium';
+  source: string;
   user: User;
 }
 
@@ -294,12 +328,13 @@ export interface RawChatBoostUpdated {
 
 export interface RawChatFullInfo {
   id: number;
-  type: 'private' | 'group' | 'supergroup' | 'channel';
+  type: string;
   title?: string;
   username?: string;
   first_name?: string;
   last_name?: string;
-  is_forum?: true;
+  is_forum?: boolean;
+  is_direct_messages?: boolean;
   accent_color_id: number;
   max_reaction_count: number;
   photo?: RawChatPhoto;
@@ -309,6 +344,7 @@ export interface RawChatFullInfo {
   business_location?: RawBusinessLocation;
   business_opening_hours?: RawBusinessOpeningHours;
   personal_chat?: RawChat;
+  parent_chat?: RawChat;
   available_reactions?: RawReactionType[];
   background_custom_emoji_id?: string;
   profile_accent_color_id?: number;
@@ -316,28 +352,32 @@ export interface RawChatFullInfo {
   emoji_status_custom_emoji_id?: string;
   emoji_status_expiration_date?: number;
   bio?: string;
-  has_private_forwards?: true;
-  has_restricted_voice_and_video_messages?: true;
-  join_to_send_messages?: true;
-  join_by_request?: true;
+  has_private_forwards?: boolean;
+  has_restricted_voice_and_video_messages?: boolean;
+  join_to_send_messages?: boolean;
+  join_by_request?: boolean;
   description?: string;
   invite_link?: string;
   pinned_message?: RawMessage;
   permissions?: RawChatPermissions;
-  can_send_gift?: true;
-  can_send_paid_media?: true;
+  accepted_gift_types: RawAcceptedGiftTypes;
+  can_send_paid_media?: boolean;
   slow_mode_delay?: number;
   unrestrict_boost_count?: number;
   message_auto_delete_time?: number;
-  has_aggressive_anti_spam_enabled?: true;
-  has_hidden_members?: true;
-  has_protected_content?: true;
-  has_visible_history?: true;
+  has_aggressive_anti_spam_enabled?: boolean;
+  has_hidden_members?: boolean;
+  has_protected_content?: boolean;
+  has_visible_history?: boolean;
   sticker_set_name?: string;
-  can_set_sticker_set?: true;
+  can_set_sticker_set?: boolean;
   custom_emoji_sticker_set_name?: string;
   linked_chat_id?: number;
   location?: RawChatLocation;
+  rating?: RawUserRating;
+  first_profile_audio?: RawAudio;
+  unique_gift_colors?: RawUniqueGiftColors;
+  paid_message_star_count?: number;
 }
 
 export interface RawChatInviteLink {
@@ -377,7 +417,7 @@ export type RawChatMember =
   | RawChatMemberBanned;
 
 export interface RawChatMemberAdministrator {
-  status: 'administrator';
+  status: string;
   user: User;
   can_be_edited: boolean;
   is_anonymous: boolean;
@@ -395,35 +435,39 @@ export interface RawChatMemberAdministrator {
   can_edit_messages?: boolean;
   can_pin_messages?: boolean;
   can_manage_topics?: boolean;
+  can_manage_direct_messages?: boolean;
+  can_manage_tags?: boolean;
   custom_title?: string;
 }
 
 export interface RawChatMemberBanned {
-  status: 'kicked';
+  status: string;
   user: User;
   until_date: number;
 }
 
 export interface RawChatMemberLeft {
-  status: 'left';
+  status: string;
   user: User;
 }
 
 export interface RawChatMemberMember {
-  status: 'member';
+  status: string;
+  tag?: string;
   user: User;
   until_date?: number;
 }
 
 export interface RawChatMemberOwner {
-  status: 'creator';
+  status: string;
   user: User;
   is_anonymous: boolean;
   custom_title?: string;
 }
 
 export interface RawChatMemberRestricted {
-  status: 'restricted';
+  status: string;
+  tag?: string;
   user: User;
   is_member: boolean;
   can_send_messages: boolean;
@@ -436,6 +480,8 @@ export interface RawChatMemberRestricted {
   can_send_polls: boolean;
   can_send_other_messages: boolean;
   can_add_web_page_previews: boolean;
+  can_react_to_messages: boolean;
+  can_edit_tag: boolean;
   can_change_info: boolean;
   can_invite_users: boolean;
   can_pin_messages: boolean;
@@ -454,6 +500,14 @@ export interface RawChatMemberUpdated {
   via_chat_folder_invite_link?: boolean;
 }
 
+export interface RawChatOwnerChanged {
+  new_owner: User;
+}
+
+export interface RawChatOwnerLeft {
+  new_owner?: User;
+}
+
 export interface RawChatPermissions {
   can_send_messages?: boolean;
   can_send_audios?: boolean;
@@ -465,6 +519,8 @@ export interface RawChatPermissions {
   can_send_polls?: boolean;
   can_send_other_messages?: boolean;
   can_add_web_page_previews?: boolean;
+  can_react_to_messages?: boolean;
+  can_edit_tag?: boolean;
   can_change_info?: boolean;
   can_invite_users?: boolean;
   can_pin_messages?: boolean;
@@ -484,6 +540,34 @@ export interface RawChatShared {
   title?: string;
   username?: string;
   photo?: RawPhotoSize[];
+}
+
+export interface RawChecklist {
+  title: string;
+  title_entities?: RawMessageEntity[];
+  tasks: RawChecklistTask[];
+  others_can_add_tasks?: boolean;
+  others_can_mark_tasks_as_done?: boolean;
+}
+
+export interface RawChecklistTask {
+  id: number;
+  text: string;
+  text_entities?: RawMessageEntity[];
+  completed_by_user?: User;
+  completed_by_chat?: RawChat;
+  completion_date?: number;
+}
+
+export interface RawChecklistTasksAdded {
+  checklist_message?: RawMessage;
+  tasks: RawChecklistTask[];
+}
+
+export interface RawChecklistTasksDone {
+  checklist_message?: RawMessage;
+  marked_as_done_task_ids?: number[];
+  marked_as_not_done_task_ids?: number[];
 }
 
 export interface RawChosenInlineResult {
@@ -511,6 +595,16 @@ export interface RawDice {
   value: number;
 }
 
+export interface RawDirectMessagePriceChanged {
+  are_direct_messages_enabled: boolean;
+  direct_message_star_count?: number;
+}
+
+export interface RawDirectMessagesTopic {
+  topic_id: number;
+  user?: User;
+}
+
 export interface RawDocument {
   file_id: string;
   file_unique_id: string;
@@ -527,20 +621,7 @@ export interface RawEncryptedCredentials {
 }
 
 export interface RawEncryptedPassportElement {
-  type:
-    | 'personal_details'
-    | 'passport'
-    | 'driver_license'
-    | 'identity_card'
-    | 'internal_passport'
-    | 'address'
-    | 'utility_bill'
-    | 'bank_statement'
-    | 'rental_agreement'
-    | 'passport_registration'
-    | 'temporary_registration'
-    | 'phone_number'
-    | 'email';
+  type: string;
   data?: string;
   phone_number?: string;
   email?: string;
@@ -560,6 +641,7 @@ export interface RawExternalReplyInfo {
   animation?: RawAnimation;
   audio?: RawAudio;
   document?: RawDocument;
+  live_photo?: RawLivePhoto;
   paid_media?: RawPaidMediaInfo;
   photo?: RawPhotoSize[];
   sticker?: RawSticker;
@@ -567,7 +649,8 @@ export interface RawExternalReplyInfo {
   video?: RawVideo;
   video_note?: RawVideoNote;
   voice?: RawVoice;
-  has_media_spoiler?: true;
+  has_media_spoiler?: boolean;
+  checklist?: RawChecklist;
   contact?: RawContact;
   dice?: RawDice;
   game?: RawGame;
@@ -587,7 +670,7 @@ export interface RawFile {
 }
 
 export interface RawForceReply {
-  force_reply: true;
+  force_reply: boolean;
   input_field_placeholder?: string;
   selective?: boolean;
 }
@@ -597,6 +680,7 @@ export interface RawForumTopic {
   name: string;
   icon_color: number;
   icon_custom_emoji_id?: string;
+  is_name_implicit?: boolean;
 }
 
 export type RawForumTopicClosed = Record<string, never>;
@@ -605,6 +689,7 @@ export interface RawForumTopicCreated {
   name: string;
   icon_color: number;
   icon_custom_emoji_id?: string;
+  is_name_implicit?: boolean;
 }
 
 export interface RawForumTopicEdited {
@@ -638,8 +723,34 @@ export interface RawGift {
   sticker: RawSticker;
   star_count: number;
   upgrade_star_count?: number;
+  is_premium?: boolean;
+  has_colors?: boolean;
   total_count?: number;
   remaining_count?: number;
+  personal_total_count?: number;
+  personal_remaining_count?: number;
+  background?: RawGiftBackground;
+  unique_gift_variant_count?: number;
+  publisher_chat?: RawChat;
+}
+
+export interface RawGiftBackground {
+  center_color: number;
+  edge_color: number;
+  text_color: number;
+}
+
+export interface RawGiftInfo {
+  gift: RawGift;
+  owned_gift_id?: string;
+  convert_star_count?: number;
+  prepaid_upgrade_star_count?: number;
+  is_upgrade_separate?: boolean;
+  can_be_upgraded?: boolean;
+  text?: string;
+  entities?: RawMessageEntity[];
+  is_private?: boolean;
+  unique_gift_number?: number;
 }
 
 export interface RawGifts {
@@ -650,8 +761,8 @@ export interface RawGiveaway {
   chats: RawChat[];
   winners_selection_date: number;
   winner_count: number;
-  only_new_members?: true;
-  has_public_winners?: true;
+  only_new_members?: boolean;
+  has_public_winners?: boolean;
   prize_description?: string;
   country_codes?: string[];
   prize_star_count?: number;
@@ -662,7 +773,7 @@ export interface RawGiveawayCompleted {
   winner_count: number;
   unclaimed_prize_count?: number;
   giveaway_message?: RawMessage;
-  is_star_giveaway?: true;
+  is_star_giveaway?: boolean;
 }
 
 export interface RawGiveawayCreated {
@@ -679,8 +790,8 @@ export interface RawGiveawayWinners {
   prize_star_count?: number;
   premium_subscription_month_count?: number;
   unclaimed_prize_count?: number;
-  only_new_members?: true;
-  was_refunded?: true;
+  only_new_members?: boolean;
+  was_refunded?: boolean;
   prize_description?: string;
 }
 
@@ -692,6 +803,8 @@ export interface RawInaccessibleMessage {
 
 export interface RawInlineKeyboardButton {
   text: string;
+  icon_custom_emoji_id?: string;
+  style?: string;
   url?: string;
   callback_data?: string;
   web_app?: RawWebAppInfo;
@@ -713,7 +826,7 @@ export interface RawInlineQuery {
   from: User;
   query: string;
   offset: string;
-  chat_type?: 'sender' | 'private' | 'group' | 'supergroup' | 'channel';
+  chat_type?: string;
   location?: RawLocation;
 }
 
@@ -740,7 +853,7 @@ export type RawInlineQueryResult =
   | RawInlineQueryResultVoice;
 
 export interface RawInlineQueryResultArticle {
-  type: 'article';
+  type: string;
   id: string;
   title: string;
   input_message_content: RawInputMessageContent;
@@ -753,7 +866,7 @@ export interface RawInlineQueryResultArticle {
 }
 
 export interface RawInlineQueryResultAudio {
-  type: 'audio';
+  type: string;
   id: string;
   audio_url: string;
   title: string;
@@ -767,7 +880,7 @@ export interface RawInlineQueryResultAudio {
 }
 
 export interface RawInlineQueryResultCachedAudio {
-  type: 'audio';
+  type: string;
   id: string;
   audio_file_id: string;
   caption?: string;
@@ -778,7 +891,7 @@ export interface RawInlineQueryResultCachedAudio {
 }
 
 export interface RawInlineQueryResultCachedDocument {
-  type: 'document';
+  type: string;
   id: string;
   title: string;
   document_file_id: string;
@@ -791,7 +904,7 @@ export interface RawInlineQueryResultCachedDocument {
 }
 
 export interface RawInlineQueryResultCachedGif {
-  type: 'gif';
+  type: string;
   id: string;
   gif_file_id: string;
   title?: string;
@@ -804,7 +917,7 @@ export interface RawInlineQueryResultCachedGif {
 }
 
 export interface RawInlineQueryResultCachedMpeg4Gif {
-  type: 'mpeg4_gif';
+  type: string;
   id: string;
   mpeg4_file_id: string;
   title?: string;
@@ -817,7 +930,7 @@ export interface RawInlineQueryResultCachedMpeg4Gif {
 }
 
 export interface RawInlineQueryResultCachedPhoto {
-  type: 'photo';
+  type: string;
   id: string;
   photo_file_id: string;
   title?: string;
@@ -831,7 +944,7 @@ export interface RawInlineQueryResultCachedPhoto {
 }
 
 export interface RawInlineQueryResultCachedSticker {
-  type: 'sticker';
+  type: string;
   id: string;
   sticker_file_id: string;
   reply_markup?: RawInlineKeyboardMarkup;
@@ -839,7 +952,7 @@ export interface RawInlineQueryResultCachedSticker {
 }
 
 export interface RawInlineQueryResultCachedVideo {
-  type: 'video';
+  type: string;
   id: string;
   video_file_id: string;
   title: string;
@@ -853,7 +966,7 @@ export interface RawInlineQueryResultCachedVideo {
 }
 
 export interface RawInlineQueryResultCachedVoice {
-  type: 'voice';
+  type: string;
   id: string;
   voice_file_id: string;
   title: string;
@@ -865,7 +978,7 @@ export interface RawInlineQueryResultCachedVoice {
 }
 
 export interface RawInlineQueryResultContact {
-  type: 'contact';
+  type: string;
   id: string;
   phone_number: string;
   first_name: string;
@@ -879,14 +992,14 @@ export interface RawInlineQueryResultContact {
 }
 
 export interface RawInlineQueryResultDocument {
-  type: 'document';
+  type: string;
   id: string;
   title: string;
   caption?: string;
   parse_mode?: string;
   caption_entities?: RawMessageEntity[];
   document_url: string;
-  mime_type: 'application/pdf' | 'application/zip';
+  mime_type: string;
   description?: string;
   reply_markup?: RawInlineKeyboardMarkup;
   input_message_content?: RawInputMessageContent;
@@ -896,21 +1009,21 @@ export interface RawInlineQueryResultDocument {
 }
 
 export interface RawInlineQueryResultGame {
-  type: 'game';
+  type: string;
   id: string;
   game_short_name: string;
   reply_markup?: RawInlineKeyboardMarkup;
 }
 
 export interface RawInlineQueryResultGif {
-  type: 'gif';
+  type: string;
   id: string;
   gif_url: string;
   gif_width?: number;
   gif_height?: number;
   gif_duration?: number;
   thumbnail_url: string;
-  thumbnail_mime_type?: 'image/jpeg' | 'image/gif' | 'video/mp4';
+  thumbnail_mime_type?: string;
   title?: string;
   caption?: string;
   parse_mode?: string;
@@ -921,7 +1034,7 @@ export interface RawInlineQueryResultGif {
 }
 
 export interface RawInlineQueryResultLocation {
-  type: 'location';
+  type: string;
   id: string;
   latitude: number;
   longitude: number;
@@ -938,14 +1051,14 @@ export interface RawInlineQueryResultLocation {
 }
 
 export interface RawInlineQueryResultMpeg4Gif {
-  type: 'mpeg4_gif';
+  type: string;
   id: string;
   mpeg4_url: string;
   mpeg4_width?: number;
   mpeg4_height?: number;
   mpeg4_duration?: number;
   thumbnail_url: string;
-  thumbnail_mime_type?: 'image/jpeg' | 'image/gif' | 'video/mp4';
+  thumbnail_mime_type?: string;
   title?: string;
   caption?: string;
   parse_mode?: string;
@@ -956,7 +1069,7 @@ export interface RawInlineQueryResultMpeg4Gif {
 }
 
 export interface RawInlineQueryResultPhoto {
-  type: 'photo';
+  type: string;
   id: string;
   photo_url: string;
   thumbnail_url: string;
@@ -979,7 +1092,7 @@ export interface RawInlineQueryResultsButton {
 }
 
 export interface RawInlineQueryResultVenue {
-  type: 'venue';
+  type: string;
   id: string;
   latitude: number;
   longitude: number;
@@ -997,10 +1110,10 @@ export interface RawInlineQueryResultVenue {
 }
 
 export interface RawInlineQueryResultVideo {
-  type: 'video';
+  type: string;
   id: string;
   video_url: string;
-  mime_type: 'text/html' | 'video/mp4';
+  mime_type: string;
   thumbnail_url: string;
   title: string;
   caption?: string;
@@ -1016,7 +1129,7 @@ export interface RawInlineQueryResultVideo {
 }
 
 export interface RawInlineQueryResultVoice {
-  type: 'voice';
+  type: string;
   id: string;
   voice_url: string;
   title: string;
@@ -1026,6 +1139,22 @@ export interface RawInlineQueryResultVoice {
   voice_duration?: number;
   reply_markup?: RawInlineKeyboardMarkup;
   input_message_content?: RawInputMessageContent;
+}
+
+export interface RawInputChecklist {
+  title: string;
+  parse_mode?: string;
+  title_entities?: RawMessageEntity[];
+  tasks: RawInputChecklistTask[];
+  others_can_add_tasks?: boolean;
+  others_can_mark_tasks_as_done?: boolean;
+}
+
+export interface RawInputChecklistTask {
+  id: number;
+  text: string;
+  parse_mode?: string;
+  text_entities?: RawMessageEntity[];
 }
 
 export interface RawInputContactMessageContent {
@@ -1069,10 +1198,36 @@ export interface RawInputLocationMessageContent {
 
 export type RawInputMedia =
   | InputMediaAnimation
-  | InputMediaDocument
   | InputMediaAudio
+  | InputMediaDocument
+  | InputMediaLivePhoto
   | InputMediaPhoto
   | InputMediaVideo;
+
+export interface RawInputMediaLocation {
+  type: string;
+  latitude: number;
+  longitude: number;
+  horizontal_accuracy?: number;
+}
+
+export interface RawInputMediaSticker {
+  type: string;
+  media: string | InputFile;
+  emoji?: string;
+}
+
+export interface RawInputMediaVenue {
+  type: string;
+  latitude: number;
+  longitude: number;
+  title: string;
+  address: string;
+  foursquare_id?: string;
+  foursquare_type?: string;
+  google_place_id?: string;
+  google_place_type?: string;
+}
 
 export type RawInputMessageContent =
   | RawInputTextMessageContent
@@ -1081,18 +1236,27 @@ export type RawInputMessageContent =
   | RawInputContactMessageContent
   | RawInputInvoiceMessageContent;
 
-export type RawInputPaidMedia = RawInputPaidMediaPhoto | RawInputPaidMediaVideo;
+export type RawInputPaidMedia =
+  | RawInputPaidMediaLivePhoto
+  | RawInputPaidMediaPhoto
+  | RawInputPaidMediaVideo;
+
+export interface RawInputPaidMediaLivePhoto {
+  type: string;
+  media: string | InputFile;
+  photo: string | InputFile;
+}
 
 export interface RawInputPaidMediaPhoto {
-  type: 'photo';
-  media: string;
+  type: string;
+  media: string | InputFile;
 }
 
 export interface RawInputPaidMediaVideo {
-  type: 'video';
-  media: string;
-  thumbnail?: string;
-  cover?: string;
+  type: string;
+  media: string | InputFile;
+  thumbnail?: string | InputFile;
+  cover?: string | InputFile;
   start_timestamp?: number;
   width?: number;
   height?: number;
@@ -1100,18 +1264,70 @@ export interface RawInputPaidMediaVideo {
   supports_streaming?: boolean;
 }
 
+export type RawInputPollMedia =
+  | InputMediaAnimation
+  | InputMediaAudio
+  | InputMediaDocument
+  | InputMediaLivePhoto
+  | RawInputMediaLocation
+  | InputMediaPhoto
+  | RawInputMediaVenue
+  | InputMediaVideo;
+
 export interface RawInputPollOption {
   text: string;
   text_parse_mode?: string;
   text_entities?: RawMessageEntity[];
+  media?: RawInputPollOptionMedia;
+}
+
+export type RawInputPollOptionMedia =
+  | InputMediaAnimation
+  | InputMediaLivePhoto
+  | RawInputMediaLocation
+  | InputMediaPhoto
+  | RawInputMediaSticker
+  | RawInputMediaVenue
+  | InputMediaVideo;
+
+export type RawInputProfilePhoto =
+  | RawInputProfilePhotoStatic
+  | RawInputProfilePhotoAnimated;
+
+export interface RawInputProfilePhotoAnimated {
+  type: string;
+  animation: string | InputFile;
+  main_frame_timestamp?: number;
+}
+
+export interface RawInputProfilePhotoStatic {
+  type: string;
+  photo: string | InputFile;
 }
 
 export interface RawInputSticker {
-  sticker: InputFile | string;
-  format: 'static' | 'animated' | 'video';
+  sticker: string | InputFile;
+  format: string;
   emoji_list: string[];
   mask_position?: RawMaskPosition;
   keywords?: string[];
+}
+
+export type RawInputStoryContent =
+  | RawInputStoryContentPhoto
+  | RawInputStoryContentVideo;
+
+export interface RawInputStoryContentPhoto {
+  type: string;
+  photo: string | InputFile;
+}
+
+export interface RawInputStoryContentVideo {
+  type: string;
+  video: string | InputFile;
+  duration?: number;
+  cover_frame_timestamp?: number;
+  is_animation?: boolean;
 }
 
 export interface RawInputTextMessageContent {
@@ -1142,8 +1358,11 @@ export interface RawInvoice {
 
 export interface RawKeyboardButton {
   text: string;
+  icon_custom_emoji_id?: string;
+  style?: string;
   request_users?: RawKeyboardButtonRequestUsers;
   request_chat?: RawKeyboardButtonRequestChat;
+  request_managed_bot?: RawKeyboardButtonRequestManagedBot;
   request_contact?: boolean;
   request_location?: boolean;
   request_poll?: RawKeyboardButtonPollType;
@@ -1166,6 +1385,12 @@ export interface RawKeyboardButtonRequestChat {
   request_title?: boolean;
   request_username?: boolean;
   request_photo?: boolean;
+}
+
+export interface RawKeyboardButtonRequestManagedBot {
+  request_id: number;
+  suggested_name?: string;
+  suggested_username?: string;
 }
 
 export interface RawKeyboardButtonRequestUsers {
@@ -1191,6 +1416,17 @@ export interface RawLinkPreviewOptions {
   show_above_text?: boolean;
 }
 
+export interface RawLivePhoto {
+  photo?: RawPhotoSize[];
+  file_id: string;
+  file_unique_id: string;
+  width: number;
+  height: number;
+  duration: number;
+  mime_type?: string;
+  file_size?: number;
+}
+
 export interface RawLocation {
   latitude: number;
   longitude: number;
@@ -1200,6 +1436,13 @@ export interface RawLocation {
   proximity_alert_radius?: number;
 }
 
+export interface RawLocationAddress {
+  country_code: string;
+  state?: string;
+  city?: string;
+  street?: string;
+}
+
 export interface RawLoginUrl {
   url: string;
   forward_text?: string;
@@ -1207,8 +1450,17 @@ export interface RawLoginUrl {
   request_write_access?: boolean;
 }
 
+export interface RawManagedBotCreated {
+  bot: User;
+}
+
+export interface RawManagedBotUpdated {
+  user: User;
+  bot: User;
+}
+
 export interface RawMaskPosition {
-  point: 'forehead' | 'eyes' | 'mouth' | 'chin';
+  point: string;
   x_shift: number;
   y_shift: number;
   scale: number;
@@ -1222,15 +1474,15 @@ export type RawMenuButton =
   | RawMenuButtonDefault;
 
 export interface RawMenuButtonCommands {
-  type: 'commands';
+  type: string;
 }
 
 export interface RawMenuButtonDefault {
-  type: 'default';
+  type: string;
 }
 
 export interface RawMenuButtonWebApp {
-  type: 'web_app';
+  type: string;
   text: string;
   web_app: RawWebAppInfo;
 }
@@ -1238,33 +1490,44 @@ export interface RawMenuButtonWebApp {
 export interface RawMessage {
   message_id: number;
   message_thread_id?: number;
+  direct_messages_topic?: RawDirectMessagesTopic;
   from?: User;
   sender_chat?: RawChat;
   sender_boost_count?: number;
   sender_business_bot?: User;
+  sender_tag?: string;
   date: number;
+  guest_query_id?: string;
   business_connection_id?: string;
   chat: RawChat;
   forward_origin?: RawMessageOrigin;
-  is_topic_message?: true;
-  is_automatic_forward?: true;
+  is_topic_message?: boolean;
+  is_automatic_forward?: boolean;
   reply_to_message?: RawMessage;
   external_reply?: RawExternalReplyInfo;
   quote?: RawTextQuote;
   reply_to_story?: RawStory;
+  reply_to_checklist_task_id?: number;
+  reply_to_poll_option_id?: string;
   via_bot?: User;
+  guest_bot_caller_user?: User;
+  guest_bot_caller_chat?: RawChat;
   edit_date?: number;
-  has_protected_content?: true;
-  is_from_offline?: true;
+  has_protected_content?: boolean;
+  is_from_offline?: boolean;
+  is_paid_post?: boolean;
   media_group_id?: string;
   author_signature?: string;
+  paid_star_count?: number;
   text?: string;
   entities?: RawMessageEntity[];
   link_preview_options?: RawLinkPreviewOptions;
+  suggested_post_info?: RawSuggestedPostInfo;
   effect_id?: string;
   animation?: RawAnimation;
   audio?: RawAudio;
   document?: RawDocument;
+  live_photo?: RawLivePhoto;
   paid_media?: RawPaidMediaInfo;
   photo?: RawPhotoSize[];
   sticker?: RawSticker;
@@ -1274,8 +1537,9 @@ export interface RawMessage {
   voice?: RawVoice;
   caption?: string;
   caption_entities?: RawMessageEntity[];
-  show_caption_above_media?: true;
-  has_media_spoiler?: true;
+  show_caption_above_media?: boolean;
+  has_media_spoiler?: boolean;
+  checklist?: RawChecklist;
   contact?: RawContact;
   dice?: RawDice;
   game?: RawGame;
@@ -1284,12 +1548,14 @@ export interface RawMessage {
   location?: RawLocation;
   new_chat_members?: User[];
   left_chat_member?: User;
+  chat_owner_left?: RawChatOwnerLeft;
+  chat_owner_changed?: RawChatOwnerChanged;
   new_chat_title?: string;
   new_chat_photo?: RawPhotoSize[];
-  delete_chat_photo?: true;
-  group_chat_created?: true;
-  supergroup_chat_created?: true;
-  channel_chat_created?: true;
+  delete_chat_photo?: boolean;
+  group_chat_created?: boolean;
+  supergroup_chat_created?: boolean;
+  channel_chat_created?: boolean;
   message_auto_delete_timer_changed?: RawMessageAutoDeleteTimerChanged;
   migrate_to_chat_id?: number;
   migrate_from_chat_id?: number;
@@ -1299,12 +1565,18 @@ export interface RawMessage {
   refunded_payment?: RawRefundedPayment;
   users_shared?: RawUsersShared;
   chat_shared?: RawChatShared;
+  gift?: RawGiftInfo;
+  unique_gift?: RawUniqueGiftInfo;
+  gift_upgrade_sent?: RawGiftInfo;
   connected_website?: string;
   write_access_allowed?: RawWriteAccessAllowed;
   passport_data?: RawPassportData;
   proximity_alert_triggered?: RawProximityAlertTriggered;
   boost_added?: RawChatBoostAdded;
   chat_background_set?: RawChatBackground;
+  checklist_tasks_done?: RawChecklistTasksDone;
+  checklist_tasks_added?: RawChecklistTasksAdded;
+  direct_message_price_changed?: RawDirectMessagePriceChanged;
   forum_topic_created?: RawForumTopicCreated;
   forum_topic_edited?: RawForumTopicEdited;
   forum_topic_closed?: RawForumTopicClosed;
@@ -1315,6 +1587,15 @@ export interface RawMessage {
   giveaway?: RawGiveaway;
   giveaway_winners?: RawGiveawayWinners;
   giveaway_completed?: RawGiveawayCompleted;
+  managed_bot_created?: RawManagedBotCreated;
+  paid_message_price_changed?: RawPaidMessagePriceChanged;
+  poll_option_added?: RawPollOptionAdded;
+  poll_option_deleted?: RawPollOptionDeleted;
+  suggested_post_approved?: RawSuggestedPostApproved;
+  suggested_post_approval_failed?: RawSuggestedPostApprovalFailed;
+  suggested_post_declined?: RawSuggestedPostDeclined;
+  suggested_post_paid?: RawSuggestedPostPaid;
+  suggested_post_refunded?: RawSuggestedPostRefunded;
   video_chat_scheduled?: RawVideoChatScheduled;
   video_chat_started?: RawVideoChatStarted;
   video_chat_ended?: RawVideoChatEnded;
@@ -1328,32 +1609,15 @@ export interface RawMessageAutoDeleteTimerChanged {
 }
 
 export interface RawMessageEntity {
-  type:
-    | 'mention'
-    | 'hashtag'
-    | 'cashtag'
-    | 'bot_command'
-    | 'url'
-    | 'email'
-    | 'phone_number'
-    | 'bold'
-    | 'italic'
-    | 'underline'
-    | 'strikethrough'
-    | 'spoiler'
-    | 'blockquote'
-    | 'expandable_blockquote'
-    | 'code'
-    | 'pre'
-    | 'text_link'
-    | 'text_mention'
-    | 'custom_emoji';
+  type: string;
   offset: number;
   length: number;
   url?: string;
   user?: User;
   language?: string;
   custom_emoji_id?: string;
+  unix_time?: number;
+  date_time_format?: string;
 }
 
 export interface RawMessageId {
@@ -1367,7 +1631,7 @@ export type RawMessageOrigin =
   | RawMessageOriginChannel;
 
 export interface RawMessageOriginChannel {
-  type: 'channel';
+  type: string;
   date: number;
   chat: RawChat;
   message_id: number;
@@ -1375,20 +1639,20 @@ export interface RawMessageOriginChannel {
 }
 
 export interface RawMessageOriginChat {
-  type: 'chat';
+  type: string;
   date: number;
   sender_chat: RawChat;
   author_signature?: string;
 }
 
 export interface RawMessageOriginHiddenUser {
-  type: 'hidden_user';
+  type: string;
   date: number;
   sender_user_name: string;
 }
 
 export interface RawMessageOriginUser {
-  type: 'user';
+  type: string;
   date: number;
   sender_user: User;
 }
@@ -1417,9 +1681,48 @@ export interface RawOrderInfo {
   shipping_address?: RawShippingAddress;
 }
 
+export type RawOwnedGift = RawOwnedGiftRegular | RawOwnedGiftUnique;
+
+export interface RawOwnedGiftRegular {
+  type: string;
+  gift: RawGift;
+  owned_gift_id?: string;
+  sender_user?: User;
+  send_date: number;
+  text?: string;
+  entities?: RawMessageEntity[];
+  is_private?: boolean;
+  is_saved?: boolean;
+  can_be_upgraded?: boolean;
+  was_refunded?: boolean;
+  convert_star_count?: number;
+  prepaid_upgrade_star_count?: number;
+  is_upgrade_separate?: boolean;
+  unique_gift_number?: number;
+}
+
+export interface RawOwnedGifts {
+  total_count: number;
+  gifts: RawOwnedGift[];
+  next_offset?: string;
+}
+
+export interface RawOwnedGiftUnique {
+  type: string;
+  gift: RawUniqueGift;
+  owned_gift_id?: string;
+  sender_user?: User;
+  send_date: number;
+  is_saved?: boolean;
+  can_be_transferred?: boolean;
+  transfer_star_count?: number;
+  next_transfer_date?: number;
+}
+
 export type RawPaidMedia =
-  | RawPaidMediaPreview
+  | RawPaidMediaLivePhoto
   | RawPaidMediaPhoto
+  | RawPaidMediaPreview
   | RawPaidMediaVideo;
 
 export interface RawPaidMediaInfo {
@@ -1427,13 +1730,18 @@ export interface RawPaidMediaInfo {
   paid_media: RawPaidMedia[];
 }
 
+export interface RawPaidMediaLivePhoto {
+  type: string;
+  live_photo: RawLivePhoto;
+}
+
 export interface RawPaidMediaPhoto {
-  type: 'photo';
+  type: string;
   photo: RawPhotoSize[];
 }
 
 export interface RawPaidMediaPreview {
-  type: 'preview';
+  type: string;
   width?: number;
   height?: number;
   duration?: number;
@@ -1445,8 +1753,12 @@ export interface RawPaidMediaPurchased {
 }
 
 export interface RawPaidMediaVideo {
-  type: 'video';
+  type: string;
   video: RawVideo;
+}
+
+export interface RawPaidMessagePriceChanged {
+  paid_message_star_count: number;
 }
 
 export interface RawPassportData {
@@ -1466,98 +1778,64 @@ export type RawPassportElementError =
   | RawPassportElementErrorUnspecified;
 
 export interface RawPassportElementErrorDataField {
-  source: 'data';
-  type:
-    | 'personal_details'
-    | 'passport'
-    | 'driver_license'
-    | 'identity_card'
-    | 'internal_passport'
-    | 'address';
+  source: string;
+  type: string;
   field_name: string;
   data_hash: string;
   message: string;
 }
 
 export interface RawPassportElementErrorFile {
-  source: 'file';
-  type:
-    | 'utility_bill'
-    | 'bank_statement'
-    | 'rental_agreement'
-    | 'passport_registration'
-    | 'temporary_registration';
+  source: string;
+  type: string;
   file_hash: string;
   message: string;
 }
 
 export interface RawPassportElementErrorFiles {
-  source: 'files';
-  type:
-    | 'utility_bill'
-    | 'bank_statement'
-    | 'rental_agreement'
-    | 'passport_registration'
-    | 'temporary_registration';
+  source: string;
+  type: string;
   file_hashes: string[];
   message: string;
 }
 
 export interface RawPassportElementErrorFrontSide {
-  source: 'front_side';
-  type: 'passport' | 'driver_license' | 'identity_card' | 'internal_passport';
+  source: string;
+  type: string;
   file_hash: string;
   message: string;
 }
 
 export interface RawPassportElementErrorReverseSide {
-  source: 'reverse_side';
-  type: 'driver_license' | 'identity_card';
+  source: string;
+  type: string;
   file_hash: string;
   message: string;
 }
 
 export interface RawPassportElementErrorSelfie {
-  source: 'selfie';
-  type: 'passport' | 'driver_license' | 'identity_card' | 'internal_passport';
+  source: string;
+  type: string;
   file_hash: string;
   message: string;
 }
 
 export interface RawPassportElementErrorTranslationFile {
-  source: 'translation_file';
-  type:
-    | 'passport'
-    | 'driver_license'
-    | 'identity_card'
-    | 'internal_passport'
-    | 'utility_bill'
-    | 'bank_statement'
-    | 'rental_agreement'
-    | 'passport_registration'
-    | 'temporary_registration';
+  source: string;
+  type: string;
   file_hash: string;
   message: string;
 }
 
 export interface RawPassportElementErrorTranslationFiles {
-  source: 'translation_files';
-  type:
-    | 'passport'
-    | 'driver_license'
-    | 'identity_card'
-    | 'internal_passport'
-    | 'utility_bill'
-    | 'bank_statement'
-    | 'rental_agreement'
-    | 'passport_registration'
-    | 'temporary_registration';
+  source: string;
+  type: string;
   file_hashes: string[];
   message: string;
 }
 
 export interface RawPassportElementErrorUnspecified {
-  source: 'unspecified';
+  source: string;
   type: string;
   element_hash: string;
   message: string;
@@ -1586,13 +1864,20 @@ export interface RawPoll {
   total_voter_count: number;
   is_closed: boolean;
   is_anonymous: boolean;
-  type: 'regular' | 'quiz';
+  type: string;
   allows_multiple_answers: boolean;
-  correct_option_id?: number;
+  allows_revoting: boolean;
+  members_only: boolean;
+  country_codes?: string[];
+  correct_option_ids?: number[];
   explanation?: string;
   explanation_entities?: RawMessageEntity[];
+  explanation_media?: RawPollMedia;
   open_period?: number;
   close_date?: number;
+  description?: string;
+  description_entities?: RawMessageEntity[];
+  media?: RawPollMedia;
 }
 
 export interface RawPollAnswer {
@@ -1600,12 +1885,44 @@ export interface RawPollAnswer {
   voter_chat?: RawChat;
   user?: User;
   option_ids: number[];
+  option_persistent_ids: string[];
+}
+
+export interface RawPollMedia {
+  animation?: RawAnimation;
+  audio?: RawAudio;
+  document?: RawDocument;
+  live_photo?: RawLivePhoto;
+  location?: RawLocation;
+  photo?: RawPhotoSize[];
+  sticker?: RawSticker;
+  venue?: RawVenue;
+  video?: RawVideo;
 }
 
 export interface RawPollOption {
+  persistent_id: string;
   text: string;
   text_entities?: RawMessageEntity[];
+  media?: RawPollMedia;
   voter_count: number;
+  added_by_user?: User;
+  added_by_chat?: RawChat;
+  addition_date?: number;
+}
+
+export interface RawPollOptionAdded {
+  poll_message?: RawMaybeInaccessibleMessage;
+  option_persistent_id: string;
+  option_text: string;
+  option_text_entities?: RawMessageEntity[];
+}
+
+export interface RawPollOptionDeleted {
+  poll_message?: RawMaybeInaccessibleMessage;
+  option_persistent_id: string;
+  option_text: string;
+  option_text_entities?: RawMessageEntity[];
 }
 
 export interface RawPreCheckoutQuery {
@@ -1621,6 +1938,10 @@ export interface RawPreCheckoutQuery {
 export interface RawPreparedInlineMessage {
   id: string;
   expiration_date: number;
+}
+
+export interface RawPreparedKeyboardButton {
+  id: string;
 }
 
 export interface RawProximityAlertTriggered {
@@ -1640,94 +1961,21 @@ export type RawReactionType =
   | RawReactionTypePaid;
 
 export interface RawReactionTypeCustomEmoji {
-  type: 'custom_emoji';
+  type: string;
   custom_emoji_id: string;
 }
 
 export interface RawReactionTypeEmoji {
-  type: 'emoji';
-  emoji:
-    | '👍'
-    | '👎'
-    | '❤'
-    | '🔥'
-    | '🥰'
-    | '👏'
-    | '😁'
-    | '🤔'
-    | '🤯'
-    | '😱'
-    | '🤬'
-    | '😢'
-    | '🎉'
-    | '🤩'
-    | '🤮'
-    | '💩'
-    | '🙏'
-    | '👌'
-    | '🕊'
-    | '🤡'
-    | '🥱'
-    | '🥴'
-    | '😍'
-    | '🐳'
-    | '❤‍🔥'
-    | '🌚'
-    | '🌭'
-    | '💯'
-    | '🤣'
-    | '⚡'
-    | '🍌'
-    | '🏆'
-    | '💔'
-    | '🤨'
-    | '😐'
-    | '🍓'
-    | '🍾'
-    | '💋'
-    | '🖕'
-    | '😈'
-    | '😴'
-    | '😭'
-    | '🤓'
-    | '👻'
-    | '👨‍💻'
-    | '👀'
-    | '🎃'
-    | '🙈'
-    | '😇'
-    | '😨'
-    | '🤝'
-    | '✍'
-    | '🤗'
-    | '🫡'
-    | '🎅'
-    | '🎄'
-    | '☃'
-    | '💅'
-    | '🤪'
-    | '🗿'
-    | '🆒'
-    | '💘'
-    | '🙉'
-    | '🦄'
-    | '😘'
-    | '💊'
-    | '🙊'
-    | '😎'
-    | '👾'
-    | '🤷‍♂'
-    | '🤷'
-    | '🤷‍♀'
-    | '😡';
+  type: string;
+  emoji: string;
 }
 
 export interface RawReactionTypePaid {
-  type: 'paid';
+  type: string;
 }
 
 export interface RawRefundedPayment {
-  currency: 'XTR';
+  currency: string;
   total_amount: number;
   invoice_payload: string;
   telegram_payment_charge_id: string;
@@ -1744,7 +1992,7 @@ export interface RawReplyKeyboardMarkup {
 }
 
 export interface RawReplyKeyboardRemove {
-  remove_keyboard: true;
+  remove_keyboard: boolean;
   selective?: boolean;
 }
 
@@ -1756,6 +2004,8 @@ export interface RawReplyParameters {
   quote_parse_mode?: string;
   quote_entities?: RawMessageEntity[];
   quote_position?: number;
+  checklist_task_id?: number;
+  poll_option_id?: string;
 }
 
 export interface RawResponseParameters {
@@ -1769,17 +2019,21 @@ export type RawRevenueWithdrawalState =
   | RawRevenueWithdrawalStateFailed;
 
 export interface RawRevenueWithdrawalStateFailed {
-  type: 'failed';
+  type: string;
 }
 
 export interface RawRevenueWithdrawalStatePending {
-  type: 'pending';
+  type: string;
 }
 
 export interface RawRevenueWithdrawalStateSucceeded {
-  type: 'succeeded';
+  type: string;
   date: number;
   url: string;
+}
+
+export interface RawSentGuestMessage {
+  inline_message_id: string;
 }
 
 export interface RawSentWebAppMessage {
@@ -1816,6 +2070,11 @@ export interface RawShippingQuery {
   shipping_address: RawShippingAddress;
 }
 
+export interface RawStarAmount {
+  amount: number;
+  nanostar_amount?: number;
+}
+
 export interface RawStarTransaction {
   id: string;
   amount: number;
@@ -1832,7 +2091,7 @@ export interface RawStarTransactions {
 export interface RawSticker {
   file_id: string;
   file_unique_id: string;
-  type: 'regular' | 'mask' | 'custom_emoji';
+  type: string;
   width: number;
   height: number;
   is_animated: boolean;
@@ -1843,14 +2102,14 @@ export interface RawSticker {
   premium_animation?: RawFile;
   mask_position?: RawMaskPosition;
   custom_emoji_id?: string;
-  needs_repainting?: true;
+  needs_repainting?: boolean;
   file_size?: number;
 }
 
 export interface RawStickerSet {
   name: string;
   title: string;
-  sticker_type: 'regular' | 'mask' | 'custom_emoji';
+  sticker_type: string;
   stickers: RawSticker[];
   thumbnail?: RawPhotoSize;
 }
@@ -1860,17 +2119,113 @@ export interface RawStory {
   id: number;
 }
 
+export interface RawStoryArea {
+  position: RawStoryAreaPosition;
+  type: RawStoryAreaType;
+}
+
+export interface RawStoryAreaPosition {
+  x_percentage: number;
+  y_percentage: number;
+  width_percentage: number;
+  height_percentage: number;
+  rotation_angle: number;
+  corner_radius_percentage: number;
+}
+
+export type RawStoryAreaType =
+  | RawStoryAreaTypeLocation
+  | RawStoryAreaTypeSuggestedReaction
+  | RawStoryAreaTypeLink
+  | RawStoryAreaTypeWeather
+  | RawStoryAreaTypeUniqueGift;
+
+export interface RawStoryAreaTypeLink {
+  type: string;
+  url: string;
+}
+
+export interface RawStoryAreaTypeLocation {
+  type: string;
+  latitude: number;
+  longitude: number;
+  address?: RawLocationAddress;
+}
+
+export interface RawStoryAreaTypeSuggestedReaction {
+  type: string;
+  reaction_type: RawReactionType;
+  is_dark?: boolean;
+  is_flipped?: boolean;
+}
+
+export interface RawStoryAreaTypeUniqueGift {
+  type: string;
+  name: string;
+}
+
+export interface RawStoryAreaTypeWeather {
+  type: string;
+  temperature: number;
+  emoji: string;
+  background_color: number;
+}
+
 export interface RawSuccessfulPayment {
   currency: string;
   total_amount: number;
   invoice_payload: string;
   subscription_expiration_date?: number;
-  is_recurring?: true;
-  is_first_recurring?: true;
+  is_recurring?: boolean;
+  is_first_recurring?: boolean;
   shipping_option_id?: string;
   order_info?: RawOrderInfo;
   telegram_payment_charge_id: string;
   provider_payment_charge_id: string;
+}
+
+export interface RawSuggestedPostApprovalFailed {
+  suggested_post_message?: RawMessage;
+  price: RawSuggestedPostPrice;
+}
+
+export interface RawSuggestedPostApproved {
+  suggested_post_message?: RawMessage;
+  price?: RawSuggestedPostPrice;
+  send_date: number;
+}
+
+export interface RawSuggestedPostDeclined {
+  suggested_post_message?: RawMessage;
+  comment?: string;
+}
+
+export interface RawSuggestedPostInfo {
+  state: string;
+  price?: RawSuggestedPostPrice;
+  send_date?: number;
+}
+
+export interface RawSuggestedPostPaid {
+  suggested_post_message?: RawMessage;
+  currency: string;
+  amount?: number;
+  star_amount?: RawStarAmount;
+}
+
+export interface RawSuggestedPostParameters {
+  price?: RawSuggestedPostPrice;
+  send_date?: number;
+}
+
+export interface RawSuggestedPostPrice {
+  currency: string;
+  amount: number;
+}
+
+export interface RawSuggestedPostRefunded {
+  suggested_post_message?: RawMessage;
+  reason: string;
 }
 
 export interface RawSwitchInlineQueryChosenChat {
@@ -1885,7 +2240,7 @@ export interface RawTextQuote {
   text: string;
   entities?: RawMessageEntity[];
   position: number;
-  is_manual?: true;
+  is_manual?: boolean;
 }
 
 export type RawTransactionPartner =
@@ -1898,37 +2253,38 @@ export type RawTransactionPartner =
   | RawTransactionPartnerOther;
 
 export interface RawTransactionPartnerAffiliateProgram {
-  type: 'affiliate_program';
+  type: string;
   sponsor_user?: User;
   commission_per_mille: number;
 }
 
 export interface RawTransactionPartnerChat {
-  type: 'chat';
+  type: string;
   chat: RawChat;
   gift?: RawGift;
 }
 
 export interface RawTransactionPartnerFragment {
-  type: 'fragment';
+  type: string;
   withdrawal_state?: RawRevenueWithdrawalState;
 }
 
 export interface RawTransactionPartnerOther {
-  type: 'other';
+  type: string;
 }
 
 export interface RawTransactionPartnerTelegramAds {
-  type: 'telegram_ads';
+  type: string;
 }
 
 export interface RawTransactionPartnerTelegramApi {
-  type: 'telegram_api';
+  type: string;
   request_count: number;
 }
 
 export interface RawTransactionPartnerUser {
-  type: 'user';
+  type: string;
+  transaction_type: string;
   user: User;
   affiliate?: RawAffiliateInfo;
   invoice_payload?: string;
@@ -1936,6 +2292,67 @@ export interface RawTransactionPartnerUser {
   paid_media?: RawPaidMedia[];
   paid_media_payload?: string;
   gift?: RawGift;
+  premium_subscription_duration?: number;
+}
+
+export interface RawUniqueGift {
+  gift_id: string;
+  base_name: string;
+  name: string;
+  number: number;
+  model: RawUniqueGiftModel;
+  symbol: RawUniqueGiftSymbol;
+  backdrop: RawUniqueGiftBackdrop;
+  is_premium?: boolean;
+  is_burned?: boolean;
+  is_from_blockchain?: boolean;
+  colors?: RawUniqueGiftColors;
+  publisher_chat?: RawChat;
+}
+
+export interface RawUniqueGiftBackdrop {
+  name: string;
+  colors: RawUniqueGiftBackdropColors;
+  rarity_per_mille: number;
+}
+
+export interface RawUniqueGiftBackdropColors {
+  center_color: number;
+  edge_color: number;
+  symbol_color: number;
+  text_color: number;
+}
+
+export interface RawUniqueGiftColors {
+  model_custom_emoji_id: string;
+  symbol_custom_emoji_id: string;
+  light_theme_main_color: number;
+  light_theme_other_colors: number[];
+  dark_theme_main_color: number;
+  dark_theme_other_colors: number[];
+}
+
+export interface RawUniqueGiftInfo {
+  gift: RawUniqueGift;
+  origin: string;
+  last_resale_currency?: string;
+  last_resale_amount?: number;
+  owned_gift_id?: string;
+  transfer_star_count?: number;
+  next_transfer_date?: number;
+}
+
+export interface RawUniqueGiftModel {
+  name: string;
+  sticker: RawSticker;
+  rarity_per_mille: number;
+  rarity?: string;
+}
+
+export interface RawUniqueGiftSymbol {
+  name: string;
+  sticker: RawSticker;
+  rarity_per_mille: number;
 }
 
 export interface RawUpdate {
@@ -1948,6 +2365,7 @@ export interface RawUpdate {
   business_message?: RawMessage;
   edited_business_message?: RawMessage;
   deleted_business_messages?: RawBusinessMessagesDeleted;
+  guest_message?: RawMessage;
   message_reaction?: RawMessageReactionUpdated;
   message_reaction_count?: RawMessageReactionCountUpdated;
   inline_query?: RawInlineQuery;
@@ -1963,15 +2381,28 @@ export interface RawUpdate {
   chat_join_request?: RawChatJoinRequest;
   chat_boost?: RawChatBoostUpdated;
   removed_chat_boost?: RawChatBoostRemoved;
+  managed_bot?: RawManagedBotUpdated;
 }
 
 export interface RawUserChatBoosts {
   boosts: RawChatBoost[];
 }
 
+export interface RawUserProfileAudios {
+  total_count: number;
+  audios: RawAudio[];
+}
+
 export interface RawUserProfilePhotos {
   total_count: number;
   photos: RawPhotoSize[][];
+}
+
+export interface RawUserRating {
+  level: number;
+  rating: number;
+  current_level_rating: number;
+  next_level_rating?: number;
 }
 
 export interface RawUsersShared {
@@ -1998,6 +2429,7 @@ export interface RawVideo {
   thumbnail?: RawPhotoSize;
   cover?: RawPhotoSize[];
   start_timestamp?: number;
+  qualities?: RawVideoQuality[];
   file_name?: string;
   mime_type?: string;
   file_size?: number;
@@ -2023,6 +2455,15 @@ export interface RawVideoNote {
   length: number;
   duration: number;
   thumbnail?: RawPhotoSize;
+  file_size?: number;
+}
+
+export interface RawVideoQuality {
+  file_id: string;
+  file_unique_id: string;
+  width: number;
+  height: number;
+  codec: string;
   file_size?: number;
 }
 

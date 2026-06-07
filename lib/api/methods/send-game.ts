@@ -7,7 +7,7 @@ import type {
 
 export interface SendGameOptions {
   business_connection_id?: string;
-  chat_id: number;
+  chat_id: number | string;
   message_thread_id?: number;
   game_short_name: string;
   disable_notification?: boolean;

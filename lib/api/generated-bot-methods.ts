@@ -7,6 +7,8 @@ import {
   AddStickerToSetOptions,
   AnswerCallbackQuery,
   AnswerCallbackQueryOptions,
+  AnswerGuestQuery,
+  AnswerGuestQueryOptions,
   AnswerInlineQuery,
   AnswerInlineQueryOptions,
   AnswerPreCheckoutQuery,
@@ -17,6 +19,8 @@ import {
   AnswerWebAppQueryOptions,
   ApproveChatJoinRequest,
   ApproveChatJoinRequestOptions,
+  ApproveSuggestedPost,
+  ApproveSuggestedPostOptions,
   BanChatMember,
   BanChatMemberOptions,
   BanChatSenderChat,
@@ -26,6 +30,8 @@ import {
   CloseForumTopicOptions,
   CloseGeneralForumTopic,
   CloseGeneralForumTopicOptions,
+  ConvertGiftToStars,
+  ConvertGiftToStarsOptions,
   CopyMessage,
   CopyMessageOptions,
   CopyMessages,
@@ -42,6 +48,12 @@ import {
   CreateNewStickerSetOptions,
   DeclineChatJoinRequest,
   DeclineChatJoinRequestOptions,
+  DeclineSuggestedPost,
+  DeclineSuggestedPostOptions,
+  DeleteAllMessageReactions,
+  DeleteAllMessageReactionsOptions,
+  DeleteBusinessMessages,
+  DeleteBusinessMessagesOptions,
   DeleteChatPhoto,
   DeleteChatPhotoOptions,
   DeleteChatStickerSet,
@@ -50,6 +62,8 @@ import {
   DeleteForumTopicOptions,
   DeleteMessage,
   DeleteMessageOptions,
+  DeleteMessageReaction,
+  DeleteMessageReactionOptions,
   DeleteMessages,
   DeleteMessagesOptions,
   DeleteMyCommands,
@@ -58,6 +72,8 @@ import {
   DeleteStickerFromSetOptions,
   DeleteStickerSet,
   DeleteStickerSetOptions,
+  DeleteStory,
+  DeleteStoryOptions,
   DeleteWebhook,
   DeleteWebhookOptions,
   EditChatInviteLink,
@@ -70,6 +86,8 @@ import {
   EditGeneralForumTopicOptions,
   EditMessageCaption,
   EditMessageCaptionOptions,
+  EditMessageChecklist,
+  EditMessageChecklistOptions,
   EditMessageLiveLocation,
   EditMessageLiveLocationOptions,
   EditMessageMedia,
@@ -78,6 +96,8 @@ import {
   EditMessageReplyMarkupOptions,
   EditMessageText,
   EditMessageTextOptions,
+  EditStory,
+  EditStoryOptions,
   EditUserStarSubscription,
   EditUserStarSubscriptionOptions,
   ExportChatInviteLink,
@@ -87,11 +107,17 @@ import {
   ForwardMessages,
   ForwardMessagesOptions,
   GetAvailableGifts,
+  GetBusinessAccountGifts,
+  GetBusinessAccountGiftsOptions,
+  GetBusinessAccountStarBalance,
+  GetBusinessAccountStarBalanceOptions,
   GetBusinessConnection,
   GetBusinessConnectionOptions,
   GetChat,
   GetChatAdministrators,
   GetChatAdministratorsOptions,
+  GetChatGifts,
+  GetChatGiftsOptions,
   GetChatMember,
   GetChatMemberCount,
   GetChatMemberCountOptions,
@@ -104,6 +130,10 @@ import {
   GetForumTopicIconStickers,
   GetGameHighScores,
   GetGameHighScoresOptions,
+  GetManagedBotAccessSettings,
+  GetManagedBotAccessSettingsOptions,
+  GetManagedBotToken,
+  GetManagedBotTokenOptions,
   GetMyCommands,
   GetMyCommandsOptions,
   GetMyDefaultAdministratorRights,
@@ -114,6 +144,7 @@ import {
   GetMyNameOptions,
   GetMyShortDescription,
   GetMyShortDescriptionOptions,
+  GetMyStarBalance,
   GetStarTransactions,
   GetStarTransactionsOptions,
   GetStickerSet,
@@ -122,9 +153,17 @@ import {
   GetUpdatesOptions,
   GetUserChatBoosts,
   GetUserChatBoostsOptions,
+  GetUserGifts,
+  GetUserGiftsOptions,
+  GetUserPersonalChatMessages,
+  GetUserPersonalChatMessagesOptions,
+  GetUserProfileAudios,
+  GetUserProfileAudiosOptions,
   GetUserProfilePhotos,
   GetUserProfilePhotosOptions,
   GetWebhookInfo,
+  GiftPremiumSubscription,
+  GiftPremiumSubscriptionOptions,
   HideGeneralForumTopic,
   HideGeneralForumTopicOptions,
   LeaveChat,
@@ -132,32 +171,47 @@ import {
   LogOut,
   PinChatMessage,
   PinChatMessageOptions,
+  PostStory,
+  PostStoryOptions,
   PromoteChatMember,
   PromoteChatMemberOptions,
+  ReadBusinessMessage,
+  ReadBusinessMessageOptions,
   RefundStarPayment,
   RefundStarPaymentOptions,
+  RemoveBusinessAccountProfilePhoto,
+  RemoveBusinessAccountProfilePhotoOptions,
   RemoveChatVerification,
   RemoveChatVerificationOptions,
+  RemoveMyProfilePhoto,
   RemoveUserVerification,
   RemoveUserVerificationOptions,
   ReopenForumTopic,
   ReopenForumTopicOptions,
   ReopenGeneralForumTopic,
   ReopenGeneralForumTopicOptions,
+  ReplaceManagedBotToken,
+  ReplaceManagedBotTokenOptions,
   ReplaceStickerInSet,
   ReplaceStickerInSetOptions,
+  RepostStory,
+  RepostStoryOptions,
   RestrictChatMember,
   RestrictChatMemberOptions,
   RevokeChatInviteLink,
   RevokeChatInviteLinkOptions,
   SavePreparedInlineMessage,
   SavePreparedInlineMessageOptions,
+  SavePreparedKeyboardButton,
+  SavePreparedKeyboardButtonOptions,
   SendAnimation,
   SendAnimationOptions,
   SendAudio,
   SendAudioOptions,
   SendChatAction,
   SendChatActionOptions,
+  SendChecklist,
+  SendChecklistOptions,
   SendContact,
   SendContactOptions,
   SendDice,
@@ -170,11 +224,15 @@ import {
   SendGiftOptions,
   SendInvoice,
   SendInvoiceOptions,
+  SendLivePhoto,
+  SendLivePhotoOptions,
   SendLocation,
   SendLocationOptions,
   SendMediaGroup,
   SendMediaGroupOptions,
   SendMessage,
+  SendMessageDraft,
+  SendMessageDraftOptions,
   SendMessageOptions,
   SendPaidMedia,
   SendPaidMediaOptions,
@@ -192,10 +250,22 @@ import {
   SendVideoOptions,
   SendVoice,
   SendVoiceOptions,
+  SetBusinessAccountBio,
+  SetBusinessAccountBioOptions,
+  SetBusinessAccountGiftSettings,
+  SetBusinessAccountGiftSettingsOptions,
+  SetBusinessAccountName,
+  SetBusinessAccountNameOptions,
+  SetBusinessAccountProfilePhoto,
+  SetBusinessAccountProfilePhotoOptions,
+  SetBusinessAccountUsername,
+  SetBusinessAccountUsernameOptions,
   SetChatAdministratorCustomTitle,
   SetChatAdministratorCustomTitleOptions,
   SetChatDescription,
   SetChatDescriptionOptions,
+  SetChatMemberTag,
+  SetChatMemberTagOptions,
   SetChatMenuButton,
   SetChatMenuButtonOptions,
   SetChatPermissions,
@@ -210,6 +280,8 @@ import {
   SetCustomEmojiStickerSetThumbnailOptions,
   SetGameScore,
   SetGameScoreOptions,
+  SetManagedBotAccessSettings,
+  SetManagedBotAccessSettingsOptions,
   SetMessageReaction,
   SetMessageReactionOptions,
   SetMyCommands,
@@ -220,6 +292,8 @@ import {
   SetMyDescriptionOptions,
   SetMyName,
   SetMyNameOptions,
+  SetMyProfilePhoto,
+  SetMyProfilePhotoOptions,
   SetMyShortDescription,
   SetMyShortDescriptionOptions,
   SetPassportDataErrors,
@@ -244,6 +318,10 @@ import {
   StopMessageLiveLocationOptions,
   StopPoll,
   StopPollOptions,
+  TransferBusinessAccountStars,
+  TransferBusinessAccountStarsOptions,
+  TransferGift,
+  TransferGiftOptions,
   UnbanChatMember,
   UnbanChatMemberOptions,
   UnbanChatSenderChat,
@@ -258,6 +336,8 @@ import {
   UnpinAllGeneralForumTopicMessagesOptions,
   UnpinChatMessage,
   UnpinChatMessageOptions,
+  UpgradeGift,
+  UpgradeGiftOptions,
   UploadStickerFile,
   UploadStickerFileOptions,
   VerifyChat,
@@ -279,130 +359,286 @@ export abstract class GeneratedBotMethods {
   ): Promise<R>;
 
   /**
-   * Use this method to receive incoming updates using long polling ([wiki](https://en.wikipedia.org/wiki/Push_technology#Long_polling)). Returns an Array of [Update](https://core.telegram.org/bots/api/#update) objects.
-   * @see https://core.telegram.org/bots/api/#getupdates
+   * Use this method to add a new sticker to a set created by the bot. Emoji sticker sets can have up to 200 stickers. Other sticker sets can have up to 120 stickers. Returns True on success.
+   * @param user_id User identifier of sticker set owner
+   * @param name Sticker set name
+   * @param sticker A JSON-serialized object with information about the added sticker. If exactly the same sticker had already been added to the set, then the set isn't changed.
+   * @see https://core.telegram.org/bots/api#addstickertoset
    */
-  getUpdates(callOptions?: MethodOptions<GetUpdatesOptions>) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new GetUpdates(rest), { token, signal });
-  }
-
-  /**
-   * Use this method to specify a URL and receive incoming updates via an outgoing webhook. Whenever there is an update for the bot, we will send an HTTPS POST request to the specified URL, containing a JSON-serialized [Update](https://core.telegram.org/bots/api/#update). In case of an unsuccessful request (a request with response [HTTP status code](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) different from `2XY`), we will repeat the request and give up after a reasonable amount of attempts. Returns *True* on success.
-   *
-   * If you'd like to make sure that the webhook was set by you, you can specify secret data in the parameter *secret\_token*. If specified, the request will contain a header “X-Telegram-Bot-Api-Secret-Token” with the secret token as content.
-   * @param url HTTPS URL to send updates to. Use an empty string to remove webhook integration
-   * @see https://core.telegram.org/bots/api/#setwebhook
-   */
-  setWebhook(
-    url: SetWebhookOptions['url'],
-    callOptions?: MethodOptions<Omit<SetWebhookOptions, 'url'>>,
+  addStickerToSet(
+    user_id: AddStickerToSetOptions['user_id'],
+    name: AddStickerToSetOptions['name'],
+    sticker: AddStickerToSetOptions['sticker'],
+    callOptions?: CallOptions,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SetWebhook({ url, ...rest }), { token, signal });
-  }
-
-  /**
-   * Use this method to remove webhook integration if you decide to switch back to [getUpdates](https://core.telegram.org/bots/api/#getupdates). Returns *True* on success.
-   * @see https://core.telegram.org/bots/api/#deletewebhook
-   */
-  deleteWebhook(callOptions?: MethodOptions<DeleteWebhookOptions>) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new DeleteWebhook(rest), { token, signal });
-  }
-
-  /**
-   * Use this method to get current webhook status. Requires no parameters. On success, returns a [WebhookInfo](https://core.telegram.org/bots/api/#webhookinfo) object. If the bot is using [getUpdates](https://core.telegram.org/bots/api/#getupdates), will return an object with the *url* field empty.
-   * @see https://core.telegram.org/bots/api/#getwebhookinfo
-   */
-  getWebhookInfo(callOptions?: CallOptions) {
-    return this.call(new GetWebhookInfo(), callOptions);
-  }
-
-  /**
-   * Use this method to log out from the cloud Bot API server before launching the bot locally. You **must** log out the bot before running it locally, otherwise there is no guarantee that the bot will receive updates. After a successful call, you can immediately log in on a local server, but will not be able to log in back to the cloud Bot API server for 10 minutes. Returns *True* on success. Requires no parameters.
-   * @see https://core.telegram.org/bots/api/#logout
-   */
-  logOut(callOptions?: CallOptions) {
-    return this.call(new LogOut(), callOptions);
-  }
-
-  /**
-   * Use this method to close the bot instance before moving it from one local server to another. You need to delete the webhook before calling this method to ensure that the bot isn't launched again after server restart. The method will return error 429 in the first 10 minutes after the bot is launched. Returns *True* on success. Requires no parameters.
-   * @see https://core.telegram.org/bots/api/#close
-   */
-  close(callOptions?: CallOptions) {
-    return this.call(new Close(), callOptions);
-  }
-
-  /**
-   * Use this method to send text messages. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param text Text of the message to be sent, 1-4096 characters after entities parsing
-   * @see https://core.telegram.org/bots/api/#sendmessage
-   */
-  sendMessage(
-    chat_id: SendMessageOptions['chat_id'],
-    text: SendMessageOptions['text'],
-    callOptions?: MethodOptions<Omit<SendMessageOptions, 'chat_id' | 'text'>>,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendMessage({ chat_id, text, ...rest }), {
+    return this.call(new AddStickerToSet({ user_id, name, sticker, ...rest }), {
       token,
       signal,
     });
   }
 
   /**
-   * Use this method to forward messages of any kind. Service messages and messages with protected content can't be forwarded. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param from_chat_id Unique identifier for the chat where the original message was sent (or channel username in the format `@channelusername`)
-   * @param message_id Message identifier in the chat specified in *from\_chat\_id*
-   * @see https://core.telegram.org/bots/api/#forwardmessage
+   * Use this method to send answers to callback queries sent from inline keyboards. The answer will be displayed to the user as a notification at the top of the chat screen or as an alert. On success, True is returned.
+   * @param callback_query_id Unique identifier for the query to be answered
+   * @see https://core.telegram.org/bots/api#answercallbackquery
    */
-  forwardMessage(
-    chat_id: ForwardMessageOptions['chat_id'],
-    from_chat_id: ForwardMessageOptions['from_chat_id'],
-    message_id: ForwardMessageOptions['message_id'],
+  answerCallbackQuery(
+    callback_query_id: AnswerCallbackQueryOptions['callback_query_id'],
     callOptions?: MethodOptions<
-      Omit<ForwardMessageOptions, 'chat_id' | 'from_chat_id' | 'message_id'>
+      Omit<AnswerCallbackQueryOptions, 'callback_query_id'>
     >,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new AnswerCallbackQuery({ callback_query_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to reply to a received guest message. On success, a SentGuestMessage object is returned.
+   * @param guest_query_id Unique identifier for the query to be answered
+   * @param result A JSON-serialized object describing the message to be sent
+   * @see https://core.telegram.org/bots/api#answerguestquery
+   */
+  answerGuestQuery(
+    guest_query_id: AnswerGuestQueryOptions['guest_query_id'],
+    result: AnswerGuestQueryOptions['result'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
     return this.call(
-      new ForwardMessage({ chat_id, from_chat_id, message_id, ...rest }),
+      new AnswerGuestQuery({ guest_query_id, result, ...rest }),
       { token, signal },
     );
   }
 
   /**
-   * Use this method to forward multiple messages of any kind. If some of the specified messages can't be found or forwarded, they are skipped. Service messages and messages with protected content can't be forwarded. Album grouping is kept for forwarded messages. On success, an array of [MessageId](https://core.telegram.org/bots/api/#messageid) of the sent messages is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param from_chat_id Unique identifier for the chat where the original messages were sent (or channel username in the format `@channelusername`)
-   * @param message_ids A JSON-serialized list of 1-100 identifiers of messages in the chat *from\_chat\_id* to forward. The identifiers must be specified in a strictly increasing order.
-   * @see https://core.telegram.org/bots/api/#forwardmessages
+   * Use this method to send answers to an inline query. On success, True is returned.
+   * No more than 50 results per query are allowed.
+   * @param inline_query_id Unique identifier for the answered query
+   * @param results A JSON-serialized array of results for the inline query
+   * @see https://core.telegram.org/bots/api#answerinlinequery
    */
-  forwardMessages(
-    chat_id: ForwardMessagesOptions['chat_id'],
-    from_chat_id: ForwardMessagesOptions['from_chat_id'],
-    message_ids: ForwardMessagesOptions['message_ids'],
+  answerInlineQuery(
+    inline_query_id: AnswerInlineQueryOptions['inline_query_id'],
+    results: AnswerInlineQueryOptions['results'],
     callOptions?: MethodOptions<
-      Omit<ForwardMessagesOptions, 'chat_id' | 'from_chat_id' | 'message_ids'>
+      Omit<AnswerInlineQueryOptions, 'inline_query_id' | 'results'>
     >,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
     return this.call(
-      new ForwardMessages({ chat_id, from_chat_id, message_ids, ...rest }),
+      new AnswerInlineQuery({ inline_query_id, results, ...rest }),
       { token, signal },
     );
   }
 
   /**
-   * Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz [poll](https://core.telegram.org/bots/api/#poll) can be copied only if the value of the field *correct\_option\_id* is known to the bot. The method is analogous to the method [forwardMessage](https://core.telegram.org/bots/api/#forwardmessage), but the copied message doesn't have a link to the original message. Returns the [MessageId](https://core.telegram.org/bots/api/#messageid) of the sent message on success.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param from_chat_id Unique identifier for the chat where the original message was sent (or channel username in the format `@channelusername`)
-   * @param message_id Message identifier in the chat specified in *from\_chat\_id*
-   * @see https://core.telegram.org/bots/api/#copymessage
+   * Once the user has confirmed their payment and shipping details, the Bot API sends the final confirmation in the form of an Update with the field pre_checkout_query. Use this method to respond to such pre-checkout queries. On success, True is returned. Note: The Bot API must receive an answer within 10 seconds after the pre-checkout query was sent.
+   * @param pre_checkout_query_id Unique identifier for the query to be answered
+   * @param ok Specify True if everything is alright (goods are available, etc.) and the bot is ready to proceed with the order. Use False if there are any problems.
+   * @see https://core.telegram.org/bots/api#answerprecheckoutquery
+   */
+  answerPreCheckoutQuery(
+    pre_checkout_query_id: AnswerPreCheckoutQueryOptions['pre_checkout_query_id'],
+    ok: AnswerPreCheckoutQueryOptions['ok'],
+    callOptions?: MethodOptions<
+      Omit<AnswerPreCheckoutQueryOptions, 'pre_checkout_query_id' | 'ok'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new AnswerPreCheckoutQuery({ pre_checkout_query_id, ok, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * If you sent an invoice requesting a shipping address and the parameter is_flexible was specified, the Bot API will send an Update with a shipping_query field to the bot. Use this method to reply to shipping queries. On success, True is returned.
+   * @param shipping_query_id Unique identifier for the query to be answered
+   * @param ok Pass True if delivery to the specified address is possible and False if there are any problems (for example, if delivery to the specified address is not possible)
+   * @see https://core.telegram.org/bots/api#answershippingquery
+   */
+  answerShippingQuery(
+    shipping_query_id: AnswerShippingQueryOptions['shipping_query_id'],
+    ok: AnswerShippingQueryOptions['ok'],
+    callOptions?: MethodOptions<
+      Omit<AnswerShippingQueryOptions, 'shipping_query_id' | 'ok'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new AnswerShippingQuery({ shipping_query_id, ok, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to set the result of an interaction with a Web App and send a corresponding message on behalf of the user to the chat from which the query originated. On success, a SentWebAppMessage object is returned.
+   * @param web_app_query_id Unique identifier for the query to be answered
+   * @param result A JSON-serialized object describing the message to be sent
+   * @see https://core.telegram.org/bots/api#answerwebappquery
+   */
+  answerWebAppQuery(
+    web_app_query_id: AnswerWebAppQueryOptions['web_app_query_id'],
+    result: AnswerWebAppQueryOptions['result'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new AnswerWebAppQuery({ web_app_query_id, result, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to approve a chat join request. The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target channel in the format @username
+   * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api#approvechatjoinrequest
+   */
+  approveChatJoinRequest(
+    chat_id: ApproveChatJoinRequestOptions['chat_id'],
+    user_id: ApproveChatJoinRequestOptions['user_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new ApproveChatJoinRequest({ chat_id, user_id, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to approve a suggested post in a direct messages chat. The bot must have the 'can_post_messages' administrator right in the corresponding channel chat. Returns True on success.
+   * @param chat_id Unique identifier for the target direct messages chat
+   * @param message_id Identifier of a suggested post message to approve
+   * @see https://core.telegram.org/bots/api#approvesuggestedpost
+   */
+  approveSuggestedPost(
+    chat_id: ApproveSuggestedPostOptions['chat_id'],
+    message_id: ApproveSuggestedPostOptions['message_id'],
+    callOptions?: MethodOptions<
+      Omit<ApproveSuggestedPostOptions, 'chat_id' | 'message_id'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new ApproveSuggestedPost({ chat_id, message_id, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to ban a user in a group, a supergroup or a channel. In the case of supergroups and channels, the user will not be able to return to the chat on their own using invite links, etc., unless unbanned first. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success.
+   * @param chat_id Unique identifier for the target group or username of the target supergroup or channel in the format @username
+   * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api#banchatmember
+   */
+  banChatMember(
+    chat_id: BanChatMemberOptions['chat_id'],
+    user_id: BanChatMemberOptions['user_id'],
+    callOptions?: MethodOptions<
+      Omit<BanChatMemberOptions, 'chat_id' | 'user_id'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new BanChatMember({ chat_id, user_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to ban a channel chat in a supergroup or a channel. Until the chat is unbanned, the owner of the banned chat won't be able to send messages on behalf of any of their channels. The bot must be an administrator in the supergroup or channel for this to work and must have the appropriate administrator rights. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target channel in the format @username
+   * @param sender_chat_id Unique identifier of the target sender chat
+   * @see https://core.telegram.org/bots/api#banchatsenderchat
+   */
+  banChatSenderChat(
+    chat_id: BanChatSenderChatOptions['chat_id'],
+    sender_chat_id: BanChatSenderChatOptions['sender_chat_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new BanChatSenderChat({ chat_id, sender_chat_id, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to close the bot instance before moving it from one local server to another. You need to delete the webhook before calling this method to ensure that the bot isn't launched again after server restart. The method will return error 429 in the first 10 minutes after the bot is launched. Returns True on success. Requires no parameters.
+   * @see https://core.telegram.org/bots/api#close
+   */
+  close(callOptions?: CallOptions) {
+    return this.call(new Close(), callOptions);
+  }
+
+  /**
+   * Use this method to close an open topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @param message_thread_id Unique identifier for the target message thread of the forum topic
+   * @see https://core.telegram.org/bots/api#closeforumtopic
+   */
+  closeForumTopic(
+    chat_id: CloseForumTopicOptions['chat_id'],
+    message_thread_id: CloseForumTopicOptions['message_thread_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new CloseForumTopic({ chat_id, message_thread_id, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to close an open 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @see https://core.telegram.org/bots/api#closegeneralforumtopic
+   */
+  closeGeneralForumTopic(
+    chat_id: CloseGeneralForumTopicOptions['chat_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new CloseGeneralForumTopic({ chat_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Converts a given regular gift to Telegram Stars. Requires the can_convert_gifts_to_stars business bot right. Returns True on success.
+   * @param business_connection_id Unique identifier of the business connection
+   * @param owned_gift_id Unique identifier of the regular gift that should be converted to Telegram Stars
+   * @see https://core.telegram.org/bots/api#convertgifttostars
+   */
+  convertGiftToStars(
+    business_connection_id: ConvertGiftToStarsOptions['business_connection_id'],
+    owned_gift_id: ConvertGiftToStarsOptions['owned_gift_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new ConvertGiftToStars({
+        business_connection_id,
+        owned_gift_id,
+        ...rest,
+      }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param from_chat_id Unique identifier for the chat where the original message was sent (or username of the target bot, supergroup or channel in the format @username)
+   * @param message_id Message identifier in the chat specified in from_chat_id
+   * @see https://core.telegram.org/bots/api#copymessage
    */
   copyMessage(
     chat_id: CopyMessageOptions['chat_id'],
@@ -420,11 +656,11 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz [poll](https://core.telegram.org/bots/api/#poll) can be copied only if the value of the field *correct\_option\_id* is known to the bot. The method is analogous to the method [forwardMessages](https://core.telegram.org/bots/api/#forwardmessages), but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of [MessageId](https://core.telegram.org/bots/api/#messageid) of the sent messages is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param from_chat_id Unique identifier for the chat where the original messages were sent (or channel username in the format `@channelusername`)
-   * @param message_ids A JSON-serialized list of 1-100 identifiers of messages in the chat *from\_chat\_id* to copy. The identifiers must be specified in a strictly increasing order.
-   * @see https://core.telegram.org/bots/api/#copymessages
+   * Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of MessageId of the sent messages is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param from_chat_id Unique identifier for the chat where the original messages were sent (or username of the target bot, supergroup or channel in the format @username)
+   * @param message_ids A JSON-serialized list of 1-100 identifiers of messages in the chat from_chat_id to copy. The identifiers must be specified in a strictly increasing order.
+   * @see https://core.telegram.org/bots/api#copymessages
    */
   copyMessages(
     chat_id: CopyMessagesOptions['chat_id'],
@@ -442,548 +678,9 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to send photos. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param photo Photo to send. Pass a file\_id as String to send a photo that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a photo from the Internet, or upload a new photo using multipart/form-data. The photo must be at most 10 MB in size. The photo's width and height must not exceed 10000 in total. Width and height ratio must be at most 20. [More information on Sending Files »](https://core.telegram.org/bots/api/#sending-files)
-   * @see https://core.telegram.org/bots/api/#sendphoto
-   */
-  sendPhoto(
-    chat_id: SendPhotoOptions['chat_id'],
-    photo: SendPhotoOptions['photo'],
-    callOptions?: MethodOptions<Omit<SendPhotoOptions, 'chat_id' | 'photo'>>,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendPhoto({ chat_id, photo, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to send audio files, if you want Telegram clients to display them in the music player. Your audio must be in the .MP3 or .M4A format. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned. Bots can currently send audio files of up to 50 MB in size, this limit may be changed in the future.
-   *
-   * For sending voice messages, use the [sendVoice](https://core.telegram.org/bots/api/#sendvoice) method instead.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param audio Audio file to send. Pass a file\_id as String to send an audio file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get an audio file from the Internet, or upload a new one using multipart/form-data. [More information on Sending Files »](https://core.telegram.org/bots/api/#sending-files)
-   * @see https://core.telegram.org/bots/api/#sendaudio
-   */
-  sendAudio(
-    chat_id: SendAudioOptions['chat_id'],
-    audio: SendAudioOptions['audio'],
-    callOptions?: MethodOptions<Omit<SendAudioOptions, 'chat_id' | 'audio'>>,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendAudio({ chat_id, audio, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to send general files. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned. Bots can currently send files of any type of up to 50 MB in size, this limit may be changed in the future.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param document File to send. Pass a file\_id as String to send a file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. [More information on Sending Files »](https://core.telegram.org/bots/api/#sending-files)
-   * @see https://core.telegram.org/bots/api/#senddocument
-   */
-  sendDocument(
-    chat_id: SendDocumentOptions['chat_id'],
-    document: SendDocumentOptions['document'],
-    callOptions?: MethodOptions<
-      Omit<SendDocumentOptions, 'chat_id' | 'document'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendDocument({ chat_id, document, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to send video files, Telegram clients support MPEG4 videos (other formats may be sent as [Document](https://core.telegram.org/bots/api/#document)). On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned. Bots can currently send video files of up to 50 MB in size, this limit may be changed in the future.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param video Video to send. Pass a file\_id as String to send a video that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a video from the Internet, or upload a new video using multipart/form-data. [More information on Sending Files »](https://core.telegram.org/bots/api/#sending-files)
-   * @see https://core.telegram.org/bots/api/#sendvideo
-   */
-  sendVideo(
-    chat_id: SendVideoOptions['chat_id'],
-    video: SendVideoOptions['video'],
-    callOptions?: MethodOptions<Omit<SendVideoOptions, 'chat_id' | 'video'>>,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendVideo({ chat_id, video, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to send animation files (GIF or H.264/MPEG-4 AVC video without sound). On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned. Bots can currently send animation files of up to 50 MB in size, this limit may be changed in the future.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param animation Animation to send. Pass a file\_id as String to send an animation that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get an animation from the Internet, or upload a new animation using multipart/form-data. [More information on Sending Files »](https://core.telegram.org/bots/api/#sending-files)
-   * @see https://core.telegram.org/bots/api/#sendanimation
-   */
-  sendAnimation(
-    chat_id: SendAnimationOptions['chat_id'],
-    animation: SendAnimationOptions['animation'],
-    callOptions?: MethodOptions<
-      Omit<SendAnimationOptions, 'chat_id' | 'animation'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendAnimation({ chat_id, animation, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to send audio files, if you want Telegram clients to display the file as a playable voice message. For this to work, your audio must be in an .OGG file encoded with OPUS, or in .MP3 format, or in .M4A format (other formats may be sent as [Audio](https://core.telegram.org/bots/api/#audio) or [Document](https://core.telegram.org/bots/api/#document)). On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned. Bots can currently send voice messages of up to 50 MB in size, this limit may be changed in the future.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param voice Audio file to send. Pass a file\_id as String to send a file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. [More information on Sending Files »](https://core.telegram.org/bots/api/#sending-files)
-   * @see https://core.telegram.org/bots/api/#sendvoice
-   */
-  sendVoice(
-    chat_id: SendVoiceOptions['chat_id'],
-    voice: SendVoiceOptions['voice'],
-    callOptions?: MethodOptions<Omit<SendVoiceOptions, 'chat_id' | 'voice'>>,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendVoice({ chat_id, voice, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * As of [v.4.0](https://telegram.org/blog/video-messages-and-telescope), Telegram clients support rounded square MPEG4 videos of up to 1 minute long. Use this method to send video messages. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param video_note Video note to send. Pass a file\_id as String to send a video note that exists on the Telegram servers (recommended) or upload a new video using multipart/form-data. [More information on Sending Files »](https://core.telegram.org/bots/api/#sending-files). Sending video notes by a URL is currently unsupported
-   * @see https://core.telegram.org/bots/api/#sendvideonote
-   */
-  sendVideoNote(
-    chat_id: SendVideoNoteOptions['chat_id'],
-    video_note: SendVideoNoteOptions['video_note'],
-    callOptions?: MethodOptions<
-      Omit<SendVideoNoteOptions, 'chat_id' | 'video_note'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendVideoNote({ chat_id, video_note, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to send paid media. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`). If the chat is a channel, all Telegram Star proceeds from this media will be credited to the chat's balance. Otherwise, they will be credited to the bot's balance.
-   * @param star_count The number of Telegram Stars that must be paid to buy access to the media; 1-2500
-   * @param media A JSON-serialized array describing the media to be sent; up to 10 items
-   * @see https://core.telegram.org/bots/api/#sendpaidmedia
-   */
-  sendPaidMedia(
-    chat_id: SendPaidMediaOptions['chat_id'],
-    star_count: SendPaidMediaOptions['star_count'],
-    media: SendPaidMediaOptions['media'],
-    callOptions?: MethodOptions<
-      Omit<SendPaidMediaOptions, 'chat_id' | 'star_count' | 'media'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new SendPaidMedia({ chat_id, star_count, media, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to send a group of photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of [Messages](https://core.telegram.org/bots/api/#message) that were sent is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param media A JSON-serialized array describing messages to be sent, must include 2-10 items
-   * @see https://core.telegram.org/bots/api/#sendmediagroup
-   */
-  sendMediaGroup(
-    chat_id: SendMediaGroupOptions['chat_id'],
-    media: SendMediaGroupOptions['media'],
-    callOptions?: MethodOptions<
-      Omit<SendMediaGroupOptions, 'chat_id' | 'media'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendMediaGroup({ chat_id, media, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to send point on the map. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param latitude Latitude of the location
-   * @param longitude Longitude of the location
-   * @see https://core.telegram.org/bots/api/#sendlocation
-   */
-  sendLocation(
-    chat_id: SendLocationOptions['chat_id'],
-    latitude: SendLocationOptions['latitude'],
-    longitude: SendLocationOptions['longitude'],
-    callOptions?: MethodOptions<
-      Omit<SendLocationOptions, 'chat_id' | 'latitude' | 'longitude'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new SendLocation({ chat_id, latitude, longitude, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to send information about a venue. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param latitude Latitude of the venue
-   * @param longitude Longitude of the venue
-   * @param title Name of the venue
-   * @param address Address of the venue
-   * @see https://core.telegram.org/bots/api/#sendvenue
-   */
-  sendVenue(
-    chat_id: SendVenueOptions['chat_id'],
-    latitude: SendVenueOptions['latitude'],
-    longitude: SendVenueOptions['longitude'],
-    title: SendVenueOptions['title'],
-    address: SendVenueOptions['address'],
-    callOptions?: MethodOptions<
-      Omit<
-        SendVenueOptions,
-        'chat_id' | 'latitude' | 'longitude' | 'title' | 'address'
-      >
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new SendVenue({ chat_id, latitude, longitude, title, address, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to send phone contacts. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param phone_number Contact's phone number
-   * @param first_name Contact's first name
-   * @see https://core.telegram.org/bots/api/#sendcontact
-   */
-  sendContact(
-    chat_id: SendContactOptions['chat_id'],
-    phone_number: SendContactOptions['phone_number'],
-    first_name: SendContactOptions['first_name'],
-    callOptions?: MethodOptions<
-      Omit<SendContactOptions, 'chat_id' | 'phone_number' | 'first_name'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new SendContact({ chat_id, phone_number, first_name, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to send a native poll. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param question Poll question, 1-300 characters
-   * @param options A JSON-serialized list of 2-10 answer options
-   * @see https://core.telegram.org/bots/api/#sendpoll
-   */
-  sendPoll(
-    chat_id: SendPollOptions['chat_id'],
-    question: SendPollOptions['question'],
-    options: SendPollOptions['options'],
-    callOptions?: MethodOptions<
-      Omit<SendPollOptions, 'chat_id' | 'question' | 'options'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendPoll({ chat_id, question, options, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to send an animated emoji that will display a random value. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @see https://core.telegram.org/bots/api/#senddice
-   */
-  sendDice(
-    chat_id: SendDiceOptions['chat_id'],
-    callOptions?: MethodOptions<Omit<SendDiceOptions, 'chat_id'>>,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendDice({ chat_id, ...rest }), { token, signal });
-  }
-
-  /**
-   * Use this method when you need to tell the user that something is happening on the bot's side. The status is set for 5 seconds or less (when a message arrives from your bot, Telegram clients clear its typing status). Returns *True* on success.
-   *
-   * Example: The [ImageBot](https://t.me/imagebot) needs some time to process a request and upload the image. Instead of sending a text message along the lines of “Retrieving image, please wait…”, the bot may use [sendChatAction](https://core.telegram.org/bots/api/#sendchataction) with *action* = *upload\_photo*. The user will see a “sending photo” status for the bot.
-   *
-   * We only recommend using this method when a response from the bot will take a **noticeable** amount of time to arrive.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param action Type of action to broadcast. Choose one, depending on what the user is about to receive: *typing* for [text messages](https://core.telegram.org/bots/api/#sendmessage), *upload\_photo* for [photos](https://core.telegram.org/bots/api/#sendphoto), *record\_video* or *upload\_video* for [videos](https://core.telegram.org/bots/api/#sendvideo), *record\_voice* or *upload\_voice* for [voice notes](https://core.telegram.org/bots/api/#sendvoice), *upload\_document* for [general files](https://core.telegram.org/bots/api/#senddocument), *choose\_sticker* for [stickers](https://core.telegram.org/bots/api/#sendsticker), *find\_location* for [location data](https://core.telegram.org/bots/api/#sendlocation), *record\_video\_note* or *upload\_video\_note* for [video notes](https://core.telegram.org/bots/api/#sendvideonote).
-   * @see https://core.telegram.org/bots/api/#sendchataction
-   */
-  sendChatAction(
-    chat_id: SendChatActionOptions['chat_id'],
-    action: SendChatActionOptions['action'],
-    callOptions?: MethodOptions<
-      Omit<SendChatActionOptions, 'chat_id' | 'action'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendChatAction({ chat_id, action, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to change the chosen reactions on a message. Service messages of some types can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. Bots can't use paid reactions. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param message_id Identifier of the target message. If the message belongs to a media group, the reaction is set to the first non-deleted message in the group instead.
-   * @see https://core.telegram.org/bots/api/#setmessagereaction
-   */
-  setMessageReaction(
-    chat_id: SetMessageReactionOptions['chat_id'],
-    message_id: SetMessageReactionOptions['message_id'],
-    callOptions?: MethodOptions<
-      Omit<SetMessageReactionOptions, 'chat_id' | 'message_id'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SetMessageReaction({ chat_id, message_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to get a list of profile pictures for a user. Returns a [UserProfilePhotos](https://core.telegram.org/bots/api/#userprofilephotos) object.
-   * @param user_id Unique identifier of the target user
-   * @see https://core.telegram.org/bots/api/#getuserprofilephotos
-   */
-  getUserProfilePhotos(
-    user_id: GetUserProfilePhotosOptions['user_id'],
-    callOptions?: MethodOptions<Omit<GetUserProfilePhotosOptions, 'user_id'>>,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new GetUserProfilePhotos({ user_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Changes the emoji status for a given user that previously allowed the bot to manage their emoji status via the Mini App method [requestEmojiStatusAccess](https://core.telegram.org/bots/webapps#initializing-mini-apps). Returns *True* on success.
-   * @param user_id Unique identifier of the target user
-   * @see https://core.telegram.org/bots/api/#setuseremojistatus
-   */
-  setUserEmojiStatus(
-    user_id: SetUserEmojiStatusOptions['user_id'],
-    callOptions?: MethodOptions<Omit<SetUserEmojiStatusOptions, 'user_id'>>,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SetUserEmojiStatus({ user_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to ban a user in a group, a supergroup or a channel. In the case of supergroups and channels, the user will not be able to return to the chat on their own using invite links, etc., unless [unbanned](https://core.telegram.org/bots/api/#unbanchatmember) first. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns *True* on success.
-   * @param chat_id Unique identifier for the target group or username of the target supergroup or channel (in the format `@channelusername`)
-   * @param user_id Unique identifier of the target user
-   * @see https://core.telegram.org/bots/api/#banchatmember
-   */
-  banChatMember(
-    chat_id: BanChatMemberOptions['chat_id'],
-    user_id: BanChatMemberOptions['user_id'],
-    callOptions?: MethodOptions<
-      Omit<BanChatMemberOptions, 'chat_id' | 'user_id'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new BanChatMember({ chat_id, user_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to unban a previously banned user in a supergroup or channel. The user will **not** return to the group or channel automatically, but will be able to join via link, etc. The bot must be an administrator for this to work. By default, this method guarantees that after the call the user is not a member of the chat, but will be able to join it. So if the user is a member of the chat they will also be **removed** from the chat. If you don't want this, use the parameter *only\_if\_banned*. Returns *True* on success.
-   * @param chat_id Unique identifier for the target group or username of the target supergroup or channel (in the format `@channelusername`)
-   * @param user_id Unique identifier of the target user
-   * @see https://core.telegram.org/bots/api/#unbanchatmember
-   */
-  unbanChatMember(
-    chat_id: UnbanChatMemberOptions['chat_id'],
-    user_id: UnbanChatMemberOptions['user_id'],
-    callOptions?: MethodOptions<
-      Omit<UnbanChatMemberOptions, 'chat_id' | 'user_id'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new UnbanChatMember({ chat_id, user_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to restrict a user in a supergroup. The bot must be an administrator in the supergroup for this to work and must have the appropriate administrator rights. Pass *True* for all permissions to lift restrictions from a user. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
-   * @param user_id Unique identifier of the target user
-   * @param permissions A JSON-serialized object for new user permissions
-   * @see https://core.telegram.org/bots/api/#restrictchatmember
-   */
-  restrictChatMember(
-    chat_id: RestrictChatMemberOptions['chat_id'],
-    user_id: RestrictChatMemberOptions['user_id'],
-    permissions: RestrictChatMemberOptions['permissions'],
-    callOptions?: MethodOptions<
-      Omit<RestrictChatMemberOptions, 'chat_id' | 'user_id' | 'permissions'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new RestrictChatMember({ chat_id, user_id, permissions, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to promote or demote a user in a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Pass *False* for all boolean parameters to demote a user. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param user_id Unique identifier of the target user
-   * @see https://core.telegram.org/bots/api/#promotechatmember
-   */
-  promoteChatMember(
-    chat_id: PromoteChatMemberOptions['chat_id'],
-    user_id: PromoteChatMemberOptions['user_id'],
-    callOptions?: MethodOptions<
-      Omit<PromoteChatMemberOptions, 'chat_id' | 'user_id'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new PromoteChatMember({ chat_id, user_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to set a custom title for an administrator in a supergroup promoted by the bot. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
-   * @param user_id Unique identifier of the target user
-   * @param custom_title New custom title for the administrator; 0-16 characters, emoji are not allowed
-   * @see https://core.telegram.org/bots/api/#setchatadministratorcustomtitle
-   */
-  setChatAdministratorCustomTitle(
-    chat_id: SetChatAdministratorCustomTitleOptions['chat_id'],
-    user_id: SetChatAdministratorCustomTitleOptions['user_id'],
-    custom_title: SetChatAdministratorCustomTitleOptions['custom_title'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new SetChatAdministratorCustomTitle({
-        chat_id,
-        user_id,
-        custom_title,
-        ...rest,
-      }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to ban a channel chat in a supergroup or a channel. Until the chat is [unbanned](https://core.telegram.org/bots/api/#unbanchatsenderchat), the owner of the banned chat won't be able to send messages on behalf of **any of their channels**. The bot must be an administrator in the supergroup or channel for this to work and must have the appropriate administrator rights. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param sender_chat_id Unique identifier of the target sender chat
-   * @see https://core.telegram.org/bots/api/#banchatsenderchat
-   */
-  banChatSenderChat(
-    chat_id: BanChatSenderChatOptions['chat_id'],
-    sender_chat_id: BanChatSenderChatOptions['sender_chat_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new BanChatSenderChat({ chat_id, sender_chat_id, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to unban a previously banned channel chat in a supergroup or channel. The bot must be an administrator for this to work and must have the appropriate administrator rights. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param sender_chat_id Unique identifier of the target sender chat
-   * @see https://core.telegram.org/bots/api/#unbanchatsenderchat
-   */
-  unbanChatSenderChat(
-    chat_id: UnbanChatSenderChatOptions['chat_id'],
-    sender_chat_id: UnbanChatSenderChatOptions['sender_chat_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new UnbanChatSenderChat({ chat_id, sender_chat_id, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to set default chat permissions for all members. The bot must be an administrator in the group or a supergroup for this to work and must have the *can\_restrict\_members* administrator rights. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
-   * @param permissions A JSON-serialized object for new default chat permissions
-   * @see https://core.telegram.org/bots/api/#setchatpermissions
-   */
-  setChatPermissions(
-    chat_id: SetChatPermissionsOptions['chat_id'],
-    permissions: SetChatPermissionsOptions['permissions'],
-    callOptions?: MethodOptions<
-      Omit<SetChatPermissionsOptions, 'chat_id' | 'permissions'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new SetChatPermissions({ chat_id, permissions, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to generate a new primary invite link for a chat; any previously generated primary link is revoked. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the new invite link as *String* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @see https://core.telegram.org/bots/api/#exportchatinvitelink
-   */
-  exportChatInviteLink(
-    chat_id: ExportChatInviteLinkOptions['chat_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new ExportChatInviteLink({ chat_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to create an additional invite link for a chat. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. The link can be revoked using the method [revokeChatInviteLink](https://core.telegram.org/bots/api/#revokechatinvitelink). Returns the new invite link as [ChatInviteLink](https://core.telegram.org/bots/api/#chatinvitelink) object.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @see https://core.telegram.org/bots/api/#createchatinvitelink
+   * Use this method to create an additional invite link for a chat. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. The link can be revoked using the method revokeChatInviteLink. Returns the new invite link as ChatInviteLink object.
+   * @param chat_id Unique identifier for the target chat or username of the target channel in the format @username
+   * @see https://core.telegram.org/bots/api#createchatinvitelink
    */
   createChatInviteLink(
     chat_id: CreateChatInviteLinkOptions['chat_id'],
@@ -997,31 +694,11 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to edit a non-primary invite link created by the bot. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the edited invite link as a [ChatInviteLink](https://core.telegram.org/bots/api/#chatinvitelink) object.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param invite_link The invite link to edit
-   * @see https://core.telegram.org/bots/api/#editchatinvitelink
-   */
-  editChatInviteLink(
-    chat_id: EditChatInviteLinkOptions['chat_id'],
-    invite_link: EditChatInviteLinkOptions['invite_link'],
-    callOptions?: MethodOptions<
-      Omit<EditChatInviteLinkOptions, 'chat_id' | 'invite_link'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new EditChatInviteLink({ chat_id, invite_link, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to create a [subscription invite link](https://telegram.org/blog/superchannels-star-reactions-subscriptions#star-subscriptions) for a channel chat. The bot must have the *can\_invite\_users* administrator rights. The link can be edited using the method [editChatSubscriptionInviteLink](https://core.telegram.org/bots/api/#editchatsubscriptioninvitelink) or revoked using the method [revokeChatInviteLink](https://core.telegram.org/bots/api/#revokechatinvitelink). Returns the new invite link as a [ChatInviteLink](https://core.telegram.org/bots/api/#chatinvitelink) object.
-   * @param chat_id Unique identifier for the target channel chat or username of the target channel (in the format `@channelusername`)
+   * Use this method to create a subscription invite link for a channel chat. The bot must have the can_invite_users administrator rights. The link can be edited using the method editChatSubscriptionInviteLink or revoked using the method revokeChatInviteLink. Returns the new invite link as a ChatInviteLink object.
+   * @param chat_id Unique identifier for the target channel chat or username of the target channel in the format @username
    * @param subscription_period The number of seconds the subscription will be active for before the next payment. Currently, it must always be 2592000 (30 days).
-   * @param subscription_price The amount of Telegram Stars a user must pay initially and after each subsequent subscription period to be a member of the chat; 1-2500
-   * @see https://core.telegram.org/bots/api/#createchatsubscriptioninvitelink
+   * @param subscription_price The amount of Telegram Stars a user must pay initially and after each subsequent subscription period to be a member of the chat; 1-10000
+   * @see https://core.telegram.org/bots/api#createchatsubscriptioninvitelink
    */
   createChatSubscriptionInviteLink(
     chat_id: CreateChatSubscriptionInviteLinkOptions['chat_id'],
@@ -1047,316 +724,10 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to edit a subscription invite link created by the bot. The bot must have the *can\_invite\_users* administrator rights. Returns the edited invite link as a [ChatInviteLink](https://core.telegram.org/bots/api/#chatinvitelink) object.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param invite_link The invite link to edit
-   * @see https://core.telegram.org/bots/api/#editchatsubscriptioninvitelink
-   */
-  editChatSubscriptionInviteLink(
-    chat_id: EditChatSubscriptionInviteLinkOptions['chat_id'],
-    invite_link: EditChatSubscriptionInviteLinkOptions['invite_link'],
-    callOptions?: MethodOptions<
-      Omit<EditChatSubscriptionInviteLinkOptions, 'chat_id' | 'invite_link'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new EditChatSubscriptionInviteLink({ chat_id, invite_link, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to revoke an invite link created by the bot. If the primary link is revoked, a new link is automatically generated. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the revoked invite link as [ChatInviteLink](https://core.telegram.org/bots/api/#chatinvitelink) object.
-   * @param chat_id Unique identifier of the target chat or username of the target channel (in the format `@channelusername`)
-   * @param invite_link The invite link to revoke
-   * @see https://core.telegram.org/bots/api/#revokechatinvitelink
-   */
-  revokeChatInviteLink(
-    chat_id: RevokeChatInviteLinkOptions['chat_id'],
-    invite_link: RevokeChatInviteLinkOptions['invite_link'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new RevokeChatInviteLink({ chat_id, invite_link, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to approve a chat join request. The bot must be an administrator in the chat for this to work and must have the *can\_invite\_users* administrator right. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param user_id Unique identifier of the target user
-   * @see https://core.telegram.org/bots/api/#approvechatjoinrequest
-   */
-  approveChatJoinRequest(
-    chat_id: ApproveChatJoinRequestOptions['chat_id'],
-    user_id: ApproveChatJoinRequestOptions['user_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new ApproveChatJoinRequest({ chat_id, user_id, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to decline a chat join request. The bot must be an administrator in the chat for this to work and must have the *can\_invite\_users* administrator right. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param user_id Unique identifier of the target user
-   * @see https://core.telegram.org/bots/api/#declinechatjoinrequest
-   */
-  declineChatJoinRequest(
-    chat_id: DeclineChatJoinRequestOptions['chat_id'],
-    user_id: DeclineChatJoinRequestOptions['user_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new DeclineChatJoinRequest({ chat_id, user_id, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to set a new profile photo for the chat. Photos can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param photo New chat photo, uploaded using multipart/form-data
-   * @see https://core.telegram.org/bots/api/#setchatphoto
-   */
-  setChatPhoto(
-    chat_id: SetChatPhotoOptions['chat_id'],
-    photo: SetChatPhotoOptions['photo'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SetChatPhoto({ chat_id, photo, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to delete a chat photo. Photos can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @see https://core.telegram.org/bots/api/#deletechatphoto
-   */
-  deleteChatPhoto(
-    chat_id: DeleteChatPhotoOptions['chat_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new DeleteChatPhoto({ chat_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to change the title of a chat. Titles can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param title New chat title, 1-128 characters
-   * @see https://core.telegram.org/bots/api/#setchattitle
-   */
-  setChatTitle(
-    chat_id: SetChatTitleOptions['chat_id'],
-    title: SetChatTitleOptions['title'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SetChatTitle({ chat_id, title, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to change the description of a group, a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @see https://core.telegram.org/bots/api/#setchatdescription
-   */
-  setChatDescription(
-    chat_id: SetChatDescriptionOptions['chat_id'],
-    callOptions?: MethodOptions<Omit<SetChatDescriptionOptions, 'chat_id'>>,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SetChatDescription({ chat_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to add a message to the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can\_pin\_messages' administrator right in a supergroup or 'can\_edit\_messages' administrator right in a channel. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param message_id Identifier of a message to pin
-   * @see https://core.telegram.org/bots/api/#pinchatmessage
-   */
-  pinChatMessage(
-    chat_id: PinChatMessageOptions['chat_id'],
-    message_id: PinChatMessageOptions['message_id'],
-    callOptions?: MethodOptions<
-      Omit<PinChatMessageOptions, 'chat_id' | 'message_id'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new PinChatMessage({ chat_id, message_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to remove a message from the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can\_pin\_messages' administrator right in a supergroup or 'can\_edit\_messages' administrator right in a channel. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @see https://core.telegram.org/bots/api/#unpinchatmessage
-   */
-  unpinChatMessage(
-    chat_id: UnpinChatMessageOptions['chat_id'],
-    callOptions?: MethodOptions<Omit<UnpinChatMessageOptions, 'chat_id'>>,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new UnpinChatMessage({ chat_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to clear the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can\_pin\_messages' administrator right in a supergroup or 'can\_edit\_messages' administrator right in a channel. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @see https://core.telegram.org/bots/api/#unpinallchatmessages
-   */
-  unpinAllChatMessages(
-    chat_id: UnpinAllChatMessagesOptions['chat_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new UnpinAllChatMessages({ chat_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method for your bot to leave a group, supergroup or channel. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup or channel (in the format `@channelusername`)
-   * @see https://core.telegram.org/bots/api/#leavechat
-   */
-  leaveChat(chat_id: LeaveChatOptions['chat_id'], callOptions?: CallOptions) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new LeaveChat({ chat_id, ...rest }), { token, signal });
-  }
-
-  /**
-   * Use this method to get up-to-date information about the chat. Returns a [ChatFullInfo](https://core.telegram.org/bots/api/#chatfullinfo) object on success.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup or channel (in the format `@channelusername`)
-   * @see https://core.telegram.org/bots/api/#getchat
-   */
-  getChat(chat_id: GetChatOptions['chat_id'], callOptions?: CallOptions) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new GetChat({ chat_id, ...rest }), { token, signal });
-  }
-
-  /**
-   * Use this method to get a list of administrators in a chat, which aren't bots. Returns an Array of [ChatMember](https://core.telegram.org/bots/api/#chatmember) objects.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup or channel (in the format `@channelusername`)
-   * @see https://core.telegram.org/bots/api/#getchatadministrators
-   */
-  getChatAdministrators(
-    chat_id: GetChatAdministratorsOptions['chat_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new GetChatAdministrators({ chat_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to get the number of members in a chat. Returns *Int* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup or channel (in the format `@channelusername`)
-   * @see https://core.telegram.org/bots/api/#getchatmembercount
-   */
-  getChatMemberCount(
-    chat_id: GetChatMemberCountOptions['chat_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new GetChatMemberCount({ chat_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to get information about a member of a chat. The method is only guaranteed to work for other users if the bot is an administrator in the chat. Returns a [ChatMember](https://core.telegram.org/bots/api/#chatmember) object on success.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup or channel (in the format `@channelusername`)
-   * @param user_id Unique identifier of the target user
-   * @see https://core.telegram.org/bots/api/#getchatmember
-   */
-  getChatMember(
-    chat_id: GetChatMemberOptions['chat_id'],
-    user_id: GetChatMemberOptions['user_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new GetChatMember({ chat_id, user_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to set a new group sticker set for a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Use the field *can\_set\_sticker\_set* optionally returned in [getChat](https://core.telegram.org/bots/api/#getchat) requests to check if the bot can use this method. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
-   * @param sticker_set_name Name of the sticker set to be set as the group sticker set
-   * @see https://core.telegram.org/bots/api/#setchatstickerset
-   */
-  setChatStickerSet(
-    chat_id: SetChatStickerSetOptions['chat_id'],
-    sticker_set_name: SetChatStickerSetOptions['sticker_set_name'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new SetChatStickerSet({ chat_id, sticker_set_name, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to delete a group sticker set from a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Use the field *can\_set\_sticker\_set* optionally returned in [getChat](https://core.telegram.org/bots/api/#getchat) requests to check if the bot can use this method. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
-   * @see https://core.telegram.org/bots/api/#deletechatstickerset
-   */
-  deleteChatStickerSet(
-    chat_id: DeleteChatStickerSetOptions['chat_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new DeleteChatStickerSet({ chat_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to get custom emoji stickers, which can be used as a forum topic icon by any user. Requires no parameters. Returns an Array of [Sticker](https://core.telegram.org/bots/api/#sticker) objects.
-   * @see https://core.telegram.org/bots/api/#getforumtopiciconstickers
-   */
-  getForumTopicIconStickers(callOptions?: CallOptions) {
-    return this.call(new GetForumTopicIconStickers(), callOptions);
-  }
-
-  /**
-   * Use this method to create a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the *can\_manage\_topics* administrator rights. Returns information about the created topic as a [ForumTopic](https://core.telegram.org/bots/api/#forumtopic) object.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
+   * Use this method to create a topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator right. Returns information about the created topic as a ForumTopic object.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
    * @param name Topic name, 1-128 characters
-   * @see https://core.telegram.org/bots/api/#createforumtopic
+   * @see https://core.telegram.org/bots/api#createforumtopic
    */
   createForumTopic(
     chat_id: CreateForumTopicOptions['chat_id'],
@@ -1373,10 +744,375 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to edit name and icon of a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the *can\_manage\_topics* administrator rights, unless it is the creator of the topic. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
+   * Use this method to create a link for an invoice. Returns the created invoice link as String on success.
+   * @param title Product name, 1-32 characters
+   * @param description Product description, 1-255 characters
+   * @param payload Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use it for your internal processes.
+   * @param currency Three-letter ISO 4217 currency code, see more on currencies. Pass "XTR" for payments in Telegram Stars.
+   * @param prices Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.). Must contain exactly one item for payments in Telegram Stars.
+   * @see https://core.telegram.org/bots/api#createinvoicelink
+   */
+  createInvoiceLink(
+    title: CreateInvoiceLinkOptions['title'],
+    description: CreateInvoiceLinkOptions['description'],
+    payload: CreateInvoiceLinkOptions['payload'],
+    currency: CreateInvoiceLinkOptions['currency'],
+    prices: CreateInvoiceLinkOptions['prices'],
+    callOptions?: MethodOptions<
+      Omit<
+        CreateInvoiceLinkOptions,
+        'title' | 'description' | 'payload' | 'currency' | 'prices'
+      >
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new CreateInvoiceLink({
+        title,
+        description,
+        payload,
+        currency,
+        prices,
+        ...rest,
+      }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to create a new sticker set owned by a user. The bot will be able to edit the sticker set thus created. Returns True on success.
+   * @param user_id User identifier of created sticker set owner
+   * @param name Short name of sticker set, to be used in t.me/addstickers/ URLs (e.g., animals). Can contain only English letters, digits and underscores. Must begin with a letter, can't contain consecutive underscores and must end in "_by_<bot_username>". <bot_username> is case insensitive. 1-64 characters.
+   * @param title Sticker set title, 1-64 characters
+   * @param stickers A JSON-serialized list of 1-50 initial stickers to be added to the sticker set
+   * @see https://core.telegram.org/bots/api#createnewstickerset
+   */
+  createNewStickerSet(
+    user_id: CreateNewStickerSetOptions['user_id'],
+    name: CreateNewStickerSetOptions['name'],
+    title: CreateNewStickerSetOptions['title'],
+    stickers: CreateNewStickerSetOptions['stickers'],
+    callOptions?: MethodOptions<
+      Omit<
+        CreateNewStickerSetOptions,
+        'user_id' | 'name' | 'title' | 'stickers'
+      >
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new CreateNewStickerSet({ user_id, name, title, stickers, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to decline a chat join request. The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target channel in the format @username
+   * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api#declinechatjoinrequest
+   */
+  declineChatJoinRequest(
+    chat_id: DeclineChatJoinRequestOptions['chat_id'],
+    user_id: DeclineChatJoinRequestOptions['user_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new DeclineChatJoinRequest({ chat_id, user_id, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to decline a suggested post in a direct messages chat. The bot must have the 'can_manage_direct_messages' administrator right in the corresponding channel chat. Returns True on success.
+   * @param chat_id Unique identifier for the target direct messages chat
+   * @param message_id Identifier of a suggested post message to decline
+   * @see https://core.telegram.org/bots/api#declinesuggestedpost
+   */
+  declineSuggestedPost(
+    chat_id: DeclineSuggestedPostOptions['chat_id'],
+    message_id: DeclineSuggestedPostOptions['message_id'],
+    callOptions?: MethodOptions<
+      Omit<DeclineSuggestedPostOptions, 'chat_id' | 'message_id'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new DeclineSuggestedPost({ chat_id, message_id, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to remove up to 10000 recent reactions in a group or a supergroup chat added by a given user or chat. The bot must have the 'can_delete_messages' administrator right in the chat. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @see https://core.telegram.org/bots/api#deleteallmessagereactions
+   */
+  deleteAllMessageReactions(
+    chat_id: DeleteAllMessageReactionsOptions['chat_id'],
+    callOptions?: MethodOptions<
+      Omit<DeleteAllMessageReactionsOptions, 'chat_id'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new DeleteAllMessageReactions({ chat_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Delete messages on behalf of a business account. Requires the can_delete_sent_messages business bot right to delete messages sent by the bot itself, or the can_delete_all_messages business bot right to delete any message. Returns True on success.
+   * @param business_connection_id Unique identifier of the business connection on behalf of which to delete the messages
+   * @param message_ids A JSON-serialized list of 1-100 identifiers of messages to delete. All messages must be from the same chat. See deleteMessage for limitations on which messages can be deleted.
+   * @see https://core.telegram.org/bots/api#deletebusinessmessages
+   */
+  deleteBusinessMessages(
+    business_connection_id: DeleteBusinessMessagesOptions['business_connection_id'],
+    message_ids: DeleteBusinessMessagesOptions['message_ids'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new DeleteBusinessMessages({
+        business_connection_id,
+        message_ids,
+        ...rest,
+      }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to delete a chat photo. Photos can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target channel in the format @username
+   * @see https://core.telegram.org/bots/api#deletechatphoto
+   */
+  deleteChatPhoto(
+    chat_id: DeleteChatPhotoOptions['chat_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new DeleteChatPhoto({ chat_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to delete a group sticker set from a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Use the field can_set_sticker_set optionally returned in getChat requests to check if the bot can use this method. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @see https://core.telegram.org/bots/api#deletechatstickerset
+   */
+  deleteChatStickerSet(
+    chat_id: DeleteChatStickerSetOptions['chat_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new DeleteChatStickerSet({ chat_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to delete a forum topic along with all its messages in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_delete_messages administrator rights. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
    * @param message_thread_id Unique identifier for the target message thread of the forum topic
-   * @see https://core.telegram.org/bots/api/#editforumtopic
+   * @see https://core.telegram.org/bots/api#deleteforumtopic
+   */
+  deleteForumTopic(
+    chat_id: DeleteForumTopicOptions['chat_id'],
+    message_thread_id: DeleteForumTopicOptions['message_thread_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new DeleteForumTopic({ chat_id, message_thread_id, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to delete a message, including service messages, with the following limitations:
+   * - A message can only be deleted if it was sent less than 48 hours ago.
+   * - Service messages about a supergroup, channel, or forum topic creation can't be deleted.
+   * - A dice message in a private chat can only be deleted if it was sent more than 24 hours ago.
+   * - Bots can delete outgoing messages in private chats, groups, and supergroups.
+   * - Bots can delete incoming messages in private chats.
+   * - Bots granted can_post_messages permissions can delete outgoing messages in channels.
+   * - If the bot is an administrator of a group, it can delete any message there.
+   * - If the bot has can_delete_messages administrator right in a supergroup or a channel, it can delete any message there.
+   * - If the bot has can_manage_direct_messages administrator right in a channel, it can delete any message in the corresponding direct messages chat.
+   * Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param message_id Identifier of the message to delete
+   * @see https://core.telegram.org/bots/api#deletemessage
+   */
+  deleteMessage(
+    chat_id: DeleteMessageOptions['chat_id'],
+    message_id: DeleteMessageOptions['message_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new DeleteMessage({ chat_id, message_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to remove a reaction from a message in a group or a supergroup chat. The bot must have the 'can_delete_messages' administrator right in the chat. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @param message_id Identifier of the target message
+   * @see https://core.telegram.org/bots/api#deletemessagereaction
+   */
+  deleteMessageReaction(
+    chat_id: DeleteMessageReactionOptions['chat_id'],
+    message_id: DeleteMessageReactionOptions['message_id'],
+    callOptions?: MethodOptions<
+      Omit<DeleteMessageReactionOptions, 'chat_id' | 'message_id'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new DeleteMessageReaction({ chat_id, message_id, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to delete multiple messages simultaneously. If some of the specified messages can't be found, they are skipped. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param message_ids A JSON-serialized list of 1-100 identifiers of messages to delete. See deleteMessage for limitations on which messages can be deleted.
+   * @see https://core.telegram.org/bots/api#deletemessages
+   */
+  deleteMessages(
+    chat_id: DeleteMessagesOptions['chat_id'],
+    message_ids: DeleteMessagesOptions['message_ids'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new DeleteMessages({ chat_id, message_ids, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to delete the list of the bot's commands for the given scope and user language. After deletion, higher level commands will be shown to affected users. Returns True on success.
+   * @see https://core.telegram.org/bots/api#deletemycommands
+   */
+  deleteMyCommands(callOptions?: MethodOptions<DeleteMyCommandsOptions>) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new DeleteMyCommands(rest), { token, signal });
+  }
+
+  /**
+   * Use this method to delete a sticker from a set created by the bot. Returns True on success.
+   * @param sticker File identifier of the sticker
+   * @see https://core.telegram.org/bots/api#deletestickerfromset
+   */
+  deleteStickerFromSet(
+    sticker: DeleteStickerFromSetOptions['sticker'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new DeleteStickerFromSet({ sticker, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to delete a sticker set that was created by the bot. Returns True on success.
+   * @param name Sticker set name
+   * @see https://core.telegram.org/bots/api#deletestickerset
+   */
+  deleteStickerSet(
+    name: DeleteStickerSetOptions['name'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new DeleteStickerSet({ name, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Deletes a story previously posted by the bot on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns True on success.
+   * @param business_connection_id Unique identifier of the business connection
+   * @param story_id Unique identifier of the story to delete
+   * @see https://core.telegram.org/bots/api#deletestory
+   */
+  deleteStory(
+    business_connection_id: DeleteStoryOptions['business_connection_id'],
+    story_id: DeleteStoryOptions['story_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new DeleteStory({ business_connection_id, story_id, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to remove webhook integration if you decide to switch back to getUpdates. Returns True on success.
+   * @see https://core.telegram.org/bots/api#deletewebhook
+   */
+  deleteWebhook(callOptions?: MethodOptions<DeleteWebhookOptions>) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new DeleteWebhook(rest), { token, signal });
+  }
+
+  /**
+   * Use this method to edit a non-primary invite link created by the bot. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the edited invite link as a ChatInviteLink object.
+   * @param chat_id Unique identifier for the target chat or username of the target channel in the format @username
+   * @param invite_link The invite link to edit
+   * @see https://core.telegram.org/bots/api#editchatinvitelink
+   */
+  editChatInviteLink(
+    chat_id: EditChatInviteLinkOptions['chat_id'],
+    invite_link: EditChatInviteLinkOptions['invite_link'],
+    callOptions?: MethodOptions<
+      Omit<EditChatInviteLinkOptions, 'chat_id' | 'invite_link'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new EditChatInviteLink({ chat_id, invite_link, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to edit a subscription invite link created by the bot. The bot must have the can_invite_users administrator rights. Returns the edited invite link as a ChatInviteLink object.
+   * @param chat_id Unique identifier for the target chat or username of the target channel in the format @username
+   * @param invite_link The invite link to edit
+   * @see https://core.telegram.org/bots/api#editchatsubscriptioninvitelink
+   */
+  editChatSubscriptionInviteLink(
+    chat_id: EditChatSubscriptionInviteLinkOptions['chat_id'],
+    invite_link: EditChatSubscriptionInviteLinkOptions['invite_link'],
+    callOptions?: MethodOptions<
+      Omit<EditChatSubscriptionInviteLinkOptions, 'chat_id' | 'invite_link'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new EditChatSubscriptionInviteLink({ chat_id, invite_link, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to edit name and icon of a topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @param message_thread_id Unique identifier for the target message thread of the forum topic
+   * @see https://core.telegram.org/bots/api#editforumtopic
    */
   editForumTopic(
     chat_id: EditForumTopicOptions['chat_id'],
@@ -1393,82 +1129,10 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to close an open topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the *can\_manage\_topics* administrator rights, unless it is the creator of the topic. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
-   * @param message_thread_id Unique identifier for the target message thread of the forum topic
-   * @see https://core.telegram.org/bots/api/#closeforumtopic
-   */
-  closeForumTopic(
-    chat_id: CloseForumTopicOptions['chat_id'],
-    message_thread_id: CloseForumTopicOptions['message_thread_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new CloseForumTopic({ chat_id, message_thread_id, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to reopen a closed topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the *can\_manage\_topics* administrator rights, unless it is the creator of the topic. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
-   * @param message_thread_id Unique identifier for the target message thread of the forum topic
-   * @see https://core.telegram.org/bots/api/#reopenforumtopic
-   */
-  reopenForumTopic(
-    chat_id: ReopenForumTopicOptions['chat_id'],
-    message_thread_id: ReopenForumTopicOptions['message_thread_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new ReopenForumTopic({ chat_id, message_thread_id, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to delete a forum topic along with all its messages in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the *can\_delete\_messages* administrator rights. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
-   * @param message_thread_id Unique identifier for the target message thread of the forum topic
-   * @see https://core.telegram.org/bots/api/#deleteforumtopic
-   */
-  deleteForumTopic(
-    chat_id: DeleteForumTopicOptions['chat_id'],
-    message_thread_id: DeleteForumTopicOptions['message_thread_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new DeleteForumTopic({ chat_id, message_thread_id, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to clear the list of pinned messages in a forum topic. The bot must be an administrator in the chat for this to work and must have the *can\_pin\_messages* administrator right in the supergroup. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
-   * @param message_thread_id Unique identifier for the target message thread of the forum topic
-   * @see https://core.telegram.org/bots/api/#unpinallforumtopicmessages
-   */
-  unpinAllForumTopicMessages(
-    chat_id: UnpinAllForumTopicMessagesOptions['chat_id'],
-    message_thread_id: UnpinAllForumTopicMessagesOptions['message_thread_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new UnpinAllForumTopicMessages({ chat_id, message_thread_id, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to edit the name of the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the *can\_manage\_topics* administrator rights. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
+   * Use this method to edit the name of the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
    * @param name New topic name, 1-128 characters
-   * @see https://core.telegram.org/bots/api/#editgeneralforumtopic
+   * @see https://core.telegram.org/bots/api#editgeneralforumtopic
    */
   editGeneralForumTopic(
     chat_id: EditGeneralForumTopicOptions['chat_id'],
@@ -1483,359 +1147,8 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to close an open 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the *can\_manage\_topics* administrator rights. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
-   * @see https://core.telegram.org/bots/api/#closegeneralforumtopic
-   */
-  closeGeneralForumTopic(
-    chat_id: CloseGeneralForumTopicOptions['chat_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new CloseGeneralForumTopic({ chat_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to reopen a closed 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the *can\_manage\_topics* administrator rights. The topic will be automatically unhidden if it was hidden. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
-   * @see https://core.telegram.org/bots/api/#reopengeneralforumtopic
-   */
-  reopenGeneralForumTopic(
-    chat_id: ReopenGeneralForumTopicOptions['chat_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new ReopenGeneralForumTopic({ chat_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to hide the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the *can\_manage\_topics* administrator rights. The topic will be automatically closed if it was open. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
-   * @see https://core.telegram.org/bots/api/#hidegeneralforumtopic
-   */
-  hideGeneralForumTopic(
-    chat_id: HideGeneralForumTopicOptions['chat_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new HideGeneralForumTopic({ chat_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to unhide the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the *can\_manage\_topics* administrator rights. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
-   * @see https://core.telegram.org/bots/api/#unhidegeneralforumtopic
-   */
-  unhideGeneralForumTopic(
-    chat_id: UnhideGeneralForumTopicOptions['chat_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new UnhideGeneralForumTopic({ chat_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to clear the list of pinned messages in a General forum topic. The bot must be an administrator in the chat for this to work and must have the *can\_pin\_messages* administrator right in the supergroup. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
-   * @see https://core.telegram.org/bots/api/#unpinallgeneralforumtopicmessages
-   */
-  unpinAllGeneralForumTopicMessages(
-    chat_id: UnpinAllGeneralForumTopicMessagesOptions['chat_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new UnpinAllGeneralForumTopicMessages({ chat_id, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to send answers to callback queries sent from [inline keyboards](https://core.telegram.org/bots/features#inline-keyboards). The answer will be displayed to the user as a notification at the top of the chat screen or as an alert. On success, *True* is returned.
-   *
-   * Alternatively, the user can be redirected to the specified Game URL. For this option to work, you must first create a game for your bot via [@BotFather](https://t.me/botfather) and accept the terms. Otherwise, you may use links like `t.me/your_bot?start=XXXX` that open your bot with a parameter.
-   * @param callback_query_id Unique identifier for the query to be answered
-   * @see https://core.telegram.org/bots/api/#answercallbackquery
-   */
-  answerCallbackQuery(
-    callback_query_id: AnswerCallbackQueryOptions['callback_query_id'],
-    callOptions?: MethodOptions<
-      Omit<AnswerCallbackQueryOptions, 'callback_query_id'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new AnswerCallbackQuery({ callback_query_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to get the list of boosts added to a chat by a user. Requires administrator rights in the chat. Returns a [UserChatBoosts](https://core.telegram.org/bots/api/#userchatboosts) object.
-   * @param chat_id Unique identifier for the chat or username of the channel (in the format `@channelusername`)
-   * @param user_id Unique identifier of the target user
-   * @see https://core.telegram.org/bots/api/#getuserchatboosts
-   */
-  getUserChatBoosts(
-    chat_id: GetUserChatBoostsOptions['chat_id'],
-    user_id: GetUserChatBoostsOptions['user_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new GetUserChatBoosts({ chat_id, user_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to get information about the connection of the bot with a business account. Returns a [BusinessConnection](https://core.telegram.org/bots/api/#businessconnection) object on success.
-   * @param business_connection_id Unique identifier of the business connection
-   * @see https://core.telegram.org/bots/api/#getbusinessconnection
-   */
-  getBusinessConnection(
-    business_connection_id: GetBusinessConnectionOptions['business_connection_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new GetBusinessConnection({ business_connection_id, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to change the list of the bot's commands. See [this manual](https://core.telegram.org/bots/features#commands) for more details about bot commands. Returns *True* on success.
-   * @param commands A JSON-serialized list of bot commands to be set as the list of the bot's commands. At most 100 commands can be specified.
-   * @see https://core.telegram.org/bots/api/#setmycommands
-   */
-  setMyCommands(
-    commands: SetMyCommandsOptions['commands'],
-    callOptions?: MethodOptions<Omit<SetMyCommandsOptions, 'commands'>>,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SetMyCommands({ commands, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to delete the list of the bot's commands for the given scope and user language. After deletion, [higher level commands](https://core.telegram.org/bots/api/#determining-list-of-commands) will be shown to affected users. Returns *True* on success.
-   * @see https://core.telegram.org/bots/api/#deletemycommands
-   */
-  deleteMyCommands(callOptions?: MethodOptions<DeleteMyCommandsOptions>) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new DeleteMyCommands(rest), { token, signal });
-  }
-
-  /**
-   * Use this method to get the current list of the bot's commands for the given scope and user language. Returns an Array of [BotCommand](https://core.telegram.org/bots/api/#botcommand) objects. If commands aren't set, an empty list is returned.
-   * @see https://core.telegram.org/bots/api/#getmycommands
-   */
-  getMyCommands(callOptions?: MethodOptions<GetMyCommandsOptions>) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new GetMyCommands(rest), { token, signal });
-  }
-
-  /**
-   * Use this method to change the bot's name. Returns *True* on success.
-   * @see https://core.telegram.org/bots/api/#setmyname
-   */
-  setMyName(callOptions?: MethodOptions<SetMyNameOptions>) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SetMyName(rest), { token, signal });
-  }
-
-  /**
-   * Use this method to get the current bot name for the given user language. Returns [BotName](https://core.telegram.org/bots/api/#botname) on success.
-   * @see https://core.telegram.org/bots/api/#getmyname
-   */
-  getMyName(callOptions?: MethodOptions<GetMyNameOptions>) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new GetMyName(rest), { token, signal });
-  }
-
-  /**
-   * Use this method to change the bot's description, which is shown in the chat with the bot if the chat is empty. Returns *True* on success.
-   * @see https://core.telegram.org/bots/api/#setmydescription
-   */
-  setMyDescription(callOptions?: MethodOptions<SetMyDescriptionOptions>) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SetMyDescription(rest), { token, signal });
-  }
-
-  /**
-   * Use this method to get the current bot description for the given user language. Returns [BotDescription](https://core.telegram.org/bots/api/#botdescription) on success.
-   * @see https://core.telegram.org/bots/api/#getmydescription
-   */
-  getMyDescription(callOptions?: MethodOptions<GetMyDescriptionOptions>) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new GetMyDescription(rest), { token, signal });
-  }
-
-  /**
-   * Use this method to change the bot's short description, which is shown on the bot's profile page and is sent together with the link when users share the bot. Returns *True* on success.
-   * @see https://core.telegram.org/bots/api/#setmyshortdescription
-   */
-  setMyShortDescription(
-    callOptions?: MethodOptions<SetMyShortDescriptionOptions>,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SetMyShortDescription(rest), { token, signal });
-  }
-
-  /**
-   * Use this method to get the current bot short description for the given user language. Returns [BotShortDescription](https://core.telegram.org/bots/api/#botshortdescription) on success.
-   * @see https://core.telegram.org/bots/api/#getmyshortdescription
-   */
-  getMyShortDescription(
-    callOptions?: MethodOptions<GetMyShortDescriptionOptions>,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new GetMyShortDescription(rest), { token, signal });
-  }
-
-  /**
-   * Use this method to change the bot's menu button in a private chat, or the default menu button. Returns *True* on success.
-   * @see https://core.telegram.org/bots/api/#setchatmenubutton
-   */
-  setChatMenuButton(callOptions?: MethodOptions<SetChatMenuButtonOptions>) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SetChatMenuButton(rest), { token, signal });
-  }
-
-  /**
-   * Use this method to get the current value of the bot's menu button in a private chat, or the default menu button. Returns [MenuButton](https://core.telegram.org/bots/api/#menubutton) on success.
-   * @see https://core.telegram.org/bots/api/#getchatmenubutton
-   */
-  getChatMenuButton(callOptions?: MethodOptions<GetChatMenuButtonOptions>) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new GetChatMenuButton(rest), { token, signal });
-  }
-
-  /**
-   * Use this method to change the default administrator rights requested by the bot when it's added as an administrator to groups or channels. These rights will be suggested to users, but they are free to modify the list before adding the bot. Returns *True* on success.
-   * @see https://core.telegram.org/bots/api/#setmydefaultadministratorrights
-   */
-  setMyDefaultAdministratorRights(
-    callOptions?: MethodOptions<SetMyDefaultAdministratorRightsOptions>,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SetMyDefaultAdministratorRights(rest), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to get the current default administrator rights of the bot. Returns [ChatAdministratorRights](https://core.telegram.org/bots/api/#chatadministratorrights) on success.
-   * @see https://core.telegram.org/bots/api/#getmydefaultadministratorrights
-   */
-  getMyDefaultAdministratorRights(
-    callOptions?: MethodOptions<GetMyDefaultAdministratorRightsOptions>,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new GetMyDefaultAdministratorRights(rest), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to edit text and [game](https://core.telegram.org/bots/api/#games) messages. On success, if the edited message is not an inline message, the edited [Message](https://core.telegram.org/bots/api/#message) is returned, otherwise *True* is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within **48 hours** from the time they were sent.
-   * @see https://core.telegram.org/bots/api/#editmessagetext
-   */
-  editMessageText(
-    chat_id: NonNullable<EditMessageTextOptions['chat_id']>,
-    message_id: NonNullable<EditMessageTextOptions['message_id']>,
-    text: NonNullable<EditMessageTextOptions['text']>,
-    options?: MethodOptions<
-      Omit<
-        EditMessageTextOptions,
-        'chat_id' | 'message_id' | 'inline_message_id' | 'text'
-      >
-    >,
-  ): Promise<ResultOf<EditMessageText>>;
-  editMessageText(
-    inline_message_id: NonNullable<EditMessageTextOptions['inline_message_id']>,
-    text: NonNullable<EditMessageTextOptions['text']>,
-    options?: MethodOptions<
-      Omit<
-        EditMessageTextOptions,
-        'chat_id' | 'message_id' | 'inline_message_id' | 'text'
-      >
-    >,
-  ): Promise<ResultOf<EditMessageText>>;
-  editMessageText(
-    target:
-      | NonNullable<EditMessageTextOptions['chat_id']>
-      | NonNullable<EditMessageTextOptions['inline_message_id']>,
-    second:
-      | NonNullable<EditMessageTextOptions['message_id']>
-      | NonNullable<EditMessageTextOptions['text']>,
-    c0OrOptions?:
-      | NonNullable<EditMessageTextOptions['text']>
-      | MethodOptions<
-          Omit<
-            EditMessageTextOptions,
-            'chat_id' | 'message_id' | 'inline_message_id' | 'text'
-          >
-        >,
-    chatOptions?: MethodOptions<
-      Omit<
-        EditMessageTextOptions,
-        'chat_id' | 'message_id' | 'inline_message_id' | 'text'
-      >
-    >,
-  ): Promise<ResultOf<EditMessageText>> {
-    // A numeric 2nd arg is message_id → the chat-based overload; otherwise inline.
-    if (typeof second === 'number') {
-      const { token, signal, ...rest } = chatOptions ?? {};
-      return this.call(
-        new EditMessageText({
-          chat_id: target,
-          message_id: second,
-          text: c0OrOptions as NonNullable<EditMessageTextOptions['text']>,
-          ...rest,
-        }),
-        { token, signal },
-      );
-    }
-    const { token, signal, ...rest } =
-      (c0OrOptions as MethodOptions<
-        Omit<
-          EditMessageTextOptions,
-          'chat_id' | 'message_id' | 'inline_message_id' | 'text'
-        >
-      >) ?? {};
-    return this.call(
-      new EditMessageText({
-        inline_message_id: target as NonNullable<
-          EditMessageTextOptions['inline_message_id']
-        >,
-        text: second,
-        ...rest,
-      }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to edit captions of messages. On success, if the edited message is not an inline message, the edited [Message](https://core.telegram.org/bots/api/#message) is returned, otherwise *True* is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within **48 hours** from the time they were sent.
-   * @see https://core.telegram.org/bots/api/#editmessagecaption
+   * Use this method to edit captions of messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
+   * @see https://core.telegram.org/bots/api#editmessagecaption
    */
   editMessageCaption(
     chat_id: NonNullable<EditMessageCaptionOptions['chat_id']>,
@@ -1908,8 +1221,61 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to edit animation, audio, document, photo, or video messages, or to add media to text messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file\_id or specify a URL. On success, if the edited message is not an inline message, the edited [Message](https://core.telegram.org/bots/api/#message) is returned, otherwise *True* is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within **48 hours** from the time they were sent.
-   * @see https://core.telegram.org/bots/api/#editmessagemedia
+   * Use this method to edit a checklist on behalf of a connected business account. On success, the edited Message is returned.
+   * @param business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
+   * @param chat_id Unique identifier for the target chat or username of the target bot in the format @username
+   * @param message_id Unique identifier for the target message
+   * @param checklist A JSON-serialized object for the new checklist
+   * @see https://core.telegram.org/bots/api#editmessagechecklist
+   */
+  editMessageChecklist(
+    business_connection_id: EditMessageChecklistOptions['business_connection_id'],
+    chat_id: EditMessageChecklistOptions['chat_id'],
+    message_id: EditMessageChecklistOptions['message_id'],
+    checklist: EditMessageChecklistOptions['checklist'],
+    callOptions?: MethodOptions<
+      Omit<
+        EditMessageChecklistOptions,
+        'business_connection_id' | 'chat_id' | 'message_id' | 'checklist'
+      >
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new EditMessageChecklist({
+        business_connection_id,
+        chat_id,
+        message_id,
+        checklist,
+        ...rest,
+      }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to edit live location messages. A location can be edited until its live_period expires or editing is explicitly disabled by a call to stopMessageLiveLocation. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned.
+   * @param latitude Latitude of new location
+   * @param longitude Longitude of new location
+   * @see https://core.telegram.org/bots/api#editmessagelivelocation
+   */
+  editMessageLiveLocation(
+    latitude: EditMessageLiveLocationOptions['latitude'],
+    longitude: EditMessageLiveLocationOptions['longitude'],
+    callOptions?: MethodOptions<
+      Omit<EditMessageLiveLocationOptions, 'latitude' | 'longitude'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new EditMessageLiveLocation({ latitude, longitude, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to edit animation, audio, document, live photo, photo, or video messages, or to add media to text messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo, a live photo, or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
+   * @see https://core.telegram.org/bots/api#editmessagemedia
    */
   editMessageMedia(
     chat_id: NonNullable<EditMessageMediaOptions['chat_id']>,
@@ -1989,102 +1355,8 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to edit live location messages. A location can be edited until its *live\_period* expires or editing is explicitly disabled by a call to [stopMessageLiveLocation](https://core.telegram.org/bots/api/#stopmessagelivelocation). On success, if the edited message is not an inline message, the edited [Message](https://core.telegram.org/bots/api/#message) is returned, otherwise *True* is returned.
-   * @param latitude Latitude of new location
-   * @param longitude Longitude of new location
-   * @see https://core.telegram.org/bots/api/#editmessagelivelocation
-   */
-  editMessageLiveLocation(
-    latitude: EditMessageLiveLocationOptions['latitude'],
-    longitude: EditMessageLiveLocationOptions['longitude'],
-    callOptions?: MethodOptions<
-      Omit<EditMessageLiveLocationOptions, 'latitude' | 'longitude'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new EditMessageLiveLocation({ latitude, longitude, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to stop updating a live location message before *live\_period* expires. On success, if the message is not an inline message, the edited [Message](https://core.telegram.org/bots/api/#message) is returned, otherwise *True* is returned.
-   * @see https://core.telegram.org/bots/api/#stopmessagelivelocation
-   */
-  stopMessageLiveLocation(
-    chat_id: NonNullable<StopMessageLiveLocationOptions['chat_id']>,
-    message_id: NonNullable<StopMessageLiveLocationOptions['message_id']>,
-    options?: MethodOptions<
-      Omit<
-        StopMessageLiveLocationOptions,
-        'chat_id' | 'message_id' | 'inline_message_id'
-      >
-    >,
-  ): Promise<ResultOf<StopMessageLiveLocation>>;
-  stopMessageLiveLocation(
-    inline_message_id: NonNullable<
-      StopMessageLiveLocationOptions['inline_message_id']
-    >,
-    options?: MethodOptions<
-      Omit<
-        StopMessageLiveLocationOptions,
-        'chat_id' | 'message_id' | 'inline_message_id'
-      >
-    >,
-  ): Promise<ResultOf<StopMessageLiveLocation>>;
-  stopMessageLiveLocation(
-    target:
-      | NonNullable<StopMessageLiveLocationOptions['chat_id']>
-      | NonNullable<StopMessageLiveLocationOptions['inline_message_id']>,
-    second?:
-      | NonNullable<StopMessageLiveLocationOptions['message_id']>
-      | MethodOptions<
-          Omit<
-            StopMessageLiveLocationOptions,
-            'chat_id' | 'message_id' | 'inline_message_id'
-          >
-        >,
-    chatOptions?: MethodOptions<
-      Omit<
-        StopMessageLiveLocationOptions,
-        'chat_id' | 'message_id' | 'inline_message_id'
-      >
-    >,
-  ): Promise<ResultOf<StopMessageLiveLocation>> {
-    // A numeric 2nd arg is message_id → the chat-based overload; otherwise inline.
-    if (typeof second === 'number') {
-      const { token, signal, ...rest } = chatOptions ?? {};
-      return this.call(
-        new StopMessageLiveLocation({
-          chat_id: target,
-          message_id: second,
-          ...rest,
-        }),
-        { token, signal },
-      );
-    }
-    const { token, signal, ...rest } =
-      (second as MethodOptions<
-        Omit<
-          StopMessageLiveLocationOptions,
-          'chat_id' | 'message_id' | 'inline_message_id'
-        >
-      >) ?? {};
-    return this.call(
-      new StopMessageLiveLocation({
-        inline_message_id: target as NonNullable<
-          StopMessageLiveLocationOptions['inline_message_id']
-        >,
-        ...rest,
-      }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to edit only the reply markup of messages. On success, if the edited message is not an inline message, the edited [Message](https://core.telegram.org/bots/api/#message) is returned, otherwise *True* is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within **48 hours** from the time they were sent.
-   * @see https://core.telegram.org/bots/api/#editmessagereplymarkup
+   * Use this method to edit only the reply markup of messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
+   * @see https://core.telegram.org/bots/api#editmessagereplymarkup
    */
   editMessageReplyMarkup(
     chat_id: NonNullable<EditMessageReplyMarkupOptions['chat_id']>,
@@ -2157,104 +1429,335 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to stop a poll which was sent by the bot. On success, the stopped [Poll](https://core.telegram.org/bots/api/#poll) is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param message_id Identifier of the original message with the poll
-   * @see https://core.telegram.org/bots/api/#stoppoll
+   * Use this method to edit text and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
+   * @see https://core.telegram.org/bots/api#editmessagetext
    */
-  stopPoll(
-    chat_id: StopPollOptions['chat_id'],
-    message_id: StopPollOptions['message_id'],
+  editMessageText(
+    chat_id: NonNullable<EditMessageTextOptions['chat_id']>,
+    message_id: NonNullable<EditMessageTextOptions['message_id']>,
+    text: NonNullable<EditMessageTextOptions['text']>,
+    options?: MethodOptions<
+      Omit<
+        EditMessageTextOptions,
+        'chat_id' | 'message_id' | 'inline_message_id' | 'text'
+      >
+    >,
+  ): Promise<ResultOf<EditMessageText>>;
+  editMessageText(
+    inline_message_id: NonNullable<EditMessageTextOptions['inline_message_id']>,
+    text: NonNullable<EditMessageTextOptions['text']>,
+    options?: MethodOptions<
+      Omit<
+        EditMessageTextOptions,
+        'chat_id' | 'message_id' | 'inline_message_id' | 'text'
+      >
+    >,
+  ): Promise<ResultOf<EditMessageText>>;
+  editMessageText(
+    target:
+      | NonNullable<EditMessageTextOptions['chat_id']>
+      | NonNullable<EditMessageTextOptions['inline_message_id']>,
+    second:
+      | NonNullable<EditMessageTextOptions['message_id']>
+      | NonNullable<EditMessageTextOptions['text']>,
+    c0OrOptions?:
+      | NonNullable<EditMessageTextOptions['text']>
+      | MethodOptions<
+          Omit<
+            EditMessageTextOptions,
+            'chat_id' | 'message_id' | 'inline_message_id' | 'text'
+          >
+        >,
+    chatOptions?: MethodOptions<
+      Omit<
+        EditMessageTextOptions,
+        'chat_id' | 'message_id' | 'inline_message_id' | 'text'
+      >
+    >,
+  ): Promise<ResultOf<EditMessageText>> {
+    // A numeric 2nd arg is message_id → the chat-based overload; otherwise inline.
+    if (typeof second === 'number') {
+      const { token, signal, ...rest } = chatOptions ?? {};
+      return this.call(
+        new EditMessageText({
+          chat_id: target,
+          message_id: second,
+          text: c0OrOptions as NonNullable<EditMessageTextOptions['text']>,
+          ...rest,
+        }),
+        { token, signal },
+      );
+    }
+    const { token, signal, ...rest } =
+      (c0OrOptions as MethodOptions<
+        Omit<
+          EditMessageTextOptions,
+          'chat_id' | 'message_id' | 'inline_message_id' | 'text'
+        >
+      >) ?? {};
+    return this.call(
+      new EditMessageText({
+        inline_message_id: target as NonNullable<
+          EditMessageTextOptions['inline_message_id']
+        >,
+        text: second,
+        ...rest,
+      }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Edits a story previously posted by the bot on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns Story on success.
+   * @param business_connection_id Unique identifier of the business connection
+   * @param story_id Unique identifier of the story to edit
+   * @param content Content of the story
+   * @see https://core.telegram.org/bots/api#editstory
+   */
+  editStory(
+    business_connection_id: EditStoryOptions['business_connection_id'],
+    story_id: EditStoryOptions['story_id'],
+    content: EditStoryOptions['content'],
     callOptions?: MethodOptions<
-      Omit<StopPollOptions, 'chat_id' | 'message_id'>
+      Omit<EditStoryOptions, 'business_connection_id' | 'story_id' | 'content'>
     >,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new StopPoll({ chat_id, message_id, ...rest }), {
-      token,
-      signal,
-    });
+    return this.call(
+      new EditStory({ business_connection_id, story_id, content, ...rest }),
+      { token, signal },
+    );
   }
 
   /**
-   * Use this method to delete a message, including service messages, with the following limitations:
-   * \- A message can only be deleted if it was sent less than 48 hours ago.
-   * \- Service messages about a supergroup, channel, or forum topic creation can't be deleted.
-   * \- A dice message in a private chat can only be deleted if it was sent more than 24 hours ago.
-   * \- Bots can delete outgoing messages in private chats, groups, and supergroups.
-   * \- Bots can delete incoming messages in private chats.
-   * \- Bots granted *can\_post\_messages* permissions can delete outgoing messages in channels.
-   * \- If the bot is an administrator of a group, it can delete any message there.
-   * \- If the bot has *can\_delete\_messages* permission in a supergroup or a channel, it can delete any message there.
-   * Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param message_id Identifier of the message to delete
-   * @see https://core.telegram.org/bots/api/#deletemessage
+   * Allows the bot to cancel or re-enable extension of a subscription paid in Telegram Stars. Returns True on success.
+   * @param user_id Identifier of the user whose subscription will be edited
+   * @param telegram_payment_charge_id Telegram payment identifier for the subscription
+   * @param is_canceled Pass True to cancel extension of the user subscription; the subscription must be active up to the end of the current subscription period. Pass False to allow the user to re-enable a subscription that was previously canceled by the bot.
+   * @see https://core.telegram.org/bots/api#edituserstarsubscription
    */
-  deleteMessage(
-    chat_id: DeleteMessageOptions['chat_id'],
-    message_id: DeleteMessageOptions['message_id'],
+  editUserStarSubscription(
+    user_id: EditUserStarSubscriptionOptions['user_id'],
+    telegram_payment_charge_id: EditUserStarSubscriptionOptions['telegram_payment_charge_id'],
+    is_canceled: EditUserStarSubscriptionOptions['is_canceled'],
     callOptions?: CallOptions,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new DeleteMessage({ chat_id, message_id, ...rest }), {
-      token,
-      signal,
-    });
+    return this.call(
+      new EditUserStarSubscription({
+        user_id,
+        telegram_payment_charge_id,
+        is_canceled,
+        ...rest,
+      }),
+      { token, signal },
+    );
   }
 
   /**
-   * Use this method to delete multiple messages simultaneously. If some of the specified messages can't be found, they are skipped. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param message_ids A JSON-serialized list of 1-100 identifiers of messages to delete. See [deleteMessage](https://core.telegram.org/bots/api/#deletemessage) for limitations on which messages can be deleted
-   * @see https://core.telegram.org/bots/api/#deletemessages
+   * Use this method to generate a new primary invite link for a chat; any previously generated primary link is revoked. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the new invite link as String on success.
+   * @param chat_id Unique identifier for the target chat or username of the target channel in the format @username
+   * @see https://core.telegram.org/bots/api#exportchatinvitelink
    */
-  deleteMessages(
-    chat_id: DeleteMessagesOptions['chat_id'],
-    message_ids: DeleteMessagesOptions['message_ids'],
+  exportChatInviteLink(
+    chat_id: ExportChatInviteLinkOptions['chat_id'],
     callOptions?: CallOptions,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new DeleteMessages({ chat_id, message_ids, ...rest }), {
+    return this.call(new ExportChatInviteLink({ chat_id, ...rest }), {
       token,
       signal,
     });
   }
 
   /**
-   * Use this method to send static .WEBP, [animated](https://telegram.org/blog/animated-stickers) .TGS, or [video](https://telegram.org/blog/video-stickers-better-reactions) .WEBM stickers. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param sticker Sticker to send. Pass a file\_id as String to send a file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a .WEBP sticker from the Internet, or upload a new .WEBP, .TGS, or .WEBM sticker using multipart/form-data. [More information on Sending Files »](https://core.telegram.org/bots/api/#sending-files). Video and animated stickers can't be sent via an HTTP URL.
-   * @see https://core.telegram.org/bots/api/#sendsticker
+   * Use this method to forward messages of any kind. Service messages and messages with protected content can't be forwarded. On success, the sent Message is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param from_chat_id Unique identifier for the chat where the original message was sent (or username of the target bot, supergroup or channel in the format @username)
+   * @param message_id Message identifier in the chat specified in from_chat_id
+   * @see https://core.telegram.org/bots/api#forwardmessage
    */
-  sendSticker(
-    chat_id: SendStickerOptions['chat_id'],
-    sticker: SendStickerOptions['sticker'],
+  forwardMessage(
+    chat_id: ForwardMessageOptions['chat_id'],
+    from_chat_id: ForwardMessageOptions['from_chat_id'],
+    message_id: ForwardMessageOptions['message_id'],
     callOptions?: MethodOptions<
-      Omit<SendStickerOptions, 'chat_id' | 'sticker'>
+      Omit<ForwardMessageOptions, 'chat_id' | 'from_chat_id' | 'message_id'>
     >,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendSticker({ chat_id, sticker, ...rest }), {
+    return this.call(
+      new ForwardMessage({ chat_id, from_chat_id, message_id, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to forward multiple messages of any kind. If some of the specified messages can't be found or forwarded, they are skipped. Service messages and messages with protected content can't be forwarded. Album grouping is kept for forwarded messages. On success, an array of MessageId of the sent messages is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param from_chat_id Unique identifier for the chat where the original messages were sent (or username of the target bot, supergroup or channel in the format @username)
+   * @param message_ids A JSON-serialized list of 1-100 identifiers of messages in the chat from_chat_id to forward. The identifiers must be specified in a strictly increasing order.
+   * @see https://core.telegram.org/bots/api#forwardmessages
+   */
+  forwardMessages(
+    chat_id: ForwardMessagesOptions['chat_id'],
+    from_chat_id: ForwardMessagesOptions['from_chat_id'],
+    message_ids: ForwardMessagesOptions['message_ids'],
+    callOptions?: MethodOptions<
+      Omit<ForwardMessagesOptions, 'chat_id' | 'from_chat_id' | 'message_ids'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new ForwardMessages({ chat_id, from_chat_id, message_ids, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Returns the list of gifts that can be sent by the bot to users and channel chats. Requires no parameters. Returns a Gifts object.
+   * @see https://core.telegram.org/bots/api#getavailablegifts
+   */
+  getAvailableGifts(callOptions?: CallOptions) {
+    return this.call(new GetAvailableGifts(), callOptions);
+  }
+
+  /**
+   * Returns the gifts received and owned by a managed business account. Requires the can_view_gifts_and_stars business bot right. Returns OwnedGifts on success.
+   * @param business_connection_id Unique identifier of the business connection
+   * @see https://core.telegram.org/bots/api#getbusinessaccountgifts
+   */
+  getBusinessAccountGifts(
+    business_connection_id: GetBusinessAccountGiftsOptions['business_connection_id'],
+    callOptions?: MethodOptions<
+      Omit<GetBusinessAccountGiftsOptions, 'business_connection_id'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new GetBusinessAccountGifts({ business_connection_id, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Returns the amount of Telegram Stars owned by a managed business account. Requires the can_view_gifts_and_stars business bot right. Returns StarAmount on success.
+   * @param business_connection_id Unique identifier of the business connection
+   * @see https://core.telegram.org/bots/api#getbusinessaccountstarbalance
+   */
+  getBusinessAccountStarBalance(
+    business_connection_id: GetBusinessAccountStarBalanceOptions['business_connection_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new GetBusinessAccountStarBalance({ business_connection_id, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to get information about the connection of the bot with a business account. Returns a BusinessConnection object on success.
+   * @param business_connection_id Unique identifier of the business connection
+   * @see https://core.telegram.org/bots/api#getbusinessconnection
+   */
+  getBusinessConnection(
+    business_connection_id: GetBusinessConnectionOptions['business_connection_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new GetBusinessConnection({ business_connection_id, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to get up-to-date information about the chat. Returns a ChatFullInfo object on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup or channel in the format @username
+   * @see https://core.telegram.org/bots/api#getchat
+   */
+  getChat(chat_id: GetChatOptions['chat_id'], callOptions?: CallOptions) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetChat({ chat_id, ...rest }), { token, signal });
+  }
+
+  /**
+   * Use this method to get a list of administrators in a chat. Returns an Array of ChatMember objects.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup or channel in the format @username
+   * @see https://core.telegram.org/bots/api#getchatadministrators
+   */
+  getChatAdministrators(
+    chat_id: GetChatAdministratorsOptions['chat_id'],
+    callOptions?: MethodOptions<Omit<GetChatAdministratorsOptions, 'chat_id'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetChatAdministrators({ chat_id, ...rest }), {
       token,
       signal,
     });
   }
 
   /**
-   * Use this method to get a sticker set. On success, a [StickerSet](https://core.telegram.org/bots/api/#stickerset) object is returned.
-   * @param name Name of the sticker set
-   * @see https://core.telegram.org/bots/api/#getstickerset
+   * Returns the gifts owned by a chat. Returns OwnedGifts on success.
+   * @param chat_id Unique identifier for the target chat or username of the target channel in the format @username
+   * @see https://core.telegram.org/bots/api#getchatgifts
    */
-  getStickerSet(name: GetStickerSetOptions['name'], callOptions?: CallOptions) {
+  getChatGifts(
+    chat_id: GetChatGiftsOptions['chat_id'],
+    callOptions?: MethodOptions<Omit<GetChatGiftsOptions, 'chat_id'>>,
+  ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new GetStickerSet({ name, ...rest }), { token, signal });
+    return this.call(new GetChatGifts({ chat_id, ...rest }), { token, signal });
   }
 
   /**
-   * Use this method to get information about custom emoji stickers by their identifiers. Returns an Array of [Sticker](https://core.telegram.org/bots/api/#sticker) objects.
+   * Use this method to get information about a member of a chat. The method is only guaranteed to work for other users if the bot is an administrator in the chat. Returns a ChatMember object on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup or channel in the format @username
+   * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api#getchatmember
+   */
+  getChatMember(
+    chat_id: GetChatMemberOptions['chat_id'],
+    user_id: GetChatMemberOptions['user_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetChatMember({ chat_id, user_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to get the number of members in a chat. Returns Int on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup or channel in the format @username
+   * @see https://core.telegram.org/bots/api#getchatmembercount
+   */
+  getChatMemberCount(
+    chat_id: GetChatMemberCountOptions['chat_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetChatMemberCount({ chat_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to get the current value of the bot's menu button in a private chat, or the default menu button. Returns MenuButton on success.
+   * @see https://core.telegram.org/bots/api#getchatmenubutton
+   */
+  getChatMenuButton(callOptions?: MethodOptions<GetChatMenuButtonOptions>) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetChatMenuButton(rest), { token, signal });
+  }
+
+  /**
+   * Use this method to get information about custom emoji stickers by their identifiers. Returns an Array of Sticker objects.
    * @param custom_emoji_ids A JSON-serialized list of custom emoji identifiers. At most 200 custom emoji identifiers can be specified.
-   * @see https://core.telegram.org/bots/api/#getcustomemojistickers
+   * @see https://core.telegram.org/bots/api#getcustomemojistickers
    */
   getCustomEmojiStickers(
     custom_emoji_ids: GetCustomEmojiStickersOptions['custom_emoji_ids'],
@@ -2268,113 +1771,533 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to upload a file with a sticker for later use in the [createNewStickerSet](https://core.telegram.org/bots/api/#createnewstickerset), [addStickerToSet](https://core.telegram.org/bots/api/#addstickertoset), or [replaceStickerInSet](https://core.telegram.org/bots/api/#replacestickerinset) methods (the file can be used multiple times). Returns the uploaded [File](https://core.telegram.org/bots/api/#file) on success.
-   * @param user_id User identifier of sticker file owner
-   * @param sticker A file with the sticker in .WEBP, .PNG, .TGS, or .WEBM format. See [https://core.telegram.org/stickers](https://core.telegram.org/stickers) for technical requirements. [More information on Sending Files »](https://core.telegram.org/bots/api/#sending-files)
-   * @param sticker_format Format of the sticker, must be one of “static”, “animated”, “video”
-   * @see https://core.telegram.org/bots/api/#uploadstickerfile
+   * Use this method to get custom emoji stickers, which can be used as a forum topic icon by any user. Requires no parameters. Returns an Array of Sticker objects.
+   * @see https://core.telegram.org/bots/api#getforumtopiciconstickers
    */
-  uploadStickerFile(
-    user_id: UploadStickerFileOptions['user_id'],
-    sticker: UploadStickerFileOptions['sticker'],
-    sticker_format: UploadStickerFileOptions['sticker_format'],
+  getForumTopicIconStickers(callOptions?: CallOptions) {
+    return this.call(new GetForumTopicIconStickers(), callOptions);
+  }
+
+  /**
+   * Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects.
+   * @param user_id Target user id
+   * @see https://core.telegram.org/bots/api#getgamehighscores
+   */
+  getGameHighScores(
+    user_id: GetGameHighScoresOptions['user_id'],
+    callOptions?: MethodOptions<Omit<GetGameHighScoresOptions, 'user_id'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetGameHighScores({ user_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to get the access settings of a managed bot. Returns a BotAccessSettings object on success.
+   * @param user_id User identifier of the managed bot whose access settings will be returned
+   * @see https://core.telegram.org/bots/api#getmanagedbotaccesssettings
+   */
+  getManagedBotAccessSettings(
+    user_id: GetManagedBotAccessSettingsOptions['user_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetManagedBotAccessSettings({ user_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to get the token of a managed bot. Returns the token as String on success.
+   * @param user_id User identifier of the managed bot whose token will be returned
+   * @see https://core.telegram.org/bots/api#getmanagedbottoken
+   */
+  getManagedBotToken(
+    user_id: GetManagedBotTokenOptions['user_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetManagedBotToken({ user_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to get the current list of the bot's commands for the given scope and user language. Returns an Array of BotCommand objects. If commands aren't set, an empty list is returned.
+   * @see https://core.telegram.org/bots/api#getmycommands
+   */
+  getMyCommands(callOptions?: MethodOptions<GetMyCommandsOptions>) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetMyCommands(rest), { token, signal });
+  }
+
+  /**
+   * Use this method to get the current default administrator rights of the bot. Returns ChatAdministratorRights on success.
+   * @see https://core.telegram.org/bots/api#getmydefaultadministratorrights
+   */
+  getMyDefaultAdministratorRights(
+    callOptions?: MethodOptions<GetMyDefaultAdministratorRightsOptions>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetMyDefaultAdministratorRights(rest), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to get the current bot description for the given user language. Returns BotDescription on success.
+   * @see https://core.telegram.org/bots/api#getmydescription
+   */
+  getMyDescription(callOptions?: MethodOptions<GetMyDescriptionOptions>) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetMyDescription(rest), { token, signal });
+  }
+
+  /**
+   * Use this method to get the current bot name for the given user language. Returns BotName on success.
+   * @see https://core.telegram.org/bots/api#getmyname
+   */
+  getMyName(callOptions?: MethodOptions<GetMyNameOptions>) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetMyName(rest), { token, signal });
+  }
+
+  /**
+   * Use this method to get the current bot short description for the given user language. Returns BotShortDescription on success.
+   * @see https://core.telegram.org/bots/api#getmyshortdescription
+   */
+  getMyShortDescription(
+    callOptions?: MethodOptions<GetMyShortDescriptionOptions>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetMyShortDescription(rest), { token, signal });
+  }
+
+  /**
+   * A method to get the current Telegram Stars balance of the bot. Requires no parameters. On success, returns a StarAmount object.
+   * @see https://core.telegram.org/bots/api#getmystarbalance
+   */
+  getMyStarBalance(callOptions?: CallOptions) {
+    return this.call(new GetMyStarBalance(), callOptions);
+  }
+
+  /**
+   * Returns the bot's Telegram Star transactions in chronological order. On success, returns a StarTransactions object.
+   * @see https://core.telegram.org/bots/api#getstartransactions
+   */
+  getStarTransactions(callOptions?: MethodOptions<GetStarTransactionsOptions>) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetStarTransactions(rest), { token, signal });
+  }
+
+  /**
+   * Use this method to get a sticker set. On success, a StickerSet object is returned.
+   * @param name Name of the sticker set
+   * @see https://core.telegram.org/bots/api#getstickerset
+   */
+  getStickerSet(name: GetStickerSetOptions['name'], callOptions?: CallOptions) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetStickerSet({ name, ...rest }), { token, signal });
+  }
+
+  /**
+   * Use this method to receive incoming updates using long polling (wiki). Returns an Array of Update objects.
+   * @see https://core.telegram.org/bots/api#getupdates
+   */
+  getUpdates(callOptions?: MethodOptions<GetUpdatesOptions>) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetUpdates(rest), { token, signal });
+  }
+
+  /**
+   * Use this method to get the list of boosts added to a chat by a user. Requires administrator rights in the chat. Returns a UserChatBoosts object.
+   * @param chat_id Unique identifier for the chat or username of the channel in the format @username
+   * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api#getuserchatboosts
+   */
+  getUserChatBoosts(
+    chat_id: GetUserChatBoostsOptions['chat_id'],
+    user_id: GetUserChatBoostsOptions['user_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetUserChatBoosts({ chat_id, user_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Returns the gifts owned and hosted by a user. Returns OwnedGifts on success.
+   * @param user_id Unique identifier of the user
+   * @see https://core.telegram.org/bots/api#getusergifts
+   */
+  getUserGifts(
+    user_id: GetUserGiftsOptions['user_id'],
+    callOptions?: MethodOptions<Omit<GetUserGiftsOptions, 'user_id'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetUserGifts({ user_id, ...rest }), { token, signal });
+  }
+
+  /**
+   * Use this method to get the last messages from the personal chat (i.e., the chat currently added to their profile) of a given user. On success, an array of Message objects is returned.
+   * @param user_id Unique identifier for the target user
+   * @param limit The maximum number of messages to return; 1-20
+   * @see https://core.telegram.org/bots/api#getuserpersonalchatmessages
+   */
+  getUserPersonalChatMessages(
+    user_id: GetUserPersonalChatMessagesOptions['user_id'],
+    limit: GetUserPersonalChatMessagesOptions['limit'],
     callOptions?: CallOptions,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
     return this.call(
-      new UploadStickerFile({ user_id, sticker, sticker_format, ...rest }),
+      new GetUserPersonalChatMessages({ user_id, limit, ...rest }),
       { token, signal },
     );
   }
 
   /**
-   * Use this method to create a new sticker set owned by a user. The bot will be able to edit the sticker set thus created. Returns *True* on success.
-   * @param user_id User identifier of created sticker set owner
-   * @param name Short name of sticker set, to be used in `t.me/addstickers/` URLs (e.g., *animals*). Can contain only English letters, digits and underscores. Must begin with a letter, can't contain consecutive underscores and must end in `"_by_<bot_username>"`. `<bot_username>` is case insensitive. 1-64 characters.
-   * @param title Sticker set title, 1-64 characters
-   * @param stickers A JSON-serialized list of 1-50 initial stickers to be added to the sticker set
-   * @see https://core.telegram.org/bots/api/#createnewstickerset
+   * Use this method to get a list of profile audios for a user. Returns a UserProfileAudios object.
+   * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api#getuserprofileaudios
    */
-  createNewStickerSet(
-    user_id: CreateNewStickerSetOptions['user_id'],
-    name: CreateNewStickerSetOptions['name'],
-    title: CreateNewStickerSetOptions['title'],
-    stickers: CreateNewStickerSetOptions['stickers'],
+  getUserProfileAudios(
+    user_id: GetUserProfileAudiosOptions['user_id'],
+    callOptions?: MethodOptions<Omit<GetUserProfileAudiosOptions, 'user_id'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetUserProfileAudios({ user_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to get a list of profile pictures for a user. Returns a UserProfilePhotos object.
+   * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api#getuserprofilephotos
+   */
+  getUserProfilePhotos(
+    user_id: GetUserProfilePhotosOptions['user_id'],
+    callOptions?: MethodOptions<Omit<GetUserProfilePhotosOptions, 'user_id'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetUserProfilePhotos({ user_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to get current webhook status. Requires no parameters. On success, returns a WebhookInfo object. If the bot is using getUpdates, will return an object with the url field empty.
+   * @see https://core.telegram.org/bots/api#getwebhookinfo
+   */
+  getWebhookInfo(callOptions?: CallOptions) {
+    return this.call(new GetWebhookInfo(), callOptions);
+  }
+
+  /**
+   * Gifts a Telegram Premium subscription to the given user. Returns True on success.
+   * @param user_id Unique identifier of the target user who will receive a Telegram Premium subscription
+   * @param month_count Number of months the Telegram Premium subscription will be active for the user; must be one of 3, 6, or 12
+   * @param star_count Number of Telegram Stars to pay for the Telegram Premium subscription; must be 1000 for 3 months, 1500 for 6 months, and 2500 for 12 months
+   * @see https://core.telegram.org/bots/api#giftpremiumsubscription
+   */
+  giftPremiumSubscription(
+    user_id: GiftPremiumSubscriptionOptions['user_id'],
+    month_count: GiftPremiumSubscriptionOptions['month_count'],
+    star_count: GiftPremiumSubscriptionOptions['star_count'],
     callOptions?: MethodOptions<
       Omit<
-        CreateNewStickerSetOptions,
-        'user_id' | 'name' | 'title' | 'stickers'
+        GiftPremiumSubscriptionOptions,
+        'user_id' | 'month_count' | 'star_count'
       >
     >,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
     return this.call(
-      new CreateNewStickerSet({ user_id, name, title, stickers, ...rest }),
+      new GiftPremiumSubscription({
+        user_id,
+        month_count,
+        star_count,
+        ...rest,
+      }),
       { token, signal },
     );
   }
 
   /**
-   * Use this method to add a new sticker to a set created by the bot. Emoji sticker sets can have up to 200 stickers. Other sticker sets can have up to 120 stickers. Returns *True* on success.
-   * @param user_id User identifier of sticker set owner
-   * @param name Sticker set name
-   * @param sticker A JSON-serialized object with information about the added sticker. If exactly the same sticker had already been added to the set, then the set isn't changed.
-   * @see https://core.telegram.org/bots/api/#addstickertoset
+   * Use this method to hide the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. The topic will be automatically closed if it was open. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @see https://core.telegram.org/bots/api#hidegeneralforumtopic
    */
-  addStickerToSet(
-    user_id: AddStickerToSetOptions['user_id'],
-    name: AddStickerToSetOptions['name'],
-    sticker: AddStickerToSetOptions['sticker'],
+  hideGeneralForumTopic(
+    chat_id: HideGeneralForumTopicOptions['chat_id'],
     callOptions?: CallOptions,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new AddStickerToSet({ user_id, name, sticker, ...rest }), {
+    return this.call(new HideGeneralForumTopic({ chat_id, ...rest }), {
       token,
       signal,
     });
   }
 
   /**
-   * Use this method to move a sticker in a set created by the bot to a specific position. Returns *True* on success.
-   * @param sticker File identifier of the sticker
-   * @param position New sticker position in the set, zero-based
-   * @see https://core.telegram.org/bots/api/#setstickerpositioninset
+   * Use this method for your bot to leave a group, supergroup or channel. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup or channel in the format @username. Channel direct messages chats aren't supported; leave the corresponding channel instead.
+   * @see https://core.telegram.org/bots/api#leavechat
    */
-  setStickerPositionInSet(
-    sticker: SetStickerPositionInSetOptions['sticker'],
-    position: SetStickerPositionInSetOptions['position'],
+  leaveChat(chat_id: LeaveChatOptions['chat_id'], callOptions?: CallOptions) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new LeaveChat({ chat_id, ...rest }), { token, signal });
+  }
+
+  /**
+   * Use this method to log out from the cloud Bot API server before launching the bot locally. You must log out the bot before running it locally, otherwise there is no guarantee that the bot will receive updates. After a successful call, you can immediately log in on a local server, but will not be able to log in back to the cloud Bot API server for 10 minutes. Returns True on success. Requires no parameters.
+   * @see https://core.telegram.org/bots/api#logout
+   */
+  logOut(callOptions?: CallOptions) {
+    return this.call(new LogOut(), callOptions);
+  }
+
+  /**
+   * Use this method to add a message to the list of pinned messages in a chat. In private chats and channel direct messages chats, all non-service messages can be pinned. Conversely, the bot must be an administrator with the 'can_pin_messages' right or the 'can_edit_messages' right to pin messages in groups and channels respectively. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target channel in the format @username
+   * @param message_id Identifier of a message to pin
+   * @see https://core.telegram.org/bots/api#pinchatmessage
+   */
+  pinChatMessage(
+    chat_id: PinChatMessageOptions['chat_id'],
+    message_id: PinChatMessageOptions['message_id'],
+    callOptions?: MethodOptions<
+      Omit<PinChatMessageOptions, 'chat_id' | 'message_id'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new PinChatMessage({ chat_id, message_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Posts a story on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns Story on success.
+   * @param business_connection_id Unique identifier of the business connection
+   * @param content Content of the story
+   * @param active_period Period after which the story is moved to the archive, in seconds; must be one of 6 * 3600, 12 * 3600, 86400, or 2 * 86400
+   * @see https://core.telegram.org/bots/api#poststory
+   */
+  postStory(
+    business_connection_id: PostStoryOptions['business_connection_id'],
+    content: PostStoryOptions['content'],
+    active_period: PostStoryOptions['active_period'],
+    callOptions?: MethodOptions<
+      Omit<
+        PostStoryOptions,
+        'business_connection_id' | 'content' | 'active_period'
+      >
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new PostStory({
+        business_connection_id,
+        content,
+        active_period,
+        ...rest,
+      }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to promote or demote a user in a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Pass False for all boolean parameters to demote a user. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target channel in the format @username
+   * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api#promotechatmember
+   */
+  promoteChatMember(
+    chat_id: PromoteChatMemberOptions['chat_id'],
+    user_id: PromoteChatMemberOptions['user_id'],
+    callOptions?: MethodOptions<
+      Omit<PromoteChatMemberOptions, 'chat_id' | 'user_id'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new PromoteChatMember({ chat_id, user_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Marks incoming message as read on behalf of a business account. Requires the can_read_messages business bot right. Returns True on success.
+   * @param business_connection_id Unique identifier of the business connection on behalf of which to read the message
+   * @param chat_id Unique identifier of the chat in which the message was received. The chat must have been active in the last 24 hours.
+   * @param message_id Unique identifier of the message to mark as read
+   * @see https://core.telegram.org/bots/api#readbusinessmessage
+   */
+  readBusinessMessage(
+    business_connection_id: ReadBusinessMessageOptions['business_connection_id'],
+    chat_id: ReadBusinessMessageOptions['chat_id'],
+    message_id: ReadBusinessMessageOptions['message_id'],
     callOptions?: CallOptions,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
     return this.call(
-      new SetStickerPositionInSet({ sticker, position, ...rest }),
+      new ReadBusinessMessage({
+        business_connection_id,
+        chat_id,
+        message_id,
+        ...rest,
+      }),
       { token, signal },
     );
   }
 
   /**
-   * Use this method to delete a sticker from a set created by the bot. Returns *True* on success.
-   * @param sticker File identifier of the sticker
-   * @see https://core.telegram.org/bots/api/#deletestickerfromset
+   * Refunds a successful payment in Telegram Stars. Returns True on success.
+   * @param user_id Identifier of the user whose payment will be refunded
+   * @param telegram_payment_charge_id Telegram payment identifier
+   * @see https://core.telegram.org/bots/api#refundstarpayment
    */
-  deleteStickerFromSet(
-    sticker: DeleteStickerFromSetOptions['sticker'],
+  refundStarPayment(
+    user_id: RefundStarPaymentOptions['user_id'],
+    telegram_payment_charge_id: RefundStarPaymentOptions['telegram_payment_charge_id'],
     callOptions?: CallOptions,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new DeleteStickerFromSet({ sticker, ...rest }), {
+    return this.call(
+      new RefundStarPayment({ user_id, telegram_payment_charge_id, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Removes the current profile photo of a managed business account. Requires the can_edit_profile_photo business bot right. Returns True on success.
+   * @param business_connection_id Unique identifier of the business connection
+   * @see https://core.telegram.org/bots/api#removebusinessaccountprofilephoto
+   */
+  removeBusinessAccountProfilePhoto(
+    business_connection_id: RemoveBusinessAccountProfilePhotoOptions['business_connection_id'],
+    callOptions?: MethodOptions<
+      Omit<RemoveBusinessAccountProfilePhotoOptions, 'business_connection_id'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new RemoveBusinessAccountProfilePhoto({
+        business_connection_id,
+        ...rest,
+      }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Removes verification from a chat that is currently verified on behalf of the organization represented by the bot. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target bot or channel in the format @username
+   * @see https://core.telegram.org/bots/api#removechatverification
+   */
+  removeChatVerification(
+    chat_id: RemoveChatVerificationOptions['chat_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new RemoveChatVerification({ chat_id, ...rest }), {
       token,
       signal,
     });
   }
 
   /**
-   * Use this method to replace an existing sticker in a sticker set with a new one. The method is equivalent to calling [deleteStickerFromSet](https://core.telegram.org/bots/api/#deletestickerfromset), then [addStickerToSet](https://core.telegram.org/bots/api/#addstickertoset), then [setStickerPositionInSet](https://core.telegram.org/bots/api/#setstickerpositioninset). Returns *True* on success.
+   * Removes the profile photo of the bot. Requires no parameters. Returns True on success.
+   * @see https://core.telegram.org/bots/api#removemyprofilephoto
+   */
+  removeMyProfilePhoto(callOptions?: CallOptions) {
+    return this.call(new RemoveMyProfilePhoto(), callOptions);
+  }
+
+  /**
+   * Removes verification from a user who is currently verified on behalf of the organization represented by the bot. Returns True on success.
+   * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api#removeuserverification
+   */
+  removeUserVerification(
+    user_id: RemoveUserVerificationOptions['user_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new RemoveUserVerification({ user_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to reopen a closed topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @param message_thread_id Unique identifier for the target message thread of the forum topic
+   * @see https://core.telegram.org/bots/api#reopenforumtopic
+   */
+  reopenForumTopic(
+    chat_id: ReopenForumTopicOptions['chat_id'],
+    message_thread_id: ReopenForumTopicOptions['message_thread_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new ReopenForumTopic({ chat_id, message_thread_id, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to reopen a closed 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. The topic will be automatically unhidden if it was hidden. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @see https://core.telegram.org/bots/api#reopengeneralforumtopic
+   */
+  reopenGeneralForumTopic(
+    chat_id: ReopenGeneralForumTopicOptions['chat_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new ReopenGeneralForumTopic({ chat_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to revoke the current token of a managed bot and generate a new one. Returns the new token as String on success.
+   * @param user_id User identifier of the managed bot whose token will be replaced
+   * @see https://core.telegram.org/bots/api#replacemanagedbottoken
+   */
+  replaceManagedBotToken(
+    user_id: ReplaceManagedBotTokenOptions['user_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new ReplaceManagedBotToken({ user_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to replace an existing sticker in a sticker set with a new one. The method is equivalent to calling deleteStickerFromSet, then addStickerToSet, then setStickerPositionInSet. Returns True on success.
    * @param user_id User identifier of the sticker set owner
    * @param name Sticker set name
    * @param old_sticker File identifier of the replaced sticker
    * @param sticker A JSON-serialized object with information about the added sticker. If exactly the same sticker had already been added to the set, then the set remains unchanged.
-   * @see https://core.telegram.org/bots/api/#replacestickerinset
+   * @see https://core.telegram.org/bots/api#replacestickerinset
    */
   replaceStickerInSet(
     user_id: ReplaceStickerInSetOptions['user_id'],
@@ -2391,252 +2314,86 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to change the list of emoji assigned to a regular or custom emoji sticker. The sticker must belong to a sticker set created by the bot. Returns *True* on success.
-   * @param sticker File identifier of the sticker
-   * @param emoji_list A JSON-serialized list of 1-20 emoji associated with the sticker
-   * @see https://core.telegram.org/bots/api/#setstickeremojilist
+   * Reposts a story on behalf of a business account from another business account. Both business accounts must be managed by the same bot, and the story on the source account must have been posted (or reposted) by the bot. Requires the can_manage_stories business bot right for both business accounts. Returns Story on success.
+   * @param business_connection_id Unique identifier of the business connection
+   * @param from_chat_id Unique identifier of the chat which posted the story that should be reposted
+   * @param from_story_id Unique identifier of the story that should be reposted
+   * @param active_period Period after which the story is moved to the archive, in seconds; must be one of 6 * 3600, 12 * 3600, 86400, or 2 * 86400
+   * @see https://core.telegram.org/bots/api#repoststory
    */
-  setStickerEmojiList(
-    sticker: SetStickerEmojiListOptions['sticker'],
-    emoji_list: SetStickerEmojiListOptions['emoji_list'],
-    callOptions?: CallOptions,
+  repostStory(
+    business_connection_id: RepostStoryOptions['business_connection_id'],
+    from_chat_id: RepostStoryOptions['from_chat_id'],
+    from_story_id: RepostStoryOptions['from_story_id'],
+    active_period: RepostStoryOptions['active_period'],
+    callOptions?: MethodOptions<
+      Omit<
+        RepostStoryOptions,
+        | 'business_connection_id'
+        | 'from_chat_id'
+        | 'from_story_id'
+        | 'active_period'
+      >
+    >,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
     return this.call(
-      new SetStickerEmojiList({ sticker, emoji_list, ...rest }),
+      new RepostStory({
+        business_connection_id,
+        from_chat_id,
+        from_story_id,
+        active_period,
+        ...rest,
+      }),
       { token, signal },
     );
   }
 
   /**
-   * Use this method to change search keywords assigned to a regular or custom emoji sticker. The sticker must belong to a sticker set created by the bot. Returns *True* on success.
-   * @param sticker File identifier of the sticker
-   * @see https://core.telegram.org/bots/api/#setstickerkeywords
-   */
-  setStickerKeywords(
-    sticker: SetStickerKeywordsOptions['sticker'],
-    callOptions?: MethodOptions<Omit<SetStickerKeywordsOptions, 'sticker'>>,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SetStickerKeywords({ sticker, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to change the [mask position](https://core.telegram.org/bots/api/#maskposition) of a mask sticker. The sticker must belong to a sticker set that was created by the bot. Returns *True* on success.
-   * @param sticker File identifier of the sticker
-   * @see https://core.telegram.org/bots/api/#setstickermaskposition
-   */
-  setStickerMaskPosition(
-    sticker: SetStickerMaskPositionOptions['sticker'],
-    callOptions?: MethodOptions<Omit<SetStickerMaskPositionOptions, 'sticker'>>,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SetStickerMaskPosition({ sticker, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to set the title of a created sticker set. Returns *True* on success.
-   * @param name Sticker set name
-   * @param title Sticker set title, 1-64 characters
-   * @see https://core.telegram.org/bots/api/#setstickersettitle
-   */
-  setStickerSetTitle(
-    name: SetStickerSetTitleOptions['name'],
-    title: SetStickerSetTitleOptions['title'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SetStickerSetTitle({ name, title, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to set the thumbnail of a regular or mask sticker set. The format of the thumbnail file must match the format of the stickers in the set. Returns *True* on success.
-   * @param name Sticker set name
-   * @param user_id User identifier of the sticker set owner
-   * @param format Format of the thumbnail, must be one of “static” for a **.WEBP** or **.PNG** image, “animated” for a **.TGS** animation, or “video” for a **.WEBM** video
-   * @see https://core.telegram.org/bots/api/#setstickersetthumbnail
-   */
-  setStickerSetThumbnail(
-    name: SetStickerSetThumbnailOptions['name'],
-    user_id: SetStickerSetThumbnailOptions['user_id'],
-    format: SetStickerSetThumbnailOptions['format'],
-    callOptions?: MethodOptions<
-      Omit<SetStickerSetThumbnailOptions, 'name' | 'user_id' | 'format'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new SetStickerSetThumbnail({ name, user_id, format, ...rest }),
-      { token, signal },
-    );
-  }
-
-  /**
-   * Use this method to set the thumbnail of a custom emoji sticker set. Returns *True* on success.
-   * @param name Sticker set name
-   * @see https://core.telegram.org/bots/api/#setcustomemojistickersetthumbnail
-   */
-  setCustomEmojiStickerSetThumbnail(
-    name: SetCustomEmojiStickerSetThumbnailOptions['name'],
-    callOptions?: MethodOptions<
-      Omit<SetCustomEmojiStickerSetThumbnailOptions, 'name'>
-    >,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SetCustomEmojiStickerSetThumbnail({ name, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to delete a sticker set that was created by the bot. Returns *True* on success.
-   * @param name Sticker set name
-   * @see https://core.telegram.org/bots/api/#deletestickerset
-   */
-  deleteStickerSet(
-    name: DeleteStickerSetOptions['name'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new DeleteStickerSet({ name, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Returns the list of gifts that can be sent by the bot to users and channel chats. Requires no parameters. Returns a [Gifts](https://core.telegram.org/bots/api/#gifts) object.
-   * @see https://core.telegram.org/bots/api/#getavailablegifts
-   */
-  getAvailableGifts(callOptions?: CallOptions) {
-    return this.call(new GetAvailableGifts(), callOptions);
-  }
-
-  /**
-   * Sends a gift to the given user or channel chat. The gift can't be converted to Telegram Stars by the receiver. Returns *True* on success.
-   * @param gift_id Identifier of the gift
-   * @see https://core.telegram.org/bots/api/#sendgift
-   */
-  sendGift(
-    gift_id: SendGiftOptions['gift_id'],
-    callOptions?: MethodOptions<Omit<SendGiftOptions, 'gift_id'>>,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendGift({ gift_id, ...rest }), { token, signal });
-  }
-
-  /**
-   * Verifies a user [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot. Returns *True* on success.
+   * Use this method to restrict a user in a supergroup. The bot must be an administrator in the supergroup for this to work and must have the appropriate administrator rights. Pass True for all permissions to lift restrictions from a user. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
    * @param user_id Unique identifier of the target user
-   * @see https://core.telegram.org/bots/api/#verifyuser
+   * @param permissions A JSON-serialized object for new user permissions
+   * @see https://core.telegram.org/bots/api#restrictchatmember
    */
-  verifyUser(
-    user_id: VerifyUserOptions['user_id'],
-    callOptions?: MethodOptions<Omit<VerifyUserOptions, 'user_id'>>,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new VerifyUser({ user_id, ...rest }), { token, signal });
-  }
-
-  /**
-   * Verifies a chat [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @see https://core.telegram.org/bots/api/#verifychat
-   */
-  verifyChat(
-    chat_id: VerifyChatOptions['chat_id'],
-    callOptions?: MethodOptions<Omit<VerifyChatOptions, 'chat_id'>>,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new VerifyChat({ chat_id, ...rest }), { token, signal });
-  }
-
-  /**
-   * Removes verification from a user who is currently verified [on behalf of the organization](https://telegram.org/verify#third-party-verification) represented by the bot. Returns *True* on success.
-   * @param user_id Unique identifier of the target user
-   * @see https://core.telegram.org/bots/api/#removeuserverification
-   */
-  removeUserVerification(
-    user_id: RemoveUserVerificationOptions['user_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new RemoveUserVerification({ user_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Removes verification from a chat that is currently verified [on behalf of the organization](https://telegram.org/verify#third-party-verification) represented by the bot. Returns *True* on success.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @see https://core.telegram.org/bots/api/#removechatverification
-   */
-  removeChatVerification(
-    chat_id: RemoveChatVerificationOptions['chat_id'],
-    callOptions?: CallOptions,
-  ) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new RemoveChatVerification({ chat_id, ...rest }), {
-      token,
-      signal,
-    });
-  }
-
-  /**
-   * Use this method to send answers to an inline query. On success, *True* is returned.
-   * No more than **50** results per query are allowed.
-   * @param inline_query_id Unique identifier for the answered query
-   * @param results A JSON-serialized array of results for the inline query
-   * @see https://core.telegram.org/bots/api/#answerinlinequery
-   */
-  answerInlineQuery(
-    inline_query_id: AnswerInlineQueryOptions['inline_query_id'],
-    results: AnswerInlineQueryOptions['results'],
+  restrictChatMember(
+    chat_id: RestrictChatMemberOptions['chat_id'],
+    user_id: RestrictChatMemberOptions['user_id'],
+    permissions: RestrictChatMemberOptions['permissions'],
     callOptions?: MethodOptions<
-      Omit<AnswerInlineQueryOptions, 'inline_query_id' | 'results'>
+      Omit<RestrictChatMemberOptions, 'chat_id' | 'user_id' | 'permissions'>
     >,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
     return this.call(
-      new AnswerInlineQuery({ inline_query_id, results, ...rest }),
+      new RestrictChatMember({ chat_id, user_id, permissions, ...rest }),
       { token, signal },
     );
   }
 
   /**
-   * Use this method to set the result of an interaction with a [Web App](https://core.telegram.org/bots/webapps) and send a corresponding message on behalf of the user to the chat from which the query originated. On success, a [SentWebAppMessage](https://core.telegram.org/bots/api/#sentwebappmessage) object is returned.
-   * @param web_app_query_id Unique identifier for the query to be answered
-   * @param result A JSON-serialized object describing the message to be sent
-   * @see https://core.telegram.org/bots/api/#answerwebappquery
+   * Use this method to revoke an invite link created by the bot. If the primary link is revoked, a new link is automatically generated. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the revoked invite link as ChatInviteLink object.
+   * @param chat_id Unique identifier of the target chat or username of the target channel in the format @username
+   * @param invite_link The invite link to revoke
+   * @see https://core.telegram.org/bots/api#revokechatinvitelink
    */
-  answerWebAppQuery(
-    web_app_query_id: AnswerWebAppQueryOptions['web_app_query_id'],
-    result: AnswerWebAppQueryOptions['result'],
+  revokeChatInviteLink(
+    chat_id: RevokeChatInviteLinkOptions['chat_id'],
+    invite_link: RevokeChatInviteLinkOptions['invite_link'],
     callOptions?: CallOptions,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
     return this.call(
-      new AnswerWebAppQuery({ web_app_query_id, result, ...rest }),
+      new RevokeChatInviteLink({ chat_id, invite_link, ...rest }),
       { token, signal },
     );
   }
 
   /**
-   * Stores a message that can be sent by a user of a Mini App. Returns a [PreparedInlineMessage](https://core.telegram.org/bots/api/#preparedinlinemessage) object.
+   * Stores a message that can be sent by a user of a Mini App. Returns a PreparedInlineMessage object.
    * @param user_id Unique identifier of the target user that can use the prepared message
    * @param result A JSON-serialized object describing the message to be sent
-   * @see https://core.telegram.org/bots/api/#savepreparedinlinemessage
+   * @see https://core.telegram.org/bots/api#savepreparedinlinemessage
    */
   savePreparedInlineMessage(
     user_id: SavePreparedInlineMessageOptions['user_id'],
@@ -2653,14 +2410,210 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to send invoices. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * Stores a keyboard button that can be used by a user within a Mini App. Returns a PreparedKeyboardButton object.
+   * @param user_id Unique identifier of the target user that can use the button
+   * @param button A JSON-serialized object describing the button to be saved. The button must be of the type request_users, request_chat, or request_managed_bot.
+   * @see https://core.telegram.org/bots/api#savepreparedkeyboardbutton
+   */
+  savePreparedKeyboardButton(
+    user_id: SavePreparedKeyboardButtonOptions['user_id'],
+    button: SavePreparedKeyboardButtonOptions['button'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new SavePreparedKeyboardButton({ user_id, button, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to send animation files (GIF or H.264/MPEG-4 AVC video without sound). On success, the sent Message is returned. Bots can currently send animation files of up to 50 MB in size, this limit may be changed in the future.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param animation Animation to send. Pass a file_id as String to send an animation that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get an animation from the Internet, or upload a new animation using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
+   * @see https://core.telegram.org/bots/api#sendanimation
+   */
+  sendAnimation(
+    chat_id: SendAnimationOptions['chat_id'],
+    animation: SendAnimationOptions['animation'],
+    callOptions?: MethodOptions<
+      Omit<SendAnimationOptions, 'chat_id' | 'animation'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SendAnimation({ chat_id, animation, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to send audio files, if you want Telegram clients to display them in the music player. Your audio must be in the .MP3 or .M4A format. On success, the sent Message is returned. Bots can currently send audio files of up to 50 MB in size, this limit may be changed in the future.
+   * For sending voice messages, use the sendVoice method instead.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param audio Audio file to send. Pass a file_id as String to send an audio file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get an audio file from the Internet, or upload a new one using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
+   * @see https://core.telegram.org/bots/api#sendaudio
+   */
+  sendAudio(
+    chat_id: SendAudioOptions['chat_id'],
+    audio: SendAudioOptions['audio'],
+    callOptions?: MethodOptions<Omit<SendAudioOptions, 'chat_id' | 'audio'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SendAudio({ chat_id, audio, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method when you need to tell the user that something is happening on the bot's side. The status is set for 5 seconds or less (when a message arrives from your bot, Telegram clients clear its typing status). Returns True on success.
+   * We only recommend using this method when a response from the bot will take a noticeable amount of time to arrive.
+   * @param chat_id Unique identifier for the target chat or username of the target bot or supergroup in the format @username. Channel chats and channel direct messages chats aren't supported.
+   * @param action Type of action to broadcast. Choose one, depending on what the user is about to receive: typing for text messages, upload_photo for photos, record_video or upload_video for videos, record_voice or upload_voice for voice notes, upload_document for general files, choose_sticker for stickers, find_location for location data, record_video_note or upload_video_note for video notes.
+   * @see https://core.telegram.org/bots/api#sendchataction
+   */
+  sendChatAction(
+    chat_id: SendChatActionOptions['chat_id'],
+    action: SendChatActionOptions['action'],
+    callOptions?: MethodOptions<
+      Omit<SendChatActionOptions, 'chat_id' | 'action'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SendChatAction({ chat_id, action, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to send a checklist on behalf of a connected business account. On success, the sent Message is returned.
+   * @param business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
+   * @param chat_id Unique identifier for the target chat or username of the target bot in the format @username
+   * @param checklist A JSON-serialized object for the checklist to send
+   * @see https://core.telegram.org/bots/api#sendchecklist
+   */
+  sendChecklist(
+    business_connection_id: SendChecklistOptions['business_connection_id'],
+    chat_id: SendChecklistOptions['chat_id'],
+    checklist: SendChecklistOptions['checklist'],
+    callOptions?: MethodOptions<
+      Omit<
+        SendChecklistOptions,
+        'business_connection_id' | 'chat_id' | 'checklist'
+      >
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new SendChecklist({
+        business_connection_id,
+        chat_id,
+        checklist,
+        ...rest,
+      }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to send phone contacts. On success, the sent Message is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param phone_number Contact's phone number
+   * @param first_name Contact's first name
+   * @see https://core.telegram.org/bots/api#sendcontact
+   */
+  sendContact(
+    chat_id: SendContactOptions['chat_id'],
+    phone_number: SendContactOptions['phone_number'],
+    first_name: SendContactOptions['first_name'],
+    callOptions?: MethodOptions<
+      Omit<SendContactOptions, 'chat_id' | 'phone_number' | 'first_name'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new SendContact({ chat_id, phone_number, first_name, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to send an animated emoji that will display a random value. On success, the sent Message is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @see https://core.telegram.org/bots/api#senddice
+   */
+  sendDice(
+    chat_id: SendDiceOptions['chat_id'],
+    callOptions?: MethodOptions<Omit<SendDiceOptions, 'chat_id'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SendDice({ chat_id, ...rest }), { token, signal });
+  }
+
+  /**
+   * Use this method to send general files. On success, the sent Message is returned. Bots can currently send files of any type of up to 50 MB in size, this limit may be changed in the future.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param document File to send. Pass a file_id as String to send a file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
+   * @see https://core.telegram.org/bots/api#senddocument
+   */
+  sendDocument(
+    chat_id: SendDocumentOptions['chat_id'],
+    document: SendDocumentOptions['document'],
+    callOptions?: MethodOptions<
+      Omit<SendDocumentOptions, 'chat_id' | 'document'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SendDocument({ chat_id, document, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to send a game. On success, the sent Message is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target bot in the format @username. Games can't be sent to channel direct messages chats and channel chats.
+   * @param game_short_name Short name of the game, serves as the unique identifier for the game. Set up your games via @BotFather.
+   * @see https://core.telegram.org/bots/api#sendgame
+   */
+  sendGame(
+    chat_id: SendGameOptions['chat_id'],
+    game_short_name: SendGameOptions['game_short_name'],
+    callOptions?: MethodOptions<
+      Omit<SendGameOptions, 'chat_id' | 'game_short_name'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SendGame({ chat_id, game_short_name, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Sends a gift to the given user or channel chat. The gift can't be converted to Telegram Stars by the receiver. Returns True on success.
+   * @param gift_id Identifier of the gift; limited gifts can't be sent to channel chats
+   * @see https://core.telegram.org/bots/api#sendgift
+   */
+  sendGift(
+    gift_id: SendGiftOptions['gift_id'],
+    callOptions?: MethodOptions<Omit<SendGiftOptions, 'gift_id'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SendGift({ gift_id, ...rest }), { token, signal });
+  }
+
+  /**
+   * Use this method to send invoices. On success, the sent Message is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
    * @param title Product name, 1-32 characters
    * @param description Product description, 1-255 characters
    * @param payload Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use it for your internal processes.
-   * @param currency Three-letter ISO 4217 currency code, see [more on currencies](https://core.telegram.org/bots/payments#supported-currencies). Pass “XTR” for payments in [Telegram Stars](https://t.me/BotNews/90).
-   * @param prices Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.). Must contain exactly one item for payments in [Telegram Stars](https://t.me/BotNews/90).
-   * @see https://core.telegram.org/bots/api/#sendinvoice
+   * @param currency Three-letter ISO 4217 currency code, see more on currencies. Pass "XTR" for payments in Telegram Stars.
+   * @param prices Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.). Must contain exactly one item for payments in Telegram Stars.
+   * @see https://core.telegram.org/bots/api#sendinvoice
    */
   sendInvoice(
     chat_id: SendInvoiceOptions['chat_id'],
@@ -2692,35 +2645,311 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to create a link for an invoice. Returns the created invoice link as *String* on success.
-   * @param title Product name, 1-32 characters
-   * @param description Product description, 1-255 characters
-   * @param payload Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use it for your internal processes.
-   * @param currency Three-letter ISO 4217 currency code, see [more on currencies](https://core.telegram.org/bots/payments#supported-currencies). Pass “XTR” for payments in [Telegram Stars](https://t.me/BotNews/90).
-   * @param prices Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.). Must contain exactly one item for payments in [Telegram Stars](https://t.me/BotNews/90).
-   * @see https://core.telegram.org/bots/api/#createinvoicelink
+   * Use this method to send live photos. On success, the sent Message is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)
+   * @param live_photo Live photo video to send. The video must be no longer than 10 seconds and must not exceed 10 MB in size. Pass a file_id as String to send a video that exists on the Telegram servers (recommended) or upload a new video using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files. Sending live photos by a URL is currently unsupported.
+   * @param photo The static photo to send. Pass a file_id as String to send a photo that exists on the Telegram servers (recommended) or upload a new video using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files. Sending live photos by a URL is currently unsupported.
+   * @see https://core.telegram.org/bots/api#sendlivephoto
    */
-  createInvoiceLink(
-    title: CreateInvoiceLinkOptions['title'],
-    description: CreateInvoiceLinkOptions['description'],
-    payload: CreateInvoiceLinkOptions['payload'],
-    currency: CreateInvoiceLinkOptions['currency'],
-    prices: CreateInvoiceLinkOptions['prices'],
+  sendLivePhoto(
+    chat_id: SendLivePhotoOptions['chat_id'],
+    live_photo: SendLivePhotoOptions['live_photo'],
+    photo: SendLivePhotoOptions['photo'],
+    callOptions?: MethodOptions<
+      Omit<SendLivePhotoOptions, 'chat_id' | 'live_photo' | 'photo'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new SendLivePhoto({ chat_id, live_photo, photo, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to send point on the map. On success, the sent Message is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param latitude Latitude of the location
+   * @param longitude Longitude of the location
+   * @see https://core.telegram.org/bots/api#sendlocation
+   */
+  sendLocation(
+    chat_id: SendLocationOptions['chat_id'],
+    latitude: SendLocationOptions['latitude'],
+    longitude: SendLocationOptions['longitude'],
+    callOptions?: MethodOptions<
+      Omit<SendLocationOptions, 'chat_id' | 'latitude' | 'longitude'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new SendLocation({ chat_id, latitude, longitude, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to send a group of photos, live photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of Message objects that were sent is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param media A JSON-serialized array describing messages to be sent, must include 2-10 items
+   * @see https://core.telegram.org/bots/api#sendmediagroup
+   */
+  sendMediaGroup(
+    chat_id: SendMediaGroupOptions['chat_id'],
+    media: SendMediaGroupOptions['media'],
+    callOptions?: MethodOptions<
+      Omit<SendMediaGroupOptions, 'chat_id' | 'media'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SendMediaGroup({ chat_id, media, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to send text messages. On success, the sent Message is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param text Text of the message to be sent, 1-4096 characters after entities parsing
+   * @see https://core.telegram.org/bots/api#sendmessage
+   */
+  sendMessage(
+    chat_id: SendMessageOptions['chat_id'],
+    text: SendMessageOptions['text'],
+    callOptions?: MethodOptions<Omit<SendMessageOptions, 'chat_id' | 'text'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SendMessage({ chat_id, text, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to stream a partial message to a user while the message is being generated. Note that the streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is finalized, you must call sendMessage with the complete message to persist it in the user's chat. Returns True on success.
+   * @param chat_id Unique identifier for the target private chat
+   * @param draft_id Unique identifier of the message draft; must be non-zero. Changes of drafts with the same identifier are animated.
+   * @see https://core.telegram.org/bots/api#sendmessagedraft
+   */
+  sendMessageDraft(
+    chat_id: SendMessageDraftOptions['chat_id'],
+    draft_id: SendMessageDraftOptions['draft_id'],
+    callOptions?: MethodOptions<
+      Omit<SendMessageDraftOptions, 'chat_id' | 'draft_id'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SendMessageDraft({ chat_id, draft_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to send paid media. On success, the sent Message is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username. If the chat is a channel, all Telegram Star proceeds from this media will be credited to the chat's balance. Otherwise, they will be credited to the bot's balance.
+   * @param star_count The number of Telegram Stars that must be paid to buy access to the media; 1-25000
+   * @param media A JSON-serialized array describing the media to be sent; up to 10 items
+   * @see https://core.telegram.org/bots/api#sendpaidmedia
+   */
+  sendPaidMedia(
+    chat_id: SendPaidMediaOptions['chat_id'],
+    star_count: SendPaidMediaOptions['star_count'],
+    media: SendPaidMediaOptions['media'],
+    callOptions?: MethodOptions<
+      Omit<SendPaidMediaOptions, 'chat_id' | 'star_count' | 'media'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new SendPaidMedia({ chat_id, star_count, media, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to send photos. On success, the sent Message is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param photo Photo to send. Pass a file_id as String to send a photo that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a photo from the Internet, or upload a new photo using multipart/form-data. The photo must be at most 10 MB in size. The photo's width and height must not exceed 10000 in total. Width and height ratio must be at most 20. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
+   * @see https://core.telegram.org/bots/api#sendphoto
+   */
+  sendPhoto(
+    chat_id: SendPhotoOptions['chat_id'],
+    photo: SendPhotoOptions['photo'],
+    callOptions?: MethodOptions<Omit<SendPhotoOptions, 'chat_id' | 'photo'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SendPhoto({ chat_id, photo, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to send a native poll. On success, the sent Message is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username. Polls can't be sent to channel direct messages chats.
+   * @param question Poll question, 1-300 characters
+   * @param options A JSON-serialized list of 1-12 answer options
+   * @see https://core.telegram.org/bots/api#sendpoll
+   */
+  sendPoll(
+    chat_id: SendPollOptions['chat_id'],
+    question: SendPollOptions['question'],
+    options: SendPollOptions['options'],
+    callOptions?: MethodOptions<
+      Omit<SendPollOptions, 'chat_id' | 'question' | 'options'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SendPoll({ chat_id, question, options, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to send static .WEBP, animated .TGS, or video .WEBM stickers. On success, the sent Message is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param sticker Sticker to send. Pass a file_id as String to send a file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a .WEBP sticker from the Internet, or upload a new .WEBP, .TGS, or .WEBM sticker using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files. Video and animated stickers can't be sent via an HTTP URL.
+   * @see https://core.telegram.org/bots/api#sendsticker
+   */
+  sendSticker(
+    chat_id: SendStickerOptions['chat_id'],
+    sticker: SendStickerOptions['sticker'],
+    callOptions?: MethodOptions<
+      Omit<SendStickerOptions, 'chat_id' | 'sticker'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SendSticker({ chat_id, sticker, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to send information about a venue. On success, the sent Message is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param latitude Latitude of the venue
+   * @param longitude Longitude of the venue
+   * @param title Name of the venue
+   * @param address Address of the venue
+   * @see https://core.telegram.org/bots/api#sendvenue
+   */
+  sendVenue(
+    chat_id: SendVenueOptions['chat_id'],
+    latitude: SendVenueOptions['latitude'],
+    longitude: SendVenueOptions['longitude'],
+    title: SendVenueOptions['title'],
+    address: SendVenueOptions['address'],
     callOptions?: MethodOptions<
       Omit<
-        CreateInvoiceLinkOptions,
-        'title' | 'description' | 'payload' | 'currency' | 'prices'
+        SendVenueOptions,
+        'chat_id' | 'latitude' | 'longitude' | 'title' | 'address'
       >
     >,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
     return this.call(
-      new CreateInvoiceLink({
-        title,
-        description,
-        payload,
-        currency,
-        prices,
+      new SendVenue({ chat_id, latitude, longitude, title, address, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to send video files, Telegram clients support MPEG4 videos (other formats may be sent as Document). On success, the sent Message is returned. Bots can currently send video files of up to 50 MB in size, this limit may be changed in the future.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param video Video to send. Pass a file_id as String to send a video that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a video from the Internet, or upload a new video using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
+   * @see https://core.telegram.org/bots/api#sendvideo
+   */
+  sendVideo(
+    chat_id: SendVideoOptions['chat_id'],
+    video: SendVideoOptions['video'],
+    callOptions?: MethodOptions<Omit<SendVideoOptions, 'chat_id' | 'video'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SendVideo({ chat_id, video, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * As of v.4.0, Telegram clients support rounded square MPEG4 videos of up to 1 minute long. Use this method to send video messages. On success, the sent Message is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param video_note Video note to send. Pass a file_id as String to send a video note that exists on the Telegram servers (recommended) or upload a new video using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files. Sending video notes by a URL is currently unsupported.
+   * @see https://core.telegram.org/bots/api#sendvideonote
+   */
+  sendVideoNote(
+    chat_id: SendVideoNoteOptions['chat_id'],
+    video_note: SendVideoNoteOptions['video_note'],
+    callOptions?: MethodOptions<
+      Omit<SendVideoNoteOptions, 'chat_id' | 'video_note'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SendVideoNote({ chat_id, video_note, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to send audio files, if you want Telegram clients to display the file as a playable voice message. For this to work, your audio must be in an .OGG file encoded with OPUS, or in .MP3 format, or in .M4A format (other formats may be sent as Audio or Document). On success, the sent Message is returned. Bots can currently send voice messages of up to 50 MB in size, this limit may be changed in the future.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param voice Audio file to send. Pass a file_id as String to send a file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
+   * @see https://core.telegram.org/bots/api#sendvoice
+   */
+  sendVoice(
+    chat_id: SendVoiceOptions['chat_id'],
+    voice: SendVoiceOptions['voice'],
+    callOptions?: MethodOptions<Omit<SendVoiceOptions, 'chat_id' | 'voice'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SendVoice({ chat_id, voice, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Changes the bio of a managed business account. Requires the can_change_bio business bot right. Returns True on success.
+   * @param business_connection_id Unique identifier of the business connection
+   * @see https://core.telegram.org/bots/api#setbusinessaccountbio
+   */
+  setBusinessAccountBio(
+    business_connection_id: SetBusinessAccountBioOptions['business_connection_id'],
+    callOptions?: MethodOptions<
+      Omit<SetBusinessAccountBioOptions, 'business_connection_id'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new SetBusinessAccountBio({ business_connection_id, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Changes the privacy settings pertaining to incoming gifts in a managed business account. Requires the can_change_gift_settings business bot right. Returns True on success.
+   * @param business_connection_id Unique identifier of the business connection
+   * @param show_gift_button Pass True, if a button for sending a gift to the user or by the business account must always be shown in the input field
+   * @param accepted_gift_types Types of gifts accepted by the business account
+   * @see https://core.telegram.org/bots/api#setbusinessaccountgiftsettings
+   */
+  setBusinessAccountGiftSettings(
+    business_connection_id: SetBusinessAccountGiftSettingsOptions['business_connection_id'],
+    show_gift_button: SetBusinessAccountGiftSettingsOptions['show_gift_button'],
+    accepted_gift_types: SetBusinessAccountGiftSettingsOptions['accepted_gift_types'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new SetBusinessAccountGiftSettings({
+        business_connection_id,
+        show_gift_button,
+        accepted_gift_types,
         ...rest,
       }),
       { token, signal },
@@ -2728,91 +2957,96 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * If you sent an invoice requesting a shipping address and the parameter *is\_flexible* was specified, the Bot API will send an [Update](https://core.telegram.org/bots/api/#update) with a *shipping\_query* field to the bot. Use this method to reply to shipping queries. On success, *True* is returned.
-   * @param shipping_query_id Unique identifier for the query to be answered
-   * @param ok Pass *True* if delivery to the specified address is possible and *False* if there are any problems (for example, if delivery to the specified address is not possible)
-   * @see https://core.telegram.org/bots/api/#answershippingquery
+   * Changes the first and last name of a managed business account. Requires the can_change_name business bot right. Returns True on success.
+   * @param business_connection_id Unique identifier of the business connection
+   * @param first_name The new value of the first name for the business account; 1-64 characters
+   * @see https://core.telegram.org/bots/api#setbusinessaccountname
    */
-  answerShippingQuery(
-    shipping_query_id: AnswerShippingQueryOptions['shipping_query_id'],
-    ok: AnswerShippingQueryOptions['ok'],
+  setBusinessAccountName(
+    business_connection_id: SetBusinessAccountNameOptions['business_connection_id'],
+    first_name: SetBusinessAccountNameOptions['first_name'],
     callOptions?: MethodOptions<
-      Omit<AnswerShippingQueryOptions, 'shipping_query_id' | 'ok'>
+      Omit<
+        SetBusinessAccountNameOptions,
+        'business_connection_id' | 'first_name'
+      >
     >,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
     return this.call(
-      new AnswerShippingQuery({ shipping_query_id, ok, ...rest }),
+      new SetBusinessAccountName({
+        business_connection_id,
+        first_name,
+        ...rest,
+      }),
       { token, signal },
     );
   }
 
   /**
-   * Once the user has confirmed their payment and shipping details, the Bot API sends the final confirmation in the form of an [Update](https://core.telegram.org/bots/api/#update) with the field *pre\_checkout\_query*. Use this method to respond to such pre-checkout queries. On success, *True* is returned. **Note:** The Bot API must receive an answer within 10 seconds after the pre-checkout query was sent.
-   * @param pre_checkout_query_id Unique identifier for the query to be answered
-   * @param ok Specify *True* if everything is alright (goods are available, etc.) and the bot is ready to proceed with the order. Use *False* if there are any problems.
-   * @see https://core.telegram.org/bots/api/#answerprecheckoutquery
+   * Changes the profile photo of a managed business account. Requires the can_edit_profile_photo business bot right. Returns True on success.
+   * @param business_connection_id Unique identifier of the business connection
+   * @param photo The new profile photo to set
+   * @see https://core.telegram.org/bots/api#setbusinessaccountprofilephoto
    */
-  answerPreCheckoutQuery(
-    pre_checkout_query_id: AnswerPreCheckoutQueryOptions['pre_checkout_query_id'],
-    ok: AnswerPreCheckoutQueryOptions['ok'],
+  setBusinessAccountProfilePhoto(
+    business_connection_id: SetBusinessAccountProfilePhotoOptions['business_connection_id'],
+    photo: SetBusinessAccountProfilePhotoOptions['photo'],
     callOptions?: MethodOptions<
-      Omit<AnswerPreCheckoutQueryOptions, 'pre_checkout_query_id' | 'ok'>
+      Omit<
+        SetBusinessAccountProfilePhotoOptions,
+        'business_connection_id' | 'photo'
+      >
     >,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
     return this.call(
-      new AnswerPreCheckoutQuery({ pre_checkout_query_id, ok, ...rest }),
+      new SetBusinessAccountProfilePhoto({
+        business_connection_id,
+        photo,
+        ...rest,
+      }),
       { token, signal },
     );
   }
 
   /**
-   * Returns the bot's Telegram Star transactions in chronological order. On success, returns a [StarTransactions](https://core.telegram.org/bots/api/#startransactions) object.
-   * @see https://core.telegram.org/bots/api/#getstartransactions
+   * Changes the username of a managed business account. Requires the can_change_username business bot right. Returns True on success.
+   * @param business_connection_id Unique identifier of the business connection
+   * @see https://core.telegram.org/bots/api#setbusinessaccountusername
    */
-  getStarTransactions(callOptions?: MethodOptions<GetStarTransactionsOptions>) {
-    const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new GetStarTransactions(rest), { token, signal });
-  }
-
-  /**
-   * Refunds a successful payment in [Telegram Stars](https://t.me/BotNews/90). Returns *True* on success.
-   * @param user_id Identifier of the user whose payment will be refunded
-   * @param telegram_payment_charge_id Telegram payment identifier
-   * @see https://core.telegram.org/bots/api/#refundstarpayment
-   */
-  refundStarPayment(
-    user_id: RefundStarPaymentOptions['user_id'],
-    telegram_payment_charge_id: RefundStarPaymentOptions['telegram_payment_charge_id'],
-    callOptions?: CallOptions,
+  setBusinessAccountUsername(
+    business_connection_id: SetBusinessAccountUsernameOptions['business_connection_id'],
+    callOptions?: MethodOptions<
+      Omit<SetBusinessAccountUsernameOptions, 'business_connection_id'>
+    >,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
     return this.call(
-      new RefundStarPayment({ user_id, telegram_payment_charge_id, ...rest }),
+      new SetBusinessAccountUsername({ business_connection_id, ...rest }),
       { token, signal },
     );
   }
 
   /**
-   * Allows the bot to cancel or re-enable extension of a subscription paid in Telegram Stars. Returns *True* on success.
-   * @param user_id Identifier of the user whose subscription will be edited
-   * @param telegram_payment_charge_id Telegram payment identifier for the subscription
-   * @param is_canceled Pass *True* to cancel extension of the user subscription; the subscription must be active up to the end of the current subscription period. Pass *False* to allow the user to re-enable a subscription that was previously canceled by the bot.
-   * @see https://core.telegram.org/bots/api/#edituserstarsubscription
+   * Use this method to set a custom title for an administrator in a supergroup promoted by the bot. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @param user_id Unique identifier of the target user
+   * @param custom_title New custom title for the administrator; 0-16 characters, emoji are not allowed
+   * @see https://core.telegram.org/bots/api#setchatadministratorcustomtitle
    */
-  editUserStarSubscription(
-    user_id: EditUserStarSubscriptionOptions['user_id'],
-    telegram_payment_charge_id: EditUserStarSubscriptionOptions['telegram_payment_charge_id'],
-    is_canceled: EditUserStarSubscriptionOptions['is_canceled'],
+  setChatAdministratorCustomTitle(
+    chat_id: SetChatAdministratorCustomTitleOptions['chat_id'],
+    user_id: SetChatAdministratorCustomTitleOptions['user_id'],
+    custom_title: SetChatAdministratorCustomTitleOptions['custom_title'],
     callOptions?: CallOptions,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
     return this.call(
-      new EditUserStarSubscription({
+      new SetChatAdministratorCustomTitle({
+        chat_id,
         user_id,
-        telegram_payment_charge_id,
-        is_canceled,
+        custom_title,
         ...rest,
       }),
       { token, signal },
@@ -2820,50 +3054,147 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Informs a user that some of the Telegram Passport elements they provided contains errors. The user will not be able to re-submit their Passport to you until the errors are fixed (the contents of the field for which you returned the error must change). Returns *True* on success.
-   *
-   * Use this if the data submitted by the user doesn't satisfy the standards your service requires for any reason. For example, if a birthday date seems invalid, a submitted document is blurry, a scan shows evidence of tampering, etc. Supply some details in the error message to make sure the user knows how to correct the issues.
-   * @param user_id User identifier
-   * @param errors A JSON-serialized array describing the errors
-   * @see https://core.telegram.org/bots/api/#setpassportdataerrors
+   * Use this method to change the description of a group, a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target channel in the format @username
+   * @see https://core.telegram.org/bots/api#setchatdescription
    */
-  setPassportDataErrors(
-    user_id: SetPassportDataErrorsOptions['user_id'],
-    errors: SetPassportDataErrorsOptions['errors'],
-    callOptions?: CallOptions,
+  setChatDescription(
+    chat_id: SetChatDescriptionOptions['chat_id'],
+    callOptions?: MethodOptions<Omit<SetChatDescriptionOptions, 'chat_id'>>,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SetPassportDataErrors({ user_id, errors, ...rest }), {
+    return this.call(new SetChatDescription({ chat_id, ...rest }), {
       token,
       signal,
     });
   }
 
   /**
-   * Use this method to send a game. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned.
-   * @param chat_id Unique identifier for the target chat
-   * @param game_short_name Short name of the game, serves as the unique identifier for the game. Set up your games via [@BotFather](https://t.me/botfather).
-   * @see https://core.telegram.org/bots/api/#sendgame
+   * Use this method to set a tag for a regular member in a group or a supergroup. The bot must be an administrator in the chat for this to work and must have the can_manage_tags administrator right. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api#setchatmembertag
    */
-  sendGame(
-    chat_id: SendGameOptions['chat_id'],
-    game_short_name: SendGameOptions['game_short_name'],
+  setChatMemberTag(
+    chat_id: SetChatMemberTagOptions['chat_id'],
+    user_id: SetChatMemberTagOptions['user_id'],
     callOptions?: MethodOptions<
-      Omit<SendGameOptions, 'chat_id' | 'game_short_name'>
+      Omit<SetChatMemberTagOptions, 'chat_id' | 'user_id'>
     >,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendGame({ chat_id, game_short_name, ...rest }), {
+    return this.call(new SetChatMemberTag({ chat_id, user_id, ...rest }), {
       token,
       signal,
     });
   }
 
   /**
-   * Use this method to set the score of the specified user in a game message. On success, if the message is not an inline message, the [Message](https://core.telegram.org/bots/api/#message) is returned, otherwise *True* is returned. Returns an error, if the new score is not greater than the user's current score in the chat and *force* is *False*.
+   * Use this method to change the bot's menu button in a private chat, or the default menu button. Returns True on success.
+   * @see https://core.telegram.org/bots/api#setchatmenubutton
+   */
+  setChatMenuButton(callOptions?: MethodOptions<SetChatMenuButtonOptions>) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SetChatMenuButton(rest), { token, signal });
+  }
+
+  /**
+   * Use this method to set default chat permissions for all members. The bot must be an administrator in the group or a supergroup for this to work and must have the can_restrict_members administrator rights. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @param permissions A JSON-serialized object for new default chat permissions
+   * @see https://core.telegram.org/bots/api#setchatpermissions
+   */
+  setChatPermissions(
+    chat_id: SetChatPermissionsOptions['chat_id'],
+    permissions: SetChatPermissionsOptions['permissions'],
+    callOptions?: MethodOptions<
+      Omit<SetChatPermissionsOptions, 'chat_id' | 'permissions'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new SetChatPermissions({ chat_id, permissions, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to set a new profile photo for the chat. Photos can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target channel in the format @username
+   * @param photo New chat photo, uploaded using multipart/form-data
+   * @see https://core.telegram.org/bots/api#setchatphoto
+   */
+  setChatPhoto(
+    chat_id: SetChatPhotoOptions['chat_id'],
+    photo: SetChatPhotoOptions['photo'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SetChatPhoto({ chat_id, photo, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to set a new group sticker set for a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Use the field can_set_sticker_set optionally returned in getChat requests to check if the bot can use this method. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @param sticker_set_name Name of the sticker set to be set as the group sticker set
+   * @see https://core.telegram.org/bots/api#setchatstickerset
+   */
+  setChatStickerSet(
+    chat_id: SetChatStickerSetOptions['chat_id'],
+    sticker_set_name: SetChatStickerSetOptions['sticker_set_name'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new SetChatStickerSet({ chat_id, sticker_set_name, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to change the title of a chat. Titles can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target channel in the format @username
+   * @param title New chat title, 1-128 characters
+   * @see https://core.telegram.org/bots/api#setchattitle
+   */
+  setChatTitle(
+    chat_id: SetChatTitleOptions['chat_id'],
+    title: SetChatTitleOptions['title'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SetChatTitle({ chat_id, title, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to set the thumbnail of a custom emoji sticker set. Returns True on success.
+   * @param name Sticker set name
+   * @see https://core.telegram.org/bots/api#setcustomemojistickersetthumbnail
+   */
+  setCustomEmojiStickerSetThumbnail(
+    name: SetCustomEmojiStickerSetThumbnailOptions['name'],
+    callOptions?: MethodOptions<
+      Omit<SetCustomEmojiStickerSetThumbnailOptions, 'name'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SetCustomEmojiStickerSetThumbnail({ name, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to set the score of the specified user in a game message. On success, if the message is not an inline message, the Message is returned, otherwise True is returned. Returns an error, if the new score is not greater than the user's current score in the chat and force is False.
    * @param user_id User identifier
    * @param score New score, must be non-negative
-   * @see https://core.telegram.org/bots/api/#setgamescore
+   * @see https://core.telegram.org/bots/api#setgamescore
    */
   setGameScore(
     user_id: SetGameScoreOptions['user_id'],
@@ -2878,20 +3209,613 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of [GameHighScore](https://core.telegram.org/bots/api/#gamehighscore) objects.
-   *
-   * This method will currently return scores for the target user, plus two of their closest neighbors on each side. Will also return the top three users if the user and their neighbors are not among them. Please note that this behavior is subject to change.
-   * @param user_id Target user id
-   * @see https://core.telegram.org/bots/api/#getgamehighscores
+   * Use this method to change the access settings of a managed bot. Returns True on success.
+   * @param user_id User identifier of the managed bot whose access settings will be changed
+   * @param is_access_restricted Pass True, if only selected users can access the bot. The bot's owner can always access it.
+   * @see https://core.telegram.org/bots/api#setmanagedbotaccesssettings
    */
-  getGameHighScores(
-    user_id: GetGameHighScoresOptions['user_id'],
-    callOptions?: MethodOptions<Omit<GetGameHighScoresOptions, 'user_id'>>,
+  setManagedBotAccessSettings(
+    user_id: SetManagedBotAccessSettingsOptions['user_id'],
+    is_access_restricted: SetManagedBotAccessSettingsOptions['is_access_restricted'],
+    callOptions?: MethodOptions<
+      Omit<
+        SetManagedBotAccessSettingsOptions,
+        'user_id' | 'is_access_restricted'
+      >
+    >,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new GetGameHighScores({ user_id, ...rest }), {
+    return this.call(
+      new SetManagedBotAccessSettings({
+        user_id,
+        is_access_restricted,
+        ...rest,
+      }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to change the chosen reactions on a message. Service messages of some types can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. Bots can't use paid reactions. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param message_id Identifier of the target message. If the message belongs to a media group, the reaction is set to the first non-deleted message in the group instead.
+   * @see https://core.telegram.org/bots/api#setmessagereaction
+   */
+  setMessageReaction(
+    chat_id: SetMessageReactionOptions['chat_id'],
+    message_id: SetMessageReactionOptions['message_id'],
+    callOptions?: MethodOptions<
+      Omit<SetMessageReactionOptions, 'chat_id' | 'message_id'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SetMessageReaction({ chat_id, message_id, ...rest }), {
       token,
       signal,
     });
+  }
+
+  /**
+   * Use this method to change the list of the bot's commands. See this manual for more details about bot commands. Returns True on success.
+   * @param commands A JSON-serialized list of bot commands to be set as the list of the bot's commands. At most 100 commands can be specified.
+   * @see https://core.telegram.org/bots/api#setmycommands
+   */
+  setMyCommands(
+    commands: SetMyCommandsOptions['commands'],
+    callOptions?: MethodOptions<Omit<SetMyCommandsOptions, 'commands'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SetMyCommands({ commands, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to change the default administrator rights requested by the bot when it's added as an administrator to groups or channels. These rights will be suggested to users, but they are free to modify the list before adding the bot. Returns True on success.
+   * @see https://core.telegram.org/bots/api#setmydefaultadministratorrights
+   */
+  setMyDefaultAdministratorRights(
+    callOptions?: MethodOptions<SetMyDefaultAdministratorRightsOptions>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SetMyDefaultAdministratorRights(rest), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to change the bot's description, which is shown in the chat with the bot if the chat is empty. Returns True on success.
+   * @see https://core.telegram.org/bots/api#setmydescription
+   */
+  setMyDescription(callOptions?: MethodOptions<SetMyDescriptionOptions>) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SetMyDescription(rest), { token, signal });
+  }
+
+  /**
+   * Use this method to change the bot's name. Returns True on success.
+   * @see https://core.telegram.org/bots/api#setmyname
+   */
+  setMyName(callOptions?: MethodOptions<SetMyNameOptions>) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SetMyName(rest), { token, signal });
+  }
+
+  /**
+   * Changes the profile photo of the bot. Returns True on success.
+   * @param photo The new profile photo to set
+   * @see https://core.telegram.org/bots/api#setmyprofilephoto
+   */
+  setMyProfilePhoto(
+    photo: SetMyProfilePhotoOptions['photo'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SetMyProfilePhoto({ photo, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to change the bot's short description, which is shown on the bot's profile page and is sent together with the link when users share the bot. Returns True on success.
+   * @see https://core.telegram.org/bots/api#setmyshortdescription
+   */
+  setMyShortDescription(
+    callOptions?: MethodOptions<SetMyShortDescriptionOptions>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SetMyShortDescription(rest), { token, signal });
+  }
+
+  /**
+   * Informs a user that some of the Telegram Passport elements they provided contains errors. The user will not be able to re-submit their Passport to you until the errors are fixed (the contents of the field for which you returned the error must change). Returns True on success.
+   * Use this if the data submitted by the user doesn't satisfy the standards your service requires for any reason. For example, if a birthday date seems invalid, a submitted document is blurry, a scan shows evidence of tampering, etc. Supply some details in the error message to make sure the user knows how to correct the issues.
+   * @param user_id User identifier
+   * @param errors A JSON-serialized array describing the errors
+   * @see https://core.telegram.org/bots/api#setpassportdataerrors
+   */
+  setPassportDataErrors(
+    user_id: SetPassportDataErrorsOptions['user_id'],
+    errors: SetPassportDataErrorsOptions['errors'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SetPassportDataErrors({ user_id, errors, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to change the list of emoji assigned to a regular or custom emoji sticker. The sticker must belong to a sticker set created by the bot. Returns True on success.
+   * @param sticker File identifier of the sticker
+   * @param emoji_list A JSON-serialized list of 1-20 emoji associated with the sticker
+   * @see https://core.telegram.org/bots/api#setstickeremojilist
+   */
+  setStickerEmojiList(
+    sticker: SetStickerEmojiListOptions['sticker'],
+    emoji_list: SetStickerEmojiListOptions['emoji_list'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new SetStickerEmojiList({ sticker, emoji_list, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to change search keywords assigned to a regular or custom emoji sticker. The sticker must belong to a sticker set created by the bot. Returns True on success.
+   * @param sticker File identifier of the sticker
+   * @see https://core.telegram.org/bots/api#setstickerkeywords
+   */
+  setStickerKeywords(
+    sticker: SetStickerKeywordsOptions['sticker'],
+    callOptions?: MethodOptions<Omit<SetStickerKeywordsOptions, 'sticker'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SetStickerKeywords({ sticker, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to change the mask position of a mask sticker. The sticker must belong to a sticker set that was created by the bot. Returns True on success.
+   * @param sticker File identifier of the sticker
+   * @see https://core.telegram.org/bots/api#setstickermaskposition
+   */
+  setStickerMaskPosition(
+    sticker: SetStickerMaskPositionOptions['sticker'],
+    callOptions?: MethodOptions<Omit<SetStickerMaskPositionOptions, 'sticker'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SetStickerMaskPosition({ sticker, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to move a sticker in a set created by the bot to a specific position. Returns True on success.
+   * @param sticker File identifier of the sticker
+   * @param position New sticker position in the set, zero-based
+   * @see https://core.telegram.org/bots/api#setstickerpositioninset
+   */
+  setStickerPositionInSet(
+    sticker: SetStickerPositionInSetOptions['sticker'],
+    position: SetStickerPositionInSetOptions['position'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new SetStickerPositionInSet({ sticker, position, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to set the thumbnail of a regular or mask sticker set. The format of the thumbnail file must match the format of the stickers in the set. Returns True on success.
+   * @param name Sticker set name
+   * @param user_id User identifier of the sticker set owner
+   * @param format Format of the thumbnail, must be one of "static" for a .WEBP or .PNG image, "animated" for a .TGS animation, or "video" for a .WEBM video
+   * @see https://core.telegram.org/bots/api#setstickersetthumbnail
+   */
+  setStickerSetThumbnail(
+    name: SetStickerSetThumbnailOptions['name'],
+    user_id: SetStickerSetThumbnailOptions['user_id'],
+    format: SetStickerSetThumbnailOptions['format'],
+    callOptions?: MethodOptions<
+      Omit<SetStickerSetThumbnailOptions, 'name' | 'user_id' | 'format'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new SetStickerSetThumbnail({ name, user_id, format, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to set the title of a created sticker set. Returns True on success.
+   * @param name Sticker set name
+   * @param title Sticker set title, 1-64 characters
+   * @see https://core.telegram.org/bots/api#setstickersettitle
+   */
+  setStickerSetTitle(
+    name: SetStickerSetTitleOptions['name'],
+    title: SetStickerSetTitleOptions['title'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SetStickerSetTitle({ name, title, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Changes the emoji status for a given user that previously allowed the bot to manage their emoji status via the Mini App method requestEmojiStatusAccess. Returns True on success.
+   * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api#setuseremojistatus
+   */
+  setUserEmojiStatus(
+    user_id: SetUserEmojiStatusOptions['user_id'],
+    callOptions?: MethodOptions<Omit<SetUserEmojiStatusOptions, 'user_id'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SetUserEmojiStatus({ user_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to specify a URL and receive incoming updates via an outgoing webhook. Whenever there is an update for the bot, we will send an HTTPS POST request to the specified URL, containing a JSON-serialized Update. In case of an unsuccessful request (a request with response HTTP status code different from 2XY), we will repeat the request and give up after a reasonable amount of attempts. Returns True on success.
+   * If you'd like to make sure that the webhook was set by you, you can specify secret data in the parameter secret_token. If specified, the request will contain a header "X-Telegram-Bot-Api-Secret-Token" with the secret token as content.
+   * @param url HTTPS URL to send updates to. Use an empty string to remove webhook integration.
+   * @see https://core.telegram.org/bots/api#setwebhook
+   */
+  setWebhook(
+    url: SetWebhookOptions['url'],
+    callOptions?: MethodOptions<Omit<SetWebhookOptions, 'url'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SetWebhook({ url, ...rest }), { token, signal });
+  }
+
+  /**
+   * Use this method to stop updating a live location message before live_period expires. On success, if the message is not an inline message, the edited Message is returned, otherwise True is returned.
+   * @see https://core.telegram.org/bots/api#stopmessagelivelocation
+   */
+  stopMessageLiveLocation(
+    chat_id: NonNullable<StopMessageLiveLocationOptions['chat_id']>,
+    message_id: NonNullable<StopMessageLiveLocationOptions['message_id']>,
+    options?: MethodOptions<
+      Omit<
+        StopMessageLiveLocationOptions,
+        'chat_id' | 'message_id' | 'inline_message_id'
+      >
+    >,
+  ): Promise<ResultOf<StopMessageLiveLocation>>;
+  stopMessageLiveLocation(
+    inline_message_id: NonNullable<
+      StopMessageLiveLocationOptions['inline_message_id']
+    >,
+    options?: MethodOptions<
+      Omit<
+        StopMessageLiveLocationOptions,
+        'chat_id' | 'message_id' | 'inline_message_id'
+      >
+    >,
+  ): Promise<ResultOf<StopMessageLiveLocation>>;
+  stopMessageLiveLocation(
+    target:
+      | NonNullable<StopMessageLiveLocationOptions['chat_id']>
+      | NonNullable<StopMessageLiveLocationOptions['inline_message_id']>,
+    second?:
+      | NonNullable<StopMessageLiveLocationOptions['message_id']>
+      | MethodOptions<
+          Omit<
+            StopMessageLiveLocationOptions,
+            'chat_id' | 'message_id' | 'inline_message_id'
+          >
+        >,
+    chatOptions?: MethodOptions<
+      Omit<
+        StopMessageLiveLocationOptions,
+        'chat_id' | 'message_id' | 'inline_message_id'
+      >
+    >,
+  ): Promise<ResultOf<StopMessageLiveLocation>> {
+    // A numeric 2nd arg is message_id → the chat-based overload; otherwise inline.
+    if (typeof second === 'number') {
+      const { token, signal, ...rest } = chatOptions ?? {};
+      return this.call(
+        new StopMessageLiveLocation({
+          chat_id: target,
+          message_id: second,
+          ...rest,
+        }),
+        { token, signal },
+      );
+    }
+    const { token, signal, ...rest } =
+      (second as MethodOptions<
+        Omit<
+          StopMessageLiveLocationOptions,
+          'chat_id' | 'message_id' | 'inline_message_id'
+        >
+      >) ?? {};
+    return this.call(
+      new StopMessageLiveLocation({
+        inline_message_id: target as NonNullable<
+          StopMessageLiveLocationOptions['inline_message_id']
+        >,
+        ...rest,
+      }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to stop a poll which was sent by the bot. On success, the stopped Poll is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param message_id Identifier of the original message with the poll
+   * @see https://core.telegram.org/bots/api#stoppoll
+   */
+  stopPoll(
+    chat_id: StopPollOptions['chat_id'],
+    message_id: StopPollOptions['message_id'],
+    callOptions?: MethodOptions<
+      Omit<StopPollOptions, 'chat_id' | 'message_id'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new StopPoll({ chat_id, message_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Transfers Telegram Stars from the business account balance to the bot's balance. Requires the can_transfer_stars business bot right. Returns True on success.
+   * @param business_connection_id Unique identifier of the business connection
+   * @param star_count Number of Telegram Stars to transfer; 1-10000
+   * @see https://core.telegram.org/bots/api#transferbusinessaccountstars
+   */
+  transferBusinessAccountStars(
+    business_connection_id: TransferBusinessAccountStarsOptions['business_connection_id'],
+    star_count: TransferBusinessAccountStarsOptions['star_count'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new TransferBusinessAccountStars({
+        business_connection_id,
+        star_count,
+        ...rest,
+      }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Transfers an owned unique gift to another user. Requires the can_transfer_and_upgrade_gifts business bot right. Requires can_transfer_stars business bot right if the transfer is paid. Returns True on success.
+   * @param business_connection_id Unique identifier of the business connection
+   * @param owned_gift_id Unique identifier of the regular gift that should be transferred
+   * @param new_owner_chat_id Unique identifier of the chat which will own the gift. The chat must be active in the last 24 hours.
+   * @see https://core.telegram.org/bots/api#transfergift
+   */
+  transferGift(
+    business_connection_id: TransferGiftOptions['business_connection_id'],
+    owned_gift_id: TransferGiftOptions['owned_gift_id'],
+    new_owner_chat_id: TransferGiftOptions['new_owner_chat_id'],
+    callOptions?: MethodOptions<
+      Omit<
+        TransferGiftOptions,
+        'business_connection_id' | 'owned_gift_id' | 'new_owner_chat_id'
+      >
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new TransferGift({
+        business_connection_id,
+        owned_gift_id,
+        new_owner_chat_id,
+        ...rest,
+      }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to unban a previously banned user in a supergroup or channel. The user will not return to the group or channel automatically, but will be able to join via link, etc. The bot must be an administrator for this to work. By default, this method guarantees that after the call the user is not a member of the chat, but will be able to join it. So if the user is a member of the chat they will also be removed from the chat. If you don't want this, use the parameter only_if_banned. Returns True on success.
+   * @param chat_id Unique identifier for the target group or username of the target supergroup or channel in the format @username
+   * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api#unbanchatmember
+   */
+  unbanChatMember(
+    chat_id: UnbanChatMemberOptions['chat_id'],
+    user_id: UnbanChatMemberOptions['user_id'],
+    callOptions?: MethodOptions<
+      Omit<UnbanChatMemberOptions, 'chat_id' | 'user_id'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new UnbanChatMember({ chat_id, user_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to unban a previously banned channel chat in a supergroup or channel. The bot must be an administrator for this to work and must have the appropriate administrator rights. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target channel in the format @username
+   * @param sender_chat_id Unique identifier of the target sender chat
+   * @see https://core.telegram.org/bots/api#unbanchatsenderchat
+   */
+  unbanChatSenderChat(
+    chat_id: UnbanChatSenderChatOptions['chat_id'],
+    sender_chat_id: UnbanChatSenderChatOptions['sender_chat_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new UnbanChatSenderChat({ chat_id, sender_chat_id, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to unhide the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @see https://core.telegram.org/bots/api#unhidegeneralforumtopic
+   */
+  unhideGeneralForumTopic(
+    chat_id: UnhideGeneralForumTopicOptions['chat_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new UnhideGeneralForumTopic({ chat_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to clear the list of pinned messages in a chat. In private chats and channel direct messages chats, no additional rights are required to unpin all pinned messages. Conversely, the bot must be an administrator with the 'can_pin_messages' right or the 'can_edit_messages' right to unpin all pinned messages in groups and channels respectively. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target channel in the format @username
+   * @see https://core.telegram.org/bots/api#unpinallchatmessages
+   */
+  unpinAllChatMessages(
+    chat_id: UnpinAllChatMessagesOptions['chat_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new UnpinAllChatMessages({ chat_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to clear the list of pinned messages in a forum topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_pin_messages administrator right in the supergroup. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @param message_thread_id Unique identifier for the target message thread of the forum topic
+   * @see https://core.telegram.org/bots/api#unpinallforumtopicmessages
+   */
+  unpinAllForumTopicMessages(
+    chat_id: UnpinAllForumTopicMessagesOptions['chat_id'],
+    message_thread_id: UnpinAllForumTopicMessagesOptions['message_thread_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new UnpinAllForumTopicMessages({ chat_id, message_thread_id, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to clear the list of pinned messages in a General forum topic. The bot must be an administrator in the chat for this to work and must have the can_pin_messages administrator right in the supergroup. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @see https://core.telegram.org/bots/api#unpinallgeneralforumtopicmessages
+   */
+  unpinAllGeneralForumTopicMessages(
+    chat_id: UnpinAllGeneralForumTopicMessagesOptions['chat_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new UnpinAllGeneralForumTopicMessages({ chat_id, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to remove a message from the list of pinned messages in a chat. In private chats and channel direct messages chats, all messages can be unpinned. Conversely, the bot must be an administrator with the 'can_pin_messages' right or the 'can_edit_messages' right to unpin messages in groups and channels respectively. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target channel in the format @username
+   * @see https://core.telegram.org/bots/api#unpinchatmessage
+   */
+  unpinChatMessage(
+    chat_id: UnpinChatMessageOptions['chat_id'],
+    callOptions?: MethodOptions<Omit<UnpinChatMessageOptions, 'chat_id'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new UnpinChatMessage({ chat_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Upgrades a given regular gift to a unique gift. Requires the can_transfer_and_upgrade_gifts business bot right. Additionally requires the can_transfer_stars business bot right if the upgrade is paid. Returns True on success.
+   * @param business_connection_id Unique identifier of the business connection
+   * @param owned_gift_id Unique identifier of the regular gift that should be upgraded to a unique one
+   * @see https://core.telegram.org/bots/api#upgradegift
+   */
+  upgradeGift(
+    business_connection_id: UpgradeGiftOptions['business_connection_id'],
+    owned_gift_id: UpgradeGiftOptions['owned_gift_id'],
+    callOptions?: MethodOptions<
+      Omit<UpgradeGiftOptions, 'business_connection_id' | 'owned_gift_id'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new UpgradeGift({ business_connection_id, owned_gift_id, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to upload a file with a sticker for later use in the createNewStickerSet, addStickerToSet, or replaceStickerInSet methods (the file can be used multiple times). Returns the uploaded File on success.
+   * @param user_id User identifier of sticker file owner
+   * @param sticker A file with the sticker in .WEBP, .PNG, .TGS, or .WEBM format. See https://core.telegram.org/stickers for technical requirements. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
+   * @param sticker_format Format of the sticker, must be one of "static", "animated", "video"
+   * @see https://core.telegram.org/bots/api#uploadstickerfile
+   */
+  uploadStickerFile(
+    user_id: UploadStickerFileOptions['user_id'],
+    sticker: UploadStickerFileOptions['sticker'],
+    sticker_format: UploadStickerFileOptions['sticker_format'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new UploadStickerFile({ user_id, sticker, sticker_format, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Verifies a chat on behalf of the organization which is represented by the bot. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username. Channel direct messages chats can't be verified.
+   * @see https://core.telegram.org/bots/api#verifychat
+   */
+  verifyChat(
+    chat_id: VerifyChatOptions['chat_id'],
+    callOptions?: MethodOptions<Omit<VerifyChatOptions, 'chat_id'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new VerifyChat({ chat_id, ...rest }), { token, signal });
+  }
+
+  /**
+   * Verifies a user on behalf of the organization which is represented by the bot. Returns True on success.
+   * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api#verifyuser
+   */
+  verifyUser(
+    user_id: VerifyUserOptions['user_id'],
+    callOptions?: MethodOptions<Omit<VerifyUserOptions, 'user_id'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new VerifyUser({ user_id, ...rest }), { token, signal });
   }
 }

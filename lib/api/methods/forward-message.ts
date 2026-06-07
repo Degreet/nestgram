@@ -1,14 +1,18 @@
 import { ApiMethod } from './api-method';
 import { Message } from '../../events';
 import type { BotService } from '../bot.service';
+import type { RawSuggestedPostParameters } from '../../events/raw-update.types';
 
 export interface ForwardMessageOptions {
   chat_id: number | string;
   message_thread_id?: number;
+  direct_messages_topic_id?: number;
   from_chat_id: number | string;
   video_start_timestamp?: number;
   disable_notification?: boolean;
   protect_content?: boolean;
+  message_effect_id?: string;
+  suggested_post_parameters?: RawSuggestedPostParameters;
   message_id: number;
 }
 

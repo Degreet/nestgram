@@ -7,7 +7,7 @@ export interface CreateNewStickerSetOptions {
   name: string;
   title: string;
   stickers: RawInputSticker[];
-  sticker_type?: 'mask' | 'custom_emoji';
+  sticker_type?: string;
   needs_repainting?: boolean;
 }
 

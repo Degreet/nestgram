@@ -4,11 +4,13 @@ import type {
   RawLabeledPrice,
   RawMessage,
   RawReplyParameters,
+  RawSuggestedPostParameters,
 } from '../../events/raw-update.types';
 
 export interface SendInvoiceOptions {
   chat_id: number | string;
   message_thread_id?: number;
+  direct_messages_topic_id?: number;
   title: string;
   description: string;
   payload: string;
@@ -34,6 +36,7 @@ export interface SendInvoiceOptions {
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
+  suggested_post_parameters?: RawSuggestedPostParameters;
   reply_parameters?: RawReplyParameters;
   reply_markup?: RawInlineKeyboardMarkup | { toJSON(): unknown };
 }

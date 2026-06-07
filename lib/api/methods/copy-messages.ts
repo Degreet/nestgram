@@ -4,6 +4,7 @@ import type { RawMessageId } from '../../events/raw-update.types';
 export interface CopyMessagesOptions {
   chat_id: number | string;
   message_thread_id?: number;
+  direct_messages_topic_id?: number;
   from_chat_id: number | string;
   message_ids: number[];
   disable_notification?: boolean;

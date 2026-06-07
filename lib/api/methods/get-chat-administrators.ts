@@ -3,6 +3,7 @@ import type { RawChatMember } from '../../events/raw-update.types';
 
 export interface GetChatAdministratorsOptions {
   chat_id: number | string;
+  return_bots?: boolean;
 }
 
 export class GetChatAdministrators extends ApiMethod<

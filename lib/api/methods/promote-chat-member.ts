@@ -18,6 +18,8 @@ export interface PromoteChatMemberOptions {
   can_edit_messages?: boolean;
   can_pin_messages?: boolean;
   can_manage_topics?: boolean;
+  can_manage_direct_messages?: boolean;
+  can_manage_tags?: boolean;
 }
 
 export class PromoteChatMember extends ApiMethod<

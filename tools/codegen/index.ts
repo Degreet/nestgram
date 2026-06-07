@@ -16,8 +16,8 @@ import { buildIr, IrType } from './ir';
 import { loadSpec } from './spec-loader';
 import { irTypeToTs } from './type-resolver';
 
-const EXPECTED_METHODS = 135;
-const EXPECTED_OBJECTS = 232;
+const EXPECTED_METHODS = 176;
+const EXPECTED_OBJECTS = 303;
 
 function assert(condition: boolean, message: string): void {
   if (!condition) {
@@ -109,50 +109,32 @@ function selfTest(): void {
     'answerCallbackQuery file name',
   );
 
-  // Discriminator default (object property) → literal.
-  const inputMediaPhoto = ir.objectsByName.get('InputMediaPhoto');
-  assert(
-    inputMediaPhoto?.kind === 'interface',
-    'InputMediaPhoto is an interface',
-  );
-  if (inputMediaPhoto?.kind === 'interface') {
-    const typeField = inputMediaPhoto.fields.find((f) => f.name === 'type');
-    assert(typeField !== undefined, 'InputMediaPhoto.type present');
-    if (typeField) {
-      assertTs(
-        typeField.type,
-        "'photo'",
-        'InputMediaPhoto.type discriminator literal',
-      );
-    }
-  }
+  // Abstract union (PaulSonOfLars `subtypes`) → an alias of references.
+  const inputMedia = ir.objectsByName.get('InputMedia');
+  assert(inputMedia?.kind === 'alias', 'InputMedia lowers to a union alias');
 
-  // Bool default:true (object property) → `true` literal.
-  const user = ir.objectsByName.get('User');
-  if (user?.kind === 'interface') {
-    const isPremium = user.fields.find((f) => f.name === 'is_premium');
-    if (isPremium) {
-      assertTs(isPremium.type, 'true', 'User.is_premium bool-default literal');
-    }
-  }
-
-  // Method-arg defaults are NOT literals (the API default value, not a type).
-  const getUpdates = ir.methods.find((m) => m.name === 'getUpdates');
-  const limit = getUpdates?.args.find((a) => a.name === 'limit');
-  if (limit) {
-    assertTs(limit.type, 'number', 'getUpdates.limit arg-default stays number');
-  }
-  // Enumeration is a genuine constraint → a literal union even for an argument
-  // (and the `default` within it does not collapse it to a single literal).
-  const sendDice = ir.methods.find((m) => m.name === 'sendDice');
-  const emoji = sendDice?.args.find((a) => a.name === 'emoji');
-  if (emoji) {
+  // Multi-token field (`['Integer', 'String']`) → a union.
+  const sendMessage2 = ir.methods.find((m) => m.name === 'sendMessage');
+  const chatId = sendMessage2?.args.find((a) => a.name === 'chat_id');
+  if (chatId) {
     assertTs(
-      emoji.type,
-      "'🎲' | '🎯' | '🏀' | '⚽' | '🎳' | '🎰'",
-      'sendDice.emoji enum union',
+      chatId.type,
+      'number | string',
+      'chat_id is a number|string union',
     );
   }
+
+  // `maybe_multipart` is derived from an InputFile-typed field.
+  const sendPhoto = ir.methods.find((m) => m.name === 'sendPhoto');
+  assert(sendPhoto?.maybeMultipart === true, 'sendPhoto is multipart');
+  assert(
+    ir.methods.find((m) => m.name === 'getMe')?.maybeMultipart === false,
+    'getMe is not multipart',
+  );
+
+  // NOTE: enum/discriminator literal-union refinements (e.g. sendDice.emoji,
+  // InputMediaPhoto.type) are recovered from description prose in a follow-up
+  // step; this source has no structured enum data. Asserted there, not here.
 
   process.stdout.write(
     `self-test OK — ${ir.objects.length} objects, ${ir.methods.length} methods\n`,

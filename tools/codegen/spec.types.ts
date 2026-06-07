@@ -1,85 +1,48 @@
 /**
- * The shape of the vendored ark0f `custom_v2` Bot API spec. Mirrors the JSON
- * exactly; the loader validates against these discriminators and throws on any
- * unrecognised kind (spec drift). Not a public API — internal to the generator.
+ * The shape of the vendored PaulSonOfLars `api.min.json` Bot API spec. Mirrors
+ * the JSON exactly; the loader validates it and throws on anything the type
+ * parser can't map (spec drift). Not a public API — internal to the generator.
+ *
+ * Unlike the previous ark0f format, types here are HUMAN-READABLE STRINGS
+ * (`'Integer'`, `'Array of MessageEntity'`; a union is multiple array entries,
+ * e.g. `['Integer', 'String']`) rather than structured discriminators, and
+ * enum/default constraints live only in `description` prose. `ir.ts` lowers both.
  */
 
-/** A field/argument/return type. Discriminated on `type` (the 7 known kinds). */
-export type TypeInfo =
-  | {
-      type: 'integer';
-      enumeration: number[];
-      default?: number;
-      min?: number;
-      max?: number;
-    }
-  | { type: 'float'; enumeration?: number[]; default?: number }
-  | {
-      type: 'string';
-      enumeration: string[];
-      default?: string;
-      min_len?: number;
-      max_len?: number;
-    }
-  | { type: 'bool'; default?: boolean }
-  | { type: 'reference'; reference: string }
-  | { type: 'array'; array: TypeInfo }
-  | { type: 'any_of'; any_of: TypeInfo[] };
-
-export interface SpecArgument {
+/** A field of a type, or an argument of a method. */
+export interface SpecField {
   name: string;
-  description: string;
+  /** One or more type tokens; multiple entries form a union. */
+  types: string[];
   required: boolean;
-  type_info: TypeInfo;
+  description: string;
 }
 
 export interface SpecMethod {
   name: string;
-  description: string;
-  arguments?: SpecArgument[];
-  return_type: TypeInfo;
-  maybe_multipart: boolean;
-  documentation_link: string;
+  href: string;
+  description: string[];
+  /** Possible return type tokens; multiple entries form a union. */
+  returns: string[];
+  /** Absent for parameterless methods. */
+  fields?: SpecField[];
 }
 
-export interface SpecProperty {
+export interface SpecType {
   name: string;
-  description: string;
-  required: boolean;
-  type_info: TypeInfo;
+  href: string;
+  description: string[];
+  /** Present for concrete objects (→ a TS interface). */
+  fields?: SpecField[];
+  /** Present for abstract unions (→ a TS union alias of the members). */
+  subtypes?: string[];
+  /** Parent unions this type belongs to. Not used for emission. */
+  subtype_of?: string[];
 }
-
-interface SpecObjectBase {
-  name: string;
-  description: string;
-  documentation_link: string;
-}
-
-/** An object with a fixed set of fields → a TS interface. */
-export interface SpecPropertiesObject extends SpecObjectBase {
-  type: 'properties';
-  properties: SpecProperty[];
-}
-
-/** A discriminated union of other objects → a TS union alias. */
-export interface SpecAnyOfObject extends SpecObjectBase {
-  type: 'any_of';
-  any_of: TypeInfo[];
-}
-
-/** An opaque/empty placeholder (e.g. `InputFile`, `CallbackGame`). */
-export interface SpecUnknownObject extends SpecObjectBase {
-  type: 'unknown';
-}
-
-export type SpecObject =
-  | SpecPropertiesObject
-  | SpecAnyOfObject
-  | SpecUnknownObject;
 
 export interface BotApiSpec {
-  version: { major: number; minor: number; patch: number };
-  recent_changes: { year: number; month: number; day: number };
-  methods: SpecMethod[];
-  objects: SpecObject[];
+  version: string;
+  release_date: string;
+  methods: Record<string, SpecMethod>;
+  types: Record<string, SpecType>;
 }

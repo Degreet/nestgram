@@ -6,17 +6,20 @@ import type {
   RawReplyKeyboardMarkup,
   RawReplyKeyboardRemove,
   RawReplyParameters,
+  RawSuggestedPostParameters,
 } from '../../events/raw-update.types';
 
 export interface SendDiceOptions {
   business_connection_id?: string;
   chat_id: number | string;
   message_thread_id?: number;
-  emoji?: '🎲' | '🎯' | '🏀' | '⚽' | '🎳' | '🎰';
+  direct_messages_topic_id?: number;
+  emoji?: string;
   disable_notification?: boolean;
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
+  suggested_post_parameters?: RawSuggestedPostParameters;
   reply_parameters?: RawReplyParameters;
   reply_markup?:
     | RawInlineKeyboardMarkup

@@ -7,11 +7,13 @@ import type {
   RawReplyKeyboardMarkup,
   RawReplyKeyboardRemove,
   RawReplyParameters,
+  RawSuggestedPostParameters,
 } from '../../events/raw-update.types';
 
 export interface CopyMessageOptions {
   chat_id: number | string;
   message_thread_id?: number;
+  direct_messages_topic_id?: number;
   from_chat_id: number | string;
   message_id: number;
   video_start_timestamp?: number;
@@ -22,6 +24,8 @@ export interface CopyMessageOptions {
   disable_notification?: boolean;
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
+  message_effect_id?: string;
+  suggested_post_parameters?: RawSuggestedPostParameters;
   reply_parameters?: RawReplyParameters;
   reply_markup?:
     | RawInlineKeyboardMarkup

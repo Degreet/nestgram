@@ -1,12 +1,18 @@
 /**
  * The intermediate representation. The raw spec is lowered into this stable,
- * emission-agnostic shape ONCE here — every quirk (any_of → union, enumeration
- * → string-literal union, bool `default:true` → `true`, discriminator `default`
- * → literal, array nesting, return polymorphism) is resolved in `lowerType`, so
- * the emitters consume IR only and never re-read the spec.
+ * emission-agnostic shape ONCE here — so the emitters consume IR only and never
+ * re-read the spec.
+ *
+ * The PaulSonOfLars source spells types as STRINGS (`'Integer'`,
+ * `'Array of MessageEntity'`); `parseTypeString` lowers each token, and a
+ * multi-entry `types`/`returns` array becomes a union. Enum/default/discriminator
+ * refinements (literal unions, `'photo'` discriminators) are NOT in this source's
+ * structured data — they are recovered from `description` prose in a later step;
+ * here every such field lowers to its base primitive.
  */
-import { BotApiSpec, SpecObject, TypeInfo } from './spec.types';
+import { BotApiSpec, SpecField, SpecType } from './spec.types';
 import { classToFileName, methodToClassName } from './names';
+import { overrideFieldType } from './manifest';
 
 /** A resolved type, independent of how it will be written to TS. */
 export type IrType =
@@ -62,107 +68,115 @@ export function collectReferences(type: IrType, into: Set<string>): void {
   }
 }
 
-/**
- * `literalDefaults` distinguishes object properties (where a string `default`
- * is a discriminator → literal, and a bool `default:true` is an always-True
- * marker → `true`) from method arguments (where `default` is just the API's
- * default VALUE for an optional arg, never a literal type). Enumeration is a
- * genuine constraint and becomes a literal union in both contexts.
- */
-interface LowerOptions {
-  literalDefaults: boolean;
-}
+const ARRAY_PREFIX = 'Array of ';
+/** The multipart upload sentinel — a field of this type carries a file. */
+const INPUT_FILE = 'InputFile';
 
-function lowerType(info: TypeInfo, options: LowerOptions): IrType {
-  switch (info.type) {
-    case 'integer':
-    case 'float':
+/** Lowers a single Bot API type token (e.g. `'Array of PhotoSize'`). */
+function parseTypeString(token: string): IrType {
+  if (token.startsWith(ARRAY_PREFIX)) {
+    return {
+      kind: 'array',
+      element: parseTypeString(token.slice(ARRAY_PREFIX.length)),
+    };
+  }
+  switch (token) {
+    case 'Integer':
+    case 'Float':
       return { kind: 'primitive', ts: 'number' };
-    case 'bool':
-      if (options.literalDefaults && info.default === true) {
-        return { kind: 'primitive', ts: 'true' };
-      }
-      return { kind: 'primitive', ts: 'boolean' };
-    case 'string':
-      if (info.enumeration.length > 0) {
-        return { kind: 'literalUnion', literals: info.enumeration };
-      }
-      if (options.literalDefaults && typeof info.default === 'string') {
-        return { kind: 'literalUnion', literals: [info.default] };
-      }
+    case 'String':
       return { kind: 'primitive', ts: 'string' };
+    case 'Boolean':
+      return { kind: 'primitive', ts: 'boolean' };
+    default:
+      return { kind: 'reference', name: token };
+  }
+}
+
+/** Lowers a `types`/`returns` token list; multiple tokens form a union. */
+function lowerTypes(tokens: string[]): IrType {
+  const variants = tokens.map(parseTypeString);
+  return variants.length === 1 ? variants[0] : { kind: 'union', variants };
+}
+
+function typeReferencesInputFile(type: IrType): boolean {
+  switch (type.kind) {
     case 'reference':
-      return { kind: 'reference', name: info.reference };
+      return type.name === INPUT_FILE;
     case 'array':
-      return { kind: 'array', element: lowerType(info.array, options) };
-    case 'any_of':
-      return {
+      return typeReferencesInputFile(type.element);
+    case 'union':
+      return type.variants.some(typeReferencesInputFile);
+    default:
+      return false;
+  }
+}
+
+function lowerField(owner: string, field: SpecField): IrField {
+  return {
+    name: field.name,
+    optional: !field.required,
+    type: overrideFieldType(owner, field.name) ?? lowerTypes(field.types),
+    description: field.description,
+  };
+}
+
+function lowerObject(name: string, object: SpecType): IrObject {
+  const description = object.description.join('\n');
+  if (object.subtypes && object.subtypes.length > 0) {
+    return {
+      name,
+      kind: 'alias',
+      description,
+      type: {
         kind: 'union',
-        variants: info.any_of.map((variant) => lowerType(variant, options)),
-      };
-  }
-}
-
-const PROPERTY_OPTIONS: LowerOptions = { literalDefaults: true };
-const ARGUMENT_OPTIONS: LowerOptions = { literalDefaults: false };
-
-function lowerObject(object: SpecObject): IrObject {
-  switch (object.type) {
-    case 'properties':
-      return {
-        name: object.name,
-        kind: 'interface',
-        description: object.description,
-        fields: object.properties.map((property) => ({
-          name: property.name,
-          optional: !property.required,
-          type: lowerType(property.type_info, PROPERTY_OPTIONS),
-          description: property.description,
+        variants: object.subtypes.map((subtype) => ({
+          kind: 'reference',
+          name: subtype,
         })),
-      };
-    case 'any_of':
-      return {
-        name: object.name,
-        kind: 'alias',
-        description: object.description,
-        type: {
-          kind: 'union',
-          variants: object.any_of.map((variant) =>
-            lowerType(variant, ARGUMENT_OPTIONS),
-          ),
-        },
-      };
-    case 'unknown':
-      return {
-        name: object.name,
-        kind: 'opaque',
-        description: object.description,
-      };
+      },
+    };
   }
+  if (object.fields && object.fields.length > 0) {
+    return {
+      name,
+      kind: 'interface',
+      description,
+      fields: object.fields.map((field) => lowerField(name, field)),
+    };
+  }
+  return { name, kind: 'opaque', description };
 }
+
+const byName = <T extends { name: string }>(a: T, b: T): number =>
+  a.name.localeCompare(b.name);
 
 export function buildIr(spec: BotApiSpec): Ir {
-  const objects = spec.objects.map(lowerObject);
+  // The source keys objects/methods by name (doc order); sort for output that
+  // is deterministic regardless of the source's ordering.
+  const objects = Object.entries(spec.types)
+    .map(([name, object]) => lowerObject(name, object))
+    .sort(byName);
   const objectsByName = new Map(objects.map((object) => [object.name, object]));
 
-  const methods = spec.methods.map((method): IrMethod => {
-    const className = methodToClassName(method.name);
-    return {
-      name: method.name,
-      className,
-      fileName: classToFileName(className),
-      args: (method.arguments ?? []).map((argument) => ({
-        name: argument.name,
-        optional: !argument.required,
-        type: lowerType(argument.type_info, ARGUMENT_OPTIONS),
-        description: argument.description,
-      })),
-      returnType: lowerType(method.return_type, ARGUMENT_OPTIONS),
-      maybeMultipart: method.maybe_multipart,
-      description: method.description,
-      documentationLink: method.documentation_link,
-    };
-  });
+  const methods = Object.values(spec.methods)
+    .map((method): IrMethod => {
+      const className = methodToClassName(method.name);
+      const args = (method.fields ?? []).map((field) =>
+        lowerField(method.name, field),
+      );
+      return {
+        name: method.name,
+        className,
+        fileName: classToFileName(className),
+        args,
+        returnType: lowerTypes(method.returns),
+        maybeMultipart: args.some((arg) => typeReferencesInputFile(arg.type)),
+        description: method.description.join('\n'),
+        documentationLink: method.href,
+      };
+    })
+    .sort(byName);
 
   return { objects, methods, objectsByName };
 }

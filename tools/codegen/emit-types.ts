@@ -12,7 +12,7 @@ import { isInputMediaName, resolveReference, SKIP_OBJECTS } from './manifest';
 import { irTypeToTs } from './type-resolver';
 
 const HEADER = `/**
- * Raw Telegram Bot API wire types — GENERATED from the vendored ark0f spec by
+ * Raw Telegram Bot API wire types — GENERATED from the vendored spec by
  * \`npm run generate\`. Do not edit by hand. These are the wire shapes the engine
  * wraps into the rich event classes in lib/events; the bare names (User,
  * InputFile, InputMedia*) are hand-written and imported below.

@@ -2,6 +2,7 @@ import { ApiMethod } from './api-method';
 import type {
   RawForceReply,
   RawInlineKeyboardMarkup,
+  RawInputPollMedia,
   RawInputPollOption,
   RawMessage,
   RawMessageEntity,
@@ -19,15 +20,26 @@ export interface SendPollOptions {
   question_entities?: RawMessageEntity[];
   options: RawInputPollOption[];
   is_anonymous?: boolean;
-  type?: 'quiz' | 'regular';
+  type?: string;
   allows_multiple_answers?: boolean;
-  correct_option_id?: number;
+  allows_revoting?: boolean;
+  shuffle_options?: boolean;
+  allow_adding_options?: boolean;
+  hide_results_until_closes?: boolean;
+  members_only?: boolean;
+  country_codes?: string[];
+  correct_option_ids?: number[];
   explanation?: string;
   explanation_parse_mode?: string;
   explanation_entities?: RawMessageEntity[];
+  explanation_media?: RawInputPollMedia;
   open_period?: number;
   close_date?: number;
   is_closed?: boolean;
+  description?: string;
+  description_parse_mode?: string;
+  description_entities?: RawMessageEntity[];
+  media?: RawInputPollMedia;
   disable_notification?: boolean;
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;

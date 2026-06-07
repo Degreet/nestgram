@@ -62,3 +62,14 @@ export interface InputMediaAnimation {
   duration?: number;
   has_spoiler?: boolean;
 }
+
+export interface InputMediaLivePhoto {
+  type: 'live_photo';
+  media: string | InputFile;
+  photo: string | InputFile;
+  caption?: string;
+  parse_mode?: string;
+  caption_entities?: any[];
+  show_caption_above_media?: boolean;
+  has_spoiler?: boolean;
+}

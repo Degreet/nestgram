@@ -1,12 +1,8 @@
 {
-  "botApiVersion": "8.3.0",
-  "recentChanges": {
-    "year": 2025,
-    "month": 2,
-    "day": 12
-  },
-  "methods": 135,
-  "objects": 232,
-  "source": "https://ark0f.github.io/tg-bot-api/custom_v2.min.json",
-  "sha1": "60ac7ea32e1d62236fa710f2a220fe95a59edc78"
+  "botApiVersion": "Bot API 10.0",
+  "releaseDate": "May 8, 2026",
+  "methods": 176,
+  "objects": 303,
+  "source": "https://raw.githubusercontent.com/PaulSonOfLars/telegram-bot-api-spec/main/api.min.json",
+  "sha1": "53f1e79de68768c525b3a458d43e203cbe4365b2"
 }
