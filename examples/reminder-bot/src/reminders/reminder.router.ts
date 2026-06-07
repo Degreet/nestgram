@@ -26,15 +26,12 @@ import { ReminderKeyboards } from './reminder.keyboards';
 import { ReminderParser } from './reminder.parser';
 import { ReminderService } from './reminder.service';
 
-/** A leading `/command` (optionally `@bot`), stripped so the parser sees only the reminder. */
-const LEADING_COMMAND = /^\/\S+\s*/;
-
-/** A bare reminder message ("10m call mom", "in 2h ...") — routes a no-command send here. */
-const REMINDER_INPUT = /^(?:in\s+)?\d+\s*[smhd]\s+/i;
-
 @Router()
 @UseInterceptors(LoggingInterceptor)
 export class ReminderRouter {
+  private static readonly LEADING_COMMAND = /^\/\S+\s*/;
+  private static readonly REMINDER_INPUT = /^(?:in\s+)?\d+\s*[smhd]\s+/i;
+
   constructor(
     private readonly reminders: ReminderService,
     private readonly parser: ReminderParser,
@@ -64,10 +61,10 @@ export class ReminderRouter {
   }
 
   @Command('remind')
-  @Hears(REMINDER_INPUT)
+  @Hears(ReminderRouter.REMINDER_INPUT)
   async remind(message: Message, @Sender() user: User) {
     const parsed = this.parser.parse(
-      (message.text ?? '').replace(LEADING_COMMAND, ''),
+      (message.text ?? '').replace(ReminderRouter.LEADING_COMMAND, ''),
       new Date(),
     );
     if (!parsed) {
