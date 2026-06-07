@@ -94,3 +94,14 @@ describe('I18nManager.resolve', () => {
     });
   });
 });
+
+describe('I18nManager.translator (explicit locale, no ambient)', () => {
+  it('translates for a given locale outside any ambient context', () => {
+    const translate = manager({}).translator('uk');
+    expect(translate('hi', { name: 'Ann' })).toBe('Привіт, Ann!');
+  });
+
+  it('returns an identity translator when i18n is off', () => {
+    expect(manager(undefined).translator('uk')('hi')).toBe('hi');
+  });
+});

@@ -37,6 +37,16 @@ export class I18nManager {
     setAmbient(TRANSLATOR, this.translatorFor(resolved, config));
   }
 
+  /**
+   * A translator bound to an explicit locale, for code that runs OUTSIDE an
+   * update's ambient context (e.g. a queue worker) and must carry the locale
+   * itself. Returns an identity translator (key → key) when i18n is off.
+   */
+  translator(locale: string): TranslateFn {
+    const config = this.options.i18n;
+    return config ? this.translatorFor(locale, config) : (key) => key;
+  }
+
   private resolveLocale(
     ctx: TelegramExecutionContext,
     config: I18nOptions,
