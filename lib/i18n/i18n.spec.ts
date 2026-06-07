@@ -2,7 +2,6 @@ import { Logger } from '@nestjs/common';
 
 import { runAmbient } from '../ambient';
 import { TelegramExecutionContext } from '../engine/context';
-import { NestgramModuleOptions } from '../module/nestgram-module.types';
 import { I18nManager } from './i18n-manager';
 import { interpolate, locale, t } from './translate';
 import type { I18nOptions } from './i18n.types';
@@ -13,11 +12,12 @@ const TRANSLATIONS = {
 };
 
 function manager(i18n?: Partial<I18nOptions>): I18nManager {
-  const options = {
-    token: 'TEST',
-    i18n: i18n && { translations: TRANSLATIONS, defaultLocale: 'en', ...i18n },
-  } as NestgramModuleOptions;
-  return new I18nManager(options);
+  const config = i18n && {
+    translations: TRANSLATIONS,
+    defaultLocale: 'en',
+    ...i18n,
+  };
+  return new I18nManager(config as I18nOptions | undefined);
 }
 
 function ctxWithLanguage(language_code?: string): TelegramExecutionContext {

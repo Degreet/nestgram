@@ -19,7 +19,6 @@ import {
 } from '../engine/source';
 import { AutoAnswerCallbackInterceptor } from '../builtins/auto-answer';
 import { SessionManager, SessionStage } from '../sessions';
-import { I18nManager, I18nStage } from '../i18n';
 import { NestgramBootstrap } from './nestgram.bootstrap';
 import {
   NestgramModuleAsyncOptions,
@@ -52,14 +51,14 @@ export class NestgramModule {
     RouteMatcher,
     HandlerExecutorFactory,
     ResultHandler,
-    // Per-update pipeline stages, discovered + ordered at boot. The managers
-    // hold the logic; the *Stage providers adapt them to the dispatcher hook.
+    // Per-update pipeline stages, discovered + ordered at boot. The session
+    // manager holds the logic; SessionStage adapts it to the dispatcher hook.
+    // i18n lives in its own I18nModule (a discovered stage too — no privileged
+    // core), imported by the app when wanted.
     StageExplorer,
     StageRegistry,
     SessionManager,
     SessionStage,
-    I18nManager,
-    I18nStage,
     UpdateDispatcher,
     PollingUpdateSource,
     WebhookUpdateSource,
@@ -91,15 +90,11 @@ export class NestgramModule {
    * in the async path to read the resolved token. `WebhookUpdateSource` is
    * exported so a webhook controller the author registers in their own module
    * (the ready-made one or a custom one) can inject it to verify + deliver.
-   * `I18nManager` is exported so code crossing an update's ambient boundary
-   * (e.g. a queue worker) can inject it and translate against an explicit locale
-   * via `i18n.translator(locale)`.
    */
   private static readonly engineExports = [
     UpdateDispatcher,
     RouteTable,
     WebhookUpdateSource,
-    I18nManager,
     Providers.NESTGRAM_OPTIONS,
   ];
 

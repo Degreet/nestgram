@@ -1,9 +1,8 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 
 import { setAmbient } from '../ambient';
 import { TelegramExecutionContext } from '../engine/context';
 import { Providers } from '../providers';
-import type { NestgramModuleOptions } from '../module/nestgram-module.types';
 import { LOCALE, TRANSLATOR, TRANSLATOR_FACTORY } from './i18n.constants';
 import { interpolate } from './translate';
 import type { I18nOptions, TranslateFn } from './i18n.types';
@@ -11,8 +10,8 @@ import type { I18nOptions, TranslateFn } from './i18n.types';
 /**
  * Resolves the locale for each update and seeds the ambient store so the free
  * {@link t} / {@link locale} helpers work anywhere in the call chain — the i18n
- * counterpart of {@link SessionManager}, called by the dispatcher as a pipeline
- * stage. A no-op when `i18n` isn't configured.
+ * counterpart of {@link SessionManager}, driven by {@link I18nStage}. Provided by
+ * `I18nModule`; a no-op (returns the key) when its config is absent.
  *
  * Catalogs are static config, so a locale-bound translator is built once per
  * locale and reused; only the per-update locale lookup runs on the hot path.
@@ -24,12 +23,13 @@ export class I18nManager {
   private readonly missingWarned = new Set<string>();
 
   constructor(
-    @Inject(Providers.NESTGRAM_OPTIONS)
-    private readonly options: NestgramModuleOptions,
+    @Optional()
+    @Inject(Providers.I18N_OPTIONS)
+    private readonly config?: I18nOptions,
   ) {}
 
   resolve(ctx: TelegramExecutionContext): void {
-    const config = this.options.i18n;
+    const config = this.config;
     if (!config) {
       return;
     }
@@ -50,8 +50,7 @@ export class I18nManager {
    * itself. Returns an identity translator (key → key) when i18n is off.
    */
   translator(locale: string): TranslateFn {
-    const config = this.options.i18n;
-    return config ? this.translatorFor(locale, config) : (key) => key;
+    return this.config ? this.translatorFor(locale, this.config) : (key) => key;
   }
 
   private resolveLocale(

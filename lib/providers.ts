@@ -4,4 +4,6 @@ export enum Providers {
   NESTGRAM_OPTIONS = 'NESTGRAM_OPTIONS',
   /** The active {@link UpdateSource} (polling or webhook), chosen by config. */
   UPDATE_SOURCE = 'UPDATE_SOURCE',
+  /** i18n config, provided by `I18nModule.forRoot`/`forRootAsync`. */
+  I18N_OPTIONS = 'I18N_OPTIONS',
 }

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bullmq';
-import { NestgramModule, WebhookController } from 'nestgram';
+import { I18nModule, NestgramModule, WebhookController } from 'nestgram';
 
 import { loadConfig, type AppConfig } from './config';
 import { DEFAULT_LOCALE, translations } from './i18n/translations';
@@ -46,7 +46,6 @@ const config = (service: ConfigService): AppConfig =>
         return {
           token: app.botToken,
           parseMode: 'HTML',
-          i18n: { translations, defaultLocale: DEFAULT_LOCALE },
           ...(app.useWebhook
             ? {
                 webhook: {
@@ -58,6 +57,8 @@ const config = (service: ConfigService): AppConfig =>
         };
       },
     }),
+
+    I18nModule.forRoot({ translations, defaultLocale: DEFAULT_LOCALE }),
 
     RemindersModule,
     AdminModule,
