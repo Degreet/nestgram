@@ -44,7 +44,9 @@ lerna-debug.log*
 # Backlog tooling
 dev-debug.log
 .env
-# Task files are tracked in git (tasks.json + .backlog/tasks/) on purpose.
+# Tasks live in tasks.json (the single source of truth); per-task .md are
+# generated views — ignored so they can't drift out of sync with it.
+.backlog/tasks/*.md
 
 # Codegen dry-run scratch (real output lives in lib/api/methods + lib/events)
 lib/api/methods.generated/
