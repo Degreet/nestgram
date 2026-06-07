@@ -69,13 +69,9 @@ describe('Context by wrapping (no mutation)', () => {
   });
 });
 
-// Shipped via the same ECC path as guards/interceptors/filters (proven in
-// acceptance.spec) but without a dedicated assertion yet.
-describe('Shipped, dedicated assertion pending', () => {
-  it.todo(
-    '@UsePipes / a param pipe transforms a derived param before the handler',
-  );
-});
+// Param pipes (incl. ValidationPipe + class-validator DTOs) run through the
+// same ECC path as guards/interceptors/filters — proven end to end in
+// command-args/command-args.dispatch.spec.ts.
 
 describe('Not yet implemented (Phase 2+ / deferred)', () => {
   it.todo('@Match() injects the RegExpMatchArray for a regex @Action / @Hears');
