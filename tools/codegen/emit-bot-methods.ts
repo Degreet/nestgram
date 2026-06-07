@@ -40,6 +40,9 @@ function jsdoc(method: IrMethod, positional: IrField[]): string {
       }`,
     );
   }
+  if (method.documentationLink) {
+    lines.push(` * @see ${method.documentationLink}`);
+  }
   return lines.length > 0 ? `/**\n${lines.join('\n')}\n */\n` : '';
 }
 

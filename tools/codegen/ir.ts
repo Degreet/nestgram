@@ -36,6 +36,7 @@ export interface IrMethod {
   returnType: IrType;
   maybeMultipart: boolean;
   description: string;
+  documentationLink: string;
 }
 
 export interface Ir {
@@ -159,6 +160,7 @@ export function buildIr(spec: BotApiSpec): Ir {
       returnType: lowerType(method.return_type, ARGUMENT_OPTIONS),
       maybeMultipart: method.maybe_multipart,
       description: method.description,
+      documentationLink: method.documentation_link,
     };
   });
 

@@ -276,6 +276,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to receive incoming updates using long polling ([wiki](https://en.wikipedia.org/wiki/Push_technology#Long_polling)). Returns an Array of [Update](https://core.telegram.org/bots/api/#update) objects.
+   * @see https://core.telegram.org/bots/api/#getupdates
    */
   getUpdates(callOptions?: MethodOptions<GetUpdatesOptions>) {
     const { token, signal, ...rest } = callOptions ?? {};
@@ -287,6 +288,7 @@ export abstract class GeneratedBotMethods {
    *
    * If you'd like to make sure that the webhook was set by you, you can specify secret data in the parameter *secret\_token*. If specified, the request will contain a header “X-Telegram-Bot-Api-Secret-Token” with the secret token as content.
    * @param url HTTPS URL to send updates to. Use an empty string to remove webhook integration
+   * @see https://core.telegram.org/bots/api/#setwebhook
    */
   setWebhook(
     url: SetWebhookOptions['url'],
@@ -298,6 +300,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to remove webhook integration if you decide to switch back to [getUpdates](https://core.telegram.org/bots/api/#getupdates). Returns *True* on success.
+   * @see https://core.telegram.org/bots/api/#deletewebhook
    */
   deleteWebhook(callOptions?: MethodOptions<DeleteWebhookOptions>) {
     const { token, signal, ...rest } = callOptions ?? {};
@@ -306,6 +309,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to get current webhook status. Requires no parameters. On success, returns a [WebhookInfo](https://core.telegram.org/bots/api/#webhookinfo) object. If the bot is using [getUpdates](https://core.telegram.org/bots/api/#getupdates), will return an object with the *url* field empty.
+   * @see https://core.telegram.org/bots/api/#getwebhookinfo
    */
   getWebhookInfo(callOptions?: CallOptions) {
     return this.call(new GetWebhookInfo(), callOptions);
@@ -313,6 +317,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to log out from the cloud Bot API server before launching the bot locally. You **must** log out the bot before running it locally, otherwise there is no guarantee that the bot will receive updates. After a successful call, you can immediately log in on a local server, but will not be able to log in back to the cloud Bot API server for 10 minutes. Returns *True* on success. Requires no parameters.
+   * @see https://core.telegram.org/bots/api/#logout
    */
   logOut(callOptions?: CallOptions) {
     return this.call(new LogOut(), callOptions);
@@ -320,6 +325,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to close the bot instance before moving it from one local server to another. You need to delete the webhook before calling this method to ensure that the bot isn't launched again after server restart. The method will return error 429 in the first 10 minutes after the bot is launched. Returns *True* on success. Requires no parameters.
+   * @see https://core.telegram.org/bots/api/#close
    */
   close(callOptions?: CallOptions) {
     return this.call(new Close(), callOptions);
@@ -329,6 +335,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to send text messages. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param text Text of the message to be sent, 1-4096 characters after entities parsing
+   * @see https://core.telegram.org/bots/api/#sendmessage
    */
   sendMessage(
     chat_id: SendMessageOptions['chat_id'],
@@ -347,6 +354,7 @@ export abstract class GeneratedBotMethods {
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param from_chat_id Unique identifier for the chat where the original message was sent (or channel username in the format `@channelusername`)
    * @param message_id Message identifier in the chat specified in *from\_chat\_id*
+   * @see https://core.telegram.org/bots/api/#forwardmessage
    */
   forwardMessage(
     chat_id: ForwardMessageOptions['chat_id'],
@@ -368,6 +376,7 @@ export abstract class GeneratedBotMethods {
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param from_chat_id Unique identifier for the chat where the original messages were sent (or channel username in the format `@channelusername`)
    * @param message_ids A JSON-serialized list of 1-100 identifiers of messages in the chat *from\_chat\_id* to forward. The identifiers must be specified in a strictly increasing order.
+   * @see https://core.telegram.org/bots/api/#forwardmessages
    */
   forwardMessages(
     chat_id: ForwardMessagesOptions['chat_id'],
@@ -389,6 +398,7 @@ export abstract class GeneratedBotMethods {
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param from_chat_id Unique identifier for the chat where the original message was sent (or channel username in the format `@channelusername`)
    * @param message_id Message identifier in the chat specified in *from\_chat\_id*
+   * @see https://core.telegram.org/bots/api/#copymessage
    */
   copyMessage(
     chat_id: CopyMessageOptions['chat_id'],
@@ -410,6 +420,7 @@ export abstract class GeneratedBotMethods {
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param from_chat_id Unique identifier for the chat where the original messages were sent (or channel username in the format `@channelusername`)
    * @param message_ids A JSON-serialized list of 1-100 identifiers of messages in the chat *from\_chat\_id* to copy. The identifiers must be specified in a strictly increasing order.
+   * @see https://core.telegram.org/bots/api/#copymessages
    */
   copyMessages(
     chat_id: CopyMessagesOptions['chat_id'],
@@ -430,6 +441,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to send photos. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param photo Photo to send. Pass a file\_id as String to send a photo that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a photo from the Internet, or upload a new photo using multipart/form-data. The photo must be at most 10 MB in size. The photo's width and height must not exceed 10000 in total. Width and height ratio must be at most 20. [More information on Sending Files »](https://core.telegram.org/bots/api/#sending-files)
+   * @see https://core.telegram.org/bots/api/#sendphoto
    */
   sendPhoto(
     chat_id: SendPhotoOptions['chat_id'],
@@ -449,6 +461,7 @@ export abstract class GeneratedBotMethods {
    * For sending voice messages, use the [sendVoice](https://core.telegram.org/bots/api/#sendvoice) method instead.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param audio Audio file to send. Pass a file\_id as String to send an audio file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get an audio file from the Internet, or upload a new one using multipart/form-data. [More information on Sending Files »](https://core.telegram.org/bots/api/#sending-files)
+   * @see https://core.telegram.org/bots/api/#sendaudio
    */
   sendAudio(
     chat_id: SendAudioOptions['chat_id'],
@@ -466,6 +479,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to send general files. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned. Bots can currently send files of any type of up to 50 MB in size, this limit may be changed in the future.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param document File to send. Pass a file\_id as String to send a file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. [More information on Sending Files »](https://core.telegram.org/bots/api/#sending-files)
+   * @see https://core.telegram.org/bots/api/#senddocument
    */
   sendDocument(
     chat_id: SendDocumentOptions['chat_id'],
@@ -485,6 +499,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to send video files, Telegram clients support MPEG4 videos (other formats may be sent as [Document](https://core.telegram.org/bots/api/#document)). On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned. Bots can currently send video files of up to 50 MB in size, this limit may be changed in the future.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param video Video to send. Pass a file\_id as String to send a video that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a video from the Internet, or upload a new video using multipart/form-data. [More information on Sending Files »](https://core.telegram.org/bots/api/#sending-files)
+   * @see https://core.telegram.org/bots/api/#sendvideo
    */
   sendVideo(
     chat_id: SendVideoOptions['chat_id'],
@@ -502,6 +517,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to send animation files (GIF or H.264/MPEG-4 AVC video without sound). On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned. Bots can currently send animation files of up to 50 MB in size, this limit may be changed in the future.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param animation Animation to send. Pass a file\_id as String to send an animation that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get an animation from the Internet, or upload a new animation using multipart/form-data. [More information on Sending Files »](https://core.telegram.org/bots/api/#sending-files)
+   * @see https://core.telegram.org/bots/api/#sendanimation
    */
   sendAnimation(
     chat_id: SendAnimationOptions['chat_id'],
@@ -521,6 +537,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to send audio files, if you want Telegram clients to display the file as a playable voice message. For this to work, your audio must be in an .OGG file encoded with OPUS, or in .MP3 format, or in .M4A format (other formats may be sent as [Audio](https://core.telegram.org/bots/api/#audio) or [Document](https://core.telegram.org/bots/api/#document)). On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned. Bots can currently send voice messages of up to 50 MB in size, this limit may be changed in the future.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param voice Audio file to send. Pass a file\_id as String to send a file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. [More information on Sending Files »](https://core.telegram.org/bots/api/#sending-files)
+   * @see https://core.telegram.org/bots/api/#sendvoice
    */
   sendVoice(
     chat_id: SendVoiceOptions['chat_id'],
@@ -538,6 +555,7 @@ export abstract class GeneratedBotMethods {
    * As of [v.4.0](https://telegram.org/blog/video-messages-and-telescope), Telegram clients support rounded square MPEG4 videos of up to 1 minute long. Use this method to send video messages. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param video_note Video note to send. Pass a file\_id as String to send a video note that exists on the Telegram servers (recommended) or upload a new video using multipart/form-data. [More information on Sending Files »](https://core.telegram.org/bots/api/#sending-files). Sending video notes by a URL is currently unsupported
+   * @see https://core.telegram.org/bots/api/#sendvideonote
    */
   sendVideoNote(
     chat_id: SendVideoNoteOptions['chat_id'],
@@ -558,6 +576,7 @@ export abstract class GeneratedBotMethods {
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`). If the chat is a channel, all Telegram Star proceeds from this media will be credited to the chat's balance. Otherwise, they will be credited to the bot's balance.
    * @param star_count The number of Telegram Stars that must be paid to buy access to the media; 1-2500
    * @param media A JSON-serialized array describing the media to be sent; up to 10 items
+   * @see https://core.telegram.org/bots/api/#sendpaidmedia
    */
   sendPaidMedia(
     chat_id: SendPaidMediaOptions['chat_id'],
@@ -578,6 +597,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to send a group of photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of [Messages](https://core.telegram.org/bots/api/#message) that were sent is returned.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param media A JSON-serialized array describing messages to be sent, must include 2-10 items
+   * @see https://core.telegram.org/bots/api/#sendmediagroup
    */
   sendMediaGroup(
     chat_id: SendMediaGroupOptions['chat_id'],
@@ -598,6 +618,7 @@ export abstract class GeneratedBotMethods {
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param latitude Latitude of the location
    * @param longitude Longitude of the location
+   * @see https://core.telegram.org/bots/api/#sendlocation
    */
   sendLocation(
     chat_id: SendLocationOptions['chat_id'],
@@ -621,6 +642,7 @@ export abstract class GeneratedBotMethods {
    * @param longitude Longitude of the venue
    * @param title Name of the venue
    * @param address Address of the venue
+   * @see https://core.telegram.org/bots/api/#sendvenue
    */
   sendVenue(
     chat_id: SendVenueOptions['chat_id'],
@@ -647,6 +669,7 @@ export abstract class GeneratedBotMethods {
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param phone_number Contact's phone number
    * @param first_name Contact's first name
+   * @see https://core.telegram.org/bots/api/#sendcontact
    */
   sendContact(
     chat_id: SendContactOptions['chat_id'],
@@ -668,6 +691,7 @@ export abstract class GeneratedBotMethods {
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param question Poll question, 1-300 characters
    * @param options A JSON-serialized list of 2-10 answer options
+   * @see https://core.telegram.org/bots/api/#sendpoll
    */
   sendPoll(
     chat_id: SendPollOptions['chat_id'],
@@ -687,6 +711,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to send an animated emoji that will display a random value. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @see https://core.telegram.org/bots/api/#senddice
    */
   sendDice(
     chat_id: SendDiceOptions['chat_id'],
@@ -704,6 +729,7 @@ export abstract class GeneratedBotMethods {
    * We only recommend using this method when a response from the bot will take a **noticeable** amount of time to arrive.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param action Type of action to broadcast. Choose one, depending on what the user is about to receive: *typing* for [text messages](https://core.telegram.org/bots/api/#sendmessage), *upload\_photo* for [photos](https://core.telegram.org/bots/api/#sendphoto), *record\_video* or *upload\_video* for [videos](https://core.telegram.org/bots/api/#sendvideo), *record\_voice* or *upload\_voice* for [voice notes](https://core.telegram.org/bots/api/#sendvoice), *upload\_document* for [general files](https://core.telegram.org/bots/api/#senddocument), *choose\_sticker* for [stickers](https://core.telegram.org/bots/api/#sendsticker), *find\_location* for [location data](https://core.telegram.org/bots/api/#sendlocation), *record\_video\_note* or *upload\_video\_note* for [video notes](https://core.telegram.org/bots/api/#sendvideonote).
+   * @see https://core.telegram.org/bots/api/#sendchataction
    */
   sendChatAction(
     chat_id: SendChatActionOptions['chat_id'],
@@ -723,6 +749,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to change the chosen reactions on a message. Service messages of some types can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. Bots can't use paid reactions. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param message_id Identifier of the target message. If the message belongs to a media group, the reaction is set to the first non-deleted message in the group instead.
+   * @see https://core.telegram.org/bots/api/#setmessagereaction
    */
   setMessageReaction(
     chat_id: SetMessageReactionOptions['chat_id'],
@@ -741,6 +768,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to get a list of profile pictures for a user. Returns a [UserProfilePhotos](https://core.telegram.org/bots/api/#userprofilephotos) object.
    * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api/#getuserprofilephotos
    */
   getUserProfilePhotos(
     user_id: GetUserProfilePhotosOptions['user_id'],
@@ -756,6 +784,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Changes the emoji status for a given user that previously allowed the bot to manage their emoji status via the Mini App method [requestEmojiStatusAccess](https://core.telegram.org/bots/webapps#initializing-mini-apps). Returns *True* on success.
    * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api/#setuseremojistatus
    */
   setUserEmojiStatus(
     user_id: SetUserEmojiStatusOptions['user_id'],
@@ -772,6 +801,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to ban a user in a group, a supergroup or a channel. In the case of supergroups and channels, the user will not be able to return to the chat on their own using invite links, etc., unless [unbanned](https://core.telegram.org/bots/api/#unbanchatmember) first. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns *True* on success.
    * @param chat_id Unique identifier for the target group or username of the target supergroup or channel (in the format `@channelusername`)
    * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api/#banchatmember
    */
   banChatMember(
     chat_id: BanChatMemberOptions['chat_id'],
@@ -791,6 +821,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to unban a previously banned user in a supergroup or channel. The user will **not** return to the group or channel automatically, but will be able to join via link, etc. The bot must be an administrator for this to work. By default, this method guarantees that after the call the user is not a member of the chat, but will be able to join it. So if the user is a member of the chat they will also be **removed** from the chat. If you don't want this, use the parameter *only\_if\_banned*. Returns *True* on success.
    * @param chat_id Unique identifier for the target group or username of the target supergroup or channel (in the format `@channelusername`)
    * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api/#unbanchatmember
    */
   unbanChatMember(
     chat_id: UnbanChatMemberOptions['chat_id'],
@@ -811,6 +842,7 @@ export abstract class GeneratedBotMethods {
    * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
    * @param user_id Unique identifier of the target user
    * @param permissions A JSON-serialized object for new user permissions
+   * @see https://core.telegram.org/bots/api/#restrictchatmember
    */
   restrictChatMember(
     chat_id: RestrictChatMemberOptions['chat_id'],
@@ -831,6 +863,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to promote or demote a user in a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Pass *False* for all boolean parameters to demote a user. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api/#promotechatmember
    */
   promoteChatMember(
     chat_id: PromoteChatMemberOptions['chat_id'],
@@ -851,6 +884,7 @@ export abstract class GeneratedBotMethods {
    * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
    * @param user_id Unique identifier of the target user
    * @param custom_title New custom title for the administrator; 0-16 characters, emoji are not allowed
+   * @see https://core.telegram.org/bots/api/#setchatadministratorcustomtitle
    */
   setChatAdministratorCustomTitle(
     chat_id: SetChatAdministratorCustomTitleOptions['chat_id'],
@@ -874,6 +908,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to ban a channel chat in a supergroup or a channel. Until the chat is [unbanned](https://core.telegram.org/bots/api/#unbanchatsenderchat), the owner of the banned chat won't be able to send messages on behalf of **any of their channels**. The bot must be an administrator in the supergroup or channel for this to work and must have the appropriate administrator rights. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param sender_chat_id Unique identifier of the target sender chat
+   * @see https://core.telegram.org/bots/api/#banchatsenderchat
    */
   banChatSenderChat(
     chat_id: BanChatSenderChatOptions['chat_id'],
@@ -891,6 +926,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to unban a previously banned channel chat in a supergroup or channel. The bot must be an administrator for this to work and must have the appropriate administrator rights. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param sender_chat_id Unique identifier of the target sender chat
+   * @see https://core.telegram.org/bots/api/#unbanchatsenderchat
    */
   unbanChatSenderChat(
     chat_id: UnbanChatSenderChatOptions['chat_id'],
@@ -908,6 +944,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to set default chat permissions for all members. The bot must be an administrator in the group or a supergroup for this to work and must have the *can\_restrict\_members* administrator rights. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
    * @param permissions A JSON-serialized object for new default chat permissions
+   * @see https://core.telegram.org/bots/api/#setchatpermissions
    */
   setChatPermissions(
     chat_id: SetChatPermissionsOptions['chat_id'],
@@ -926,6 +963,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to generate a new primary invite link for a chat; any previously generated primary link is revoked. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the new invite link as *String* on success.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @see https://core.telegram.org/bots/api/#exportchatinvitelink
    */
   exportChatInviteLink(
     chat_id: ExportChatInviteLinkOptions['chat_id'],
@@ -941,6 +979,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to create an additional invite link for a chat. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. The link can be revoked using the method [revokeChatInviteLink](https://core.telegram.org/bots/api/#revokechatinvitelink). Returns the new invite link as [ChatInviteLink](https://core.telegram.org/bots/api/#chatinvitelink) object.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @see https://core.telegram.org/bots/api/#createchatinvitelink
    */
   createChatInviteLink(
     chat_id: CreateChatInviteLinkOptions['chat_id'],
@@ -957,6 +996,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to edit a non-primary invite link created by the bot. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the edited invite link as a [ChatInviteLink](https://core.telegram.org/bots/api/#chatinvitelink) object.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param invite_link The invite link to edit
+   * @see https://core.telegram.org/bots/api/#editchatinvitelink
    */
   editChatInviteLink(
     chat_id: EditChatInviteLinkOptions['chat_id'],
@@ -977,6 +1017,7 @@ export abstract class GeneratedBotMethods {
    * @param chat_id Unique identifier for the target channel chat or username of the target channel (in the format `@channelusername`)
    * @param subscription_period The number of seconds the subscription will be active for before the next payment. Currently, it must always be 2592000 (30 days).
    * @param subscription_price The amount of Telegram Stars a user must pay initially and after each subsequent subscription period to be a member of the chat; 1-2500
+   * @see https://core.telegram.org/bots/api/#createchatsubscriptioninvitelink
    */
   createChatSubscriptionInviteLink(
     chat_id: CreateChatSubscriptionInviteLinkOptions['chat_id'],
@@ -1005,6 +1046,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to edit a subscription invite link created by the bot. The bot must have the *can\_invite\_users* administrator rights. Returns the edited invite link as a [ChatInviteLink](https://core.telegram.org/bots/api/#chatinvitelink) object.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param invite_link The invite link to edit
+   * @see https://core.telegram.org/bots/api/#editchatsubscriptioninvitelink
    */
   editChatSubscriptionInviteLink(
     chat_id: EditChatSubscriptionInviteLinkOptions['chat_id'],
@@ -1024,6 +1066,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to revoke an invite link created by the bot. If the primary link is revoked, a new link is automatically generated. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the revoked invite link as [ChatInviteLink](https://core.telegram.org/bots/api/#chatinvitelink) object.
    * @param chat_id Unique identifier of the target chat or username of the target channel (in the format `@channelusername`)
    * @param invite_link The invite link to revoke
+   * @see https://core.telegram.org/bots/api/#revokechatinvitelink
    */
   revokeChatInviteLink(
     chat_id: RevokeChatInviteLinkOptions['chat_id'],
@@ -1041,6 +1084,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to approve a chat join request. The bot must be an administrator in the chat for this to work and must have the *can\_invite\_users* administrator right. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api/#approvechatjoinrequest
    */
   approveChatJoinRequest(
     chat_id: ApproveChatJoinRequestOptions['chat_id'],
@@ -1058,6 +1102,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to decline a chat join request. The bot must be an administrator in the chat for this to work and must have the *can\_invite\_users* administrator right. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api/#declinechatjoinrequest
    */
   declineChatJoinRequest(
     chat_id: DeclineChatJoinRequestOptions['chat_id'],
@@ -1075,6 +1120,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to set a new profile photo for the chat. Photos can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param photo New chat photo, uploaded using multipart/form-data
+   * @see https://core.telegram.org/bots/api/#setchatphoto
    */
   setChatPhoto(
     chat_id: SetChatPhotoOptions['chat_id'],
@@ -1091,6 +1137,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to delete a chat photo. Photos can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @see https://core.telegram.org/bots/api/#deletechatphoto
    */
   deleteChatPhoto(
     chat_id: DeleteChatPhotoOptions['chat_id'],
@@ -1107,6 +1154,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to change the title of a chat. Titles can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param title New chat title, 1-128 characters
+   * @see https://core.telegram.org/bots/api/#setchattitle
    */
   setChatTitle(
     chat_id: SetChatTitleOptions['chat_id'],
@@ -1123,6 +1171,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to change the description of a group, a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @see https://core.telegram.org/bots/api/#setchatdescription
    */
   setChatDescription(
     chat_id: SetChatDescriptionOptions['chat_id'],
@@ -1139,6 +1188,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to add a message to the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can\_pin\_messages' administrator right in a supergroup or 'can\_edit\_messages' administrator right in a channel. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param message_id Identifier of a message to pin
+   * @see https://core.telegram.org/bots/api/#pinchatmessage
    */
   pinChatMessage(
     chat_id: PinChatMessageOptions['chat_id'],
@@ -1157,6 +1207,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to remove a message from the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can\_pin\_messages' administrator right in a supergroup or 'can\_edit\_messages' administrator right in a channel. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @see https://core.telegram.org/bots/api/#unpinchatmessage
    */
   unpinChatMessage(
     chat_id: UnpinChatMessageOptions['chat_id'],
@@ -1172,6 +1223,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to clear the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can\_pin\_messages' administrator right in a supergroup or 'can\_edit\_messages' administrator right in a channel. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @see https://core.telegram.org/bots/api/#unpinallchatmessages
    */
   unpinAllChatMessages(
     chat_id: UnpinAllChatMessagesOptions['chat_id'],
@@ -1187,6 +1239,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method for your bot to leave a group, supergroup or channel. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup or channel (in the format `@channelusername`)
+   * @see https://core.telegram.org/bots/api/#leavechat
    */
   leaveChat(chat_id: LeaveChatOptions['chat_id'], callOptions?: CallOptions) {
     const { token, signal, ...rest } = callOptions ?? {};
@@ -1196,6 +1249,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to get up-to-date information about the chat. Returns a [ChatFullInfo](https://core.telegram.org/bots/api/#chatfullinfo) object on success.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup or channel (in the format `@channelusername`)
+   * @see https://core.telegram.org/bots/api/#getchat
    */
   getChat(chat_id: GetChatOptions['chat_id'], callOptions?: CallOptions) {
     const { token, signal, ...rest } = callOptions ?? {};
@@ -1205,6 +1259,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to get a list of administrators in a chat, which aren't bots. Returns an Array of [ChatMember](https://core.telegram.org/bots/api/#chatmember) objects.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup or channel (in the format `@channelusername`)
+   * @see https://core.telegram.org/bots/api/#getchatadministrators
    */
   getChatAdministrators(
     chat_id: GetChatAdministratorsOptions['chat_id'],
@@ -1220,6 +1275,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to get the number of members in a chat. Returns *Int* on success.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup or channel (in the format `@channelusername`)
+   * @see https://core.telegram.org/bots/api/#getchatmembercount
    */
   getChatMemberCount(
     chat_id: GetChatMemberCountOptions['chat_id'],
@@ -1236,6 +1292,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to get information about a member of a chat. The method is only guaranteed to work for other users if the bot is an administrator in the chat. Returns a [ChatMember](https://core.telegram.org/bots/api/#chatmember) object on success.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup or channel (in the format `@channelusername`)
    * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api/#getchatmember
    */
   getChatMember(
     chat_id: GetChatMemberOptions['chat_id'],
@@ -1253,6 +1310,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to set a new group sticker set for a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Use the field *can\_set\_sticker\_set* optionally returned in [getChat](https://core.telegram.org/bots/api/#getchat) requests to check if the bot can use this method. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
    * @param sticker_set_name Name of the sticker set to be set as the group sticker set
+   * @see https://core.telegram.org/bots/api/#setchatstickerset
    */
   setChatStickerSet(
     chat_id: SetChatStickerSetOptions['chat_id'],
@@ -1269,6 +1327,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to delete a group sticker set from a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Use the field *can\_set\_sticker\_set* optionally returned in [getChat](https://core.telegram.org/bots/api/#getchat) requests to check if the bot can use this method. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
+   * @see https://core.telegram.org/bots/api/#deletechatstickerset
    */
   deleteChatStickerSet(
     chat_id: DeleteChatStickerSetOptions['chat_id'],
@@ -1283,6 +1342,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to get custom emoji stickers, which can be used as a forum topic icon by any user. Requires no parameters. Returns an Array of [Sticker](https://core.telegram.org/bots/api/#sticker) objects.
+   * @see https://core.telegram.org/bots/api/#getforumtopiciconstickers
    */
   getForumTopicIconStickers(callOptions?: CallOptions) {
     return this.call(new GetForumTopicIconStickers(), callOptions);
@@ -1292,6 +1352,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to create a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the *can\_manage\_topics* administrator rights. Returns information about the created topic as a [ForumTopic](https://core.telegram.org/bots/api/#forumtopic) object.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
    * @param name Topic name, 1-128 characters
+   * @see https://core.telegram.org/bots/api/#createforumtopic
    */
   createForumTopic(
     chat_id: CreateForumTopicOptions['chat_id'],
@@ -1311,6 +1372,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to edit name and icon of a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the *can\_manage\_topics* administrator rights, unless it is the creator of the topic. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
    * @param message_thread_id Unique identifier for the target message thread of the forum topic
+   * @see https://core.telegram.org/bots/api/#editforumtopic
    */
   editForumTopic(
     chat_id: EditForumTopicOptions['chat_id'],
@@ -1330,6 +1392,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to close an open topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the *can\_manage\_topics* administrator rights, unless it is the creator of the topic. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
    * @param message_thread_id Unique identifier for the target message thread of the forum topic
+   * @see https://core.telegram.org/bots/api/#closeforumtopic
    */
   closeForumTopic(
     chat_id: CloseForumTopicOptions['chat_id'],
@@ -1347,6 +1410,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to reopen a closed topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the *can\_manage\_topics* administrator rights, unless it is the creator of the topic. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
    * @param message_thread_id Unique identifier for the target message thread of the forum topic
+   * @see https://core.telegram.org/bots/api/#reopenforumtopic
    */
   reopenForumTopic(
     chat_id: ReopenForumTopicOptions['chat_id'],
@@ -1364,6 +1428,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to delete a forum topic along with all its messages in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the *can\_delete\_messages* administrator rights. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
    * @param message_thread_id Unique identifier for the target message thread of the forum topic
+   * @see https://core.telegram.org/bots/api/#deleteforumtopic
    */
   deleteForumTopic(
     chat_id: DeleteForumTopicOptions['chat_id'],
@@ -1381,6 +1446,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to clear the list of pinned messages in a forum topic. The bot must be an administrator in the chat for this to work and must have the *can\_pin\_messages* administrator right in the supergroup. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
    * @param message_thread_id Unique identifier for the target message thread of the forum topic
+   * @see https://core.telegram.org/bots/api/#unpinallforumtopicmessages
    */
   unpinAllForumTopicMessages(
     chat_id: UnpinAllForumTopicMessagesOptions['chat_id'],
@@ -1398,6 +1464,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to edit the name of the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the *can\_manage\_topics* administrator rights. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
    * @param name New topic name, 1-128 characters
+   * @see https://core.telegram.org/bots/api/#editgeneralforumtopic
    */
   editGeneralForumTopic(
     chat_id: EditGeneralForumTopicOptions['chat_id'],
@@ -1414,6 +1481,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to close an open 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the *can\_manage\_topics* administrator rights. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
+   * @see https://core.telegram.org/bots/api/#closegeneralforumtopic
    */
   closeGeneralForumTopic(
     chat_id: CloseGeneralForumTopicOptions['chat_id'],
@@ -1429,6 +1497,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to reopen a closed 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the *can\_manage\_topics* administrator rights. The topic will be automatically unhidden if it was hidden. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
+   * @see https://core.telegram.org/bots/api/#reopengeneralforumtopic
    */
   reopenGeneralForumTopic(
     chat_id: ReopenGeneralForumTopicOptions['chat_id'],
@@ -1444,6 +1513,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to hide the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the *can\_manage\_topics* administrator rights. The topic will be automatically closed if it was open. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
+   * @see https://core.telegram.org/bots/api/#hidegeneralforumtopic
    */
   hideGeneralForumTopic(
     chat_id: HideGeneralForumTopicOptions['chat_id'],
@@ -1459,6 +1529,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to unhide the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the *can\_manage\_topics* administrator rights. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
+   * @see https://core.telegram.org/bots/api/#unhidegeneralforumtopic
    */
   unhideGeneralForumTopic(
     chat_id: UnhideGeneralForumTopicOptions['chat_id'],
@@ -1474,6 +1545,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to clear the list of pinned messages in a General forum topic. The bot must be an administrator in the chat for this to work and must have the *can\_pin\_messages* administrator right in the supergroup. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
+   * @see https://core.telegram.org/bots/api/#unpinallgeneralforumtopicmessages
    */
   unpinAllGeneralForumTopicMessages(
     chat_id: UnpinAllGeneralForumTopicMessagesOptions['chat_id'],
@@ -1491,6 +1563,7 @@ export abstract class GeneratedBotMethods {
    *
    * Alternatively, the user can be redirected to the specified Game URL. For this option to work, you must first create a game for your bot via [@BotFather](https://t.me/botfather) and accept the terms. Otherwise, you may use links like `t.me/your_bot?start=XXXX` that open your bot with a parameter.
    * @param callback_query_id Unique identifier for the query to be answered
+   * @see https://core.telegram.org/bots/api/#answercallbackquery
    */
   answerCallbackQuery(
     callback_query_id: AnswerCallbackQueryOptions['callback_query_id'],
@@ -1509,6 +1582,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to get the list of boosts added to a chat by a user. Requires administrator rights in the chat. Returns a [UserChatBoosts](https://core.telegram.org/bots/api/#userchatboosts) object.
    * @param chat_id Unique identifier for the chat or username of the channel (in the format `@channelusername`)
    * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api/#getuserchatboosts
    */
   getUserChatBoosts(
     chat_id: GetUserChatBoostsOptions['chat_id'],
@@ -1525,6 +1599,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to get information about the connection of the bot with a business account. Returns a [BusinessConnection](https://core.telegram.org/bots/api/#businessconnection) object on success.
    * @param business_connection_id Unique identifier of the business connection
+   * @see https://core.telegram.org/bots/api/#getbusinessconnection
    */
   getBusinessConnection(
     business_connection_id: GetBusinessConnectionOptions['business_connection_id'],
@@ -1540,6 +1615,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to change the list of the bot's commands. See [this manual](https://core.telegram.org/bots/features#commands) for more details about bot commands. Returns *True* on success.
    * @param commands A JSON-serialized list of bot commands to be set as the list of the bot's commands. At most 100 commands can be specified.
+   * @see https://core.telegram.org/bots/api/#setmycommands
    */
   setMyCommands(
     commands: SetMyCommandsOptions['commands'],
@@ -1554,6 +1630,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to delete the list of the bot's commands for the given scope and user language. After deletion, [higher level commands](https://core.telegram.org/bots/api/#determining-list-of-commands) will be shown to affected users. Returns *True* on success.
+   * @see https://core.telegram.org/bots/api/#deletemycommands
    */
   deleteMyCommands(callOptions?: MethodOptions<DeleteMyCommandsOptions>) {
     const { token, signal, ...rest } = callOptions ?? {};
@@ -1562,6 +1639,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to get the current list of the bot's commands for the given scope and user language. Returns an Array of [BotCommand](https://core.telegram.org/bots/api/#botcommand) objects. If commands aren't set, an empty list is returned.
+   * @see https://core.telegram.org/bots/api/#getmycommands
    */
   getMyCommands(callOptions?: MethodOptions<GetMyCommandsOptions>) {
     const { token, signal, ...rest } = callOptions ?? {};
@@ -1570,6 +1648,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to change the bot's name. Returns *True* on success.
+   * @see https://core.telegram.org/bots/api/#setmyname
    */
   setMyName(callOptions?: MethodOptions<SetMyNameOptions>) {
     const { token, signal, ...rest } = callOptions ?? {};
@@ -1578,6 +1657,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to get the current bot name for the given user language. Returns [BotName](https://core.telegram.org/bots/api/#botname) on success.
+   * @see https://core.telegram.org/bots/api/#getmyname
    */
   getMyName(callOptions?: MethodOptions<GetMyNameOptions>) {
     const { token, signal, ...rest } = callOptions ?? {};
@@ -1586,6 +1666,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to change the bot's description, which is shown in the chat with the bot if the chat is empty. Returns *True* on success.
+   * @see https://core.telegram.org/bots/api/#setmydescription
    */
   setMyDescription(callOptions?: MethodOptions<SetMyDescriptionOptions>) {
     const { token, signal, ...rest } = callOptions ?? {};
@@ -1594,6 +1675,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to get the current bot description for the given user language. Returns [BotDescription](https://core.telegram.org/bots/api/#botdescription) on success.
+   * @see https://core.telegram.org/bots/api/#getmydescription
    */
   getMyDescription(callOptions?: MethodOptions<GetMyDescriptionOptions>) {
     const { token, signal, ...rest } = callOptions ?? {};
@@ -1602,6 +1684,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to change the bot's short description, which is shown on the bot's profile page and is sent together with the link when users share the bot. Returns *True* on success.
+   * @see https://core.telegram.org/bots/api/#setmyshortdescription
    */
   setMyShortDescription(
     callOptions?: MethodOptions<SetMyShortDescriptionOptions>,
@@ -1612,6 +1695,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to get the current bot short description for the given user language. Returns [BotShortDescription](https://core.telegram.org/bots/api/#botshortdescription) on success.
+   * @see https://core.telegram.org/bots/api/#getmyshortdescription
    */
   getMyShortDescription(
     callOptions?: MethodOptions<GetMyShortDescriptionOptions>,
@@ -1622,6 +1706,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to change the bot's menu button in a private chat, or the default menu button. Returns *True* on success.
+   * @see https://core.telegram.org/bots/api/#setchatmenubutton
    */
   setChatMenuButton(callOptions?: MethodOptions<SetChatMenuButtonOptions>) {
     const { token, signal, ...rest } = callOptions ?? {};
@@ -1630,6 +1715,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to get the current value of the bot's menu button in a private chat, or the default menu button. Returns [MenuButton](https://core.telegram.org/bots/api/#menubutton) on success.
+   * @see https://core.telegram.org/bots/api/#getchatmenubutton
    */
   getChatMenuButton(callOptions?: MethodOptions<GetChatMenuButtonOptions>) {
     const { token, signal, ...rest } = callOptions ?? {};
@@ -1638,6 +1724,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to change the default administrator rights requested by the bot when it's added as an administrator to groups or channels. These rights will be suggested to users, but they are free to modify the list before adding the bot. Returns *True* on success.
+   * @see https://core.telegram.org/bots/api/#setmydefaultadministratorrights
    */
   setMyDefaultAdministratorRights(
     callOptions?: MethodOptions<SetMyDefaultAdministratorRightsOptions>,
@@ -1651,6 +1738,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to get the current default administrator rights of the bot. Returns [ChatAdministratorRights](https://core.telegram.org/bots/api/#chatadministratorrights) on success.
+   * @see https://core.telegram.org/bots/api/#getmydefaultadministratorrights
    */
   getMyDefaultAdministratorRights(
     callOptions?: MethodOptions<GetMyDefaultAdministratorRightsOptions>,
@@ -1664,6 +1752,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to edit captions of messages. On success, if the edited message is not an inline message, the edited [Message](https://core.telegram.org/bots/api/#message) is returned, otherwise *True* is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within **48 hours** from the time they were sent.
+   * @see https://core.telegram.org/bots/api/#editmessagecaption
    */
   editMessageCaption(callOptions?: MethodOptions<EditMessageCaptionOptions>) {
     const { token, signal, ...rest } = callOptions ?? {};
@@ -1673,6 +1762,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to edit animation, audio, document, photo, or video messages, or to add media to text messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file\_id or specify a URL. On success, if the edited message is not an inline message, the edited [Message](https://core.telegram.org/bots/api/#message) is returned, otherwise *True* is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within **48 hours** from the time they were sent.
    * @param media A JSON-serialized object for a new media content of the message
+   * @see https://core.telegram.org/bots/api/#editmessagemedia
    */
   editMessageMedia(
     media: EditMessageMediaOptions['media'],
@@ -1689,6 +1779,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to edit live location messages. A location can be edited until its *live\_period* expires or editing is explicitly disabled by a call to [stopMessageLiveLocation](https://core.telegram.org/bots/api/#stopmessagelivelocation). On success, if the edited message is not an inline message, the edited [Message](https://core.telegram.org/bots/api/#message) is returned, otherwise *True* is returned.
    * @param latitude Latitude of new location
    * @param longitude Longitude of new location
+   * @see https://core.telegram.org/bots/api/#editmessagelivelocation
    */
   editMessageLiveLocation(
     latitude: EditMessageLiveLocationOptions['latitude'],
@@ -1706,6 +1797,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to stop updating a live location message before *live\_period* expires. On success, if the message is not an inline message, the edited [Message](https://core.telegram.org/bots/api/#message) is returned, otherwise *True* is returned.
+   * @see https://core.telegram.org/bots/api/#stopmessagelivelocation
    */
   stopMessageLiveLocation(
     callOptions?: MethodOptions<StopMessageLiveLocationOptions>,
@@ -1718,6 +1810,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to stop a poll which was sent by the bot. On success, the stopped [Poll](https://core.telegram.org/bots/api/#poll) is returned.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param message_id Identifier of the original message with the poll
+   * @see https://core.telegram.org/bots/api/#stoppoll
    */
   stopPoll(
     chat_id: StopPollOptions['chat_id'],
@@ -1746,6 +1839,7 @@ export abstract class GeneratedBotMethods {
    * Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param message_id Identifier of the message to delete
+   * @see https://core.telegram.org/bots/api/#deletemessage
    */
   deleteMessage(
     chat_id: DeleteMessageOptions['chat_id'],
@@ -1763,6 +1857,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to delete multiple messages simultaneously. If some of the specified messages can't be found, they are skipped. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param message_ids A JSON-serialized list of 1-100 identifiers of messages to delete. See [deleteMessage](https://core.telegram.org/bots/api/#deletemessage) for limitations on which messages can be deleted
+   * @see https://core.telegram.org/bots/api/#deletemessages
    */
   deleteMessages(
     chat_id: DeleteMessagesOptions['chat_id'],
@@ -1780,6 +1875,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to send static .WEBP, [animated](https://telegram.org/blog/animated-stickers) .TGS, or [video](https://telegram.org/blog/video-stickers-better-reactions) .WEBM stickers. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param sticker Sticker to send. Pass a file\_id as String to send a file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a .WEBP sticker from the Internet, or upload a new .WEBP, .TGS, or .WEBM sticker using multipart/form-data. [More information on Sending Files »](https://core.telegram.org/bots/api/#sending-files). Video and animated stickers can't be sent via an HTTP URL.
+   * @see https://core.telegram.org/bots/api/#sendsticker
    */
   sendSticker(
     chat_id: SendStickerOptions['chat_id'],
@@ -1798,6 +1894,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to get a sticker set. On success, a [StickerSet](https://core.telegram.org/bots/api/#stickerset) object is returned.
    * @param name Name of the sticker set
+   * @see https://core.telegram.org/bots/api/#getstickerset
    */
   getStickerSet(name: GetStickerSetOptions['name'], callOptions?: CallOptions) {
     const { token, signal, ...rest } = callOptions ?? {};
@@ -1807,6 +1904,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to get information about custom emoji stickers by their identifiers. Returns an Array of [Sticker](https://core.telegram.org/bots/api/#sticker) objects.
    * @param custom_emoji_ids A JSON-serialized list of custom emoji identifiers. At most 200 custom emoji identifiers can be specified.
+   * @see https://core.telegram.org/bots/api/#getcustomemojistickers
    */
   getCustomEmojiStickers(
     custom_emoji_ids: GetCustomEmojiStickersOptions['custom_emoji_ids'],
@@ -1824,6 +1922,7 @@ export abstract class GeneratedBotMethods {
    * @param user_id User identifier of sticker file owner
    * @param sticker A file with the sticker in .WEBP, .PNG, .TGS, or .WEBM format. See [https://core.telegram.org/stickers](https://core.telegram.org/stickers) for technical requirements. [More information on Sending Files »](https://core.telegram.org/bots/api/#sending-files)
    * @param sticker_format Format of the sticker, must be one of “static”, “animated”, “video”
+   * @see https://core.telegram.org/bots/api/#uploadstickerfile
    */
   uploadStickerFile(
     user_id: UploadStickerFileOptions['user_id'],
@@ -1844,6 +1943,7 @@ export abstract class GeneratedBotMethods {
    * @param name Short name of sticker set, to be used in `t.me/addstickers/` URLs (e.g., *animals*). Can contain only English letters, digits and underscores. Must begin with a letter, can't contain consecutive underscores and must end in `"_by_<bot_username>"`. `<bot_username>` is case insensitive. 1-64 characters.
    * @param title Sticker set title, 1-64 characters
    * @param stickers A JSON-serialized list of 1-50 initial stickers to be added to the sticker set
+   * @see https://core.telegram.org/bots/api/#createnewstickerset
    */
   createNewStickerSet(
     user_id: CreateNewStickerSetOptions['user_id'],
@@ -1869,6 +1969,7 @@ export abstract class GeneratedBotMethods {
    * @param user_id User identifier of sticker set owner
    * @param name Sticker set name
    * @param sticker A JSON-serialized object with information about the added sticker. If exactly the same sticker had already been added to the set, then the set isn't changed.
+   * @see https://core.telegram.org/bots/api/#addstickertoset
    */
   addStickerToSet(
     user_id: AddStickerToSetOptions['user_id'],
@@ -1887,6 +1988,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to move a sticker in a set created by the bot to a specific position. Returns *True* on success.
    * @param sticker File identifier of the sticker
    * @param position New sticker position in the set, zero-based
+   * @see https://core.telegram.org/bots/api/#setstickerpositioninset
    */
   setStickerPositionInSet(
     sticker: SetStickerPositionInSetOptions['sticker'],
@@ -1903,6 +2005,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to delete a sticker from a set created by the bot. Returns *True* on success.
    * @param sticker File identifier of the sticker
+   * @see https://core.telegram.org/bots/api/#deletestickerfromset
    */
   deleteStickerFromSet(
     sticker: DeleteStickerFromSetOptions['sticker'],
@@ -1921,6 +2024,7 @@ export abstract class GeneratedBotMethods {
    * @param name Sticker set name
    * @param old_sticker File identifier of the replaced sticker
    * @param sticker A JSON-serialized object with information about the added sticker. If exactly the same sticker had already been added to the set, then the set remains unchanged.
+   * @see https://core.telegram.org/bots/api/#replacestickerinset
    */
   replaceStickerInSet(
     user_id: ReplaceStickerInSetOptions['user_id'],
@@ -1940,6 +2044,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to change the list of emoji assigned to a regular or custom emoji sticker. The sticker must belong to a sticker set created by the bot. Returns *True* on success.
    * @param sticker File identifier of the sticker
    * @param emoji_list A JSON-serialized list of 1-20 emoji associated with the sticker
+   * @see https://core.telegram.org/bots/api/#setstickeremojilist
    */
   setStickerEmojiList(
     sticker: SetStickerEmojiListOptions['sticker'],
@@ -1956,6 +2061,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to change search keywords assigned to a regular or custom emoji sticker. The sticker must belong to a sticker set created by the bot. Returns *True* on success.
    * @param sticker File identifier of the sticker
+   * @see https://core.telegram.org/bots/api/#setstickerkeywords
    */
   setStickerKeywords(
     sticker: SetStickerKeywordsOptions['sticker'],
@@ -1971,6 +2077,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to change the [mask position](https://core.telegram.org/bots/api/#maskposition) of a mask sticker. The sticker must belong to a sticker set that was created by the bot. Returns *True* on success.
    * @param sticker File identifier of the sticker
+   * @see https://core.telegram.org/bots/api/#setstickermaskposition
    */
   setStickerMaskPosition(
     sticker: SetStickerMaskPositionOptions['sticker'],
@@ -1987,6 +2094,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to set the title of a created sticker set. Returns *True* on success.
    * @param name Sticker set name
    * @param title Sticker set title, 1-64 characters
+   * @see https://core.telegram.org/bots/api/#setstickersettitle
    */
   setStickerSetTitle(
     name: SetStickerSetTitleOptions['name'],
@@ -2005,6 +2113,7 @@ export abstract class GeneratedBotMethods {
    * @param name Sticker set name
    * @param user_id User identifier of the sticker set owner
    * @param format Format of the thumbnail, must be one of “static” for a **.WEBP** or **.PNG** image, “animated” for a **.TGS** animation, or “video” for a **.WEBM** video
+   * @see https://core.telegram.org/bots/api/#setstickersetthumbnail
    */
   setStickerSetThumbnail(
     name: SetStickerSetThumbnailOptions['name'],
@@ -2024,6 +2133,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to set the thumbnail of a custom emoji sticker set. Returns *True* on success.
    * @param name Sticker set name
+   * @see https://core.telegram.org/bots/api/#setcustomemojistickersetthumbnail
    */
   setCustomEmojiStickerSetThumbnail(
     name: SetCustomEmojiStickerSetThumbnailOptions['name'],
@@ -2041,6 +2151,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to delete a sticker set that was created by the bot. Returns *True* on success.
    * @param name Sticker set name
+   * @see https://core.telegram.org/bots/api/#deletestickerset
    */
   deleteStickerSet(
     name: DeleteStickerSetOptions['name'],
@@ -2055,6 +2166,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Returns the list of gifts that can be sent by the bot to users and channel chats. Requires no parameters. Returns a [Gifts](https://core.telegram.org/bots/api/#gifts) object.
+   * @see https://core.telegram.org/bots/api/#getavailablegifts
    */
   getAvailableGifts(callOptions?: CallOptions) {
     return this.call(new GetAvailableGifts(), callOptions);
@@ -2063,6 +2175,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Sends a gift to the given user or channel chat. The gift can't be converted to Telegram Stars by the receiver. Returns *True* on success.
    * @param gift_id Identifier of the gift
+   * @see https://core.telegram.org/bots/api/#sendgift
    */
   sendGift(
     gift_id: SendGiftOptions['gift_id'],
@@ -2075,6 +2188,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Verifies a user [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot. Returns *True* on success.
    * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api/#verifyuser
    */
   verifyUser(
     user_id: VerifyUserOptions['user_id'],
@@ -2087,6 +2201,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Verifies a chat [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @see https://core.telegram.org/bots/api/#verifychat
    */
   verifyChat(
     chat_id: VerifyChatOptions['chat_id'],
@@ -2099,6 +2214,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Removes verification from a user who is currently verified [on behalf of the organization](https://telegram.org/verify#third-party-verification) represented by the bot. Returns *True* on success.
    * @param user_id Unique identifier of the target user
+   * @see https://core.telegram.org/bots/api/#removeuserverification
    */
   removeUserVerification(
     user_id: RemoveUserVerificationOptions['user_id'],
@@ -2114,6 +2230,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Removes verification from a chat that is currently verified [on behalf of the organization](https://telegram.org/verify#third-party-verification) represented by the bot. Returns *True* on success.
    * @param chat_id Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @see https://core.telegram.org/bots/api/#removechatverification
    */
   removeChatVerification(
     chat_id: RemoveChatVerificationOptions['chat_id'],
@@ -2131,6 +2248,7 @@ export abstract class GeneratedBotMethods {
    * No more than **50** results per query are allowed.
    * @param inline_query_id Unique identifier for the answered query
    * @param results A JSON-serialized array of results for the inline query
+   * @see https://core.telegram.org/bots/api/#answerinlinequery
    */
   answerInlineQuery(
     inline_query_id: AnswerInlineQueryOptions['inline_query_id'],
@@ -2150,6 +2268,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to set the result of an interaction with a [Web App](https://core.telegram.org/bots/webapps) and send a corresponding message on behalf of the user to the chat from which the query originated. On success, a [SentWebAppMessage](https://core.telegram.org/bots/api/#sentwebappmessage) object is returned.
    * @param web_app_query_id Unique identifier for the query to be answered
    * @param result A JSON-serialized object describing the message to be sent
+   * @see https://core.telegram.org/bots/api/#answerwebappquery
    */
   answerWebAppQuery(
     web_app_query_id: AnswerWebAppQueryOptions['web_app_query_id'],
@@ -2167,6 +2286,7 @@ export abstract class GeneratedBotMethods {
    * Stores a message that can be sent by a user of a Mini App. Returns a [PreparedInlineMessage](https://core.telegram.org/bots/api/#preparedinlinemessage) object.
    * @param user_id Unique identifier of the target user that can use the prepared message
    * @param result A JSON-serialized object describing the message to be sent
+   * @see https://core.telegram.org/bots/api/#savepreparedinlinemessage
    */
   savePreparedInlineMessage(
     user_id: SavePreparedInlineMessageOptions['user_id'],
@@ -2190,6 +2310,7 @@ export abstract class GeneratedBotMethods {
    * @param payload Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use it for your internal processes.
    * @param currency Three-letter ISO 4217 currency code, see [more on currencies](https://core.telegram.org/bots/payments#supported-currencies). Pass “XTR” for payments in [Telegram Stars](https://t.me/BotNews/90).
    * @param prices Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.). Must contain exactly one item for payments in [Telegram Stars](https://t.me/BotNews/90).
+   * @see https://core.telegram.org/bots/api/#sendinvoice
    */
   sendInvoice(
     chat_id: SendInvoiceOptions['chat_id'],
@@ -2227,6 +2348,7 @@ export abstract class GeneratedBotMethods {
    * @param payload Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use it for your internal processes.
    * @param currency Three-letter ISO 4217 currency code, see [more on currencies](https://core.telegram.org/bots/payments#supported-currencies). Pass “XTR” for payments in [Telegram Stars](https://t.me/BotNews/90).
    * @param prices Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.). Must contain exactly one item for payments in [Telegram Stars](https://t.me/BotNews/90).
+   * @see https://core.telegram.org/bots/api/#createinvoicelink
    */
   createInvoiceLink(
     title: CreateInvoiceLinkOptions['title'],
@@ -2259,6 +2381,7 @@ export abstract class GeneratedBotMethods {
    * If you sent an invoice requesting a shipping address and the parameter *is\_flexible* was specified, the Bot API will send an [Update](https://core.telegram.org/bots/api/#update) with a *shipping\_query* field to the bot. Use this method to reply to shipping queries. On success, *True* is returned.
    * @param shipping_query_id Unique identifier for the query to be answered
    * @param ok Pass *True* if delivery to the specified address is possible and *False* if there are any problems (for example, if delivery to the specified address is not possible)
+   * @see https://core.telegram.org/bots/api/#answershippingquery
    */
   answerShippingQuery(
     shipping_query_id: AnswerShippingQueryOptions['shipping_query_id'],
@@ -2278,6 +2401,7 @@ export abstract class GeneratedBotMethods {
    * Once the user has confirmed their payment and shipping details, the Bot API sends the final confirmation in the form of an [Update](https://core.telegram.org/bots/api/#update) with the field *pre\_checkout\_query*. Use this method to respond to such pre-checkout queries. On success, *True* is returned. **Note:** The Bot API must receive an answer within 10 seconds after the pre-checkout query was sent.
    * @param pre_checkout_query_id Unique identifier for the query to be answered
    * @param ok Specify *True* if everything is alright (goods are available, etc.) and the bot is ready to proceed with the order. Use *False* if there are any problems.
+   * @see https://core.telegram.org/bots/api/#answerprecheckoutquery
    */
   answerPreCheckoutQuery(
     pre_checkout_query_id: AnswerPreCheckoutQueryOptions['pre_checkout_query_id'],
@@ -2295,6 +2419,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Returns the bot's Telegram Star transactions in chronological order. On success, returns a [StarTransactions](https://core.telegram.org/bots/api/#startransactions) object.
+   * @see https://core.telegram.org/bots/api/#getstartransactions
    */
   getStarTransactions(callOptions?: MethodOptions<GetStarTransactionsOptions>) {
     const { token, signal, ...rest } = callOptions ?? {};
@@ -2305,6 +2430,7 @@ export abstract class GeneratedBotMethods {
    * Refunds a successful payment in [Telegram Stars](https://t.me/BotNews/90). Returns *True* on success.
    * @param user_id Identifier of the user whose payment will be refunded
    * @param telegram_payment_charge_id Telegram payment identifier
+   * @see https://core.telegram.org/bots/api/#refundstarpayment
    */
   refundStarPayment(
     user_id: RefundStarPaymentOptions['user_id'],
@@ -2323,6 +2449,7 @@ export abstract class GeneratedBotMethods {
    * @param user_id Identifier of the user whose subscription will be edited
    * @param telegram_payment_charge_id Telegram payment identifier for the subscription
    * @param is_canceled Pass *True* to cancel extension of the user subscription; the subscription must be active up to the end of the current subscription period. Pass *False* to allow the user to re-enable a subscription that was previously canceled by the bot.
+   * @see https://core.telegram.org/bots/api/#edituserstarsubscription
    */
   editUserStarSubscription(
     user_id: EditUserStarSubscriptionOptions['user_id'],
@@ -2348,6 +2475,7 @@ export abstract class GeneratedBotMethods {
    * Use this if the data submitted by the user doesn't satisfy the standards your service requires for any reason. For example, if a birthday date seems invalid, a submitted document is blurry, a scan shows evidence of tampering, etc. Supply some details in the error message to make sure the user knows how to correct the issues.
    * @param user_id User identifier
    * @param errors A JSON-serialized array describing the errors
+   * @see https://core.telegram.org/bots/api/#setpassportdataerrors
    */
   setPassportDataErrors(
     user_id: SetPassportDataErrorsOptions['user_id'],
@@ -2365,6 +2493,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to send a game. On success, the sent [Message](https://core.telegram.org/bots/api/#message) is returned.
    * @param chat_id Unique identifier for the target chat
    * @param game_short_name Short name of the game, serves as the unique identifier for the game. Set up your games via [@BotFather](https://t.me/botfather).
+   * @see https://core.telegram.org/bots/api/#sendgame
    */
   sendGame(
     chat_id: SendGameOptions['chat_id'],
@@ -2384,6 +2513,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to set the score of the specified user in a game message. On success, if the message is not an inline message, the [Message](https://core.telegram.org/bots/api/#message) is returned, otherwise *True* is returned. Returns an error, if the new score is not greater than the user's current score in the chat and *force* is *False*.
    * @param user_id User identifier
    * @param score New score, must be non-negative
+   * @see https://core.telegram.org/bots/api/#setgamescore
    */
   setGameScore(
     user_id: SetGameScoreOptions['user_id'],
@@ -2402,6 +2532,7 @@ export abstract class GeneratedBotMethods {
    *
    * This method will currently return scores for the target user, plus two of their closest neighbors on each side. Will also return the top three users if the user and their neighbors are not among them. Please note that this behavior is subject to change.
    * @param user_id Target user id
+   * @see https://core.telegram.org/bots/api/#getgamehighscores
    */
   getGameHighScores(
     user_id: GetGameHighScoresOptions['user_id'],
