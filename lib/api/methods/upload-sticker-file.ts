@@ -5,7 +5,7 @@ import type { RawFile } from '../../events/raw-update.types';
 export interface UploadStickerFileOptions {
   user_id: number;
   sticker: InputFile;
-  sticker_format: string;
+  sticker_format: 'static' | 'animated' | 'video';
 }
 
 export class UploadStickerFile extends ApiMethod<

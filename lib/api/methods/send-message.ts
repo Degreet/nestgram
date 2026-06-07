@@ -18,7 +18,7 @@ export interface SendMessageOptions {
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   text: string;
-  parse_mode?: string;
+  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
   entities?: RawMessageEntity[];
   link_preview_options?: RawLinkPreviewOptions;
   disable_notification?: boolean;

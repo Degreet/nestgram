@@ -12,7 +12,7 @@
  */
 import { BotApiSpec, SpecField, SpecType } from './spec.types';
 import { classToFileName, methodToClassName } from './names';
-import { overrideFieldType } from './manifest';
+import { enumLiterals, overrideFieldType } from './manifest';
 
 /** A resolved type, independent of how it will be written to TS. */
 export type IrType =
@@ -112,13 +112,41 @@ function typeReferencesInputFile(type: IrType): boolean {
   }
 }
 
+function resolveFieldType(owner: string, field: SpecField): IrType {
+  const override = overrideFieldType(owner, field.name);
+  if (override) {
+    return override;
+  }
+  const literals = enumLiterals(owner, field.name);
+  if (literals) {
+    return { kind: 'literalUnion', literals: [...literals] };
+  }
+  return lowerTypes(field.types);
+}
+
 function lowerField(owner: string, field: SpecField): IrField {
   return {
     name: field.name,
     optional: !field.required,
-    type: overrideFieldType(owner, field.name) ?? lowerTypes(field.types),
+    type: resolveFieldType(owner, field),
     description: field.description,
   };
+}
+
+const DISCRIMINATOR = /\b(?:always|must be)\s+(?:one of\s+)?"?([a-z_0-9]+)"?/;
+
+/**
+ * A subtype member (`subtype_of` set) carries its union tag in the first field,
+ * whose description is uniformly phrased `always "x"` / `must be x`. Recovering
+ * the literal restores discriminated-union narrowing the source spells as a bare
+ * `String`. Non-discriminated unions (e.g. `MaybeInaccessibleMessage`, keyed on
+ * a value not a tag) simply don't match — left as-is.
+ */
+function applyDiscriminator(fields: IrField[], spec: SpecField[]): void {
+  const match = DISCRIMINATOR.exec(spec[0]?.description ?? '');
+  if (match) {
+    fields[0].type = { kind: 'literalUnion', literals: [match[1]] };
+  }
 }
 
 function lowerObject(name: string, object: SpecType): IrObject {
@@ -138,12 +166,11 @@ function lowerObject(name: string, object: SpecType): IrObject {
     };
   }
   if (object.fields && object.fields.length > 0) {
-    return {
-      name,
-      kind: 'interface',
-      description,
-      fields: object.fields.map((field) => lowerField(name, field)),
-    };
+    const fields = object.fields.map((field) => lowerField(name, field));
+    if (object.subtype_of && object.subtype_of.length > 0) {
+      applyDiscriminator(fields, object.fields);
+    }
+    return { name, kind: 'interface', description, fields };
   }
   return { name, kind: 'opaque', description };
 }

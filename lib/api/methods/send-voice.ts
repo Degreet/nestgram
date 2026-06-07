@@ -18,7 +18,7 @@ export interface SendVoiceOptions {
   direct_messages_topic_id?: number;
   voice: InputFile | string;
   caption?: string;
-  parse_mode?: string;
+  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
   caption_entities?: RawMessageEntity[];
   duration?: number;
   disable_notification?: boolean;

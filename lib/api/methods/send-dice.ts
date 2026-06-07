@@ -14,7 +14,7 @@ export interface SendDiceOptions {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  emoji?: string;
+  emoji?: '🎲' | '🎯' | '🏀' | '⚽' | '🎳' | '🎰';
   disable_notification?: boolean;
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;

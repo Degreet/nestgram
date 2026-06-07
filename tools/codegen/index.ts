@@ -132,9 +132,38 @@ function selfTest(): void {
     'getMe is not multipart',
   );
 
-  // NOTE: enum/discriminator literal-union refinements (e.g. sendDice.emoji,
-  // InputMediaPhoto.type) are recovered from description prose in a follow-up
-  // step; this source has no structured enum data. Asserted there, not here.
+  // Enum literal-union recovery (manifest table): sendDice.emoji + parse_mode.
+  const sendDice = ir.methods.find((m) => m.name === 'sendDice');
+  const emoji = sendDice?.args.find((a) => a.name === 'emoji');
+  if (emoji) {
+    assertTs(
+      emoji.type,
+      "'🎲' | '🎯' | '🏀' | '⚽' | '🎳' | '🎰'",
+      'sendDice.emoji enum union',
+    );
+  }
+  const parseMode = sendMessage?.args.find((a) => a.name === 'parse_mode');
+  if (parseMode) {
+    assertTs(
+      parseMode.type,
+      "'HTML' | 'Markdown' | 'MarkdownV2'",
+      'parse_mode enum union (owner-agnostic)',
+    );
+  }
+
+  // Discriminator recovery (description prose): a subtype member's tag literal.
+  const owner = ir.objectsByName.get('ChatMemberOwner');
+  if (owner?.kind === 'interface') {
+    const status = owner.fields.find((f) => f.name === 'status');
+    assert(status !== undefined, 'ChatMemberOwner.status present');
+    if (status) {
+      assertTs(
+        status.type,
+        "'creator'",
+        'ChatMemberOwner.status discriminator',
+      );
+    }
+  }
 
   process.stdout.write(
     `self-test OK — ${ir.objects.length} objects, ${ir.methods.length} methods\n`,

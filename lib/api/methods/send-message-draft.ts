@@ -6,7 +6,7 @@ export interface SendMessageDraftOptions {
   message_thread_id?: number;
   draft_id: number;
   text?: string;
-  parse_mode?: string;
+  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
   entities?: RawMessageEntity[];
 }
 

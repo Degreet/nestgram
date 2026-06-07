@@ -11,7 +11,7 @@ export interface PostStoryOptions {
   content: RawInputStoryContent;
   active_period: number;
   caption?: string;
-  parse_mode?: string;
+  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
   caption_entities?: RawMessageEntity[];
   areas?: RawStoryArea[];
   post_to_chat_page?: boolean;

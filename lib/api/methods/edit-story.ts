@@ -11,7 +11,7 @@ export interface EditStoryOptions {
   story_id: number;
   content: RawInputStoryContent;
   caption?: string;
-  parse_mode?: string;
+  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
   caption_entities?: RawMessageEntity[];
   areas?: RawStoryArea[];
 }

@@ -5,7 +5,7 @@ export interface SetStickerSetThumbnailOptions {
   name: string;
   user_id: number;
   thumbnail?: InputFile | string;
-  format: string;
+  format: 'static' | 'animated' | 'video';
 }
 
 export class SetStickerSetThumbnail extends ApiMethod<

@@ -20,7 +20,7 @@ export interface SendPaidMediaOptions {
   media: RawInputPaidMedia[];
   payload?: string;
   caption?: string;
-  parse_mode?: string;
+  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
   caption_entities?: RawMessageEntity[];
   show_caption_above_media?: boolean;
   disable_notification?: boolean;

@@ -20,7 +20,7 @@ export interface SendPollOptions {
   question_entities?: RawMessageEntity[];
   options: RawInputPollOption[];
   is_anonymous?: boolean;
-  type?: string;
+  type?: 'quiz' | 'regular';
   allows_multiple_answers?: boolean;
   allows_revoting?: boolean;
   shuffle_options?: boolean;

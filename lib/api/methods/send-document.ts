@@ -19,7 +19,7 @@ export interface SendDocumentOptions {
   document: InputFile | string;
   thumbnail?: InputFile | string;
   caption?: string;
-  parse_mode?: string;
+  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
   caption_entities?: RawMessageEntity[];
   disable_content_type_detection?: boolean;
   disable_notification?: boolean;

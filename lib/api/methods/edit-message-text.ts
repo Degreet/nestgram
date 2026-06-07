@@ -13,7 +13,7 @@ export interface EditMessageTextOptions {
   message_id?: number;
   inline_message_id?: string;
   text: string;
-  parse_mode?: string;
+  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
   entities?: RawMessageEntity[];
   link_preview_options?: RawLinkPreviewOptions;
   reply_markup?: RawInlineKeyboardMarkup | { toJSON(): unknown };

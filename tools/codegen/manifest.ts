@@ -127,6 +127,46 @@ export function overrideFieldType(
   return undefined;
 }
 
+// --- Enum literal-union recovery ---------------------------------------------
+
+/**
+ * The PaulSonOfLars source carries no structured enumerations — a field's
+ * allowed values live only in `description` prose, in too many phrasings to
+ * parse safely. So the stable, well-known string enums are restored from this
+ * explicit table instead (the discriminator literals of subtype members ARE
+ * recovered from prose in `ir.ts`, since their phrasing is uniform).
+ *
+ * This table is intentionally NON-exhaustive: a field absent here simply keeps
+ * its base `string` type — a safe degradation, never a wrong type. Only list
+ * enums Telegram is unlikely to extend, since a closed union would otherwise
+ * REJECT a newly-added valid value. Keyed by `<methodName|OwnerType>.<field>`,
+ * or `*.<field>` for an owner-agnostic field (e.g. `parse_mode` everywhere).
+ */
+const CHAT_TYPES = ['private', 'group', 'supergroup', 'channel'];
+const STICKER_FORMATS = ['static', 'animated', 'video'];
+const THUMB_MIME_TYPES = ['image/jpeg', 'image/gif', 'video/mp4'];
+
+const ENUM_LITERALS: Readonly<Record<string, readonly string[]>> = {
+  '*.parse_mode': ['HTML', 'Markdown', 'MarkdownV2'],
+  'sendDice.emoji': ['🎲', '🎯', '🏀', '⚽', '🎳', '🎰'],
+  'sendPoll.type': ['quiz', 'regular'],
+  'Chat.type': CHAT_TYPES,
+  'ChatFullInfo.type': CHAT_TYPES,
+  'InputSticker.format': STICKER_FORMATS,
+  'setStickerSetThumbnail.format': STICKER_FORMATS,
+  'uploadStickerFile.sticker_format': STICKER_FORMATS,
+  'InlineQueryResultGif.thumbnail_mime_type': THUMB_MIME_TYPES,
+  'InlineQueryResultMpeg4Gif.thumbnail_mime_type': THUMB_MIME_TYPES,
+};
+
+/** The literal values for an enum field, or `undefined` to keep its base type. */
+export function enumLiterals(
+  owner: string,
+  field: string,
+): readonly string[] | undefined {
+  return ENUM_LITERALS[`${owner}.${field}`] ?? ENUM_LITERALS[`*.${field}`];
+}
+
 // --- Multipart media handling ------------------------------------------------
 
 /** Multipart-transport shape for a method's file field(s). */
