@@ -9,6 +9,10 @@ export interface GetMyCommandsOptions {
   language_code?: string;
 }
 
+/**
+ * Use this method to get the current list of the bot's commands for the given scope and user language. Returns an Array of BotCommand objects. If commands aren't set, an empty list is returned.
+ * @see https://core.telegram.org/bots/api#getmycommands
+ */
 export class GetMyCommands extends ApiMethod<
   GetMyCommandsOptions,
   RawBotCommand[]

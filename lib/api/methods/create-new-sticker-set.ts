@@ -11,6 +11,10 @@ export interface CreateNewStickerSetOptions {
   needs_repainting?: boolean;
 }
 
+/**
+ * Use this method to create a new sticker set owned by a user. The bot will be able to edit the sticker set thus created. Returns True on success.
+ * @see https://core.telegram.org/bots/api#createnewstickerset
+ */
 export class CreateNewStickerSet extends ApiMethod<
   CreateNewStickerSetOptions,
   true

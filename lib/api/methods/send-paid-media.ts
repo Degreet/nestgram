@@ -37,6 +37,10 @@ export interface SendPaidMediaOptions {
     | { toJSON(): unknown };
 }
 
+/**
+ * Use this method to send paid media. On success, the sent Message is returned.
+ * @see https://core.telegram.org/bots/api#sendpaidmedia
+ */
 export class SendPaidMedia extends ApiMethod<SendPaidMediaOptions, RawMessage> {
   readonly method = 'sendPaidMedia';
 

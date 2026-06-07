@@ -6,6 +6,10 @@ export interface SetManagedBotAccessSettingsOptions {
   added_user_ids?: number[];
 }
 
+/**
+ * Use this method to change the access settings of a managed bot. Returns True on success.
+ * @see https://core.telegram.org/bots/api#setmanagedbotaccesssettings
+ */
 export class SetManagedBotAccessSettings extends ApiMethod<
   SetManagedBotAccessSettingsOptions,
   true

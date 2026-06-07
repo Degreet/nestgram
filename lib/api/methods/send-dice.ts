@@ -29,6 +29,10 @@ export interface SendDiceOptions {
     | { toJSON(): unknown };
 }
 
+/**
+ * Use this method to send an animated emoji that will display a random value. On success, the sent Message is returned.
+ * @see https://core.telegram.org/bots/api#senddice
+ */
 export class SendDice extends ApiMethod<SendDiceOptions, RawMessage> {
   readonly method = 'sendDice';
 

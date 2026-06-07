@@ -32,6 +32,10 @@ export interface SendContactOptions {
     | { toJSON(): unknown };
 }
 
+/**
+ * Use this method to send phone contacts. On success, the sent Message is returned.
+ * @see https://core.telegram.org/bots/api#sendcontact
+ */
 export class SendContact extends ApiMethod<SendContactOptions, RawMessage> {
   readonly method = 'sendContact';
 

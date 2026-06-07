@@ -11,6 +11,10 @@ export interface ForwardMessagesOptions {
   protect_content?: boolean;
 }
 
+/**
+ * Use this method to forward multiple messages of any kind. If some of the specified messages can't be found or forwarded, they are skipped. Service messages and messages with protected content can't be forwarded. Album grouping is kept for forwarded messages. On success, an array of MessageId of the sent messages is returned.
+ * @see https://core.telegram.org/bots/api#forwardmessages
+ */
 export class ForwardMessages extends ApiMethod<
   ForwardMessagesOptions,
   RawMessageId[]

@@ -54,6 +54,10 @@ export interface SendPollOptions {
     | { toJSON(): unknown };
 }
 
+/**
+ * Use this method to send a native poll. On success, the sent Message is returned.
+ * @see https://core.telegram.org/bots/api#sendpoll
+ */
 export class SendPoll extends ApiMethod<SendPollOptions, RawMessage> {
   readonly method = 'sendPoll';
 

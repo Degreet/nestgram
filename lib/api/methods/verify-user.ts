@@ -5,6 +5,10 @@ export interface VerifyUserOptions {
   custom_description?: string;
 }
 
+/**
+ * Verifies a user on behalf of the organization which is represented by the bot. Returns True on success.
+ * @see https://core.telegram.org/bots/api#verifyuser
+ */
 export class VerifyUser extends ApiMethod<VerifyUserOptions, true> {
   readonly method = 'verifyUser';
 

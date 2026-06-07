@@ -7,6 +7,10 @@ export interface UpgradeGiftOptions {
   star_count?: number;
 }
 
+/**
+ * Upgrades a given regular gift to a unique gift. Requires the can_transfer_and_upgrade_gifts business bot right. Additionally requires the can_transfer_stars business bot right if the upgrade is paid. Returns True on success.
+ * @see https://core.telegram.org/bots/api#upgradegift
+ */
 export class UpgradeGift extends ApiMethod<UpgradeGiftOptions, true> {
   readonly method = 'upgradeGift';
 

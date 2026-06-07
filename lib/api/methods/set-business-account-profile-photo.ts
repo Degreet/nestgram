@@ -8,6 +8,10 @@ export interface SetBusinessAccountProfilePhotoOptions {
   is_public?: boolean;
 }
 
+/**
+ * Changes the profile photo of a managed business account. Requires the can_edit_profile_photo business bot right. Returns True on success.
+ * @see https://core.telegram.org/bots/api#setbusinessaccountprofilephoto
+ */
 export class SetBusinessAccountProfilePhoto extends ApiMethod<
   SetBusinessAccountProfilePhotoOptions,
   true

@@ -32,6 +32,10 @@ export interface SendStickerOptions {
     | { toJSON(): unknown };
 }
 
+/**
+ * Use this method to send static .WEBP, animated .TGS, or video .WEBM stickers. On success, the sent Message is returned.
+ * @see https://core.telegram.org/bots/api#sendsticker
+ */
 export class SendSticker extends ApiMethod<SendStickerOptions, RawMessage> {
   readonly method = 'sendSticker';
 

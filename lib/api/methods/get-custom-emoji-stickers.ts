@@ -5,6 +5,10 @@ export interface GetCustomEmojiStickersOptions {
   custom_emoji_ids: string[];
 }
 
+/**
+ * Use this method to get information about custom emoji stickers by their identifiers. Returns an Array of Sticker objects.
+ * @see https://core.telegram.org/bots/api#getcustomemojistickers
+ */
 export class GetCustomEmojiStickers extends ApiMethod<
   GetCustomEmojiStickersOptions,
   RawSticker[]

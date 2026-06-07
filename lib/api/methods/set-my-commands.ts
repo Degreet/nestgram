@@ -10,6 +10,10 @@ export interface SetMyCommandsOptions {
   language_code?: string;
 }
 
+/**
+ * Use this method to change the list of the bot's commands. See this manual for more details about bot commands. Returns True on success.
+ * @see https://core.telegram.org/bots/api#setmycommands
+ */
 export class SetMyCommands extends ApiMethod<SetMyCommandsOptions, true> {
   readonly method = 'setMyCommands';
 

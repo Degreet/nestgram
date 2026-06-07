@@ -11,6 +11,10 @@ export interface StopPollOptions {
   reply_markup?: RawInlineKeyboardMarkup | { toJSON(): unknown };
 }
 
+/**
+ * Use this method to stop a poll which was sent by the bot. On success, the stopped Poll is returned.
+ * @see https://core.telegram.org/bots/api#stoppoll
+ */
 export class StopPoll extends ApiMethod<StopPollOptions, RawPoll> {
   readonly method = 'stopPoll';
 

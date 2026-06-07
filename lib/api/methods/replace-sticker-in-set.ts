@@ -9,6 +9,10 @@ export interface ReplaceStickerInSetOptions {
   sticker: RawInputSticker;
 }
 
+/**
+ * Use this method to replace an existing sticker in a sticker set with a new one. The method is equivalent to calling deleteStickerFromSet, then addStickerToSet, then setStickerPositionInSet. Returns True on success.
+ * @see https://core.telegram.org/bots/api#replacestickerinset
+ */
 export class ReplaceStickerInSet extends ApiMethod<
   ReplaceStickerInSetOptions,
   true

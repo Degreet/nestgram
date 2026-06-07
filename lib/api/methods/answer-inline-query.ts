@@ -13,6 +13,11 @@ export interface AnswerInlineQueryOptions {
   button?: RawInlineQueryResultsButton;
 }
 
+/**
+ * Use this method to send answers to an inline query. On success, True is returned.
+ * No more than 50 results per query are allowed.
+ * @see https://core.telegram.org/bots/api#answerinlinequery
+ */
 export class AnswerInlineQuery extends ApiMethod<
   AnswerInlineQueryOptions,
   true

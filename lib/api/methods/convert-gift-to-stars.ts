@@ -5,6 +5,10 @@ export interface ConvertGiftToStarsOptions {
   owned_gift_id: string;
 }
 
+/**
+ * Converts a given regular gift to Telegram Stars. Requires the can_convert_gifts_to_stars business bot right. Returns True on success.
+ * @see https://core.telegram.org/bots/api#convertgifttostars
+ */
 export class ConvertGiftToStars extends ApiMethod<
   ConvertGiftToStarsOptions,
   true

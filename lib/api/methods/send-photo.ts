@@ -38,6 +38,10 @@ export interface SendPhotoOptions {
     | { toJSON(): unknown };
 }
 
+/**
+ * Use this method to send photos. On success, the sent Message is returned.
+ * @see https://core.telegram.org/bots/api#sendphoto
+ */
 export class SendPhoto extends ApiMethod<SendPhotoOptions, Message> {
   readonly method = 'sendPhoto';
 

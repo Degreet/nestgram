@@ -35,6 +35,10 @@ export interface SendMessageOptions {
     | { toJSON(): unknown };
 }
 
+/**
+ * Use this method to send text messages. On success, the sent Message is returned.
+ * @see https://core.telegram.org/bots/api#sendmessage
+ */
 export class SendMessage extends ApiMethod<SendMessageOptions, Message> {
   readonly method = 'sendMessage';
 

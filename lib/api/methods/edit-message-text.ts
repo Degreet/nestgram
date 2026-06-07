@@ -19,6 +19,10 @@ export interface EditMessageTextOptions {
   reply_markup?: RawInlineKeyboardMarkup | { toJSON(): unknown };
 }
 
+/**
+ * Use this method to edit text and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
+ * @see https://core.telegram.org/bots/api#editmessagetext
+ */
 export class EditMessageText extends ApiMethod<
   EditMessageTextOptions,
   Message | true

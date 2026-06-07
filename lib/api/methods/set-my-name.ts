@@ -5,6 +5,10 @@ export interface SetMyNameOptions {
   language_code?: string;
 }
 
+/**
+ * Use this method to change the bot's name. Returns True on success.
+ * @see https://core.telegram.org/bots/api#setmyname
+ */
 export class SetMyName extends ApiMethod<SetMyNameOptions, true> {
   readonly method = 'setMyName';
 

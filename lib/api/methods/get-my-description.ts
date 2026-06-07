@@ -5,6 +5,10 @@ export interface GetMyDescriptionOptions {
   language_code?: string;
 }
 
+/**
+ * Use this method to get the current bot description for the given user language. Returns BotDescription on success.
+ * @see https://core.telegram.org/bots/api#getmydescription
+ */
 export class GetMyDescription extends ApiMethod<
   GetMyDescriptionOptions,
   RawBotDescription

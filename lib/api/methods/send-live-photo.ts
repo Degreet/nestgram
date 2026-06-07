@@ -38,6 +38,10 @@ export interface SendLivePhotoOptions {
     | { toJSON(): unknown };
 }
 
+/**
+ * Use this method to send live photos. On success, the sent Message is returned.
+ * @see https://core.telegram.org/bots/api#sendlivephoto
+ */
 export class SendLivePhoto extends ApiMethod<SendLivePhotoOptions, RawMessage> {
   readonly method = 'sendLivePhoto';
 

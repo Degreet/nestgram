@@ -13,6 +13,10 @@ export interface SavePreparedInlineMessageOptions {
   allow_channel_chats?: boolean;
 }
 
+/**
+ * Stores a message that can be sent by a user of a Mini App. Returns a PreparedInlineMessage object.
+ * @see https://core.telegram.org/bots/api#savepreparedinlinemessage
+ */
 export class SavePreparedInlineMessage extends ApiMethod<
   SavePreparedInlineMessageOptions,
   RawPreparedInlineMessage

@@ -10,6 +10,10 @@ export interface EditChatInviteLinkOptions {
   creates_join_request?: boolean;
 }
 
+/**
+ * Use this method to edit a non-primary invite link created by the bot. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the edited invite link as a ChatInviteLink object.
+ * @see https://core.telegram.org/bots/api#editchatinvitelink
+ */
 export class EditChatInviteLink extends ApiMethod<
   EditChatInviteLinkOptions,
   RawChatInviteLink

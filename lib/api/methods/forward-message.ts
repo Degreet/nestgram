@@ -16,6 +16,10 @@ export interface ForwardMessageOptions {
   message_id: number;
 }
 
+/**
+ * Use this method to forward messages of any kind. Service messages and messages with protected content can't be forwarded. On success, the sent Message is returned.
+ * @see https://core.telegram.org/bots/api#forwardmessage
+ */
 export class ForwardMessage extends ApiMethod<ForwardMessageOptions, Message> {
   readonly method = 'forwardMessage';
 

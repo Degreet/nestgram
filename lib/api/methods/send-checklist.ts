@@ -17,6 +17,10 @@ export interface SendChecklistOptions {
   reply_markup?: RawInlineKeyboardMarkup | { toJSON(): unknown };
 }
 
+/**
+ * Use this method to send a checklist on behalf of a connected business account. On success, the sent Message is returned.
+ * @see https://core.telegram.org/bots/api#sendchecklist
+ */
 export class SendChecklist extends ApiMethod<SendChecklistOptions, RawMessage> {
   readonly method = 'sendChecklist';
 

@@ -9,6 +9,10 @@ export interface SetStickerSetThumbnailOptions {
   format: 'static' | 'animated' | 'video';
 }
 
+/**
+ * Use this method to set the thumbnail of a regular or mask sticker set. The format of the thumbnail file must match the format of the stickers in the set. Returns True on success.
+ * @see https://core.telegram.org/bots/api#setstickersetthumbnail
+ */
 export class SetStickerSetThumbnail extends ApiMethod<
   SetStickerSetThumbnailOptions,
   true

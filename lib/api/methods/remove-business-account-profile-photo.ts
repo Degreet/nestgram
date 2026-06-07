@@ -5,6 +5,10 @@ export interface RemoveBusinessAccountProfilePhotoOptions {
   is_public?: boolean;
 }
 
+/**
+ * Removes the current profile photo of a managed business account. Requires the can_edit_profile_photo business bot right. Returns True on success.
+ * @see https://core.telegram.org/bots/api#removebusinessaccountprofilephoto
+ */
 export class RemoveBusinessAccountProfilePhoto extends ApiMethod<
   RemoveBusinessAccountProfilePhotoOptions,
   true

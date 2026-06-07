@@ -26,6 +26,10 @@ export interface CreateInvoiceLinkOptions {
   is_flexible?: boolean;
 }
 
+/**
+ * Use this method to create a link for an invoice. Returns the created invoice link as String on success.
+ * @see https://core.telegram.org/bots/api#createinvoicelink
+ */
 export class CreateInvoiceLink extends ApiMethod<
   CreateInvoiceLinkOptions,
   string

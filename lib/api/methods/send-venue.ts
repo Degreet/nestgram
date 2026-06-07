@@ -36,6 +36,10 @@ export interface SendVenueOptions {
     | { toJSON(): unknown };
 }
 
+/**
+ * Use this method to send information about a venue. On success, the sent Message is returned.
+ * @see https://core.telegram.org/bots/api#sendvenue
+ */
 export class SendVenue extends ApiMethod<SendVenueOptions, RawMessage> {
   readonly method = 'sendVenue';
 

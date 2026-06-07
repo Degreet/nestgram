@@ -15,6 +15,10 @@ export interface GetChatGiftsOptions {
   limit?: number;
 }
 
+/**
+ * Returns the gifts owned by a chat. Returns OwnedGifts on success.
+ * @see https://core.telegram.org/bots/api#getchatgifts
+ */
 export class GetChatGifts extends ApiMethod<
   GetChatGiftsOptions,
   RawOwnedGifts

@@ -34,6 +34,10 @@ export interface SendLocationOptions {
     | { toJSON(): unknown };
 }
 
+/**
+ * Use this method to send point on the map. On success, the sent Message is returned.
+ * @see https://core.telegram.org/bots/api#sendlocation
+ */
 export class SendLocation extends ApiMethod<SendLocationOptions, RawMessage> {
   readonly method = 'sendLocation';
 

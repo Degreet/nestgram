@@ -7,6 +7,10 @@ export interface EditChatSubscriptionInviteLinkOptions {
   name?: string;
 }
 
+/**
+ * Use this method to edit a subscription invite link created by the bot. The bot must have the can_invite_users administrator rights. Returns the edited invite link as a ChatInviteLink object.
+ * @see https://core.telegram.org/bots/api#editchatsubscriptioninvitelink
+ */
 export class EditChatSubscriptionInviteLink extends ApiMethod<
   EditChatSubscriptionInviteLinkOptions,
   RawChatInviteLink

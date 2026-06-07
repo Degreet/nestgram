@@ -15,6 +15,10 @@ export interface GetBusinessAccountGiftsOptions {
   limit?: number;
 }
 
+/**
+ * Returns the gifts received and owned by a managed business account. Requires the can_view_gifts_and_stars business bot right. Returns OwnedGifts on success.
+ * @see https://core.telegram.org/bots/api#getbusinessaccountgifts
+ */
 export class GetBusinessAccountGifts extends ApiMethod<
   GetBusinessAccountGiftsOptions,
   RawOwnedGifts

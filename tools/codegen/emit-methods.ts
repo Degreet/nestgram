@@ -17,6 +17,7 @@ import {
   resolveReference,
 } from './manifest';
 import { irTypeToTs } from './type-resolver';
+import { classJsdoc } from './jsdoc';
 
 const INPUT_FILE = 'InputFile';
 
@@ -238,7 +239,7 @@ function emitClass(
     members.push(override.wrap);
   }
 
-  return `export class ${
+  return `${classJsdoc(method)}export class ${
     method.className
   } extends ApiMethod<${optionsType}, ${returnType}> {\n  ${members.join(
     '\n\n  ',

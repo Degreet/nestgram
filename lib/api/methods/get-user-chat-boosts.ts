@@ -6,6 +6,10 @@ export interface GetUserChatBoostsOptions {
   user_id: number;
 }
 
+/**
+ * Use this method to get the list of boosts added to a chat by a user. Requires administrator rights in the chat. Returns a UserChatBoosts object.
+ * @see https://core.telegram.org/bots/api#getuserchatboosts
+ */
 export class GetUserChatBoosts extends ApiMethod<
   GetUserChatBoostsOptions,
   RawUserChatBoosts

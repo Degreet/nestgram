@@ -1,3 +1,9 @@
+/**
+ * A Telegram user or bot. The shape the framework exposes for senders and other
+ * people in an update — reachable on events and via `@Sender()`.
+ *
+ * @see https://core.telegram.org/bots/api#user
+ */
 export interface User {
   id: number;
   is_bot: boolean;

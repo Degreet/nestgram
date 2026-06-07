@@ -9,6 +9,10 @@ export interface AnswerGuestQueryOptions {
   result: RawInlineQueryResult;
 }
 
+/**
+ * Use this method to reply to a received guest message. On success, a SentGuestMessage object is returned.
+ * @see https://core.telegram.org/bots/api#answerguestquery
+ */
 export class AnswerGuestQuery extends ApiMethod<
   AnswerGuestQueryOptions,
   RawSentGuestMessage

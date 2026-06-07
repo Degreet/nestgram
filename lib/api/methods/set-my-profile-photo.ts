@@ -6,6 +6,10 @@ export interface SetMyProfilePhotoOptions {
   photo: RawInputProfilePhoto;
 }
 
+/**
+ * Changes the profile photo of the bot. Returns True on success.
+ * @see https://core.telegram.org/bots/api#setmyprofilephoto
+ */
 export class SetMyProfilePhoto extends ApiMethod<
   SetMyProfilePhotoOptions,
   true

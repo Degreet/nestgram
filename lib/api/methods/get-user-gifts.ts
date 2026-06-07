@@ -13,6 +13,10 @@ export interface GetUserGiftsOptions {
   limit?: number;
 }
 
+/**
+ * Returns the gifts owned and hosted by a user. Returns OwnedGifts on success.
+ * @see https://core.telegram.org/bots/api#getusergifts
+ */
 export class GetUserGifts extends ApiMethod<
   GetUserGiftsOptions,
   RawOwnedGifts

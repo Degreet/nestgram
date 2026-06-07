@@ -6,6 +6,10 @@ export interface DeclineSuggestedPostOptions {
   comment?: string;
 }
 
+/**
+ * Use this method to decline a suggested post in a direct messages chat. The bot must have the 'can_manage_direct_messages' administrator right in the corresponding channel chat. Returns True on success.
+ * @see https://core.telegram.org/bots/api#declinesuggestedpost
+ */
 export class DeclineSuggestedPost extends ApiMethod<
   DeclineSuggestedPostOptions,
   true

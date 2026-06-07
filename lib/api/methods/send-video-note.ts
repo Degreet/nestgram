@@ -34,6 +34,10 @@ export interface SendVideoNoteOptions {
     | { toJSON(): unknown };
 }
 
+/**
+ * As of v.4.0, Telegram clients support rounded square MPEG4 videos of up to 1 minute long. Use this method to send video messages. On success, the sent Message is returned.
+ * @see https://core.telegram.org/bots/api#sendvideonote
+ */
 export class SendVideoNote extends ApiMethod<SendVideoNoteOptions, RawMessage> {
   readonly method = 'sendVideoNote';
 

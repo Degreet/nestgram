@@ -1,5 +1,14 @@
 import { InputFile } from './input-file';
 
+/**
+ * Media items for albums and editable media (`sendMediaGroup`,
+ * `editMessageMedia`). Each is discriminated by `type`; `media` (and any
+ * `thumbnail`/`cover`) takes a `file_id`/URL string or an {@link InputFile} to
+ * upload. Hand-written so `media` accepts `InputFile` directly — the generated
+ * `Raw*` wire types model it as a bare string.
+ *
+ * @see https://core.telegram.org/bots/api#inputmedia
+ */
 export interface InputMediaAudio {
   type: 'audio';
   media: string | InputFile;

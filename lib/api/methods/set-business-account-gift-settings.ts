@@ -7,6 +7,10 @@ export interface SetBusinessAccountGiftSettingsOptions {
   accepted_gift_types: RawAcceptedGiftTypes;
 }
 
+/**
+ * Changes the privacy settings pertaining to incoming gifts in a managed business account. Requires the can_change_gift_settings business bot right. Returns True on success.
+ * @see https://core.telegram.org/bots/api#setbusinessaccountgiftsettings
+ */
 export class SetBusinessAccountGiftSettings extends ApiMethod<
   SetBusinessAccountGiftSettingsOptions,
   true

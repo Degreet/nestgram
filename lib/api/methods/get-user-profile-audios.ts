@@ -7,6 +7,10 @@ export interface GetUserProfileAudiosOptions {
   limit?: number;
 }
 
+/**
+ * Use this method to get a list of profile audios for a user. Returns a UserProfileAudios object.
+ * @see https://core.telegram.org/bots/api#getuserprofileaudios
+ */
 export class GetUserProfileAudios extends ApiMethod<
   GetUserProfileAudiosOptions,
   RawUserProfileAudios

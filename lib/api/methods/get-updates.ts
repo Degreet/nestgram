@@ -8,6 +8,10 @@ export interface GetUpdatesOptions {
   allowed_updates?: string[];
 }
 
+/**
+ * Use this method to receive incoming updates using long polling (wiki). Returns an Array of Update objects.
+ * @see https://core.telegram.org/bots/api#getupdates
+ */
 export class GetUpdates extends ApiMethod<GetUpdatesOptions, RawUpdate[]> {
   readonly method = 'getUpdates';
 

@@ -17,6 +17,10 @@ export interface EditStoryOptions {
   areas?: RawStoryArea[];
 }
 
+/**
+ * Edits a story previously posted by the bot on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns Story on success.
+ * @see https://core.telegram.org/bots/api#editstory
+ */
 export class EditStory extends ApiMethod<EditStoryOptions, RawStory> {
   readonly method = 'editStory';
 

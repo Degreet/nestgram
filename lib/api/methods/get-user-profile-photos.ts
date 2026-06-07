@@ -7,6 +7,10 @@ export interface GetUserProfilePhotosOptions {
   limit?: number;
 }
 
+/**
+ * Use this method to get a list of profile pictures for a user. Returns a UserProfilePhotos object.
+ * @see https://core.telegram.org/bots/api#getuserprofilephotos
+ */
 export class GetUserProfilePhotos extends ApiMethod<
   GetUserProfilePhotosOptions,
   RawUserProfilePhotos

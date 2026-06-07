@@ -9,6 +9,10 @@ export interface RestrictChatMemberOptions {
   until_date?: number;
 }
 
+/**
+ * Use this method to restrict a user in a supergroup. The bot must be an administrator in the supergroup for this to work and must have the appropriate administrator rights. Pass True for all permissions to lift restrictions from a user. Returns True on success.
+ * @see https://core.telegram.org/bots/api#restrictchatmember
+ */
 export class RestrictChatMember extends ApiMethod<
   RestrictChatMemberOptions,
   true

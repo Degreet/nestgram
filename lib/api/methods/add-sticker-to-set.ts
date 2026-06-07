@@ -8,6 +8,10 @@ export interface AddStickerToSetOptions {
   sticker: RawInputSticker;
 }
 
+/**
+ * Use this method to add a new sticker to a set created by the bot. Emoji sticker sets can have up to 200 stickers. Other sticker sets can have up to 120 stickers. Returns True on success.
+ * @see https://core.telegram.org/bots/api#addstickertoset
+ */
 export class AddStickerToSet extends ApiMethod<AddStickerToSetOptions, true> {
   readonly method = 'addStickerToSet';
 

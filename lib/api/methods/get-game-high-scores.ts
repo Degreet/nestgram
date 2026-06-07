@@ -8,6 +8,10 @@ export interface GetGameHighScoresOptions {
   inline_message_id?: string;
 }
 
+/**
+ * Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects.
+ * @see https://core.telegram.org/bots/api#getgamehighscores
+ */
 export class GetGameHighScores extends ApiMethod<
   GetGameHighScoresOptions,
   RawGameHighScore[]

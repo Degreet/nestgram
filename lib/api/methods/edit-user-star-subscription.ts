@@ -6,6 +6,10 @@ export interface EditUserStarSubscriptionOptions {
   is_canceled: boolean;
 }
 
+/**
+ * Allows the bot to cancel or re-enable extension of a subscription paid in Telegram Stars. Returns True on success.
+ * @see https://core.telegram.org/bots/api#edituserstarsubscription
+ */
 export class EditUserStarSubscription extends ApiMethod<
   EditUserStarSubscriptionOptions,
   true

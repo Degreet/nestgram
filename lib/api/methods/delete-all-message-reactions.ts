@@ -6,6 +6,10 @@ export interface DeleteAllMessageReactionsOptions {
   actor_chat_id?: number;
 }
 
+/**
+ * Use this method to remove up to 10000 recent reactions in a group or a supergroup chat added by a given user or chat. The bot must have the 'can_delete_messages' administrator right in the chat. Returns True on success.
+ * @see https://core.telegram.org/bots/api#deleteallmessagereactions
+ */
 export class DeleteAllMessageReactions extends ApiMethod<
   DeleteAllMessageReactionsOptions,
   true

@@ -18,6 +18,10 @@ export interface SendGameOptions {
   reply_markup?: RawInlineKeyboardMarkup | { toJSON(): unknown };
 }
 
+/**
+ * Use this method to send a game. On success, the sent Message is returned.
+ * @see https://core.telegram.org/bots/api#sendgame
+ */
 export class SendGame extends ApiMethod<SendGameOptions, RawMessage> {
   readonly method = 'sendGame';
 

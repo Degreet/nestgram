@@ -9,6 +9,10 @@ export interface UploadStickerFileOptions {
   sticker_format: 'static' | 'animated' | 'video';
 }
 
+/**
+ * Use this method to upload a file with a sticker for later use in the createNewStickerSet, addStickerToSet, or replaceStickerInSet methods (the file can be used multiple times). Returns the uploaded File on success.
+ * @see https://core.telegram.org/bots/api#uploadstickerfile
+ */
 export class UploadStickerFile extends ApiMethod<
   UploadStickerFileOptions,
   RawFile

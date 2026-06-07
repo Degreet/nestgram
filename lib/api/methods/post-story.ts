@@ -19,6 +19,10 @@ export interface PostStoryOptions {
   protect_content?: boolean;
 }
 
+/**
+ * Posts a story on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns Story on success.
+ * @see https://core.telegram.org/bots/api#poststory
+ */
 export class PostStory extends ApiMethod<PostStoryOptions, RawStory> {
   readonly method = 'postStory';
 

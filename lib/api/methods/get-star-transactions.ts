@@ -6,6 +6,10 @@ export interface GetStarTransactionsOptions {
   limit?: number;
 }
 
+/**
+ * Returns the bot's Telegram Star transactions in chronological order. On success, returns a StarTransactions object.
+ * @see https://core.telegram.org/bots/api#getstartransactions
+ */
 export class GetStarTransactions extends ApiMethod<
   GetStarTransactionsOptions,
   RawStarTransactions

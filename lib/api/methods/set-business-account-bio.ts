@@ -5,6 +5,10 @@ export interface SetBusinessAccountBioOptions {
   bio?: string;
 }
 
+/**
+ * Changes the bio of a managed business account. Requires the can_change_bio business bot right. Returns True on success.
+ * @see https://core.telegram.org/bots/api#setbusinessaccountbio
+ */
 export class SetBusinessAccountBio extends ApiMethod<
   SetBusinessAccountBioOptions,
   true

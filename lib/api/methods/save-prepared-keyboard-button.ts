@@ -9,6 +9,10 @@ export interface SavePreparedKeyboardButtonOptions {
   button: RawKeyboardButton;
 }
 
+/**
+ * Stores a keyboard button that can be used by a user within a Mini App. Returns a PreparedKeyboardButton object.
+ * @see https://core.telegram.org/bots/api#savepreparedkeyboardbutton
+ */
 export class SavePreparedKeyboardButton extends ApiMethod<
   SavePreparedKeyboardButtonOptions,
   RawPreparedKeyboardButton

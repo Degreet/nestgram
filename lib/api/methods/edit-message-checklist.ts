@@ -13,6 +13,10 @@ export interface EditMessageChecklistOptions {
   reply_markup?: RawInlineKeyboardMarkup | { toJSON(): unknown };
 }
 
+/**
+ * Use this method to edit a checklist on behalf of a connected business account. On success, the edited Message is returned.
+ * @see https://core.telegram.org/bots/api#editmessagechecklist
+ */
 export class EditMessageChecklist extends ApiMethod<
   EditMessageChecklistOptions,
   RawMessage

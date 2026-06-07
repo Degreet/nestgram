@@ -10,6 +10,10 @@ export interface GiftPremiumSubscriptionOptions {
   text_entities?: RawMessageEntity[];
 }
 
+/**
+ * Gifts a Telegram Premium subscription to the given user. Returns True on success.
+ * @see https://core.telegram.org/bots/api#giftpremiumsubscription
+ */
 export class GiftPremiumSubscription extends ApiMethod<
   GiftPremiumSubscriptionOptions,
   true

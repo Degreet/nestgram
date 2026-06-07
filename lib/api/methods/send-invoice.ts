@@ -41,6 +41,10 @@ export interface SendInvoiceOptions {
   reply_markup?: RawInlineKeyboardMarkup | { toJSON(): unknown };
 }
 
+/**
+ * Use this method to send invoices. On success, the sent Message is returned.
+ * @see https://core.telegram.org/bots/api#sendinvoice
+ */
 export class SendInvoice extends ApiMethod<SendInvoiceOptions, RawMessage> {
   readonly method = 'sendInvoice';
 
