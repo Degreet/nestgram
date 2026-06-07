@@ -76,6 +76,11 @@ class ArgsRouter {
     ArgsRouter.parsed.push(args);
   }
 
+  @Command('declared', AddArgs)
+  declared(message: Message, @Args() args: ArgsOf<typeof AddArgs>) {
+    ArgsRouter.parsed.push(args);
+  }
+
   @Command('meta')
   meta(message: Message, @Args(AddArgs, MetatypeRecordingPipe) dto: AddDto) {
     ArgsRouter.validated.push(dto);
@@ -144,6 +149,11 @@ describe('typed command arguments + DTO pipes (booted app)', () => {
   it('@Args(schema) injects the parsed, typed object (#34)', async () => {
     await dispatcher.dispatch(command(1, '/add 42 buy oat milk'));
     expect(ArgsRouter.parsed).toEqual([{ amount: 42, note: 'buy oat milk' }]);
+  });
+
+  it('a bare @Args() picks up the schema declared on @Command', async () => {
+    await dispatcher.dispatch(command(5, '/declared 7 ring the bell'));
+    expect(ArgsRouter.parsed).toEqual([{ amount: 7, note: 'ring the bell' }]);
   });
 
   it('forwards the param metatype to a pipe (DTO is reachable)', async () => {

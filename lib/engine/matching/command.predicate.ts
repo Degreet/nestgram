@@ -1,4 +1,5 @@
 import type { TelegramExecutionContext } from '../context/telegram-execution-context';
+import type { CommandArgsFactory } from '../../command-args';
 import { RoutePredicate } from './route-predicate';
 
 const COMMAND_PREFIX = '/';
@@ -11,9 +12,17 @@ const BOT_USERNAME_SEPARATOR = '@';
  *
  * Only the first whitespace-delimited token is considered, with an optional
  * `@BotName` suffix stripped — so arguments never affect the match.
+ *
+ * An optional `argsSchema` (a `commandArgs(...)` definition) rides along so a bare
+ * `@Args()` on the handler can parse the typed arguments without re-stating the
+ * schema — read off the matched listener, the same way `@Data` reads the matched
+ * callback-data definition.
  */
 export class CommandPredicate implements RoutePredicate {
-  constructor(private readonly command: string) {}
+  constructor(
+    private readonly command: string,
+    readonly argsSchema?: CommandArgsFactory,
+  ) {}
 
   matches(ctx: TelegramExecutionContext): boolean {
     const text = ctx.update.message?.text?.trimStart();
