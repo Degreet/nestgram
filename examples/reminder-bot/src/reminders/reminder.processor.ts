@@ -1,18 +1,12 @@
 import { Logger } from '@nestjs/common';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { BotService, escapeHtml } from 'nestgram';
+import { BotService, escapeHtml, I18nManager } from 'nestgram';
 import { Job } from 'bullmq';
 
 import { REMINDER_QUEUE } from './reminder.constants';
-import { ReminderService, DeliverJob } from './reminder.service';
+import type { DeliverJob } from './deliver-job.type';
+import { ReminderService } from './reminder.service';
 
-/**
- * Delivers due reminders. This runs in the BullMQ worker — OUTSIDE the
- * per-update request context — so it talks to Telegram through the injected
- * `BotService` and reads the chat id from the job payload. (The ambient
- * per-update context does not cross the queue boundary; the chat id is carried
- * explicitly, exactly as the framework's design prescribes.)
- */
 @Processor(REMINDER_QUEUE)
 export class ReminderProcessor extends WorkerHost {
   private readonly logger = new Logger('ReminderWorker');
@@ -20,6 +14,7 @@ export class ReminderProcessor extends WorkerHost {
   constructor(
     private readonly reminders: ReminderService,
     private readonly bot: BotService,
+    private readonly i18n: I18nManager,
   ) {
     super();
   }
@@ -27,12 +22,13 @@ export class ReminderProcessor extends WorkerHost {
   async process(job: Job<DeliverJob>): Promise<void> {
     const reminder = await this.reminders.findById(job.data.reminderId);
     if (!reminder || reminder.status !== 'pending') {
-      return; // done/deleted before it fired
+      return;
     }
 
+    const translate = this.i18n.translator(reminder.locale);
     await this.bot.sendMessage(
       reminder.chatId,
-      `⏰ <b>Reminder</b>\n${escapeHtml(reminder.text)}`,
+      translate('remind.delivered', { text: escapeHtml(reminder.text) }),
     );
     await this.reminders.markDelivered(reminder.id);
     this.logger.log(`Delivered reminder #${reminder.id}`);

@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { REMINDER_QUEUE } from './reminder.constants';
 import { Reminder } from './reminder.entity';
+import { ReminderParser } from './reminder.parser';
+import { ReminderPresenter } from './reminder.presenter';
 import { ReminderProcessor } from './reminder.processor';
 import { ReminderRouter } from './reminder.router';
 import { ReminderService } from './reminder.service';
@@ -13,9 +15,13 @@ import { ReminderService } from './reminder.service';
     TypeOrmModule.forFeature([Reminder]),
     BullModule.registerQueue({ name: REMINDER_QUEUE }),
   ],
-  // ReminderRouter is just another provider — discovery finds it because it's
-  // here, no registration in the module's metadata beyond the providers array.
-  providers: [ReminderService, ReminderProcessor, ReminderRouter],
+  providers: [
+    ReminderService,
+    ReminderParser,
+    ReminderPresenter,
+    ReminderProcessor,
+    ReminderRouter,
+  ],
   exports: [ReminderService],
 })
 export class RemindersModule {}

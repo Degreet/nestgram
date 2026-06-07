@@ -6,13 +6,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-export type ReminderStatus = 'pending' | 'done' | 'delivered';
+import type { ReminderStatus } from './reminder-status.type';
 
-/**
- * A scheduled reminder. `chatId`/`userId` are stored as `bigint` (string in JS)
- * — Telegram chat ids can exceed the safe-integer range, and BotService accepts
- * a string chat id directly.
- */
 @Entity('reminders')
 export class Reminder {
   @PrimaryGeneratedColumn()
@@ -30,6 +25,9 @@ export class Reminder {
 
   @Column({ type: 'timestamptz' })
   dueAt!: Date;
+
+  @Column({ type: 'varchar', length: 8 })
+  locale!: string;
 
   @Index()
   @Column({ type: 'varchar', length: 16, default: 'pending' })

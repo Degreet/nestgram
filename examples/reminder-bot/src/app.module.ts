@@ -5,6 +5,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { NestgramModule, WebhookController } from 'nestgram';
 
 import { loadConfig, type AppConfig } from './config';
+import { DEFAULT_LOCALE, translations } from './i18n/translations';
 import { RemindersModule } from './reminders/reminders.module';
 import { AdminModule } from './admin/admin.module';
 
@@ -24,7 +25,6 @@ const config = (service: ConfigService): AppConfig =>
         type: 'postgres',
         url: config(service).databaseUrl,
         autoLoadEntities: true,
-        // Demo convenience — auto-creates the schema. Use migrations in real prod.
         synchronize: true,
       }),
     }),
@@ -46,6 +46,7 @@ const config = (service: ConfigService): AppConfig =>
         return {
           token: app.botToken,
           parseMode: 'HTML',
+          i18n: { translations, defaultLocale: DEFAULT_LOCALE },
           ...(app.useWebhook
             ? {
                 webhook: {
@@ -61,8 +62,6 @@ const config = (service: ConfigService): AppConfig =>
     RemindersModule,
     AdminModule,
   ],
-  // Ready-made receiver for the webhook transport (served at /telegram/webhook).
-  // Harmless under polling — Telegram simply never calls it.
   controllers: [WebhookController],
 })
 export class AppModule {}

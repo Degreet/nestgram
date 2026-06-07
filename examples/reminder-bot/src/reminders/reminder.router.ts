@@ -6,59 +6,56 @@ import {
   Data,
   escapeHtml,
   Hears,
-  InlineKeyboard,
+  locale,
   Message,
+  OnMessage,
   Payload,
   Router,
   Sender,
+  t,
   User,
 } from 'nestgram';
 
-import { mainMenu, MENU } from '../common/keyboards';
+import { hearsMenu } from '../common/menu.predicate';
+import { mainMenu } from '../common/main-menu.keyboard';
+import { MENU } from '../common/menu.constants';
 import { LoggingInterceptor } from '../common/logging.interceptor';
+import { DEFAULT_LOCALE } from '../i18n/translations';
 import { DeleteCb, DoneCb } from './reminder.callbacks';
-import { parseReminder } from './reminder.parser';
+import { ReminderParser } from './reminder.parser';
+import { ReminderPresenter } from './reminder.presenter';
 import { ReminderService } from './reminder.service';
-
-const HELP = [
-  '<b>Reminder bot</b> — I ping you when it’s time.',
-  '',
-  'Schedule with a duration:',
-  '<code>/remind in 10m Buy milk</code>',
-  '…or just send <code>2h Call mom</code> with no command.',
-  '',
-  'Units: <code>s</code>·<code>m</code>·<code>h</code>·<code>d</code>. See pending with /list.',
-].join('\n');
-
-interface ListView {
-  text: string;
-  keyboard?: InlineKeyboard;
-}
+import type { ReminderView } from './reminder-view.type';
 
 @Router()
 @UseInterceptors(LoggingInterceptor)
 export class ReminderRouter {
-  constructor(private readonly reminders: ReminderService) {}
+  constructor(
+    private readonly reminders: ReminderService,
+    private readonly parser: ReminderParser,
+    private readonly presenter: ReminderPresenter,
+  ) {}
 
   @Command('start')
   start(message: Message, @Sender() user: User) {
     return message.answer(
-      `Hi, <b>${escapeHtml(user.first_name)}</b>!\n\n${HELP}`,
+      t('start.greeting', {
+        name: escapeHtml(user.first_name),
+        help: t('help.text'),
+      }),
       { reply_markup: mainMenu() },
     );
   }
 
   @Command('help')
-  @Hears(MENU.help)
+  @OnMessage(hearsMenu(MENU.help))
   help(message: Message) {
-    return message.answer(HELP);
+    return message.answer(t('help.text'));
   }
 
-  @Hears(MENU.remind)
+  @OnMessage(hearsMenu(MENU.remind))
   promptRemind(message: Message) {
-    return message.answer(
-      'Send <code>/remind in 10m &lt;text&gt;</code> — or just <code>10m &lt;text&gt;</code>.',
-    );
+    return message.answer(t('remind.prompt'));
   }
 
   @Command('remind')
@@ -66,74 +63,56 @@ export class ReminderRouter {
     return this.capture(message, payload, user);
   }
 
+  @Hears(/^(?:in\s+)?\d+\s*[smhd]\s+/i)
+  quick(message: Message, @Sender() user: User) {
+    return this.capture(message, message.text ?? '', user);
+  }
+
   @Command('list')
-  @Hears(MENU.list)
+  @OnMessage(hearsMenu(MENU.list))
   async list(message: Message) {
-    const view = await this.renderList(message.chat.id);
-    return view.keyboard
-      ? message.answer(view.text, { reply_markup: view.keyboard })
-      : message.answer(view.text);
+    const pending = await this.reminders.pendingFor(message.chat.id);
+    return this.reply(message, this.presenter.list(pending));
   }
 
   @Action(DoneCb.filter())
   async done(query: CallbackQuery, @Data() data: { id: number }) {
     await this.reminders.markDone(data.id);
     await this.refresh(query);
-    return query.answer('Done ✓');
+    return query.answer(t('list.done'));
   }
 
   @Action(DeleteCb.filter())
   async drop(query: CallbackQuery, @Data() data: { id: number }) {
     await this.reminders.remove(data.id);
     await this.refresh(query);
-    return query.answer('Deleted 🗑');
+    return query.answer(t('list.deleted'));
   }
-
-  /** Natural-language capture: a bare "10m Buy milk" with no command. */
-  @Hears(/^(?:in\s+)?\d+\s*[smhd]\s+/i)
-  quick(message: Message, @Sender() user: User) {
-    return this.capture(message, message.text ?? '', user);
-  }
-
-  // --- helpers --------------------------------------------------------------
 
   private async capture(message: Message, input: string, user: User) {
-    const parsed = parseReminder(input, new Date());
+    const parsed = this.parser.parse(input, new Date());
     if (!parsed) {
-      return message.answer(
-        'Couldn’t read a time from that. Example: <code>/remind in 10m Buy milk</code>.',
-      );
+      return message.answer(t('remind.unparsable'));
     }
     await this.reminders.schedule(
       message.chat.id,
       user.id,
       parsed.text,
       parsed.dueAt,
+      locale() ?? DEFAULT_LOCALE,
     );
     return message.answer(
-      `✅ Scheduled for <b>${parsed.dueAt.toLocaleString()}</b>:\n${escapeHtml(
-        parsed.text,
-      )}`,
+      t('remind.scheduled', {
+        time: parsed.dueAt.toLocaleString(),
+        text: escapeHtml(parsed.text),
+      }),
     );
   }
 
-  private async renderList(chatId: number | string): Promise<ListView> {
-    const pending = await this.reminders.pendingFor(chatId);
-    if (pending.length === 0) {
-      return { text: 'No pending reminders 🎉' };
-    }
-
-    const keyboard = new InlineKeyboard();
-    for (const reminder of pending) {
-      keyboard
-        .row()
-        .text(`✓ ${truncate(reminder.text)}`, DoneCb.pack({ id: reminder.id }))
-        .text('🗑', DeleteCb.pack({ id: reminder.id }));
-    }
-    return {
-      text: `You have <b>${pending.length}</b> pending reminder(s):`,
-      keyboard,
-    };
+  private reply(message: Message, view: ReminderView) {
+    return view.keyboard
+      ? message.answer(view.text, { reply_markup: view.keyboard })
+      : message.answer(view.text);
   }
 
   private async refresh(query: CallbackQuery): Promise<void> {
@@ -141,13 +120,9 @@ export class ReminderRouter {
     if (chatId === undefined) {
       return;
     }
-    const view = await this.renderList(chatId);
+    const view = this.presenter.list(await this.reminders.pendingFor(chatId));
     await (view.keyboard
       ? query.message?.editText(view.text, { reply_markup: view.keyboard })
       : query.message?.editText(view.text));
   }
-}
-
-function truncate(text: string, max = 24): string {
-  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
 }

@@ -5,11 +5,8 @@ import { Queue } from 'bullmq';
 import { Repository } from 'typeorm';
 
 import { DELIVER_JOB, REMINDER_QUEUE } from './reminder.constants';
+import type { DeliverJob } from './deliver-job.type';
 import { Reminder } from './reminder.entity';
-
-export interface DeliverJob {
-  reminderId: number;
-}
 
 @Injectable()
 export class ReminderService {
@@ -18,12 +15,12 @@ export class ReminderService {
     @InjectQueue(REMINDER_QUEUE) private readonly queue: Queue<DeliverJob>,
   ) {}
 
-  /** Persists a reminder and enqueues a delayed delivery job that fires at `dueAt`. */
   async schedule(
     chatId: number | string,
     userId: number | string,
     text: string,
     dueAt: Date,
+    locale: string,
   ): Promise<Reminder> {
     const reminder = await this.repo.save(
       this.repo.create({
@@ -31,6 +28,7 @@ export class ReminderService {
         userId: String(userId),
         text,
         dueAt,
+        locale,
         status: 'pending',
       }),
     );
@@ -83,7 +81,6 @@ export class ReminderService {
     return this.repo.count();
   }
 
-  /** Distinct chat ids that have ever scheduled a reminder — used by /broadcast. */
   async knownChatIds(): Promise<string[]> {
     const rows = await this.repo
       .createQueryBuilder('r')

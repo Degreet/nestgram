@@ -6,16 +6,12 @@ import {
   Message,
   Payload,
   Router,
+  t,
 } from 'nestgram';
 
 import { ReminderService } from '../reminders/reminder.service';
 import { AdminGuard } from './admin.guard';
 
-/**
- * Admin-only commands. `@UseGuards(AdminGuard)` at the class level gates every
- * handler — a non-admin's `/stats` is matched, the guard denies it, and the
- * pipeline isolates the rejection (no reply, the command stays invisible).
- */
 @Router()
 @UseGuards(AdminGuard)
 export class AdminRouter {
@@ -30,27 +26,28 @@ export class AdminRouter {
       this.reminders.countAll(),
       this.reminders.countPending(),
     ]);
-    return message.answer(
-      `📊 <b>Stats</b>\nTotal: <b>${total}</b>\nPending: <b>${pending}</b>`,
-    );
+    return message.answer(t('admin.stats', { total, pending }));
   }
 
   @Command('broadcast')
   async broadcast(message: Message, @Payload() text: string) {
     if (text.trim().length === 0) {
-      return message.answer('Usage: <code>/broadcast &lt;message&gt;</code>');
+      return message.answer(t('admin.broadcast.usage'));
     }
 
+    const body = t('admin.broadcast.message', { text: escapeHtml(text) });
     const chatIds = await this.reminders.knownChatIds();
-    let sent = 0;
-    for (const chatId of chatIds) {
-      try {
-        await this.bot.sendMessage(chatId, `📣 ${escapeHtml(text)}`);
-        sent += 1;
-      } catch {
-        // One recipient blocking the bot must not fail the whole broadcast.
-      }
-    }
-    return message.answer(`Delivered to ${sent}/${chatIds.length} chat(s).`);
+    const results = await Promise.all(
+      chatIds.map((chatId) =>
+        this.bot
+          .sendMessage(chatId, body)
+          .then(() => true)
+          .catch(() => false),
+      ),
+    );
+    const sent = results.filter(Boolean).length;
+    return message.answer(
+      t('admin.broadcast.result', { sent, total: chatIds.length }),
+    );
   }
 }
