@@ -4,6 +4,7 @@ import { PollingOptions } from '../engine/source';
 import type { ApiInterceptor } from '../api/request';
 import type { ThrottleOptions } from '../builtins/throttle/throttle.types';
 import type { SessionOptions } from '../sessions/session.types';
+import type { I18nOptions } from '../i18n/i18n.types';
 
 /**
  * Options for `NestgramModule.forRoot`.
@@ -61,6 +62,12 @@ export interface NestgramModuleOptions {
    * sessions off (`@Session()` then resolves to `undefined`).
    */
   session?: SessionOptions;
+  /**
+   * Enable i18n: per-locale message catalogs reachable via the free `t()` /
+   * `locale()` helpers (and `@Locale()`). Presence turns it on; omit to keep it
+   * off (then `t()` returns the key verbatim). The locale resolver is swappable.
+   */
+  i18n?: I18nOptions;
   /**
    * Extra outbound {@link ApiInterceptor}s — run after the built-ins (token
    * validation, default parse mode) and before the throttler, on every API call.

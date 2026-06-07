@@ -10,4 +10,5 @@ export * from './callback-data.decorator';
 export * from './data.decorator';
 export * from './entity.decorator';
 export * from './session.decorator';
+export * from './locale.decorator';
 export * from './state.decorator';

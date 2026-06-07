@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { runAmbient } from '../../ambient';
 import { SessionManager } from '../../sessions';
+import { I18nManager } from '../../i18n';
 import { ContextFactory } from '../context';
 import {
   HandlerExecutorFactory,
@@ -40,6 +41,7 @@ export class UpdateDispatcher {
     private readonly executorFactory: HandlerExecutorFactory,
     private readonly resultHandler: ResultHandler,
     private readonly sessions: SessionManager,
+    private readonly i18n: I18nManager,
   ) {}
 
   async dispatch(update: RawUpdate): Promise<void> {
@@ -52,7 +54,9 @@ export class UpdateDispatcher {
           return;
         }
 
-        // Load the session before matching, so a future FSM can route on state.
+        // Resolve locale + load the session before matching, so guards/matching
+        // (and a future FSM) can read locale and route on state.
+        this.i18n.resolve(ctx);
         await this.sessions.load(ctx);
 
         const [route] = await this.routeMatcher.findMatches(

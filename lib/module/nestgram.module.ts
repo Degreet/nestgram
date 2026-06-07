@@ -15,6 +15,7 @@ import {
 } from '../engine/source';
 import { AutoAnswerCallbackInterceptor } from '../builtins/auto-answer';
 import { SessionManager } from '../sessions';
+import { I18nManager } from '../i18n';
 import { NestgramBootstrap } from './nestgram.bootstrap';
 import {
   NestgramModuleAsyncOptions,
@@ -48,6 +49,7 @@ export class NestgramModule {
     HandlerExecutorFactory,
     ResultHandler,
     SessionManager,
+    I18nManager,
     UpdateDispatcher,
     PollingUpdateSource,
     WebhookUpdateSource,

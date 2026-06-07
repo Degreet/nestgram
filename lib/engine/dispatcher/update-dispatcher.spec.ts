@@ -6,6 +6,7 @@ import { RoutePredicate } from '../matching';
 import { RawUpdate } from '../../events/raw-update.types';
 import { BotService } from '../../api';
 import { SessionManager } from '../../sessions';
+import { I18nManager } from '../../i18n';
 import { UpdateDispatcher } from './update-dispatcher';
 
 function fakeBot(): BotService {
@@ -18,6 +19,11 @@ function noSessions(): SessionManager {
     load: () => Promise.resolve(),
     save: () => Promise.resolve(),
   } as unknown as SessionManager;
+}
+
+/** i18n disabled — resolve is a no-op for these pipeline tests. */
+function noI18n(): I18nManager {
+  return { resolve: () => undefined } as unknown as I18nManager;
 }
 
 function messageUpdate(update_id: number, text: string): RawUpdate {
@@ -65,6 +71,7 @@ function makeDispatcher(routes: Route[]) {
     executorFactory,
     resultHandler,
     noSessions(),
+    noI18n(),
   );
   return { dispatcher, calls, handled };
 }
@@ -149,6 +156,7 @@ describe('UpdateDispatcher', () => {
       executorFactory,
       resultHandler,
       noSessions(),
+      noI18n(),
     );
 
     await expect(
@@ -182,6 +190,7 @@ describe('UpdateDispatcher', () => {
       executorFactory,
       resultHandler,
       noSessions(),
+      noI18n(),
     );
 
     await dispatcher.dispatch(messageUpdate(1, 'a'));
