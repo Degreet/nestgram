@@ -81,11 +81,15 @@ export class NestgramModule {
    * in the async path to read the resolved token. `WebhookUpdateSource` is
    * exported so a webhook controller the author registers in their own module
    * (the ready-made one or a custom one) can inject it to verify + deliver.
+   * `I18nManager` is exported so code crossing an update's ambient boundary
+   * (e.g. a queue worker) can inject it and translate against an explicit locale
+   * via `i18n.translator(locale)`.
    */
   private static readonly engineExports = [
     UpdateDispatcher,
     RouteTable,
     WebhookUpdateSource,
+    I18nManager,
     Providers.NESTGRAM_OPTIONS,
   ];
 
