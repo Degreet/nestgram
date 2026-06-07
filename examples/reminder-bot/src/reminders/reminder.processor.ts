@@ -4,7 +4,7 @@ import { BotService, escapeHtml, I18nManager } from 'nestgram';
 import { Job } from 'bullmq';
 
 import { REMINDER_QUEUE } from './reminder.constants';
-import type { DeliverJob } from './deliver-job.type';
+import { ReminderStatus, type DeliverJob } from './types';
 import { ReminderService } from './reminder.service';
 
 @Processor(REMINDER_QUEUE)
@@ -21,7 +21,7 @@ export class ReminderProcessor extends WorkerHost {
 
   async process(job: Job<DeliverJob>): Promise<void> {
     const reminder = await this.reminders.findById(job.data.reminderId);
-    if (!reminder || reminder.status !== 'pending') {
+    if (!reminder || reminder.status !== ReminderStatus.Pending) {
       return;
     }
 

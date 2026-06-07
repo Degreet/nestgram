@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-import type { ReminderStatus } from './reminder-status.type';
+import { ReminderStatus } from './types';
 
 @Entity('reminders')
 export class Reminder {
@@ -30,7 +30,7 @@ export class Reminder {
   locale!: string;
 
   @Index()
-  @Column({ type: 'varchar', length: 16, default: 'pending' })
+  @Column({ type: 'varchar', length: 16, default: ReminderStatus.Pending })
   status!: ReminderStatus;
 
   @CreateDateColumn()

@@ -4,8 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { REMINDER_QUEUE } from './reminder.constants';
 import { Reminder } from './reminder.entity';
+import { ReminderKeyboards } from './reminder.keyboards';
 import { ReminderParser } from './reminder.parser';
-import { ReminderPresenter } from './reminder.presenter';
 import { ReminderProcessor } from './reminder.processor';
 import { ReminderRouter } from './reminder.router';
 import { ReminderService } from './reminder.service';
@@ -18,7 +18,7 @@ import { ReminderService } from './reminder.service';
   providers: [
     ReminderService,
     ReminderParser,
-    ReminderPresenter,
+    ReminderKeyboards,
     ReminderProcessor,
     ReminderRouter,
   ],
