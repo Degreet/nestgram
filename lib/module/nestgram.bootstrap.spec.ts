@@ -4,7 +4,11 @@ import { NestgramBootstrap } from './nestgram.bootstrap';
 import { NestgramModuleOptions } from './nestgram-module.types';
 import { BotService } from '../api';
 import { RouteExplorer, RouteTable } from '../engine/discovery';
-import { UpdateDispatcher } from '../engine/dispatcher';
+import {
+  StageExplorer,
+  StageRegistry,
+  UpdateDispatcher,
+} from '../engine/dispatcher';
 import { UpdateSource } from '../engine/source';
 
 function makeBootstrap(options: Partial<NestgramModuleOptions>) {
@@ -15,6 +19,8 @@ function makeBootstrap(options: Partial<NestgramModuleOptions>) {
     options as NestgramModuleOptions,
     { explore: jest.fn().mockReturnValue([]) } as unknown as RouteExplorer,
     { set: jest.fn() } as unknown as RouteTable,
+    { explore: jest.fn().mockReturnValue([]) } as unknown as StageExplorer,
+    { set: jest.fn() } as unknown as StageRegistry,
     { dispatch: jest.fn() } as unknown as UpdateDispatcher,
     { start, stop: jest.fn() } as unknown as UpdateSource,
     { getMe } as unknown as BotService,

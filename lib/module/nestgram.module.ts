@@ -7,15 +7,19 @@ import { RouteExplorer, RouteMatcher, RouteTable } from '../engine/discovery';
 import { NestgramConfigError } from '../exceptions';
 import { Providers } from '../providers';
 import { HandlerExecutorFactory, ResultHandler } from '../engine/execution';
-import { UpdateDispatcher } from '../engine/dispatcher';
+import {
+  StageExplorer,
+  StageRegistry,
+  UpdateDispatcher,
+} from '../engine/dispatcher';
 import {
   PollingUpdateSource,
   UpdateSource,
   WebhookUpdateSource,
 } from '../engine/source';
 import { AutoAnswerCallbackInterceptor } from '../builtins/auto-answer';
-import { SessionManager } from '../sessions';
-import { I18nManager } from '../i18n';
+import { SessionManager, SessionStage } from '../sessions';
+import { I18nManager, I18nStage } from '../i18n';
 import { NestgramBootstrap } from './nestgram.bootstrap';
 import {
   NestgramModuleAsyncOptions,
@@ -48,8 +52,14 @@ export class NestgramModule {
     RouteMatcher,
     HandlerExecutorFactory,
     ResultHandler,
+    // Per-update pipeline stages, discovered + ordered at boot. The managers
+    // hold the logic; the *Stage providers adapt them to the dispatcher hook.
+    StageExplorer,
+    StageRegistry,
     SessionManager,
+    SessionStage,
     I18nManager,
+    I18nStage,
     UpdateDispatcher,
     PollingUpdateSource,
     WebhookUpdateSource,

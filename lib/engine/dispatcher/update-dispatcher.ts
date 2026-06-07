@@ -1,8 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 import { runAmbient } from '../../ambient';
-import { SessionManager } from '../../sessions';
-import { I18nManager } from '../../i18n';
 import { ContextFactory } from '../context';
 import {
   HandlerExecutorFactory,
@@ -10,6 +8,7 @@ import {
   ResultHandler,
 } from '../execution';
 import { Route, RouteMatcher, RouteTable } from '../discovery';
+import { StageRegistry } from './stage-registry';
 import { RawUpdate } from '../../events/raw-update.types';
 
 /**
@@ -40,13 +39,12 @@ export class UpdateDispatcher {
     private readonly routeMatcher: RouteMatcher,
     private readonly executorFactory: HandlerExecutorFactory,
     private readonly resultHandler: ResultHandler,
-    private readonly sessions: SessionManager,
-    private readonly i18n: I18nManager,
+    private readonly stages: StageRegistry,
   ) {}
 
   async dispatch(update: RawUpdate): Promise<void> {
-    // Each update runs inside its own ambient context, so sessions (and later
-    // locale/`t()`) are reachable anywhere in the call chain without a ctx arg.
+    // Each update runs inside its own ambient context, so sessions, locale/`t()`
+    // and any user stage are reachable anywhere in the call chain without a ctx arg.
     await runAmbient(async () => {
       try {
         const ctx = this.contextFactory.wrap(update);
@@ -54,10 +52,13 @@ export class UpdateDispatcher {
           return;
         }
 
-        // Resolve locale + load the session before matching, so guards/matching
-        // (and a future FSM) can read locale and route on state.
-        this.i18n.resolve(ctx);
-        await this.sessions.load(ctx);
+        const stages = this.stages.all();
+
+        // Apply every stage before matching — so locale, session and any user
+        // stage have seeded the ambient store before guards/matching/handler run.
+        for (const stage of stages) {
+          await stage.apply(ctx);
+        }
 
         const [route] = await this.routeMatcher.findMatches(
           this.routeTable,
@@ -70,8 +71,11 @@ export class UpdateDispatcher {
         const result = await this.invokerFor(route)(ctx);
         await this.resultHandler.handle(result, ctx);
 
-        // Persist only on success — a thrown handler leaves the session as-is.
-        await this.sessions.save();
+        // Commit only on success — a thrown handler skips commit (e.g. the
+        // session isn't persisted), keeping the store as it was.
+        for (const stage of stages) {
+          await stage.commit?.(ctx);
+        }
       } catch (error) {
         this.logger.error(
           `Failed to dispatch update #${update.update_id}`,

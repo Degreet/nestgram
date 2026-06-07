@@ -9,7 +9,11 @@ import {
 import { BotService } from '../api';
 import { RouteExplorer, RouteTable } from '../engine/discovery';
 import { Providers } from '../providers';
-import { UpdateDispatcher } from '../engine/dispatcher';
+import {
+  StageExplorer,
+  StageRegistry,
+  UpdateDispatcher,
+} from '../engine/dispatcher';
 import { UpdateSource } from '../engine/source';
 import { NestgramModuleOptions } from './nestgram-module.types';
 
@@ -37,6 +41,8 @@ export class NestgramBootstrap
     private readonly options: NestgramModuleOptions,
     private readonly routeExplorer: RouteExplorer,
     private readonly routeTable: RouteTable,
+    private readonly stageExplorer: StageExplorer,
+    private readonly stageRegistry: StageRegistry,
     private readonly dispatcher: UpdateDispatcher,
     @Inject(Providers.UPDATE_SOURCE)
     private readonly source: UpdateSource,
@@ -53,6 +59,10 @@ export class NestgramBootstrap
         `Mapped ${router}.${route.methodName} → ${route.updateType}`,
       );
     }
+
+    const stages = this.stageExplorer.explore();
+    this.stageRegistry.set(stages);
+    this.logger.log(`Pipeline stages: ${stages.length}`);
 
     await this.warmBotIdentity();
 

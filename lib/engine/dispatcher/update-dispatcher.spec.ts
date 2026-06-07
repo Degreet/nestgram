@@ -5,25 +5,12 @@ import { Route } from '../discovery/route.types';
 import { RoutePredicate } from '../matching';
 import { RawUpdate } from '../../events/raw-update.types';
 import { BotService } from '../../api';
-import { SessionManager } from '../../sessions';
-import { I18nManager } from '../../i18n';
+import { StageRegistry } from './stage-registry';
+import { UpdateStage } from './update-stage';
 import { UpdateDispatcher } from './update-dispatcher';
 
 function fakeBot(): BotService {
   return { token: 'TEST' } as unknown as BotService;
-}
-
-/** Sessions disabled — load/save are no-ops for these pipeline tests. */
-function noSessions(): SessionManager {
-  return {
-    load: () => Promise.resolve(),
-    save: () => Promise.resolve(),
-  } as unknown as SessionManager;
-}
-
-/** i18n disabled — resolve is a no-op for these pipeline tests. */
-function noI18n(): I18nManager {
-  return { resolve: () => undefined } as unknown as I18nManager;
 }
 
 function messageUpdate(update_id: number, text: string): RawUpdate {
@@ -39,12 +26,27 @@ function messageUpdate(update_id: number, text: string): RawUpdate {
   };
 }
 
+/** A stage that records its apply/commit into the shared call log, for ordering. */
+function recordingStage(calls: string[]): UpdateStage {
+  return {
+    apply: () => {
+      calls.push('apply');
+    },
+    commit: () => {
+      calls.push('commit');
+    },
+  };
+}
+
 /**
  * Build a dispatcher whose executor factory returns scripted invokers per route,
- * so the wrap → match → invoke → result flow can be driven without ECC/Nest.
- * `calls` records which route methods ran, in order.
+ * so the wrap → stages → match → invoke → result flow can be driven without
+ * ECC/Nest. `calls` records what ran (stage apply/commit + route methods), in order.
  */
-function makeDispatcher(routes: Route[]) {
+function makeDispatcher(
+  routes: Route[],
+  stagesFor: (calls: string[]) => UpdateStage[] = () => [],
+) {
   const calls: string[] = [];
   const contextFactory = new ContextFactory(fakeBot(), new EventFactory());
   const table = new RouteTable(routes);
@@ -70,8 +72,7 @@ function makeDispatcher(routes: Route[]) {
     new RouteMatcher(),
     executorFactory,
     resultHandler,
-    noSessions(),
-    noI18n(),
+    new StageRegistry(stagesFor(calls)),
   );
   return { dispatcher, calls, handled };
 }
@@ -155,8 +156,7 @@ describe('UpdateDispatcher', () => {
       new RouteMatcher(),
       executorFactory,
       resultHandler,
-      noSessions(),
-      noI18n(),
+      new StageRegistry(),
     );
 
     await expect(
@@ -189,8 +189,7 @@ describe('UpdateDispatcher', () => {
       new RouteMatcher(),
       executorFactory,
       resultHandler,
-      noSessions(),
-      noI18n(),
+      new StageRegistry(),
     );
 
     await dispatcher.dispatch(messageUpdate(1, 'a'));
@@ -198,5 +197,52 @@ describe('UpdateDispatcher', () => {
 
     expect(creates).toBe(1);
     expect(calls).toEqual(['run', 'run']);
+  });
+
+  it('applies stages before matching and commits after a successful handler', async () => {
+    const { dispatcher, calls } = makeDispatcher(
+      [route('message', 'start')],
+      (log) => [recordingStage(log)],
+    );
+
+    await dispatcher.dispatch(messageUpdate(1, '/start'));
+
+    expect(calls).toEqual(['apply', 'start', 'commit']);
+  });
+
+  it('applies stages but skips commit when no route matches', async () => {
+    const { dispatcher, calls } = makeDispatcher(
+      [route('callback_query', 'cb')],
+      (log) => [recordingStage(log)],
+    );
+
+    await dispatcher.dispatch(messageUpdate(1, 'hi'));
+
+    expect(calls).toEqual(['apply']);
+  });
+
+  it('skips commit when the handler throws', async () => {
+    const calls: string[] = [];
+    const contextFactory = new ContextFactory(fakeBot(), new EventFactory());
+    const table = new RouteTable([route('message', 'boom')]);
+    const executorFactory = {
+      create: () => () => Promise.reject(new Error('blew up')),
+    } as unknown as HandlerExecutorFactory;
+    const resultHandler = {
+      handle: () => Promise.resolve(),
+    } as unknown as ResultHandler;
+
+    const dispatcher = new UpdateDispatcher(
+      contextFactory,
+      table,
+      new RouteMatcher(),
+      executorFactory,
+      resultHandler,
+      new StageRegistry([recordingStage(calls)]),
+    );
+
+    await dispatcher.dispatch(messageUpdate(1, 'hi'));
+
+    expect(calls).toEqual(['apply']);
   });
 });
