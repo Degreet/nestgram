@@ -16,6 +16,25 @@ export type CodecSpec =
   | StringConstructor
   | BooleanConstructor;
 
+/**
+ * A structured-string schema: each field names a value and its type via the
+ * constructor (`Number`/`String`/`Boolean`). Shared by every feature that maps
+ * named fields to/from strings (callback data, command arguments) so the
+ * constructor→TypeScript mapping lives in one place.
+ */
+export type ValueSchema = Record<string, CodecSpec>;
+
+/** The typed value object a {@link ValueSchema} produces — its fields resolved. */
+export type SchemaValues<S extends ValueSchema> = {
+  [K in keyof S]: S[K] extends NumberConstructor
+    ? number
+    : S[K] extends StringConstructor
+    ? string
+    : S[K] extends BooleanConstructor
+    ? boolean
+    : never;
+};
+
 /** Encoded forms of a boolean — one byte each. */
 const BOOLEAN_TRUE = '1';
 const BOOLEAN_FALSE = '0';

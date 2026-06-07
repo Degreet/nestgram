@@ -9,6 +9,7 @@ export * from './keyboards';
 export * from './formatting';
 export * from './builtins';
 export * from './callback-data';
+export * from './command-args';
 export * from './deep-links';
 export * from './ambient';
 export * from './sessions';

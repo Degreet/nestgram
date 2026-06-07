@@ -1,5 +1,5 @@
 import type { RoutePredicate } from '../engine/matching';
-import type { CodecSpec, ValueCodec } from '../encoding';
+import type { SchemaValues, ValueCodec, ValueSchema } from '../encoding';
 
 /**
  * Encodes a value to / decodes a value from one callback-data segment. Alias of
@@ -12,18 +12,10 @@ export type CallbackDataCodec<T> = ValueCodec<T>;
  * and how it (de)serializes, via its constructor (`Number`/`String`/`Boolean`).
  * Field order is the encoding order (object insertion order).
  */
-export type CallbackDataSchema = Record<string, CodecSpec>;
+export type CallbackDataSchema = ValueSchema;
 
 /** The typed value object for a schema — what `pack` takes and `parse`/`@Data` give. */
-export type CallbackDataValues<S extends CallbackDataSchema> = {
-  [K in keyof S]: S[K] extends NumberConstructor
-    ? number
-    : S[K] extends StringConstructor
-    ? string
-    : S[K] extends BooleanConstructor
-    ? boolean
-    : never;
-};
+export type CallbackDataValues<S extends CallbackDataSchema> = SchemaValues<S>;
 
 /**
  * A typed callback-data definition — one place that builds, matches and parses a
