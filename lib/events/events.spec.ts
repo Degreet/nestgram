@@ -74,7 +74,7 @@ describe('Message actions', () => {
     message(bot).editReplyMarkup(markup);
     expect(calls[0]).toEqual({
       method: 'editMessageReplyMarkup',
-      args: [1, 5, markup, undefined],
+      args: [1, 5, { reply_markup: markup }],
     });
   });
 

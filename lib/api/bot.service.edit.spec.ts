@@ -55,9 +55,9 @@ describe('editMessageReplyMarkup overloads', () => {
 
   const markup = { inline_keyboard: [[{ text: 'x', callback_data: 'y' }]] };
 
-  it('chat-based: (chat_id, message_id, reply_markup)', async () => {
+  it('chat-based: (chat_id, message_id, { reply_markup })', async () => {
     const calls = mockFetch();
-    await bot().editMessageReplyMarkup(42, 7, markup);
+    await bot().editMessageReplyMarkup(42, 7, { reply_markup: markup });
     expect(calls[0].body).toEqual({
       chat_id: 42,
       message_id: 7,
@@ -65,9 +65,9 @@ describe('editMessageReplyMarkup overloads', () => {
     });
   });
 
-  it('inline: (inline_message_id, reply_markup)', async () => {
+  it('inline: (inline_message_id, { reply_markup })', async () => {
     const calls = mockFetch();
-    await bot().editMessageReplyMarkup('inline-1', markup);
+    await bot().editMessageReplyMarkup('inline-1', { reply_markup: markup });
     expect(calls[0].body).toEqual({
       inline_message_id: 'inline-1',
       reply_markup: markup,

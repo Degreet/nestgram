@@ -135,8 +135,10 @@ export class Message extends TelegramObject {
     return this.botService.editMessageReplyMarkup(
       this.chat.id,
       this.message_id,
-      reply_markup,
-      options,
+      {
+        reply_markup,
+        ...options,
+      },
     );
   }
 

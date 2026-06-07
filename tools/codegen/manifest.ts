@@ -112,17 +112,13 @@ export function getMediaOverride(methodName: string): MediaConfig | undefined {
  * Methods the generator must NOT emit as a `bot.<method>()` wrapper because
  * BotService hand-owns them with logic the rule can't reproduce:
  * - `getMe` caches the bot identity (backs `username`/`deepLink`);
- * - `getFile` anchors the file-download cluster (`fileLink`/`fileStream`/…);
- * - `editMessageText`/`editMessageReplyMarkup` deliberately promote the
- *   *optional* `chat_id`/`message_id` to positional args for the common edit —
- *   the "required → positional" rule would drop them.
- * Everything else is generated (required args positional, optional via options).
+ * - `getFile` anchors the file-download cluster (`fileLink`/`fileStream`/…).
+ * The inline/chat dual edit methods are generated with target-first overloads
+ * (see emit-bot-methods `inlineDualContent`), so they are no longer skipped.
  */
 const SKIP_BOT_METHODS: ReadonlySet<string> = new Set<string>([
   'getMe',
   'getFile',
-  'editMessageText',
-  'editMessageReplyMarkup',
 ]);
 
 export function isSkippedBotMethod(methodName: string): boolean {

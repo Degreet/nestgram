@@ -11,22 +11,12 @@ import { Providers } from '../providers';
 import { ApiException, NestgramError } from '../exceptions';
 import { deepLink as createDeepLink, DeepLinkParams } from '../deep-links';
 import type { User } from '../events/user';
-import type { Message } from '../events';
 
 import { ApiError, ApiResponse } from './api-response';
 import { createAttachedData, createInlineData } from './form-data';
 import { ApiCallContext, ApiPipeline, ApiRequest } from './request';
 import { GeneratedBotMethods } from './generated-bot-methods';
-import {
-  ApiMethod,
-  GetMe,
-  GetFile,
-  GetFileOptions,
-  EditMessageText,
-  EditMessageTextOptions,
-  EditMessageReplyMarkup,
-  EditMessageReplyMarkupOptions,
-} from './methods';
+import { ApiMethod, GetMe, GetFile, GetFileOptions } from './methods';
 
 const TELEGRAM_API_BASE = 'https://api.telegram.org';
 
@@ -244,95 +234,5 @@ export class BotService extends GeneratedBotMethods {
       );
     }
     return response;
-  }
-
-  /** Edit a sent message's text (the target comes first, then the new text). */
-  editMessageText(
-    chat_id: number | string,
-    message_id: number,
-    text: string,
-    options?: MethodOptions<EditMessageTextOptions>,
-  ): Promise<Message | true>;
-  /** Edit an inline message's text. */
-  editMessageText(
-    inline_message_id: string,
-    text: string,
-    options?: MethodOptions<EditMessageTextOptions>,
-  ): Promise<true>;
-  editMessageText(
-    target: number | string,
-    messageIdOrText: number | string,
-    textOrOptions?: string | MethodOptions<EditMessageTextOptions>,
-    chatOptions?: MethodOptions<EditMessageTextOptions>,
-  ): Promise<Message | true> {
-    // The numeric 2nd arg is a message_id → the chat-based overload; otherwise inline.
-    if (typeof messageIdOrText === 'number') {
-      const { token, signal, ...payload } = chatOptions ?? {};
-      return this.call(
-        new EditMessageText({
-          chat_id: target,
-          message_id: messageIdOrText,
-          text: textOrOptions as string,
-          ...payload,
-        }),
-        { token, signal },
-      );
-    }
-    const { token, signal, ...payload } =
-      (textOrOptions as MethodOptions<EditMessageTextOptions>) ?? {};
-    return this.call(
-      new EditMessageText({
-        inline_message_id: target as string,
-        text: messageIdOrText,
-        ...payload,
-      }),
-      { token, signal },
-    );
-  }
-
-  /** Edit a sent message's reply markup (target first, then the markup). */
-  editMessageReplyMarkup(
-    chat_id: number | string,
-    message_id: number,
-    reply_markup: EditMessageReplyMarkupOptions['reply_markup'],
-    options?: MethodOptions<EditMessageReplyMarkupOptions>,
-  ): Promise<Message | true>;
-  /** Edit an inline message's reply markup. */
-  editMessageReplyMarkup(
-    inline_message_id: string,
-    reply_markup: EditMessageReplyMarkupOptions['reply_markup'],
-    options?: MethodOptions<EditMessageReplyMarkupOptions>,
-  ): Promise<true>;
-  editMessageReplyMarkup(
-    target: number | string,
-    messageIdOrMarkup: number | EditMessageReplyMarkupOptions['reply_markup'],
-    markupOrOptions?:
-      | EditMessageReplyMarkupOptions['reply_markup']
-      | MethodOptions<EditMessageReplyMarkupOptions>,
-    chatOptions?: MethodOptions<EditMessageReplyMarkupOptions>,
-  ): Promise<Message | true> {
-    if (typeof messageIdOrMarkup === 'number') {
-      const { token, signal, ...payload } = chatOptions ?? {};
-      return this.call(
-        new EditMessageReplyMarkup({
-          chat_id: target,
-          message_id: messageIdOrMarkup,
-          reply_markup:
-            markupOrOptions as EditMessageReplyMarkupOptions['reply_markup'],
-          ...payload,
-        }),
-        { token, signal },
-      );
-    }
-    const { token, signal, ...payload } =
-      (markupOrOptions as MethodOptions<EditMessageReplyMarkupOptions>) ?? {};
-    return this.call(
-      new EditMessageReplyMarkup({
-        inline_message_id: target as string,
-        reply_markup: messageIdOrMarkup,
-        ...payload,
-      }),
-      { token, signal },
-    );
   }
 }

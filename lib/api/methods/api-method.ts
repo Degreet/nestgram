@@ -27,3 +27,6 @@ export abstract class ApiMethod<TOptions, TResult> {
     this.payload = payload;
   }
 }
+
+/** The (possibly enriched) result a command object resolves to — its `TResult`. */
+export type ResultOf<M> = M extends ApiMethod<unknown, infer R> ? R : never;
