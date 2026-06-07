@@ -3,6 +3,11 @@ import { createListenerDecorator } from './create-listener-decorator';
 
 const UPDATE_TYPE = 'edited_business_message';
 
+/**
+ * Routes `edited_business_message` updates (edited in a business chat) to the handler, whose first parameter
+ * is the rich {@link Message}. Optional predicates narrow which updates
+ * match (all must pass); stacks with other listeners on one method.
+ */
 export const OnEditedBusinessMessage = (
   ...predicates: RoutePredicate[]
 ): MethodDecorator => {
