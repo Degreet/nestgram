@@ -59,7 +59,10 @@ Everything needed to ship a production bot.
 - [x] Full update-type coverage — Bot API 10.0: 176 methods + 295 `Raw*` types
       generated
 - [x] Send throttler (global 30/s, 1/s per chat, `429 retry_after`)
-- [ ] Pipes + `class-validator` DTOs for payloads
+- [x] Typed command arguments — `commandArgs(schema)` + `@Args(schema)` (typed,
+      coerced, greedy last field)
+- [x] Pipes + `class-validator` DTOs for payloads — param pipes run through ECC
+      (incl. `ValidationPipe`, with `validateCustomDecorators: true`)
 
 ## Phase 3 — Conversations
 
