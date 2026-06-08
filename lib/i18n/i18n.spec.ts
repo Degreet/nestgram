@@ -2,22 +2,25 @@ import { Logger } from '@nestjs/common';
 
 import { runAmbient } from '../ambient';
 import { TelegramExecutionContext } from '../engine/context';
+import { FlatTranslatorBackend } from './backends';
 import { I18nManager } from './i18n-manager';
 import { interpolate, locale, t } from './translate';
-import type { I18nOptions, ResolvedI18nOptions } from './i18n.types';
+import type { ResolvedI18nOptions } from './i18n.types';
 
 const TRANSLATIONS = {
   en: { hi: 'Hello, {name}!', bye: 'Bye' },
   uk: { hi: 'Привіт, {name}!' }, // no `bye` — exercises fallback
 };
 
-function manager(i18n?: Partial<I18nOptions>): I18nManager {
-  const config = i18n && {
-    translations: TRANSLATIONS,
+function manager(
+  extra?: Partial<Omit<ResolvedI18nOptions, 'backend'>>,
+): I18nManager {
+  const config = extra && {
+    backend: new FlatTranslatorBackend(TRANSLATIONS),
     defaultLocale: 'en',
-    ...i18n,
+    ...extra,
   };
-  return new I18nManager(config as ResolvedI18nOptions | undefined);
+  return new I18nManager(config);
 }
 
 function ctxWithLanguage(language_code?: string): TelegramExecutionContext {

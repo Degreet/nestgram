@@ -94,7 +94,7 @@ describe('directoryTranslations', () => {
         logger: false,
         abortOnError: false,
       }),
-    ).rejects.toThrow(/either|both/);
+    ).rejects.toThrow(/exactly one/);
   });
 });
 

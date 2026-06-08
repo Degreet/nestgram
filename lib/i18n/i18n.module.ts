@@ -7,13 +7,18 @@ import {
 
 import { NestgramConfigError } from '../exceptions';
 import { Providers } from '../providers';
+import { FlatTranslatorBackend } from './backends/flat-translator-backend';
 import { I18nManager } from './i18n-manager';
 import { I18nStage } from './i18n.stage';
-import type { I18nOptions, ResolvedI18nOptions } from './i18n.types';
+import type {
+  I18nOptions,
+  ResolvedI18nOptions,
+  Translations,
+} from './i18n.types';
 
 /**
  * Options for `I18nModule.forRootAsync` — resolve the catalogs from DI (e.g. a
- * loader or `ConfigService`) instead of passing them literally.
+ * loader, a Fluent backend, or `ConfigService`) instead of passing them literally.
  */
 export interface I18nModuleAsyncOptions
   extends Pick<ModuleMetadata, 'imports'> {
@@ -22,26 +27,33 @@ export interface I18nModuleAsyncOptions
 }
 
 /**
- * Normalise user config into resolved options: validate exactly one of
- * `translations`/`source`, and eagerly load the source's catalogs (once, at
- * boot) so the manager only ever sees a ready `translations` map.
+ * Normalise user config into resolved options: validate that exactly one of
+ * `translations`/`source`/`backend` is set, eagerly load a source's catalogs
+ * (once, at boot), and wrap the flat forms in {@link FlatTranslatorBackend} — so
+ * the manager only ever sees a ready {@link TranslatorBackend}.
  */
 async function resolveI18nOptions(
   options: I18nOptions,
 ): Promise<ResolvedI18nOptions> {
-  if (options.translations && options.source) {
+  const ways = [options.translations, options.source, options.backend].filter(
+    (value) => value !== undefined,
+  );
+  if (ways.length !== 1) {
     throw new NestgramConfigError(
-      'I18nModule: provide either `translations` or `source`, not both',
+      'I18nModule: provide exactly one of `translations`, `source`, or `backend`',
     );
   }
-  const { source, translations, ...base } = options;
-  const resolved = source ? await source.load() : translations;
-  if (!resolved) {
-    throw new NestgramConfigError(
-      'I18nModule: provide `translations` or a `source`',
+
+  const { translations, source, backend, ...base } = options;
+  const resolvedBackend =
+    backend ??
+    new FlatTranslatorBackend(
+      // Exactly one is set (guarded above); with no backend/source, translations
+      // is the one — the cast is that invariant, not a hole.
+      source ? await source.load() : (translations as Translations),
     );
-  }
-  return { ...base, translations: resolved };
+
+  return { ...base, backend: resolvedBackend };
 }
 
 /**

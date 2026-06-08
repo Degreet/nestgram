@@ -1,5 +1,5 @@
 import { runAmbient } from '../../ambient';
-import { I18nManager } from '../../i18n';
+import { FlatTranslatorBackend, I18nManager } from '../../i18n';
 import { TelegramExecutionContext } from '../context';
 import { HearsKeyPredicate } from './hears-key.predicate';
 
@@ -9,7 +9,10 @@ const TRANSLATIONS = {
 };
 
 function manager(): I18nManager {
-  return new I18nManager({ translations: TRANSLATIONS, defaultLocale: 'en' });
+  return new I18nManager({
+    backend: new FlatTranslatorBackend(TRANSLATIONS),
+    defaultLocale: 'en',
+  });
 }
 
 function ctx(text: string, language_code: string): TelegramExecutionContext {

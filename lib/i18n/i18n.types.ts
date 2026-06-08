@@ -1,5 +1,6 @@
 import type { TelegramExecutionContext } from '../engine/context';
 import type { TranslationSource } from './sources/translation-source';
+import type { TranslatorBackend } from './backends/translator-backend';
 
 /** Interpolation values spliced into a message template's `{placeholders}`. */
 export type TranslateParams = Record<string, string | number>;
@@ -55,25 +56,33 @@ interface I18nBaseOptions {
 }
 
 /**
- * i18n configuration for `I18nModule.forRoot`. Provide catalogs either inline
- * (`translations`) or via a {@link TranslationSource} (`source`, e.g.
- * {@link directoryTranslations}) — exactly one.
+ * i18n configuration for `I18nModule.forRoot`. Provide catalogs in exactly one
+ * way: inline (`translations`), loaded from a {@link TranslationSource}
+ * (`source`, e.g. {@link directoryTranslations}), or a {@link TranslatorBackend}
+ * for a different message format (`backend`, e.g. a Fluent backend).
  */
 export interface I18nOptions extends I18nBaseOptions {
-  /** Inline per-locale catalogs. Provide this OR {@link source}. */
+  /** Inline per-locale catalogs. Provide this, {@link source}, or {@link backend}. */
   translations?: Translations;
   /**
    * Load catalogs from a source (a directory of files, a DB, …) instead of
-   * inlining them. Loaded once at startup. Provide this OR {@link translations}.
+   * inlining them. Loaded once at startup. Provide this, {@link translations},
+   * or {@link backend}.
    */
   source?: TranslationSource;
+  /**
+   * A translator backend for a non-flat message format (e.g. `fluentBackend`).
+   * Provide this, {@link translations}, or {@link source}.
+   */
+  backend?: TranslatorBackend;
 }
 
 /**
- * {@link I18nOptions} with catalogs resolved — `source` already loaded into
- * `translations`. What `I18nManager` receives (the module normalises the config
- * at boot, so the manager never deals with loading).
+ * {@link I18nOptions} with the catalog resolved to a {@link TranslatorBackend} —
+ * `translations`/`source` already wrapped in the flat backend, `source` already
+ * loaded. What `I18nManager` receives (the module normalises config at boot, so
+ * the manager never deals with loading or formats).
  */
 export interface ResolvedI18nOptions extends I18nBaseOptions {
-  translations: Translations;
+  backend: TranslatorBackend;
 }

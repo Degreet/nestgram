@@ -4,7 +4,6 @@ import { setAmbient } from '../ambient';
 import { TelegramExecutionContext } from '../engine/context';
 import { Providers } from '../providers';
 import { LOCALE, TRANSLATOR, TRANSLATOR_FACTORY } from './i18n.constants';
-import { interpolate } from './translate';
 import type { ResolvedI18nOptions, TranslateFn } from './i18n.types';
 
 /**
@@ -59,10 +58,7 @@ export class I18nManager {
   ): string {
     const resolve = config.resolveLocale ?? defaultResolveLocale;
     const candidate = resolve(ctx);
-    // `Object.hasOwn`, not `in`: a sender `language_code` like 'toString' must
-    // not match an inherited Object.prototype key and pass as a valid locale.
-    return candidate !== undefined &&
-      Object.hasOwn(config.translations, candidate)
+    return candidate !== undefined && config.backend.hasLocale(candidate)
       ? candidate
       : config.defaultLocale;
   }
@@ -77,10 +73,10 @@ export class I18nManager {
     }
     const fallback = config.fallbackLocale ?? config.defaultLocale;
     const translator: TranslateFn = (key, params) => {
-      const template =
-        config.translations[locale]?.[key] ??
-        config.translations[fallback]?.[key];
-      if (template === undefined) {
+      const text =
+        config.backend.format(locale, key, params) ??
+        config.backend.format(fallback, key, params);
+      if (text === undefined) {
         // Returning the key is a safe, visible fallback; warn only when asked,
         // so a genuine catalog gap is catchable without noise in production.
         if (config.logMissingKeys) {
@@ -88,7 +84,7 @@ export class I18nManager {
         }
         return key;
       }
-      return interpolate(template, params);
+      return text;
     };
     this.translators.set(locale, translator);
     return translator;
