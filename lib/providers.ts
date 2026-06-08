@@ -6,4 +6,6 @@ export enum Providers {
   UPDATE_SOURCE = 'UPDATE_SOURCE',
   /** i18n config, provided by `I18nModule.forRoot`/`forRootAsync`. */
   I18N_OPTIONS = 'I18N_OPTIONS',
+  /** Session config, provided by `SessionModule.forRoot`/`forRootAsync`. */
+  SESSION_OPTIONS = 'SESSION_OPTIONS',
 }

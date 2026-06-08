@@ -3,7 +3,6 @@ import { ModuleMetadata, Type } from '@nestjs/common';
 import { PollingOptions } from '../engine/source';
 import type { ApiInterceptor } from '../api/request';
 import type { ThrottleOptions } from '../builtins/throttle/throttle.types';
-import type { SessionOptions } from '../sessions/session.types';
 
 /**
  * Options for `NestgramModule.forRoot`.
@@ -55,12 +54,6 @@ export interface NestgramModuleOptions {
    * `parse_mode: undefined` to opt that call out.
    */
   parseMode?: string;
-  /**
-   * Enable persistent per-update sessions, reachable via `@Session()`. Presence
-   * turns them on; the store and key strategy are swappable. Omit to keep
-   * sessions off (`@Session()` then resolves to `undefined`).
-   */
-  session?: SessionOptions;
   /**
    * Extra outbound {@link ApiInterceptor}s — run after the built-ins (token
    * validation, default parse mode) and before the throttler, on every API call.

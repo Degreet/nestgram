@@ -1,13 +1,13 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 
 import { getAmbient, setAmbient } from '../ambient';
 import { TelegramExecutionContext } from '../engine/context';
 import { Providers } from '../providers';
-import type { NestgramModuleOptions } from '../module/nestgram-module.types';
 import { defaultSessionKey } from './session-key';
 import { MemorySessionStore } from './memory-session-store';
 import { SESSION, SESSION_BINDING } from './session.constants';
 import { SessionStore } from './session-store';
+import type { SessionOptions } from './session.types';
 
 interface SessionBinding {
   key: string;
@@ -16,10 +16,10 @@ interface SessionBinding {
 
 /**
  * Loads a session into the ambient store before matching and persists it after
- * a successful handler. The dispatcher calls `load`/`save` as pipeline stages
- * (load before matching so a future FSM can route on state); the behaviour is
- * fully driven by the swappable `session` config — both are no-ops when
- * sessions aren't configured.
+ * a successful handler — driven by {@link SessionStage} (load before matching so
+ * a future FSM can route on state). Provided by `SessionModule`; the behaviour
+ * is fully driven by the swappable config, and both are no-ops when its config
+ * is absent.
  *
  * No per-key locking (v1): the load → mutate → save cycle isn't atomic, so two
  * updates for the SAME key processed concurrently can lose a write (last save
@@ -32,12 +32,13 @@ export class SessionManager {
   private readonly fallbackStore = new MemorySessionStore();
 
   constructor(
-    @Inject(Providers.NESTGRAM_OPTIONS)
-    private readonly options: NestgramModuleOptions,
+    @Optional()
+    @Inject(Providers.SESSION_OPTIONS)
+    private readonly config?: SessionOptions,
   ) {}
 
   async load(ctx: TelegramExecutionContext): Promise<void> {
-    const config = this.options.session;
+    const config = this.config;
     if (!config) {
       return;
     }

@@ -9,6 +9,7 @@ import { RawUpdate } from '../events/raw-update.types';
 import { UpdateDispatcher } from '../engine/dispatcher';
 import { NestgramModule } from '../module';
 import { MemorySessionStore } from './memory-session-store';
+import { SessionModule } from './session.module';
 
 interface Counter {
   count: number;
@@ -29,10 +30,8 @@ const store = new MemorySessionStore();
 
 @Module({
   imports: [
-    NestgramModule.forRoot({
-      token: 'TEST',
-      session: { store, defaults: (): Counter => ({ count: 0 }) },
-    }),
+    NestgramModule.forRoot({ token: 'TEST' }),
+    SessionModule.forRoot({ store, defaults: (): Counter => ({ count: 0 }) }),
   ],
   providers: [CounterRouter],
 })

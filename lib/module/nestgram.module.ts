@@ -18,7 +18,6 @@ import {
   WebhookUpdateSource,
 } from '../engine/source';
 import { AutoAnswerCallbackInterceptor } from '../builtins/auto-answer';
-import { SessionManager, SessionStage } from '../sessions';
 import { NestgramBootstrap } from './nestgram.bootstrap';
 import {
   NestgramModuleAsyncOptions,
@@ -51,14 +50,12 @@ export class NestgramModule {
     RouteMatcher,
     HandlerExecutorFactory,
     ResultHandler,
-    // Per-update pipeline stages, discovered + ordered at boot. The session
-    // manager holds the logic; SessionStage adapts it to the dispatcher hook.
-    // i18n lives in its own I18nModule (a discovered stage too — no privileged
-    // core), imported by the app when wanted.
+    // The dispatcher runs per-update stages discovered + ordered at boot. The
+    // stages themselves live in their own modules a user imports — i18n in
+    // I18nModule, sessions in SessionModule — so nothing here is privileged; a
+    // user adds their own with @UpdateStage.
     StageExplorer,
     StageRegistry,
-    SessionManager,
-    SessionStage,
     UpdateDispatcher,
     PollingUpdateSource,
     WebhookUpdateSource,
