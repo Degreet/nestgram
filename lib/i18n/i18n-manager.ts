@@ -5,7 +5,7 @@ import { TelegramExecutionContext } from '../engine/context';
 import { Providers } from '../providers';
 import { LOCALE, TRANSLATOR, TRANSLATOR_FACTORY } from './i18n.constants';
 import { interpolate } from './translate';
-import type { I18nOptions, TranslateFn } from './i18n.types';
+import type { ResolvedI18nOptions, TranslateFn } from './i18n.types';
 
 /**
  * Resolves the locale for each update and seeds the ambient store so the free
@@ -25,7 +25,7 @@ export class I18nManager {
   constructor(
     @Optional()
     @Inject(Providers.I18N_OPTIONS)
-    private readonly config?: I18nOptions,
+    private readonly config?: ResolvedI18nOptions,
   ) {}
 
   resolve(ctx: TelegramExecutionContext): void {
@@ -55,7 +55,7 @@ export class I18nManager {
 
   private resolveLocale(
     ctx: TelegramExecutionContext,
-    config: I18nOptions,
+    config: ResolvedI18nOptions,
   ): string {
     const resolve = config.resolveLocale ?? defaultResolveLocale;
     const candidate = resolve(ctx);
@@ -67,7 +67,10 @@ export class I18nManager {
       : config.defaultLocale;
   }
 
-  private translatorFor(locale: string, config: I18nOptions): TranslateFn {
+  private translatorFor(
+    locale: string,
+    config: ResolvedI18nOptions,
+  ): TranslateFn {
     const cached = this.translators.get(locale);
     if (cached) {
       return cached;

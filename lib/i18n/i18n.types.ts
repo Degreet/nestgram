@@ -1,4 +1,5 @@
 import type { TelegramExecutionContext } from '../engine/context';
+import type { TranslationSource } from './sources/translation-source';
 
 /** Interpolation values spliced into a message template's `{placeholders}`. */
 export type TranslateParams = Record<string, string | number>;
@@ -31,13 +32,8 @@ export interface Translate {
  */
 export type Translations = Record<string, Record<string, string>>;
 
-/**
- * i18n configuration, passed as `i18n` on the module options. Presence enables
- * translation; omit it to keep it off (then {@link t} returns the key verbatim).
- */
-export interface I18nOptions {
-  /** Per-locale message catalogs. */
-  translations: Translations;
+/** i18n settings independent of where the catalogs come from. */
+interface I18nBaseOptions {
   /** Locale used when an update's locale can't be resolved or is unknown. */
   defaultLocale: string;
   /**
@@ -56,4 +52,28 @@ export interface I18nOptions {
    * output. Off by default (returning the key is a deliberate, safe fallback).
    */
   logMissingKeys?: boolean;
+}
+
+/**
+ * i18n configuration for `I18nModule.forRoot`. Provide catalogs either inline
+ * (`translations`) or via a {@link TranslationSource} (`source`, e.g.
+ * {@link directoryTranslations}) — exactly one.
+ */
+export interface I18nOptions extends I18nBaseOptions {
+  /** Inline per-locale catalogs. Provide this OR {@link source}. */
+  translations?: Translations;
+  /**
+   * Load catalogs from a source (a directory of files, a DB, …) instead of
+   * inlining them. Loaded once at startup. Provide this OR {@link translations}.
+   */
+  source?: TranslationSource;
+}
+
+/**
+ * {@link I18nOptions} with catalogs resolved — `source` already loaded into
+ * `translations`. What `I18nManager` receives (the module normalises the config
+ * at boot, so the manager never deals with loading).
+ */
+export interface ResolvedI18nOptions extends I18nBaseOptions {
+  translations: Translations;
 }
