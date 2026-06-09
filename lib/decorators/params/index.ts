@@ -12,3 +12,4 @@ export * from './entity.decorator';
 export * from './session.decorator';
 export * from './locale.decorator';
 export * from './state.decorator';
+export * from './fsm.decorator';

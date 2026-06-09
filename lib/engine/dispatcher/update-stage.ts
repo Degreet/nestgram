@@ -23,9 +23,9 @@ export interface UpdateStage {
 /** Options for {@link UpdateStage} (the decorator). */
 export interface UpdateStageOptions {
   /**
-   * Ascending run order across all stages. Built-ins: i18n `10`, sessions `20`.
-   * User stages default to {@link DEFAULT_STAGE_ORDER} (after the built-ins);
-   * ties keep discovery order.
+   * Ascending run order across all stages. Built-ins: i18n `10`, sessions `20`,
+   * FSM `30`. User stages default to {@link DEFAULT_STAGE_ORDER} (after the
+   * built-ins); ties keep discovery order.
    */
   order?: number;
 }
@@ -40,6 +40,7 @@ export const DEFAULT_STAGE_ORDER = 1000;
 export enum BuiltinStageOrder {
   I18n = 10,
   Session = 20,
+  Fsm = 30,
 }
 
 interface StageMetadata {

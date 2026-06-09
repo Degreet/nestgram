@@ -8,4 +8,6 @@ export enum Providers {
   I18N_OPTIONS = 'I18N_OPTIONS',
   /** Session config, provided by `SessionModule.forRoot`/`forRootAsync`. */
   SESSION_OPTIONS = 'SESSION_OPTIONS',
+  /** FSM config, provided by `FsmModule.forRoot`/`forRootAsync`. */
+  FSM_OPTIONS = 'FSM_OPTIONS',
 }
