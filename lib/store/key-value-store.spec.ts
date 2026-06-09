@@ -1,18 +1,18 @@
-import { MemorySessionStore } from './memory-session-store';
+import { MemoryStore } from './key-value-store';
 
-describe('MemorySessionStore', () => {
+describe('MemoryStore', () => {
   it('stores and retrieves a value', () => {
-    const store = new MemorySessionStore();
+    const store = new MemoryStore();
     store.set('k', { n: 1 });
     expect(store.get('k')).toEqual({ n: 1 });
   });
 
   it('returns undefined for a missing key', () => {
-    expect(new MemorySessionStore().get('nope')).toBeUndefined();
+    expect(new MemoryStore().get('nope')).toBeUndefined();
   });
 
   it('deletes a value', () => {
-    const store = new MemorySessionStore();
+    const store = new MemoryStore();
     store.set('k', 1);
     store.delete('k');
     expect(store.get('k')).toBeUndefined();
@@ -21,7 +21,7 @@ describe('MemorySessionStore', () => {
   it('expires entries past their TTL', () => {
     jest.useFakeTimers();
     try {
-      const store = new MemorySessionStore(1000);
+      const store = new MemoryStore(1000);
       store.set('k', 'v');
       expect(store.get('k')).toBe('v');
       jest.advanceTimersByTime(1001);
