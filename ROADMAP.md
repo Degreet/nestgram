@@ -66,7 +66,11 @@ Everything needed to ship a production bot.
 
 ## Phase 3 — Conversations
 
-- [ ] FSM / scenes / wizard flows
+- [x] FSM core — `stateGroup()` + `FsmState` predicates (`@OnMessage(Reg.name)`),
+      `@Fsm()`/`fsm()` write-through context, `@AnyState()`/`@NoState()` over the
+      generic `@Match` primitive, `FsmModule` on the shared KV store. Built as a
+      pure builtin (stage + predicate + ambient), no privileged core.
+- [ ] Scenes / wizard flows — a higher-level layer on top of the FSM core
 
 ## Phase 4 — Scale & DX
 
