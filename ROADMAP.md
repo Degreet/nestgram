@@ -86,3 +86,17 @@ Everything needed to ship a production bot.
 - [ ] Migration guides (from nestjs-telegraf / telegraf)
 - [ ] Example gallery
 - [ ] `v2.0.0` release
+
+## Beyond v2.0 — extra ideas (not scheduled)
+
+Deliberately out of the v2.0 line — bigger bets to revisit after launch, not
+MVP blockers. Designs are roughed out; see the backlog for the notes.
+
+- [ ] **Multi-bot webhook transport** (one HTTP app, many bots by `:botId`).
+      The outbound case already works via the per-call `token` override; the
+      inbound case needs a `bots[]` registry + a dispatch-carries-bot refactor.
+      Factors cleanly into named clients (`@InjectBot`) ⊂ multi-bot dispatch.
+- [ ] **MTProto transport (mtcute) spike** — expose the existing DX surface
+      over MTProto as an opt-in transport swap (large files, methods the Bot
+      API doesn't expose). Feasible because the surface is already an
+      abstraction over a pluggable `UpdateSource` + command objects.
