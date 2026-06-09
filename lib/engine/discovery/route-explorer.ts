@@ -6,6 +6,7 @@ import {
 
 import { Metadata } from '../../decorators/metadata.enum';
 import { ListenerOptions } from '../../decorators/listener-options';
+import { RoutePredicate } from '../matching';
 import { Route } from './route.types';
 
 /**
@@ -51,10 +52,16 @@ export class RouteExplorer {
           continue;
         }
 
+        // Method-level predicates (`@Match`, and the `@AnyState()`/`@NoState()`
+        // built on it) AND into EVERY route this method produces — independent
+        // of how many listeners it stacks and of decorator order.
+        const methodPredicates: RoutePredicate[] =
+          Reflect.getMetadata(Metadata.MATCH, prototype[methodName]) ?? [];
+
         for (const listener of listeners) {
           routes.push({
             updateType: listener.updateType,
-            predicates: listener.predicates ?? [],
+            predicates: [...(listener.predicates ?? []), ...methodPredicates],
             instance,
             methodName,
           });

@@ -4,4 +4,6 @@ export enum Metadata {
   ROUTER = 'ROUTER',
   NO_AUTO_ANSWER = 'NO_AUTO_ANSWER',
   UPDATE_STAGE = 'UPDATE_STAGE',
+  /** Method-level match predicates merged into every route of the method (`@Match`). */
+  MATCH = 'MATCH',
 }
