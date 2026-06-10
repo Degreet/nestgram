@@ -10,12 +10,12 @@ Match predicates decide **which handler applies** to an update. They sit on top
 of the update type: `@OnMessage()` matches any message, while `@Command`,
 `@Hears` and `@Action` match by content.
 
-| Decorator | Matches |
-| --- | --- |
-| `@Command('start')` | `/start`, `/start args`, `/start@BotName` |
-| `@Hears('hi')` / `@Hears(/^\d+$/)` | message text by string or regex |
-| `@Action('buy')` / `@Action(/buy:(\d+)/)` | `callback_query.data` by string or regex |
-| `@OnMessage()` / `@On*()` | any update of that type |
+| Decorator                                 | Matches                                   |
+| ----------------------------------------- | ----------------------------------------- |
+| `@Command('start')`                       | `/start`, `/start args`, `/start@BotName` |
+| `@Hears('hi')` / `@Hears(/^\d+$/)`        | message text by string or regex           |
+| `@Action('buy')` / `@Action(/buy:(\d+)/)` | `callback_query.data` by string or regex  |
+| `@OnMessage()` / `@On*()`                 | any update of that type                   |
 
 ## Commands
 
@@ -24,6 +24,7 @@ and with an optional `@BotName` suffix (which Telegram adds in groups). The name
 is given **without** the leading slash.
 
 :::code[support.router.ts]
+
 ```ts
 @Router()
 export class SupportRouter {
@@ -38,6 +39,7 @@ export class SupportRouter {
   }
 }
 ```
+
 :::
 
 ## Text with @Hears
@@ -46,6 +48,7 @@ export class SupportRouter {
 against the message text.
 
 :::code
+
 ```ts
 @Hears('ping')
 ping(message: Message) {
@@ -57,6 +60,7 @@ number(message: Message) {
   return `That's a number: ${message.text}`;
 }
 ```
+
 :::
 
 ## Callback data with @Action
@@ -66,12 +70,14 @@ argument it matches any callback query. See [callbacks](/docs/callbacks) for the
 full flow.
 
 :::code
+
 ```ts
 @Action('refresh')
 refresh(query: CallbackQuery) {
   return query.answer('Refreshed');
 }
 ```
+
 :::
 
 ## First match wins
@@ -80,16 +86,22 @@ Within a router, Nestgram tries handlers in **declaration order** and runs the
 **first** whose predicate matches. Put specific handlers before catch-alls.
 
 :::code[order.router.ts]{mark="3"}
+
 ```ts
 @Router()
 export class OrderRouter {
-  @Command('start')        // specific: checked first
-  start(message: Message) { return 'Hi!'; }
+  @Command('start') // specific: checked first
+  start(message: Message) {
+    return 'Hi!';
+  }
 
-  @OnMessage()             // catch-all: only if nothing above matched
-  fallback(message: Message) { return message.text; }
+  @OnMessage() // catch-all: only if nothing above matched
+  fallback(message: Message) {
+    return message.text;
+  }
 }
 ```
+
 :::
 
 :::caution
@@ -102,7 +114,7 @@ catch-all in the same router if precedence matters.
 
 A predicate returning `false` makes Nestgram **try the next handler**. A guard
 returning `false` **rejects** the update. Use predicates to choose a handler and
-[guards](/docs/guards) to authorize the chosen one — they're different jobs.
+[guards](/docs/guards-and-pipeline) to authorize the chosen one — they're different jobs.
 
 :::guardrail[only in Nestgram]
 Match predicates are first-class routing, not bolted onto exception filters or

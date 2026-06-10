@@ -7,13 +7,13 @@ sidebar:
   order: 60
 ---
 
-This is the page that explains *why* Nestgram is a framework and not a
+This is the page that explains _why_ Nestgram is a framework and not a
 wrapper. Because handlers run through Nest's own execution pipeline, the
 primitives you already know — **guards, interceptors, pipes and exception
 filters** — work here exactly as they do in HTTP. Nothing custom to learn.
 
 :::mental
-update -> guard -> interceptor -> handler* -> filter
+update -> guard -> interceptor -> handler\* -> filter
 :::
 
 ## An admin-only guard
@@ -23,6 +23,7 @@ reading the Telegram event off the `ExecutionContext`, which a small helper
 does for you.
 
 :::code[admin.guard.ts]{mark="9"}
+
 ```ts
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { TelegramExecutionContext } from 'nestgram';
@@ -37,6 +38,7 @@ export class AdminGuard implements CanActivate {
   }
 }
 ```
+
 :::
 
 `TelegramExecutionContext.of(context)` exposes `from`, `chat`, `event`,
@@ -46,9 +48,11 @@ export class AdminGuard implements CanActivate {
 
 Use the standard `@UseGuards()` — on a single handler or the whole router.
 
-:::code[admin.router.ts]{mark="5"}
+:::code[admin.router.ts]{mark="6"}
+
 ```ts
-import { Router, Command, UseGuards, Message } from 'nestgram';
+import { UseGuards } from '@nestjs/common';
+import { Router, Command, Message } from 'nestgram';
 import { AdminGuard } from './admin.guard';
 
 @Router()
@@ -60,6 +64,7 @@ export class AdminRouter {
   }
 }
 ```
+
 :::
 
 When the guard returns `false`, the handler never runs — same semantics as a
@@ -78,19 +83,27 @@ available:
   in a handler and turn them into a friendly reply.
 
 :::code[reply-on-error.filter.ts]
+
 ```ts
-import { Catch, ExceptionFilter } from '@nestjs/common';
-import { TelegramExecutionContext } from 'nestgram';
+import { Catch, ExceptionFilter, ExecutionContext } from '@nestjs/common';
+import { Message, TelegramExecutionContext } from 'nestgram';
 
 @Catch()
 export class ReplyOnError implements ExceptionFilter {
   catch(error: unknown, host: ExecutionContext) {
     const { event } = TelegramExecutionContext.of(host);
-    return event.answer('Something went wrong, please try again.');
+    if (event instanceof Message) {
+      return event.answer('Something went wrong, please try again.');
+    }
   }
 }
 ```
+
 :::
+
+A `@Catch()` filter can fire for _any_ update type, so `event` arrives as the
+wide event type — the `instanceof Message` check narrows it before you reach
+for `answer()`.
 
 :::tip
 Cross-cutting concerns — auth, rate limits, logging, i18n — belong in
@@ -105,8 +118,9 @@ A few framework-level safeguards worth knowing as you move past polling:
 :::warn[Webhook without a secret token]
 If you set a webhook **without** a secret token, anyone who learns your
 webhook URL can post fake updates.
+
 > Nestgram warns at startup and validates `X-Telegram-Bot-Api-Secret-Token` on every request when set
-:::
+> :::
 
 Other production defaults Nestgram handles for you, no config required:
 

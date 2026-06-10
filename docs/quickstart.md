@@ -39,7 +39,7 @@ import { Router, Command, OnMessage, Message } from 'nestgram';
 export class GreetRouter {
   @Command('start')
   start(message: Message) {
-    return `Hello, ${message.from.first_name}!`;
+    return `Hello, ${message.from?.first_name ?? 'there'}!`;
   }
 
   @OnMessage()
@@ -79,7 +79,7 @@ import { GreetRouter } from './greet.router';
 @Module({
   imports: [
     NestgramModule.forRoot({
-      token: process.env.BOT_TOKEN,
+      token: process.env.BOT_TOKEN ?? '',
       polling: true,
     }),
   ],
@@ -108,8 +108,8 @@ Nest dynamic modules.
 
 ## Bootstrap
 
-A Nestgram bot is a standard Nest application context — no HTTP server
-required for polling.
+A polling bot needs no HTTP server — it's a plain Nest application context.
+(A webhook bot bootstraps differently; the next section shows how.)
 
 :::code[main.ts]
 
@@ -140,7 +140,7 @@ The same router runs unchanged in development (long polling) and production
 
 ```ts
 NestgramModule.forRoot({
-  token: process.env.BOT_TOKEN,
+  token: process.env.BOT_TOKEN ?? '',
   polling: true, // dev: long polling
 });
 ```
@@ -149,7 +149,7 @@ NestgramModule.forRoot({
 
 ```ts
 NestgramModule.forRoot({
-  token: process.env.BOT_TOKEN,
+  token: process.env.BOT_TOKEN ?? '',
   webhook: {
     url: 'https://bot.example.com/telegram/webhook',
     secretToken: process.env.WH_SECRET, // ← guardrail satisfied
@@ -159,23 +159,68 @@ NestgramModule.forRoot({
 
 :::
 
-Webhook delivery arrives over HTTP, so register a receiver: add the ready-made
-`WebhookController` to your module's `controllers` (it serves `/telegram/webhook`
-— point `url` there). Need a different route, or extra processing the moment an
-update lands? Register `createWebhookController('your/path')`, or write your own
-controller and forward updates via `WebhookUpdateSource`. Nothing here is
-privileged — the built-in controller is the same one you could write yourself.
+In polling mode that's the whole story — the bootstrap above already works.
+A webhook changes two things: updates arrive over HTTP, so your app needs a
+**controller** to receive them and a **real HTTP server** to run it.
+
+First the receiver. Add the ready-made `WebhookController` to your module's
+`controllers` — it serves `telegram/webhook` (point `url` there) and rejects
+any request whose secret-token header doesn't match your `secretToken`. Need
+a different route? Register `createWebhookController('your/path')` instead.
+Want extra processing the moment an update lands? Write your own controller
+and forward updates via `WebhookUpdateSource`. Nothing here is privileged —
+the built-in controller is the same one you could write yourself.
+
+:::code[app.module.ts]{mark="15"}
 
 ```ts
 import { Module } from '@nestjs/common';
 import { NestgramModule, WebhookController } from 'nestgram';
+import { GreetRouter } from './greet.router';
 
 @Module({
-  imports: [NestgramModule.forRoot({ token: process.env.BOT_TOKEN, webhook })],
+  imports: [
+    NestgramModule.forRoot({
+      token: process.env.BOT_TOKEN ?? '',
+      webhook: {
+        url: 'https://bot.example.com/telegram/webhook',
+        secretToken: process.env.WH_SECRET,
+      },
+    }),
+  ],
   controllers: [WebhookController],
+  providers: [GreetRouter],
 })
 export class AppModule {}
 ```
+
+:::
+
+Then the bootstrap: `NestFactory.create` instead of
+`createApplicationContext`, plus `listen` — a controller only receives
+requests in a real HTTP app. An application context has no HTTP server, so
+with the polling bootstrap a webhook bot would sit silently dead.
+
+:::code[main.ts]{mark="7"}
+
+```ts
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  app.enableShutdownHooks();
+  await app.listen(3000);
+}
+
+bootstrap();
+```
+
+:::
+
+You never call `setWebhook` yourself: on boot Nestgram registers the webhook
+URL with Telegram — `secretToken` included — and on shutdown it deletes it
+again. Your half of the contract is serving the URL.
 
 Then start it:
 
@@ -188,10 +233,10 @@ connected as. Message your bot `/start` and then anything else — you'll get
 a greeting and an echo.
 
 :::warn[Nestgram warning]
-[WebhookModule] You set a webhook with no **secret_token**.
-Anyone who learns your URL can spoof updates.
+[WebhookUpdateSource] Webhook is set without a **secretToken** — anyone who
+learns the URL can spoof updates.
 
-> pass `secretToken` to `setWebhook()`
+> set `webhook.secretToken` in `NestgramModule.forRoot`
 > :::
 
 :::caution[Heading to production?]

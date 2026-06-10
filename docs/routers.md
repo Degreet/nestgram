@@ -11,14 +11,15 @@ methods to updates, and Nestgram routes incoming updates to those methods. There
 is no separate "register your routers" step — they're discovered.
 
 :::code[greet.router.ts]
+
 ```ts
-import { Router, Command, OnMessage, Message } from 'nestgram';
+import { Router, Command, OnMessage, Sender, Message, User } from 'nestgram';
 
 @Router()
 export class GreetRouter {
   @Command('start')
-  start(message: Message) {
-    return `Hello, ${message.from.first_name}!`;
+  start(@Sender() user: User) {
+    return `Hello, ${user.first_name}!`;
   }
 
   @OnMessage()
@@ -27,6 +28,7 @@ export class GreetRouter {
   }
 }
 ```
+
 :::
 
 ## Discovery, not registration
@@ -36,20 +38,25 @@ at startup by scanning the provider graph — `forRoot()` takes **no** list of
 routers.
 
 :::code[app.module.ts]
+
 ```ts
 @Module({
-  imports: [NestgramModule.forRoot({ token: process.env.BOT_TOKEN, polling: true })],
+  imports: [
+    NestgramModule.forRoot({ token: process.env.BOT_TOKEN, polling: true }),
+  ],
   providers: [GreetRouter],
 })
 export class AppModule {}
 ```
+
 :::
 
 :::anno
+
 1. `@Router()` marks the class as a Nestgram controller and makes it injectable.
 2. Discovery runs once at boot and builds an immutable route table — per update it's a lookup, never reflection.
 3. Adding a router means adding one provider, never editing the module's imports.
-:::
+   :::
 
 ## Routers are just providers
 
@@ -57,17 +64,19 @@ Because a router is a normal provider, **inject anything** — services,
 repositories, config — through the constructor, exactly like a Nest controller.
 
 :::code[orders.router.ts]
+
 ```ts
 @Router()
 export class OrdersRouter {
   constructor(private readonly orders: OrdersService) {}
 
   @Command('orders')
-  list(message: Message) {
-    return this.orders.summaryFor(message.from.id);
+  list(@Sender() user: User) {
+    return this.orders.summaryFor(user.id);
   }
 }
 ```
+
 :::
 
 :::tip
@@ -81,7 +90,8 @@ Business logic lives in providers, not in the handler.
 The first parameter is the **concrete, typed event** — no decorator. The return
 value is the reply: a `string` is sent as text, a command object is executed,
 `void` does nothing. Derived values (the sender, parsed args) come from
-[parameter decorators](/docs/parameter-decorators).
+parameter decorators, covered in
+[commands and keyboards](/docs/commands-and-keyboards).
 
 :::note
 A method becomes a handler only when it carries a listener decorator
