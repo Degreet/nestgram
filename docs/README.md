@@ -52,9 +52,9 @@ engine is built; if a page and the code disagree, fix the page.
 
 - Custom blocks use `remark-directive` syntax (`:::tip`, `:::code[file.ts]`,
   `:::mental`, `:::anno`, `:::tabs`, …) — the full vocabulary lives in
-  [notes/docs-generator-plan.md](../notes/docs-generator-plan.md). Keep a
-  blank line before a closing `:::` that follows a list or blockquote, or
-  lazy continuation swallows it.
+  `website/gen/remark-nestgram-blocks.mjs` (the plugin is the single source
+  of truth). Keep a blank line before a closing `:::` that follows a list or
+  blockquote, or lazy continuation swallows it.
 - Every example imports from `'nestgram'`; routers are classes named
   `XxxRouter`, decorated with `@Router()`.
 - Handlers receive the concrete event positionally

@@ -2,7 +2,7 @@
 import logo from '../assets/nestgram.svg';
 
 const docsUrl = '/docs/quickstart';
-const githubUrl = 'https://github.com/Degreet/nestgram-v2';
+const githubUrl = 'https://github.com/Degreet/nestgram';
 
 // Code samples live here as pre-tokenised HTML strings and are injected with
 // set:html — Astro parses `{` in the template as an expression, so literal
@@ -35,7 +35,7 @@ const greetCode = `<span class="k">import</span> { Router, Command, OnMessage, M
 <span class="k">export class</span> <span class="t">GreetRouter</span> {
   <span class="d2">@Command</span>(<span class="s">'start'</span>)
   <span class="f">start</span>(message: <span class="t">Message</span>) {              <span class="c">// typed positional event, zero decorators</span>
-    <span class="k">return</span> <span class="s">\`Hello, \${message.from.first_name}!\`</span>; <span class="c">// string → reply</span>
+    <span class="k">return</span> <span class="s">\`Hello, \${message.from?.first_name}!\`</span>; <span class="c">// string → reply</span>
   }
 
   <span class="d2">@OnMessage</span>()
@@ -674,7 +674,7 @@ const greetCode = `<span class="k">import</span> { Router, Command, OnMessage, M
             <div class="ci-bar"><span class="d r"></span><span class="d y"></span><span class="d g"></span><span class="ci-name">handler-executor.factory.ts</span></div>
             <pre><code set:html={executorCode}></code></pre>
           </div>
-          <div class="step-key"><b>Hard-won lesson (ECC-NOTES):</b> ECC resolves params all-or-nothing. So <em>every</em> param must be a decorator — and the framework auto-applies <span class="inline-code">@Event()</span> to param 0, so you can write <span class="inline-code">handle(message: Message)</span> with <b>no</b> decorator.</div>
+          <div class="step-key"><b>Hard-won lesson:</b> ECC resolves params all-or-nothing. So <em>every</em> param must be a decorator — and the framework auto-applies <span class="inline-code">@Event()</span> to param 0, so you can write <span class="inline-code">handle(message: Message)</span> with <b>no</b> decorator.</div>
         </div>
       </div>
 
@@ -811,7 +811,7 @@ const greetCode = `<span class="k">import</span> { Router, Command, OnMessage, M
 
     <div class="callout">
       <span class="ic">🚧</span>
-      <p><b>Status:</b> v2 pre-release (alpha), Phase 1 — the engine runs end to end (discovery → polling → dispatch through ECC). Remaining: tests, an example bot, the <span class="inline-code">strict: true</span> flip. Webhook, sessions, typed callback-data, i18n and type code-generation are Phase 2. Full detail lives in <span class="inline-code">VISION.md</span> / <span class="inline-code">ROADMAP.md</span> / <span class="inline-code">notes/</span>.</p>
+      <p><b>Status:</b> v2 pre-release (alpha). The engine runs end to end (discovery → polling/webhook → dispatch through ECC) under <span class="inline-code">strict: true</span>, and the real-world layer is built and tested: sessions, i18n, typed callback-data, generated Bot API 10.0 methods, send throttling and the FSM core. Scenes and the docs-site polish are in progress. Full detail lives in <span class="inline-code">VISION.md</span> / <span class="inline-code">ROADMAP.md</span>.</p>
     </div>
   </div>
 </section>

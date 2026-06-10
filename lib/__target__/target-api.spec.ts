@@ -9,7 +9,7 @@
  *   - the two context-by-wrapping invariants (asserted directly below), and
  *   - `it.todo`s for behaviours NOT yet in Phase 1 (Phase 2+ or deferred).
  *
- * Source of truth: VISION.md, CLAUDE.md (locked decisions), ROADMAP.md, docs/*.
+ * Source of truth: VISION.md (locked decisions), ROADMAP.md, docs/*.
  */
 
 import { BotService } from '../api';

@@ -8,7 +8,7 @@
 // Authors only ever write directives; the block vocabulary is enumerable in
 // this one file — the grammar an AI author generates against.
 //
-// Directive catalog (see docs-generator-plan.md):
+// Directive catalog:
 //   :::note / :::tip / :::caution[title]     soft asides
 //   :::warn[label]                           dramatic terminal-style box
 //   :::mental                                mental-model flow card

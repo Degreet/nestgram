@@ -3,9 +3,8 @@
 Delivery phases for Nestgram v2. The design these phases build toward is in
 [VISION.md](./VISION.md). Phases are ordered; items inside a phase are not.
 
-> **Granular, live task status lives in the backlog** (`.backlog/tasks/tasks.json`
-> — `backlog list`). This file is the high-level phase narrative; the
-> checkboxes track phase-level scope, not individual tickets.
+> This file is the high-level phase narrative; the checkboxes track
+> phase-level scope, not individual tickets.
 
 ## Phase 0 — Docs-first ✅
 
@@ -14,7 +13,7 @@ development). The spec is the developer's story in real code — quickstart
 plus a cookbook — and it freezes the shape of the public API. It becomes the
 acceptance criteria for the implementation.
 
-- [x] `README.md`, `VISION.md`, `ROADMAP.md`, `CLAUDE.md`
+- [x] `README.md`, `VISION.md`, `ROADMAP.md`
 - [x] DX spec in `docs/` as Markdown: quickstart (echo), `/start` + keyboard,
       callback (`@Action`), an admin-only guard
 - [x] Lock public API names and signatures from the spec
@@ -94,7 +93,7 @@ Everything needed to ship a production bot.
 ## Beyond v2.0 — extra ideas (not scheduled)
 
 Deliberately out of the v2.0 line — bigger bets to revisit after launch, not
-MVP blockers. Designs are roughed out; see the backlog for the notes.
+MVP blockers. Designs are roughed out.
 
 - [ ] **Multi-bot webhook transport** (one HTTP app, many bots by `:botId`).
       The outbound case already works via the per-call `token` override; the

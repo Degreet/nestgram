@@ -22,8 +22,7 @@ npm install
 
 Source lives in `lib/` (not `src/`); build output goes to `dist/`. Files are
 kebab-case, and types live beside the feature they describe. See
-[CLAUDE.md](./CLAUDE.md) for the architecture brief and locked decisions, and
-[VISION.md](./VISION.md) for the design rationale.
+[VISION.md](./VISION.md) for the design rationale and locked decisions.
 
 ## Development workflow
 
