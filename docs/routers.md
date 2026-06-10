@@ -56,7 +56,8 @@ export class AppModule {}
 1. `@Router()` marks the class as a Nestgram controller and makes it injectable.
 2. Discovery runs once at boot and builds an immutable route table — per update it's a lookup, never reflection.
 3. Adding a router means adding one provider, never editing the module's imports.
-   :::
+
+:::
 
 ## Routers are just providers
 

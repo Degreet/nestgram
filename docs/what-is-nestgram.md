@@ -16,7 +16,7 @@ controller, an incoming update is a request, and the value a handler returns is
 the reply.
 
 :::mental
-Telegram update -> @Router() controller* -> handler -> reply
+Telegram update -> @Router() controller\* -> handler -> reply
 :::
 
 ## Who it's for

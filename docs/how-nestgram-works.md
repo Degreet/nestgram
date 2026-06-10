@@ -7,7 +7,7 @@ sidebar:
 ---
 
 You can build bots without reading this page. But understanding the design tells
-you *where* to reach when you need something the guides didn't cover — and why
+you _where_ to reach when you need something the guides didn't cover — and why
 you can almost always add it yourself.
 
 ## DX over internal purity
@@ -23,7 +23,7 @@ context — so your bot code stays minimal and obvious.
 Every update takes the same path:
 
 :::mental
-update source -> route table -> match -> Nest pipeline* -> handler -> reply
+update source -> route table -> match -> Nest pipeline\* -> handler -> reply
 :::
 
 1. **Update source** — polling (webhook later). Pluggable; the rest of the
@@ -44,12 +44,12 @@ update source -> route table -> match -> Nest pipeline* -> handler -> reply
 
 Nestgram is organised by layer, not by feature — each part has a distinct job:
 
-| Layer | What lives there |
-| --- | --- |
-| `engine` | the update→dispatch machinery: source, discovery, matching, execution, context |
-| `api` | talking to Telegram: the transport client and the command objects (`SendMessage`, …) |
-| `events` | rich typed events (`Message`, `CallbackQuery`) — data plus the actions on them |
-| `decorators` | the public surface: `@Router`, the listeners, the param decorators |
+| Layer        | What lives there                                                                     |
+| ------------ | ------------------------------------------------------------------------------------ |
+| `engine`     | the update→dispatch machinery: source, discovery, matching, execution, context       |
+| `api`        | talking to Telegram: the transport client and the command objects (`SendMessage`, …) |
+| `events`     | rich typed events (`Message`, `CallbackQuery`) — data plus the actions on them       |
+| `decorators` | the public surface: `@Router`, the listeners, the param decorators                   |
 
 ## Why real Nest primitives
 

@@ -56,7 +56,8 @@ export class GreetRouter {
 1. The handler receives a **typed `Message`** as its first argument — no decorator, no guessing what's on it. You named the type, so you know exactly what arrived.
 2. `@Command('start')` matches the `/start` command; `@OnMessage()` matches any message. Nestgram tries handlers in order and runs the first match.
 3. Returning a `string` sends it as a reply — sugar over `message.answer(text)`, which you can call directly when you need options.
-   :::
+
+:::
 
 :::tip
 Most handlers stay one line. When you need more control, return a command
@@ -237,7 +238,8 @@ a greeting and an echo.
 learns the URL can spoof updates.
 
 > set `webhook.secretToken` in `NestgramModule.forRoot`
-> :::
+
+:::
 
 :::caution[Heading to production?]
 Polling is great for development. For production you'll switch to a webhook —

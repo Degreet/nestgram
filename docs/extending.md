@@ -16,6 +16,7 @@ the framework would — no fork required.
 on anything in the update:
 
 :::code[private-chat.predicate.ts]
+
 ```ts
 import { RoutePredicate, TelegramExecutionContext } from 'nestgram';
 
@@ -25,6 +26,7 @@ export class PrivateChatPredicate implements RoutePredicate {
   }
 }
 ```
+
 :::
 
 Pass it to any listener (all predicates must pass):
@@ -37,6 +39,7 @@ context and read them back anywhere in the pipeline (a guard writes, an
 interceptor or handler reads). It lives for that one update, then is discarded.
 
 :::code
+
 ```ts
 // in a guard:
 TelegramExecutionContext.of(context).state.set('isAdmin', true);
@@ -47,6 +50,7 @@ handle(message: Message, @State() state: EventState) {
   if (state.get('isAdmin')) { /* ... */ }
 }
 ```
+
 :::
 
 :::guardrail[only in Nestgram]

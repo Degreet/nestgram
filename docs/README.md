@@ -2,7 +2,7 @@
 
 > [!NOTE]
 > This folder is the **docs-first specification** for Nestgram v2. The API
-> shown here is the *target* we are building toward — it is the acceptance
+> shown here is the _target_ we are building toward — it is the acceptance
 > criteria for the engine, written before the engine. If code and these docs
 > disagree, the docs win until we consciously change them here.
 

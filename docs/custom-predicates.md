@@ -16,11 +16,13 @@ A predicate decides whether a route applies to the current update. It receives
 the execution context and returns a boolean (sync or async):
 
 :::code[route-predicate.ts]
+
 ```ts
 interface RoutePredicate {
   matches(ctx: TelegramExecutionContext): boolean | Promise<boolean>;
 }
 ```
+
 :::
 
 The context exposes the raw `update`, the resolved `kind`, and the rich `event`,
@@ -31,6 +33,7 @@ so a predicate can match on anything Telegram sent.
 Say you want a handler that only fires in private chats:
 
 :::code[private-chat.predicate.ts]
+
 ```ts
 import { RoutePredicate, TelegramExecutionContext } from 'nestgram';
 
@@ -40,18 +43,21 @@ export class PrivateChatPredicate implements RoutePredicate {
   }
 }
 ```
+
 :::
 
 Predicates compose: pass extra ones to a listener decorator and **all** must
 pass (logical AND).
 
 :::code
+
 ```ts
 @OnMessage(new PrivateChatPredicate())
 dmOnly(message: Message) {
   return 'This only runs in private chats.';
 }
 ```
+
 :::
 
 :::tip

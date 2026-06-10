@@ -111,7 +111,8 @@ If you never answer a callback query, the button keeps spinning for up to a
 minute.
 
 > when in doubt, call `query.answer()`
-> :::
+
+:::
 
 ## Editing the message
 

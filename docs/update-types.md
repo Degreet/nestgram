@@ -10,20 +10,20 @@ Telegram sends many kinds of update — messages, edits, callback queries, chat
 member changes, polls, and more. Each has a matching `@On*` decorator that
 routes that kind to a handler.
 
-## The @On* catalog
+## The @On\* catalog
 
 Every handler's first parameter is the concrete event type for that update kind:
 
-| Decorator | Event | Fires on |
-| --- | --- | --- |
-| `@OnMessage()` | `Message` | a new message |
-| `@OnEditedMessage()` | `Message` | a message was edited |
-| `@OnChannelPost()` | `Message` | a channel post |
-| `@OnCallbackQuery()` | `CallbackQuery` | an inline button press |
-| `@OnInlineQuery()` | `InlineQuery` | an inline-mode query |
-| `@OnPoll()` / `@OnPollAnswer()` | `Poll` / `PollAnswer` | poll updates |
-| `@OnMyChatMember()` / `@OnChatMember()` | `ChatMemberUpdated` | membership changes |
-| `@OnChatJoinRequest()` | `ChatJoinRequest` | a join request |
+| Decorator                               | Event                 | Fires on               |
+| --------------------------------------- | --------------------- | ---------------------- |
+| `@OnMessage()`                          | `Message`             | a new message          |
+| `@OnEditedMessage()`                    | `Message`             | a message was edited   |
+| `@OnChannelPost()`                      | `Message`             | a channel post         |
+| `@OnCallbackQuery()`                    | `CallbackQuery`       | an inline button press |
+| `@OnInlineQuery()`                      | `InlineQuery`         | an inline-mode query   |
+| `@OnPoll()` / `@OnPollAnswer()`         | `Poll` / `PollAnswer` | poll updates           |
+| `@OnMyChatMember()` / `@OnChatMember()` | `ChatMemberUpdated`   | membership changes     |
+| `@OnChatJoinRequest()`                  | `ChatJoinRequest`     | a join request         |
 
 :::note
 This is the high-level list. The full set mirrors the Bot API's update fields
@@ -39,8 +39,15 @@ the method to its update type. The parameter becomes a union, and you narrow it
 with a plain `instanceof` (events are real classes).
 
 :::code[feedback.router.ts]
+
 ```ts
-import { Router, OnMessage, OnCallbackQuery, Message, CallbackQuery } from 'nestgram';
+import {
+  Router,
+  OnMessage,
+  OnCallbackQuery,
+  Message,
+  CallbackQuery,
+} from 'nestgram';
 
 @Router()
 export class FeedbackRouter {
@@ -56,12 +63,15 @@ export class FeedbackRouter {
   }
 }
 ```
+
 :::
 
 :::anno
+
 1. Stacking `@OnMessage()` and `@OnCallbackQuery()` binds one method to both update types — no special union decorator needed.
 2. The parameter is a **union** of the matching event types — no hidden optionals.
 3. `instanceof Message` narrows the union, so you only reach type-specific fields after a conscious check — standard TypeScript, no framework-specific API.
+
 :::
 
 :::tip

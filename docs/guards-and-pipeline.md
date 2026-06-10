@@ -120,7 +120,8 @@ If you set a webhook **without** a secret token, anyone who learns your
 webhook URL can post fake updates.
 
 > Nestgram warns at startup and validates `X-Telegram-Bot-Api-Secret-Token` on every request when set
-> :::
+
+:::
 
 Other production defaults Nestgram handles for you, no config required:
 
