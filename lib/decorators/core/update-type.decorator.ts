@@ -1,5 +1,8 @@
-import { Constructor } from '@nestjs/common/utils/merge-with-values.util';
 import { TelegramObject } from '../../events';
+
+/** A concrete rich-event class (importing Nest's internal Constructor util
+ * would tie the published package to a deep path that can move in any minor). */
+type Constructor<T> = new (...args: any[]) => T;
 
 const TELEGRAM_OBJECT_REGISTRY = new Map<string, Constructor<TelegramObject>>();
 
