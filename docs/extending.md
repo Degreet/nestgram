@@ -36,7 +36,8 @@ Pass it to any listener (all predicates must pass):
 
 Every update carries a `state` store — a place to stash your own flags or
 context and read them back anywhere in the pipeline (a guard writes, an
-interceptor or handler reads). It lives for that one update, then is discarded.
+interceptor or handler reads). It lives for that one update, then is discarded
+— state that must survive between updates is a [session](/docs/sessions).
 
 :::code
 

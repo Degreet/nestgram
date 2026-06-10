@@ -1,39 +1,64 @@
-# Nestgram docs — DX spec
+# Nestgram docs
 
-> [!NOTE]
-> This folder is the **docs-first specification** for Nestgram v2. The API
-> shown here is the _target_ we are building toward — it is the acceptance
-> criteria for the engine, written before the engine. If code and these docs
-> disagree, the docs win until we consciously change them here.
+This folder is the **source the website renders**: every `*.md` here becomes
+a page under `/docs/<filename>` on the Astro site (`website/`). Sidebar
+grouping and order come from each file's own frontmatter
+(`sidebar: { label, group, order }`) — there is no central sidebar file. The
+engine is built; if a page and the code disagree, fix the page.
 
-These pages are the developer's story, in order. Read them top to bottom and
-you've seen the whole framework.
+## Pages, as grouped in the sidebar
 
-## Mental model
+**Introduction**
 
-```
-Telegram update  ─▶  @Router()  ─▶  guard ─▶ pipe ─▶  handler(event)  ─▶  reply
-```
+- [What is Nestgram](./what-is-nestgram.md)
+- [Mental model](./mental-model.md)
+- [Installation](./installation.md)
 
-A `@Router()` is a controller. An update is a request. The value your
-handler returns is the reply. Around the handler runs the real Nest
-pipeline — the same guards, interceptors, pipes and exception filters you
-already know from HTTP.
+**Getting started**
 
-## Pages
+- [Quickstart](./quickstart.md)
 
-1. [Quickstart](./quickstart.md) — install and run an echo bot.
-2. [Commands, parameters & keyboards](./commands-and-keyboards.md) —
-   `@Command`, parameter decorators, inline & reply keyboards.
-3. [Callbacks](./callbacks.md) — `@Action`, editing messages, answering
-   callback queries.
-4. [Guards & the Nest pipeline](./guards-and-pipeline.md) — an admin-only
-   guard, and why the standard Nest primitives just work.
+**Routing**
 
-## Conventions used in these docs
+- [Routers](./routers.md)
+- [Match predicates](./match-predicates.md)
+- [Update types](./update-types.md)
+- [Custom predicates](./custom-predicates.md)
 
-- Every example imports from `'nestgram'`.
-- Routers are classes named `XxxRouter`, decorated with `@Router()`.
-- Handlers receive the concrete event positionally: `handle(message: Message)`.
-- Parameter decorators (`@Sender()`, `@Args()`, …) are only for
+**Events & replies**
+
+- [Callbacks](./callbacks.md)
+
+**Keyboards**
+
+- [Commands, parameters & keyboards](./commands-and-keyboards.md)
+
+**The Nest pipeline**
+
+- [Guards & the Nest pipeline](./guards-and-pipeline.md)
+
+**State & sessions**
+
+- [Sessions](./sessions.md)
+- [Conversations: the FSM](./fsm.md)
+- [i18n](./i18n.md)
+
+**Concepts**
+
+- [How Nestgram works](./how-nestgram-works.md)
+- [Extending Nestgram](./extending.md)
+
+## Authoring notes
+
+- Custom blocks use `remark-directive` syntax (`:::tip`, `:::code[file.ts]`,
+  `:::mental`, `:::anno`, `:::tabs`, …) — the full vocabulary lives in
+  [notes/docs-generator-plan.md](../notes/docs-generator-plan.md). Keep a
+  blank line before a closing `:::` that follows a list or blockquote, or
+  lazy continuation swallows it.
+- Every example imports from `'nestgram'`; routers are classes named
+  `XxxRouter`, decorated with `@Router()`.
+- Handlers receive the concrete event positionally
+  (`handle(message: Message)`); parameter decorators are only for
   cross-cutting or derived values — never for the main event.
+- Code samples must type-check against the framework's strict `tsconfig`
+  (paths `nestgram` → `lib`).

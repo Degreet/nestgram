@@ -136,4 +136,5 @@ Other production defaults Nestgram handles for you, no config required:
 
 That's the core loop: routers as controllers, typed events, sugar where it
 helps, and the full Nest pipeline around every handler. Everything else —
-sessions, scenes, code-generated API types — builds on exactly these pieces.
+[sessions](/docs/sessions), [conversations](/docs/fsm), [i18n](/docs/i18n),
+code-generated API types — builds on exactly these pieces.
