@@ -6,6 +6,7 @@ import type { InputFile } from '../input-file';
 import type {
   RawForceReply,
   RawInlineKeyboardMarkup,
+  RawMessage,
   RawMessageEntity,
   RawReplyKeyboardMarkup,
   RawReplyKeyboardRemove,
@@ -54,6 +55,6 @@ export class SendPhoto extends ApiMethod<SendPhotoOptions, Message> {
   }
 
   wrap(raw: unknown, bot: BotService): Message {
-    return new Message(bot, raw as Partial<Message>);
+    return new Message(bot, raw as Partial<RawMessage>);
   }
 }

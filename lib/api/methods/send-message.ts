@@ -5,6 +5,7 @@ import type {
   RawForceReply,
   RawInlineKeyboardMarkup,
   RawLinkPreviewOptions,
+  RawMessage,
   RawMessageEntity,
   RawReplyKeyboardMarkup,
   RawReplyKeyboardRemove,
@@ -47,6 +48,6 @@ export class SendMessage extends ApiMethod<SendMessageOptions, Message> {
   }
 
   wrap(raw: unknown, bot: BotService): Message {
-    return new Message(bot, raw as Partial<Message>);
+    return new Message(bot, raw as Partial<RawMessage>);
   }
 }

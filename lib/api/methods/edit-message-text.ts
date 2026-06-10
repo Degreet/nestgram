@@ -4,6 +4,7 @@ import type { BotService } from '../bot.service';
 import type {
   RawInlineKeyboardMarkup,
   RawLinkPreviewOptions,
+  RawMessage,
   RawMessageEntity,
 } from '../../events/raw-update.types';
 
@@ -35,7 +36,7 @@ export class EditMessageText extends ApiMethod<
 
   wrap(raw: unknown, bot: BotService): Message | true {
     return typeof raw === 'object' && raw !== null
-      ? new Message(bot, raw as Partial<Message>)
+      ? new Message(bot, raw as Partial<RawMessage>)
       : true;
   }
 }

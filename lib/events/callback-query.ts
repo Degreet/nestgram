@@ -4,27 +4,25 @@ import { Message } from './message';
 import { BotService, MethodOptions } from '../api';
 import { AnswerCallbackQueryOptions } from '../api/methods';
 import type { EventState } from '../engine/context/event-state';
+import type { RawCallbackQuery } from './raw-update.types';
 import { TelegramObject } from './telegram-object';
 import { UpdateType } from '../decorators';
 
 /** Key under which `answer()` records into the per-update state. */
 const ANSWERED = Symbol('callback-answered');
 
+export interface CallbackQuery extends Omit<RawCallbackQuery, 'message'> {}
+
 @UpdateType('callback_query')
 export class CallbackQuery extends TelegramObject {
-  id!: string;
-  from: any;
+  /** The originating message, wrapped into the rich event (when accessible). */
   message?: Message;
-  inline_message_id?: string;
-  chat_instance!: string;
-  data?: string;
-  game_short_name?: string;
 
   private readonly logger = new Logger(CallbackQuery.name);
 
   constructor(
     private readonly botService: BotService,
-    from: Partial<CallbackQuery>,
+    from: Partial<RawCallbackQuery>,
     private readonly state?: EventState,
   ) {
     super();

@@ -4,6 +4,7 @@ import type { BotService } from '../bot.service';
 import { hasInputFile } from '../form-data';
 import type {
   RawInputMedia,
+  RawMessage,
   RawReplyParameters,
 } from '../../events/raw-update.types';
 
@@ -41,7 +42,7 @@ export class SendMediaGroup extends ApiMethod<
   }
 
   wrap(raw: unknown, bot: BotService): Message[] {
-    return (raw as Partial<Message>[]).map(
+    return (raw as Partial<RawMessage>[]).map(
       (object) => new Message(bot, object),
     );
   }

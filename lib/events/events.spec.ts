@@ -38,7 +38,7 @@ describe('Message actions', () => {
       message_id: 5,
       chat: { id: 1, type: 'private' },
       text: 'hi',
-    } as Partial<Message>);
+    });
   }
 
   it('answer() sends a message to the same chat', () => {
@@ -111,7 +111,7 @@ describe('CallbackQuery actions', () => {
     return new CallbackQuery(bot, {
       id: 'cb1',
       chat_instance: 'x',
-    } as Partial<CallbackQuery>);
+    });
   }
 
   it('answer(text, options) answers with a toast', () => {
@@ -141,14 +141,31 @@ describe('CallbackQuery actions', () => {
     });
   });
 
+  it('leaves message undefined for inline-mode queries (no hollow wrap)', () => {
+    const { bot } = fakeBot();
+    const q = new CallbackQuery(bot, {
+      id: 'cb1',
+      chat_instance: 'x',
+      inline_message_id: 'im1',
+    });
+    expect(q.message).toBeUndefined();
+  });
+
+  it('wraps the originating message into a rich Message when present', () => {
+    const { bot } = fakeBot();
+    const q = new CallbackQuery(bot, {
+      id: 'cb1',
+      chat_instance: 'x',
+      message: { message_id: 5, chat: { id: 1, type: 'private' }, date: 0 },
+    });
+    expect(q.message).toBeInstanceOf(Message);
+    expect(q.message?.chat.id).toBe(1);
+  });
+
   it('tracks answered via per-update state and warns on a double answer', () => {
     const { bot } = fakeBot();
     const state = new Map();
-    const q = new CallbackQuery(
-      bot,
-      { id: 'cb1', chat_instance: 'x' } as Partial<CallbackQuery>,
-      state,
-    );
+    const q = new CallbackQuery(bot, { id: 'cb1', chat_instance: 'x' }, state);
     const warn = jest
       .spyOn(Logger.prototype, 'warn')
       .mockImplementation(() => undefined);

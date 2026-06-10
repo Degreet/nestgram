@@ -1,7 +1,10 @@
 import { ApiMethod } from './api-method';
 import { Message } from '../../events';
 import type { BotService } from '../bot.service';
-import type { RawSuggestedPostParameters } from '../../events/raw-update.types';
+import type {
+  RawMessage,
+  RawSuggestedPostParameters,
+} from '../../events/raw-update.types';
 
 export interface ForwardMessageOptions {
   chat_id: number | string;
@@ -28,6 +31,6 @@ export class ForwardMessage extends ApiMethod<ForwardMessageOptions, Message> {
   }
 
   wrap(raw: unknown, bot: BotService): Message {
-    return new Message(bot, raw as Partial<Message>);
+    return new Message(bot, raw as Partial<RawMessage>);
   }
 }

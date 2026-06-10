@@ -18,14 +18,7 @@ import {
   InputMediaPhoto,
   InputMediaVideo,
 } from '../api/input-media';
-import type {
-  RawContact,
-  RawDice,
-  RawLocation,
-  RawMessage,
-  RawPoll,
-  RawVenue,
-} from './raw-update.types';
+import type { RawMessage } from './raw-update.types';
 import {
   Animation,
   Audio,
@@ -37,6 +30,23 @@ import {
   Voice,
 } from './media';
 
+/**
+ * Downloadable media fields the rich event replaces with self-downloading
+ * wrappers (`.save(path)` / `.stream()`); every other `RawMessage` field is
+ * exposed as-is via declaration merging.
+ */
+type WrappedMedia =
+  | 'photo'
+  | 'video'
+  | 'animation'
+  | 'audio'
+  | 'voice'
+  | 'document'
+  | 'video_note'
+  | 'sticker';
+
+export interface Message extends Omit<RawMessage, WrappedMedia> {}
+
 @UpdateType(
   'message',
   'edited_message',
@@ -46,16 +56,6 @@ import {
   'edited_business_message',
 )
 export class Message extends TelegramObject {
-  message_id!: number;
-  message_thread_id?: number;
-  from: any;
-  chat: any;
-  text?: string;
-  caption?: string;
-  reply_markup?: any;
-  entities?: any[];
-  caption_entities?: any[];
-
   // Content (one is present per message). Downloadable media is wrapped into a
   // rich object with `.save(path)` / `.stream()`; non-file content stays raw.
   photo?: Photo;
@@ -66,20 +66,17 @@ export class Message extends TelegramObject {
   document?: Document;
   video_note?: VideoNote;
   sticker?: Sticker;
-  dice?: RawDice;
-  location?: RawLocation;
-  contact?: RawContact;
-  poll?: RawPoll;
-  venue?: RawVenue;
 
-  constructor(private readonly botService: BotService, from: Partial<Message>) {
+  constructor(
+    private readonly botService: BotService,
+    from: Partial<RawMessage>,
+  ) {
     super();
     Object.assign(this, from);
 
     // `from` is the raw wire message; wrap its downloadable media into rich,
     // self-downloading objects (the raw/rich boundary, like the event factory).
-    // `from` may be absent (e.g. a callback query with no message).
-    const raw = (from ?? {}) as unknown as RawMessage;
+    const raw = from;
     if (raw.photo) this.photo = new Photo(botService, raw.photo);
     if (raw.video) this.video = new Video(botService, raw.video);
     if (raw.animation)

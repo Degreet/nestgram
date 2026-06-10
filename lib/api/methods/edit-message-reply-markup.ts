@@ -1,7 +1,10 @@
 import { ApiMethod } from './api-method';
 import { Message } from '../../events';
 import type { BotService } from '../bot.service';
-import type { RawInlineKeyboardMarkup } from '../../events/raw-update.types';
+import type {
+  RawInlineKeyboardMarkup,
+  RawMessage,
+} from '../../events/raw-update.types';
 
 export interface EditMessageReplyMarkupOptions {
   business_connection_id?: string;
@@ -27,7 +30,7 @@ export class EditMessageReplyMarkup extends ApiMethod<
 
   wrap(raw: unknown, bot: BotService): Message | true {
     return typeof raw === 'object' && raw !== null
-      ? new Message(bot, raw as Partial<Message>)
+      ? new Message(bot, raw as Partial<RawMessage>)
       : true;
   }
 }

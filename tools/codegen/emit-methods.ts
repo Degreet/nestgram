@@ -135,6 +135,10 @@ function buildImports(
       rawTypes.add(ts);
     }
   }
+  if (override) {
+    // The hand-owned wrap() bodies build rich Messages from raw wire data.
+    rawTypes.add('RawMessage');
+  }
 
   const lines: string[] = [
     `import { ApiMethod } from '${config.apiMethodImport}';`,

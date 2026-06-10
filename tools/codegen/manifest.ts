@@ -151,16 +151,18 @@ export function isSkippedBotMethod(methodName: string): boolean {
 // --- Per-method rich-event overrides -----------------------------------------
 
 const WRAP_SINGLE = `wrap(raw: unknown, bot: BotService): Message {
-  return new Message(bot, raw as Partial<Message>);
+  return new Message(bot, raw as Partial<RawMessage>);
 }`;
 
 const WRAP_ARRAY = `wrap(raw: unknown, bot: BotService): Message[] {
-  return (raw as Partial<Message>[]).map((object) => new Message(bot, object));
+  return (raw as Partial<RawMessage>[]).map(
+    (object) => new Message(bot, object),
+  );
 }`;
 
 const WRAP_EDITABLE = `wrap(raw: unknown, bot: BotService): Message | true {
   return typeof raw === 'object' && raw !== null
-    ? new Message(bot, raw as Partial<Message>)
+    ? new Message(bot, raw as Partial<RawMessage>)
     : true;
 }`;
 

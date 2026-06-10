@@ -17,6 +17,9 @@ export abstract class TelegramObject {
   ) {
     const target = instance as unknown as Record<string, unknown>;
     for (const [key, value] of Object.entries(objects)) {
+      // An absent optional field stays absent — wrapping `undefined` would
+      // fabricate a hollow rich object and break `if (event.field)` guards.
+      if (target[key] === undefined) continue;
       target[key] = new value(botService, target[key]);
     }
   }
