@@ -18,11 +18,12 @@ Telegram update -> @Router() controller\* -> handler -> reply
 ## Install
 
 ```bash
-npm install nestgram
+npm install nestgram@next
 ```
 
-Nestgram expects `@nestjs/common` and `@nestjs/core` (v10+) as peers, so a
-standard Nest project already has what it needs.
+The `next` tag matters while v2 is in alpha — plain `npm install nestgram`
+gives you the old v1. Nestgram expects `@nestjs/common` and `@nestjs/core`
+(v10+) as peers, so a standard Nest project already has what it needs.
 
 ## Your first router
 

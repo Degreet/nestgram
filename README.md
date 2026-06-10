@@ -1,6 +1,6 @@
 <p align="center">
-  <a href="https://nestgram.com/" target="_blank">
-    <img src="https://3560755491-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FHts9egaBIQFAK8US18Eu%2Ficon%2Ffz4kXEGCMyD53ezeoZ0L%2Fnestgram.svg?alt=media&token=1ff80c2e-517e-480f-b3ea-a9e04f36401a" width="180" alt="Nestgram logo" />
+  <a href="https://nestgram.vercel.app" target="_blank">
+    <img src="./media/logo.svg" width="180" alt="Nestgram logo" />
   </a>
 </p>
 
@@ -22,10 +22,12 @@
 ---
 
 > [!WARNING]
-> **Nestgram v2 is a pre-release (`alpha`) under active development.** The
-> public API described here is the target we are building toward. See
-> [ROADMAP.md](./ROADMAP.md) for status and [VISION.md](./VISION.md) for the
-> design philosophy.
+>
+> **Nestgram v2 is a pre-release (`alpha`).** Everything described here is
+> implemented and tested, but the public API may still shift before `2.0.0`.
+> Install it with the `next` tag — plain `npm install nestgram` currently
+> gives you the old, incompatible v1. See [ROADMAP.md](./ROADMAP.md) for
+> status and [VISION.md](./VISION.md) for the design philosophy.
 
 ## A framework, not a wrapper
 
@@ -42,7 +44,7 @@ execution pipeline underneath.
 ## Installation
 
 ```bash
-npm install nestgram
+npm install nestgram@next
 ```
 
 ## Quick start
@@ -52,13 +54,13 @@ back to the chat.
 
 ```ts
 // greet.router.ts
-import { Router, Command, OnMessage, Message } from 'nestgram';
+import { Router, Command, OnMessage, Sender, Message, User } from 'nestgram';
 
 @Router()
 export class GreetRouter {
   @Command('start')
-  start(message: Message) {
-    return `Hello, ${message.from.first_name}!`;
+  start(@Sender() user: User) {
+    return `Hello, ${user.first_name}!`;
   }
 
   @OnMessage()
@@ -114,16 +116,27 @@ That's a working echo bot with a `/start` command.
   object it asked for (`Message`, `CallbackQuery`, …) — fully typed, with
   actions on it (`message.answer(...)`).
 - **The real Nest pipeline.** Guards, interceptors, pipes and exception
-  filters run around every handler.
-- **Sugar where it helps.** `@Command()`, `@Action()`, `@Hears()` and
-  parameter decorators (`@Sender()`, `@Args()`, …) keep handlers short
-  without hiding what's going on.
-- **Production-minded.** Webhook secret-token checks, send throttling,
-  graceful shutdown and startup health checks are first-class.
+  filters run around every handler — `ValidationPipe` and
+  `class-validator` DTOs included.
+- **A current Bot API, generated.** The whole API layer — 176 methods and
+  295 types (Bot API 10.0) — is generated from a daily scrape of the
+  official docs. A new Telegram release is a regeneration, not a rewrite.
+- **Zero magic strings.** `callbackData()` collapses building, matching and
+  parsing callback buttons into one typed definition; `commandArgs()` does
+  the same for command arguments; deep links get a typed factory too.
+- **Sessions, FSM and i18n built in.** `@Session()` with memory/Redis
+  stores, an aiogram-style finite state machine (`stateGroup()`), and an
+  ambient `t()` translator over `AsyncLocalStorage`.
+- **Production-minded.** Send throttling (30/s global, 1/s per chat,
+  `429 retry_after`), webhook secret-token checks, graceful shutdown,
+  startup health checks and per-update failure isolation are first-class.
+- **No privileged core.** Built-in behaviours (auto-answering callbacks,
+  default parse mode) are public, toggleable interceptors you could have
+  written yourself — replace any of them without forking.
 
 ## Links
 
-- Website — [nestgram.com](https://nestgram.com/)
+- Docs — [nestgram.vercel.app](https://nestgram.vercel.app)
 - Telegram — [@nestgram_en](https://t.me/nestgram_en)
 - Author — [Degreet](https://github.com/Degreet)
 

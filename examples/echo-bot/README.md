@@ -9,7 +9,7 @@ to `lib/` via a tsconfig path alias here).
 ## Run
 
 This folder is reference code (type-checked here, not shipped in the package).
-To run it in your own project after `npm install nestgram`, point your usual
+To run it in your own project after `npm install nestgram@next`, point your usual
 Nest toolchain at `main.ts`, e.g.:
 
 ```bash

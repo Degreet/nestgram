@@ -18,8 +18,13 @@ Nest app, you're one install away.
 ## Install
 
 ```bash
-npm install nestgram
+npm install nestgram@next
 ```
+
+:::caution
+The `next` tag matters while v2 is in alpha: plain `npm install nestgram`
+gives you the old, incompatible v1 from 2022.
+:::
 
 :::note
 Starting from scratch? Scaffold a Nest project first
