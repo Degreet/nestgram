@@ -26,7 +26,7 @@ Every update takes the same path:
 update source -> route table -> match -> Nest pipeline\* -> handler -> reply
 :::
 
-1. **Update source** — polling (webhook later). Pluggable; the rest of the
+1. **Update source** — polling or webhook. Pluggable; the rest of the
    pipeline doesn't care where updates come from.
 2. **Context by wrapping** — the raw update is wrapped in a
    `TelegramExecutionContext`, never mutated. The wrapper carries the resolved

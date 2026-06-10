@@ -27,8 +27,8 @@ export interface NestgramModuleOptions {
   /**
    * Long-polling transport. `true` uses defaults; pass an object to tune
    * offset/limit/timeout/etc. Omit to start the bot without a transport (e.g.
-   * to drive the dispatcher yourself, or in tests). Webhook support lands in a
-   * later phase via its own update source.
+   * to drive the dispatcher yourself, or in tests) — or set `webhook` to
+   * receive updates over HTTP instead.
    */
   polling?: boolean | PollingOptions;
   /**

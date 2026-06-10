@@ -1,6 +1,6 @@
 ---
 title: Update types
-description: The full @On* catalog, and handling several update types in one method with @On.
+description: The full @On* catalog, and handling several update types in one method by stacking decorators.
 sidebar:
   group: Routing
   order: 22
