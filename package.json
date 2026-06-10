@@ -45,7 +45,7 @@
     "start:dev": "nodemon lib/index.ts",
     "test": "jest",
     "test:watch": "jest --watch",
-    "lint": "eslint \"lib/**/*.ts\"",
+    "lint": "eslint \"lib/**/*.ts\" --max-warnings 0",
     "format": "prettier --write \"lib/**/*.ts\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "generate": "ts-node --project tools/codegen/tsconfig.json tools/codegen/index.ts",

@@ -9,6 +9,12 @@ import type { BotService } from '../bot.service';
  * `method`/`payload` with no network mocks — and nothing can bypass the
  * pipeline by sending itself.
  */
+// The interface/class halves below merge into one type. The interface half
+// exists so generated subclasses may override `hasMedia`/`isAttachMedia` with
+// accessors — a class property declaration would forbid that (TS2611) — and
+// merged declarations must repeat identical type parameters even though each
+// half uses only one of them.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- this half uses only TResult
 export interface ApiMethod<TOptions, TResult> {
   /** Enrich Telegram's raw result (e.g. wrap it in a rich `Message`). */
   wrap?(raw: unknown, bot: BotService): TResult;
@@ -18,6 +24,7 @@ export interface ApiMethod<TOptions, TResult> {
   isAttachMedia?: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- this half uses only TOptions
 export abstract class ApiMethod<TOptions, TResult> {
   /** Bot API method name, e.g. `sendMessage`. */
   abstract readonly method: string;
