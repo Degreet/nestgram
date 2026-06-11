@@ -50,13 +50,20 @@ body {
   color: transparent;
 }
 
-/* animated mesh background (C) */
+/* animated mesh background (C) — first screen only, fading out before
+   the "// the difference" block so the rest of the page sits on the
+   plain dark background. Blue accent variant: all three blobs blue. */
 .mesh {
-  position: fixed;
-  inset: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
 }
 .mesh .blob {
   position: absolute;
@@ -75,7 +82,7 @@ body {
 .mesh .b2 {
   width: 560px;
   height: 560px;
-  background: #f0356b;
+  background: #1f8fe6;
   top: -120px;
   right: -140px;
   animation: drift2 26s ease-in-out infinite;
@@ -83,7 +90,7 @@ body {
 .mesh .b3 {
   width: 480px;
   height: 480px;
-  background: #8b5cf6;
+  background: #36b4f4;
   top: 240px;
   left: 38%;
   opacity: 0.34;
@@ -505,15 +512,9 @@ body {
   font-size: 12px;
   color: var(--faint);
 }
-.pillar.wide {
-  grid-column: span 2;
-}
 @media (max-width: 880px) {
   .pillars {
     grid-template-columns: 1fr;
-  }
-  .pillar.wide {
-    grid-column: span 1;
   }
 }
 
@@ -705,7 +706,13 @@ body {
   line-height: 1.7;
 }
 .warnbox .wlabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   color: #ffcb7a;
+}
+.warnbox .wlabel svg {
+  flex: none;
 }
 .warnbox .dim {
   color: var(--muted);
@@ -739,6 +746,9 @@ body {
   gap: 14px;
   justify-content: center;
   flex-wrap: wrap;
+}
+.final .btn .star {
+  color: #ffcb7a;
 }
 
 /* footer (A) */

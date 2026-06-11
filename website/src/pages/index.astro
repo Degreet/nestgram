@@ -8,8 +8,7 @@ const docsUrl = '/docs/quickstart';
 
 // Hand-tokenised showcase snippet — matches the locked Nestgram API
 // (@Router, @Command, @OnMessage, typed positional event).
-const showcaseCode = `<span class="tok-com">// greet.router.ts</span>
-<span class="tok-dec">@Router</span><span class="tok-pun">()</span>
+const showcaseCode = `<span class="tok-dec">@Router</span><span class="tok-pun">()</span>
 <span class="tok-key">export class</span> <span class="tok-typ">GreetRouter</span> <span class="tok-pun">{</span>
   <span class="tok-dec">@Command</span><span class="tok-pun">(</span><span class="tok-str">'start'</span><span class="tok-pun">)</span>
   <span class="tok-fn">start</span><span class="tok-pun">(</span><span class="tok-dec">@Sender</span><span class="tok-pun">()</span> user<span class="tok-pun">:</span> <span class="tok-typ">User</span><span class="tok-pun">) {</span>
@@ -85,10 +84,10 @@ const pipeline = [
           <button
             class="cmd"
             type="button"
-            data-copy="npm i nestgram"
+            data-copy="npm i nestgram@next"
             aria-label="Copy install command"
           >
-            <span><span class="pfx">$</span> npm i nestgram</span>
+            <span><span class="pfx">$</span> npm i nestgram@next</span>
             <span class="cmd-copy">
               <span class="cmd-copy__copy">Copy</span>
               <span class="cmd-copy__done">Copied ✓</span>
@@ -147,7 +146,7 @@ const pipeline = [
           <h2>Everything NestJS, mapped to Telegram.</h2>
         </div>
         <div class="pillars">
-          <div class="pillar wide">
+          <div class="pillar">
             <div class="ic">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
                 ><path d="M3 7l9-4 9 4-9 4-9-4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"
@@ -265,13 +264,25 @@ const pipeline = [
             </p>
           </div>
           <div class="warnbox">
-            <div><span class="wlabel">⚠ Nestgram warning</span></div>
-            <div style="margin-top:10px;">[WebhookModule]</div>
-            <div class="dim">You set a webhook with no <span style="color:var(--text)">secret_token</span>.</div>
-            <div class="dim">Anyone who learns your URL can spoof updates.</div>
+            <div>
+              <span class="wlabel">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"
+                  ><path
+                    d="M12 4 2.7 20h18.6L12 4z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                  /><path d="M12 10v4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  /><circle cx="12" cy="17.4" r="1.1" fill="currentColor" /></svg
+                > Nestgram warning</span
+              >
+            </div>
+            <div style="margin-top:10px;">[WebhookUpdateSource]</div>
+            <div class="dim">Webhook is set without a <span style="color:var(--text)">secretToken</span> —</div>
+            <div class="dim">anyone who learns the URL can spoof updates.</div>
             <div style="margin-top:10px;color:var(--a1)">
-              → pass <span style="color:var(--text)">secretToken</span> to
-              <span style="color:var(--text)">setWebhook()</span>
+              → set <span style="color:var(--text)">webhook.secretToken</span> in
+              <span style="color:var(--text)">NestgramModule.forRoot()</span>
             </div>
           </div>
         </div>
@@ -286,7 +297,7 @@ const pipeline = [
         </p>
         <div class="cta">
           <a class="btn btn-primary" href={docsUrl}>Get started →</a>
-          <a class="btn btn-ghost" href={githubUrl}>Browse on GitHub</a>
+          <a class="btn btn-ghost" href={githubUrl}><span class="star">★</span> Star on GitHub</a>
         </div>
       </section>
 

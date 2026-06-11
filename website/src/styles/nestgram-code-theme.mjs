@@ -82,11 +82,18 @@ export default {
       ],
       settings: { foreground: cyan },
     },
-    // decorators win over plain function colouring — keep @Router blue
+    // decorators win over plain function colouring — keep @Router blue.
+    // NB: in the TS grammar a called decorator name is
+    // `meta.decorator meta.function-call entity.name.function`; the selector
+    // must include `meta.function-call` or the plain function rule outranks
+    // this one (its parent match sits closer to the token) and decorator
+    // names render purple.
     {
       scope: [
         'meta.decorator',
         'meta.decorator entity.name.function',
+        'meta.decorator meta.function-call entity.name.function',
+        'meta.decorator variable.other.readwrite',
         'meta.decorator punctuation.decorator',
         'punctuation.decorator',
         'entity.name.function.decorator',
