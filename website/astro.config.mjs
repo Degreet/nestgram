@@ -21,7 +21,7 @@ import shikiNestgramLinemark from './gen/shiki-nestgram-linemark.mjs';
 // `:::code{mark}` highlight would run. Astro auto-migrates these flat keys
 // internally; the deprecation notice it prints is cosmetic.
 export default defineConfig({
-  site: 'https://nestgram.com',
+  site: 'https://nestgram.vercel.app',
   markdown: {
     remarkPlugins: [remarkDirective, remarkNestgramBlocks],
     shikiConfig: {
