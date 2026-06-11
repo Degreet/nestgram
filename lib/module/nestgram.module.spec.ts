@@ -235,6 +235,25 @@ class ParamsRouter {
 })
 class ParamsAppModule {}
 
+// The landing/README showcase shape: the ONLY parameter is a decorated one at
+// index 0 — auto-@Event must leave it alone (it only fills an undecorated
+// param 0), so the handler receives the sender, not the event.
+@Router()
+class SenderFirstRouter {
+  seenUser?: User;
+
+  @Command('start')
+  start(@Sender() user: User): void {
+    this.seenUser = user;
+  }
+}
+
+@Module({
+  imports: [NestgramModule.forRoot({ token: 'TEST' })],
+  providers: [SenderFirstRouter],
+})
+class SenderFirstAppModule {}
+
 describe('parameter decorators (integration)', () => {
   it('resolves the auto-@Event first param alongside @Sender and @Args', async () => {
     const app = await NestFactory.createApplicationContext(ParamsAppModule, {
@@ -250,6 +269,23 @@ describe('parameter decorators (integration)', () => {
       userId: 7,
       args: ['a', 'b'],
     });
+
+    await app.close();
+  });
+
+  it('respects a decorated param 0: @Sender() first arg gets the sender, not the event', async () => {
+    const app = await NestFactory.createApplicationContext(
+      SenderFirstAppModule,
+      { logger: false },
+    );
+    const dispatcher = app.get(UpdateDispatcher);
+    const router = app.get(SenderFirstRouter);
+
+    await dispatcher.dispatch(messageUpdate(1, '/start'));
+
+    expect(router.seenUser).toEqual(
+      expect.objectContaining({ id: 7, first_name: 'Alice' }),
+    );
 
     await app.close();
   });
