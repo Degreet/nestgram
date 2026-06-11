@@ -1,11 +1,15 @@
+> ⚡ **Nestgram v2 (alpha) is out — a ground-up rewrite as a real NestJS framework.** <br>
+> Guards, interceptors, pipes & DI from Nest's own pipeline, typed events, a generated Bot API 10.0 surface, sessions, i18n and FSM built in. <br>
+> Install: **`npm i nestgram@next`** · Docs: **[nestgram.vercel.app](https://nestgram.vercel.app)** · [What changed](https://github.com/Degreet/nestgram/releases/tag/v2.0.0-alpha.0)
+
 # What is Nestgram?
 
 Nestgram - Framework for working with Telegram Bot API on TypeScript like Nest.js
 
-> ℹ️ Nestgram in development. Current version is **1.8.7** <br>
-> If you found a bug, you can ask the [author](https://t.me/degreet) or ask the [form](https://do67hlsz91r.typeform.com/to/sI6NXBKV)
+> ℹ️ **v1 is in maintenance mode** — bug fixes only; new development happens in [v2](https://github.com/Degreet/nestgram). <br>
+> If you found a bug, you can ask the [author](https://t.me/degreet)
 
-> ⚠️ Nestgram can't use Nest.js modules. But you can create own modules for Nestgram :)
+> ⚠️ Nestgram v1 can't use Nest.js modules (v2 can — it *is* a Nest module)
 
 # Links
 
