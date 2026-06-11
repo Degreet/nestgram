@@ -15,7 +15,8 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/nestgram"><img src="https://img.shields.io/npm/v/nestgram" alt="npm version" /></a>
+  <a href="https://www.npmjs.com/package/nestgram"><img src="https://img.shields.io/npm/v/nestgram/next?label=npm%40next&color=1f8fe6" alt="npm version (next)" /></a>
+  <a href="https://github.com/Degreet/nestgram/actions/workflows/ci.yml"><img src="https://github.com/Degreet/nestgram/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status" /></a>
   <a href="https://www.npmjs.com/package/nestgram"><img src="https://img.shields.io/npm/l/nestgram" alt="license" /></a>
 </p>
 
