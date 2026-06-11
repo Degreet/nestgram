@@ -13,6 +13,7 @@ import {
   UpdateDispatcher,
 } from '../engine/dispatcher';
 import {
+  AllowedUpdatesResolver,
   PollingUpdateSource,
   UpdateSource,
   WebhookUpdateSource,
@@ -57,6 +58,7 @@ export class NestgramModule {
     StageExplorer,
     StageRegistry,
     UpdateDispatcher,
+    AllowedUpdatesResolver,
     PollingUpdateSource,
     WebhookUpdateSource,
     // The active transport, chosen by config: webhook if configured, else

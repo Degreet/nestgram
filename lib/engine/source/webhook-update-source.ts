@@ -7,6 +7,7 @@ import type {
   NestgramModuleOptions,
   WebhookOptions,
 } from '../../module/nestgram-module.types';
+import { AllowedUpdatesResolver } from './allowed-updates.resolver';
 import { UpdateListener, UpdateSource } from './update-source';
 
 /**
@@ -28,6 +29,7 @@ export class WebhookUpdateSource implements UpdateSource {
   constructor(
     @Inject(Providers.NESTGRAM_OPTIONS) options: NestgramModuleOptions,
     private readonly botService: BotService,
+    private readonly allowedUpdatesResolver: AllowedUpdatesResolver,
   ) {
     this.config = options.webhook;
   }
@@ -40,6 +42,11 @@ export class WebhookUpdateSource implements UpdateSource {
     this.warnOnInsecureConfig(this.config);
     await this.botService.setWebhook(this.config.url, {
       secret_token: this.config.secretToken,
+      // Resolved at start, not construction: the route table is only filled at
+      // bootstrap, and the derived list needs the whole handler graph.
+      allowed_updates: this.allowedUpdatesResolver.resolve(
+        this.config.allowedUpdates,
+      ),
     });
     // The framework registers the webhook with Telegram, but it does NOT mount
     // a controller — the author does. Remind here (the one moment we know a

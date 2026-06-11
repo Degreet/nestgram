@@ -4,6 +4,8 @@ import { BotService } from '../../api';
 import { RawUpdate } from '../../events/raw-update.types';
 import { Providers } from '../../providers';
 import type { NestgramModuleOptions } from '../../module/nestgram-module.types';
+import type { AllowedUpdate } from '../context/update-kind';
+import { AllowedUpdatesResolver } from './allowed-updates.resolver';
 import {
   DEFAULT_POLLING_BACKOFF_MS,
   DEFAULT_POLLING_IDLE_MS,
@@ -14,7 +16,14 @@ export interface PollingOptions {
   offset?: number;
   limit?: number;
   timeout?: number;
-  allowed_updates?: string[];
+  /**
+   * Explicit `allowed_updates` for `getUpdates`. Omit (recommended) to derive
+   * the list from your handlers — that also requests the kinds Telegram holds
+   * back by default (`chat_member`, `message_reaction`, …) whenever a handler
+   * listens to them. With an explicit list, a handler for a kind the list
+   * omits is dead — the bot warns about it at startup.
+   */
+  allowed_updates?: AllowedUpdate[];
   /** Clear updates accumulated while the bot was offline before polling. */
   dropPendingUpdates?: boolean;
   /** Delay before retrying after a failed fetch (ms). */
@@ -43,6 +52,7 @@ export class PollingUpdateSource implements UpdateSource {
   private readonly idleMs: number;
 
   private offset: number;
+  private allowedUpdates?: string[];
   private controller?: AbortController;
   private loopPromise?: Promise<void>;
   private running = false;
@@ -50,6 +60,7 @@ export class PollingUpdateSource implements UpdateSource {
   constructor(
     @Inject(Providers.NESTGRAM_OPTIONS) moduleOptions: NestgramModuleOptions,
     private readonly botService: BotService,
+    private readonly allowedUpdatesResolver: AllowedUpdatesResolver,
   ) {
     this.options =
       typeof moduleOptions.polling === 'object' ? moduleOptions.polling : {};
@@ -63,6 +74,12 @@ export class PollingUpdateSource implements UpdateSource {
       this.logger.warn('Polling already running; ignoring start()');
       return;
     }
+
+    // Resolved at start, not construction: the route table is only filled at
+    // bootstrap, and the derived list needs the whole handler graph.
+    this.allowedUpdates = this.allowedUpdatesResolver.resolve(
+      this.options.allowed_updates,
+    );
 
     await this.prepare();
 
@@ -147,7 +164,7 @@ export class PollingUpdateSource implements UpdateSource {
       offset: this.offset,
       limit: this.options.limit,
       timeout: this.options.timeout,
-      allowed_updates: this.options.allowed_updates,
+      allowed_updates: this.allowedUpdates,
       signal,
     });
   }

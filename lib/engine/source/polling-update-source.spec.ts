@@ -1,5 +1,10 @@
+import { Logger } from '@nestjs/common';
+
 import { BotService } from '../../api';
 import { RawUpdate } from '../../events/raw-update.types';
+import { RouteTable } from '../discovery';
+import { Route } from '../discovery/route.types';
+import { AllowedUpdatesResolver } from './allowed-updates.resolver';
 import { PollingOptions, PollingUpdateSource } from './polling-update-source';
 
 /** A listener that ignores updates — for tests that only assert loop control. */
@@ -22,6 +27,15 @@ interface Harness {
   offsets: number[];
 }
 
+/** A route stub: only `updateType` matters to the allowed-updates derivation. */
+function listenerOn(updateType: string): Route {
+  return { updateType, predicates: [], instance: {}, methodName: 'handle' };
+}
+
+function resolverFor(routes: Route[] = []): AllowedUpdatesResolver {
+  return new AllowedUpdatesResolver(new RouteTable(routes));
+}
+
 /**
  * Build a source whose `bot.getUpdates` serves a scripted sequence of batches
  * (one per call, then only empty batches) and records the offset asked for.
@@ -29,6 +43,7 @@ interface Harness {
 function harness(
   polling: PollingOptions,
   batches: RawUpdate[][] = [],
+  routes: Route[] = [],
 ): Harness {
   const offsets: number[] = [];
   let call = 0;
@@ -41,11 +56,19 @@ function harness(
     }),
   } as unknown as BotService;
 
-  const source = new PollingUpdateSource({ token: 't', polling }, bot);
+  const source = new PollingUpdateSource(
+    { token: 't', polling },
+    bot,
+    resolverFor(routes),
+  );
   return { source, bot, offsets };
 }
 
 describe('PollingUpdateSource', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it('prepares the transport before polling (clears the webhook)', async () => {
     const { source, bot } = harness({ dropPendingUpdates: true });
 
@@ -104,6 +127,7 @@ describe('PollingUpdateSource', () => {
     const source = new PollingUpdateSource(
       { token: 't', polling: { backoffMs: 1, idleMs: 1 } },
       bot,
+      resolverFor(),
     );
 
     const seen: number[] = [];
@@ -131,6 +155,42 @@ describe('PollingUpdateSource', () => {
 
     await source.start(noop);
     await expect(source.stop()).resolves.toBeUndefined();
+  });
+
+  it('asks getUpdates for the kinds derived from the route table', async () => {
+    const { source, bot } = harness(
+      { idleMs: 1 },
+      [],
+      [listenerOn('chat_member'), listenerOn('message')],
+    );
+
+    await source.start(noop);
+    await waitFor(() => (bot.getUpdates as jest.Mock).mock.calls.length >= 1);
+    await source.stop();
+
+    expect(bot.getUpdates).toHaveBeenCalledWith(
+      expect.objectContaining({
+        allowed_updates: ['chat_member', 'message'],
+      }),
+    );
+  });
+
+  it('an explicit allowed_updates wins over the derived list', async () => {
+    // The resolver warns about the uncovered chat_member listener — expected.
+    jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const { source, bot } = harness(
+      { idleMs: 1, allowed_updates: ['message'] },
+      [],
+      [listenerOn('chat_member')],
+    );
+
+    await source.start(noop);
+    await waitFor(() => (bot.getUpdates as jest.Mock).mock.calls.length >= 1);
+    await source.stop();
+
+    expect(bot.getUpdates).toHaveBeenCalledWith(
+      expect.objectContaining({ allowed_updates: ['message'] }),
+    );
   });
 });
 

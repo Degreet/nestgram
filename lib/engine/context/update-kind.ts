@@ -37,6 +37,13 @@ export enum UpdateKind {
 }
 
 /**
+ * An update-field name accepted in `allowed_updates` — the string values of
+ * {@link UpdateKind}, so options can be written as plain literals
+ * (`['message', 'chat_member']`) with autocomplete, no enum import needed.
+ */
+export type AllowedUpdate = `${UpdateKind}`;
+
+/**
  * Checked in priority order if an update somehow carries more than one field.
  * In practice an Update has exactly one update-type field besides `update_id`.
  */

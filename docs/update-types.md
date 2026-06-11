@@ -79,3 +79,47 @@ Prefer separate handlers calling a shared method — it keeps each handler's typ
 exact. Reach for stacked decorators only when the branching genuinely belongs in
 one place.
 :::
+
+## allowed_updates: what Telegram actually sends
+
+Telegram only delivers the update kinds a bot asks for — and a few kinds are
+**held back unless requested by name**: `chat_member`, `message_reaction`, and
+`message_reaction_count`. This is a classic production footgun: with most bot
+libraries, an `@OnChatMember()` handler compiles, deploys, and then never fires
+— no error anywhere, Telegram just doesn't send the update.
+
+Nestgram closes it for you. At startup the framework **derives `allowed_updates`
+from your handlers**: every update kind some `@On*` decorator listens to is
+requested — for `getUpdates` in polling mode and in the `setWebhook`
+registration in webhook mode. Write `@OnChatMember()` and `chat_member` updates
+arrive; nothing to configure.
+
+If you need manual control, pass an explicit list — it wins over the derived
+one:
+
+:::code[app.module.ts]
+
+```ts
+NestgramModule.forRoot({
+  token: process.env.BOT_TOKEN ?? '',
+  polling: { allowed_updates: ['message', 'callback_query'] },
+  // webhook mode: webhook: { url, secretToken, allowedUpdates: [...] }
+});
+```
+
+:::
+
+With an explicit list, any handler listening to a kind the list omits is dead
+code — Telegram will never deliver it. Nestgram warns about every such handler
+at startup, naming the router and method, so the mistake is one log line instead
+of a production mystery.
+
+:::note
+The derived list contains exactly the kinds your handlers listen to — so a
+custom `@UpdateStage` (which runs for every _delivered_ update) only sees those
+kinds too. If a stage needs updates no handler routes, pass an explicit list.
+An empty list (`allowed_updates: []`) means Telegram's _default_ set —
+everything except `chat_member`, `message_reaction` and
+`message_reaction_count` — not "nothing".
+
+:::

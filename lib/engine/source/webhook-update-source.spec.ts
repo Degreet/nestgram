@@ -4,14 +4,27 @@ import { WebhookUpdateSource } from './webhook-update-source';
 import { BotService } from '../../api';
 import { NestgramModuleOptions } from '../../module/nestgram-module.types';
 import { RawUpdate } from '../../events/raw-update.types';
+import { RouteTable } from '../discovery';
+import { Route } from '../discovery/route.types';
+import { AllowedUpdatesResolver } from './allowed-updates.resolver';
 
-function make(webhook: NestgramModuleOptions['webhook'], token = '123:ABC') {
+/** A route stub: only `updateType` matters to the allowed-updates derivation. */
+function listenerOn(updateType: string): Route {
+  return { updateType, predicates: [], instance: {}, methodName: 'handle' };
+}
+
+function make(
+  webhook: NestgramModuleOptions['webhook'],
+  token = '123:ABC',
+  routes: Route[] = [],
+) {
   const setWebhook = jest.fn().mockResolvedValue(true);
   const deleteWebhook = jest.fn().mockResolvedValue(true);
   const bot = { token, setWebhook, deleteWebhook } as unknown as BotService;
   const source = new WebhookUpdateSource(
     { token, webhook } as NestgramModuleOptions,
     bot,
+    new AllowedUpdatesResolver(new RouteTable(routes)),
   );
   return { source, setWebhook, deleteWebhook };
 }
@@ -29,7 +42,38 @@ describe('WebhookUpdateSource', () => {
     await source.start(() => undefined);
     expect(setWebhook).toHaveBeenCalledWith('https://x/telegram/webhook', {
       secret_token: 's3cret',
+      allowed_updates: [],
     });
+  });
+
+  it('registers the webhook with the kinds derived from the route table', async () => {
+    const { source, setWebhook } = make(
+      { url: 'https://x/telegram/webhook', secretToken: 's' },
+      '123:ABC',
+      [listenerOn('chat_member'), listenerOn('message')],
+    );
+    await source.start(() => undefined);
+    expect(setWebhook).toHaveBeenCalledWith(
+      'https://x/telegram/webhook',
+      expect.objectContaining({
+        allowed_updates: ['chat_member', 'message'],
+      }),
+    );
+  });
+
+  it('an explicit allowedUpdates wins over the derived list', async () => {
+    const { source, setWebhook } = make({
+      url: 'https://x/telegram/webhook',
+      secretToken: 's',
+      allowedUpdates: ['message', 'callback_query'],
+    });
+    await source.start(() => undefined);
+    expect(setWebhook).toHaveBeenCalledWith(
+      'https://x/telegram/webhook',
+      expect.objectContaining({
+        allowed_updates: ['message', 'callback_query'],
+      }),
+    );
   });
 
   it('warns when no secretToken is set', async () => {

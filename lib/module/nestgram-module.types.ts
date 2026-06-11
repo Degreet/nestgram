@@ -1,6 +1,7 @@
 import { ModuleMetadata, Type } from '@nestjs/common';
 
 import { PollingOptions } from '../engine/source';
+import type { AllowedUpdate } from '../engine/context/update-kind';
 import type { ApiInterceptor } from '../api/request';
 import type { ThrottleOptions } from '../builtins/throttle/throttle.types';
 
@@ -19,6 +20,14 @@ export interface WebhookOptions {
    * verify updates really come from Telegram. Strongly recommended.
    */
   secretToken?: string;
+  /**
+   * Explicit `allowed_updates` for the webhook registration. Omit (recommended)
+   * to derive the list from your handlers — that also requests the kinds
+   * Telegram holds back by default (`chat_member`, `message_reaction`, …)
+   * whenever a handler listens to them. With an explicit list, a handler for a
+   * kind the list omits is dead — the bot warns about it at startup.
+   */
+  allowedUpdates?: AllowedUpdate[];
 }
 
 export interface NestgramModuleOptions {
