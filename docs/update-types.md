@@ -38,7 +38,7 @@ method genuinely fits several types, **stack the decorators** — each one binds
 the method to its update type. The parameter becomes a union, and you narrow it
 with a plain `instanceof` (events are real classes).
 
-:::code[feedback.router.ts]
+:::code[feedback.router.ts]{mark="11-12"}
 
 ```ts
 import {

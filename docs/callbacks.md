@@ -22,7 +22,7 @@ the same definition everywhere: `.pack()` builds the button data,
 `.filter()` matches it in `@Action()`, and `@Data()` hands you the parsed,
 typed values.
 
-:::code[shop.router.ts]
+:::code[shop.router.ts]{mark="12"}
 
 ```ts
 import {

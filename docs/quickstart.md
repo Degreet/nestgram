@@ -70,7 +70,7 @@ object (`return new SendMessage(...)`) or call an action on the event
 Routers are plain Nest providers. List them in `providers` and Nestgram
 discovers them automatically — there's no separate registry to maintain.
 
-:::code[app.module.ts]{mark="10"}
+:::code[app.module.ts]{mark="12"}
 
 ```ts
 import { Module } from '@nestjs/common';

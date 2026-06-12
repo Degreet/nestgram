@@ -59,7 +59,7 @@ Import `RichMessagesModule` once and every plain outgoing text — string
 returns, `message.answer()`, `reply()` — is rewritten into `sendRichMessage`
 with your configured dialect as the source:
 
-:::code[app.module.ts]
+:::code[app.module.ts]{mark="10"}
 
 ```ts
 import { Module } from '@nestjs/common';

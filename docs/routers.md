@@ -10,7 +10,7 @@ A **router is a controller**. You decorate a class with `@Router()`, bind
 methods to updates, and Nestgram routes incoming updates to those methods. There
 is no separate "register your routers" step — they're discovered.
 
-:::code[greet.router.ts]
+:::code[greet.router.ts]{mark="3"}
 
 ```ts
 import { Router, Command, OnMessage, Sender, Message, User } from 'nestgram';
@@ -37,7 +37,7 @@ A router is a plain Nest provider. List it in `providers` and Nestgram finds it
 at startup by scanning the provider graph — `forRoot()` takes **no** list of
 routers.
 
-:::code[app.module.ts]
+:::code[app.module.ts]{mark="5"}
 
 ```ts
 @Module({
