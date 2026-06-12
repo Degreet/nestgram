@@ -41,3 +41,4 @@ lerna-debug.log*
 # Codegen dry-run scratch (real output lives in lib/api/methods + lib/events)
 lib/api/methods.generated/
 lib/events/raw-update.generated.ts
+.vercel
