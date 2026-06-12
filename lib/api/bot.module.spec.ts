@@ -5,6 +5,7 @@ import type { Observable } from 'rxjs';
 import { BotModule } from './bot.module';
 import { API_INTERCEPTORS, ApiCallHandler, ApiInterceptor } from './request';
 import { DefaultParseModeInterceptor } from '../builtins/parse-mode';
+import { RichMessagesInterceptor } from '../builtins/rich-messages';
 import { ThrottleInterceptor } from '../builtins/throttle';
 import { TokenValidationInterceptor } from '../builtins/token-validation';
 
@@ -29,14 +30,17 @@ function interceptors(app: {
 }
 
 describe('BotModule interceptor wiring', () => {
-  it('orders the built-ins token → parse-mode → throttle (innermost)', async () => {
+  it('orders the built-ins token → rich → parse-mode → throttle (innermost)', async () => {
     const app = await NestFactory.createApplicationContext(DefaultApp, {
       logger: false,
     });
     const chain = interceptors(app);
 
     expect(chain[0]).toBeInstanceOf(TokenValidationInterceptor);
-    expect(chain[1]).toBeInstanceOf(DefaultParseModeInterceptor);
+    // Rich rewrite precedes the parse-mode injector: an injected default
+    // parse_mode must not read as explicit formatting intent.
+    expect(chain[1]).toBeInstanceOf(RichMessagesInterceptor);
+    expect(chain[2]).toBeInstanceOf(DefaultParseModeInterceptor);
     expect(chain[chain.length - 1]).toBeInstanceOf(ThrottleInterceptor);
     await app.close();
   });

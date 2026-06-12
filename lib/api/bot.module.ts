@@ -10,6 +10,7 @@ import { API_INTERCEPTORS, ApiInterceptor, ApiPipeline } from './request';
 // the barrel also re-exports the handler-side auto-answer interceptor, which
 // would drag the engine/module graph into the api layer (and cycle).
 import { DefaultParseModeInterceptor } from '../builtins/parse-mode';
+import { RichMessagesInterceptor } from '../builtins/rich-messages';
 import { ThrottleInterceptor, ThrottleModule } from '../builtins/throttle';
 import { TokenValidationInterceptor } from '../builtins/token-validation';
 
@@ -20,10 +21,13 @@ export class BotModule {
    * Providers for the outbound API interceptor pipeline. `API_INTERCEPTORS` is
    * the ordered array `ApiPipeline` composes into a Nest-style onion, outermost
    * first: token validation (its constructor also fail-fasts on a missing
-   * configured token at boot), default parse-mode, any user-supplied
-   * interceptors, then the throttler innermost (closest to the wire, so it reads
-   * `chat_id` after the mutators). The built-ins are ordinary `ApiInterceptor`s —
-   * no privileged core; a user can add, reorder, or replace them.
+   * configured token at boot), rich-messages rewrite (before parse-mode, so an
+   * injected default `parse_mode` can't read as explicit formatting intent;
+   * inert unless `RichMessagesModule.forRoot` provided its settings), default
+   * parse-mode, any user-supplied interceptors, then the throttler innermost
+   * (closest to the wire, so it reads `chat_id` after the mutators). The
+   * built-ins are ordinary `ApiInterceptor`s — no privileged core; a user can
+   * add, reorder, or replace them.
    *
    * Built as an explicit array via `useFactory`, not a `multi`-provider token:
    * Nest has no generic `multi: true` aggregation (a `multi` token collapses to a
@@ -44,6 +48,7 @@ export class BotModule {
     // provider list and the factory's inject list so they can't drift.
     const leading: Type<ApiInterceptor>[] = [
       TokenValidationInterceptor,
+      RichMessagesInterceptor,
       DefaultParseModeInterceptor,
       ...userInterceptors,
     ];
