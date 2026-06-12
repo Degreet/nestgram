@@ -49,6 +49,9 @@ const {
 // Only h2/h3 belong in the "On this page" rail.
 const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 
+// Breadcrumb parts — the separators are rendered as accent slashes (mockup).
+const crumbs = breadcrumb.split('/').map((part) => part.trim());
+
 const githubUrl = 'https://github.com/Degreet/nestgram';
 ---
 
@@ -65,10 +68,15 @@ const githubUrl = 'https://github.com/Degreet/nestgram';
     <header class="dx-nav">
       <a class="dx-brand" href="/"><img src={logo.src} alt="" />Nestgram</a>
       <nav class="dx-nav-right">
+        <button class="dx-menu-btn" type="button" aria-label="Open docs menu">
+          ☰ Menu
+        </button>
         <a href="/docs/quickstart">Docs</a>
         <a href={githubUrl}>GitHub</a>
       </nav>
     </header>
+
+    <div class="dx-backdrop" aria-hidden="true"></div>
 
     <div class="dx-shell">
       <aside class="dx-sidebar">
@@ -91,7 +99,16 @@ const githubUrl = 'https://github.com/Degreet/nestgram';
       </aside>
 
       <main class="dx-main">
-        <div class="dx-breadcrumb">{breadcrumb}</div>
+        <div class="dx-breadcrumb">
+          {
+            crumbs.map((part, i) => (
+              <>
+                {i > 0 && <span class="dx-crumb-sep">/</span>}
+                {part}
+              </>
+            ))
+          }
+        </div>
         <article class="dx-content">
           <h1>{title}</h1>
           <slot />
@@ -142,6 +159,19 @@ const githubUrl = 'https://github.com/Degreet/nestgram';
     </div>
 
     <script>
+      // mobile drawer: the Menu button slides the sidebar in; backdrop or a
+      // sidebar link click closes it.
+      const drawerBtn = document.querySelector('.dx-menu-btn');
+      const backdrop = document.querySelector('.dx-backdrop');
+      const closeDrawer = () => document.body.classList.remove('dx-drawer-open');
+      drawerBtn?.addEventListener('click', () =>
+        document.body.classList.toggle('dx-drawer-open'),
+      );
+      backdrop?.addEventListener('click', closeDrawer);
+      document
+        .querySelectorAll('.dx-sidebar a')
+        .forEach((a) => a.addEventListener('click', closeDrawer));
+
       // scroll-spy: highlight the current section in the right TOC.
       const links = [...document.querySelectorAll<HTMLAnchorElement>('.dx-toc a[data-toc]')];
       const map = new Map(links.map((a) => [a.getAttribute('data-toc'), a]));

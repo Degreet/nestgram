@@ -162,6 +162,10 @@ body {
   color: var(--faint);
   margin-bottom: 0.9rem;
 }
+.dx-breadcrumb .dx-crumb-sep {
+  color: var(--a1);
+  margin: 0 0.5em;
+}
 .dx-content {
   max-width: var(--content-w);
   line-height: 1.72;
@@ -184,15 +188,14 @@ body {
   font-family: var(--font-display);
   letter-spacing: -0.022em;
 }
+/* mockup spacing: h2 56px / h3 34px above, no divider line */
 .dx-content h2 {
   font-size: 1.75rem;
-  margin-top: 4rem;
-  padding-top: 1.8rem;
-  border-top: 1px solid var(--border);
+  margin-top: 3.5rem;
 }
 .dx-content h3 {
   font-size: 1.25rem;
-  margin-top: 2.75rem;
+  margin-top: 2.125rem;
 }
 /* "#" deep-link before each heading — revealed on hover, click-to-copy (the
    anchor element + copy are wired client-side in DocsLayout). */
@@ -381,16 +384,88 @@ body {
   font-weight: 500;
 }
 
+/* ---- mobile: docs menu button + sidebar drawer ---- */
+.dx-menu-btn {
+  display: none;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-2);
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  cursor: pointer;
+}
+.dx-backdrop {
+  display: none;
+}
+
 @media (max-width: 72rem) {
   .dx-shell {
     grid-template-columns: 1fr;
   }
-  .dx-sidebar,
   .dx-toc {
     display: none;
   }
+  .dx-menu-btn {
+    display: inline-flex;
+  }
+  /* the sidebar becomes a left drawer under the top nav */
+  .dx-sidebar {
+    position: fixed;
+    top: var(--nav-h);
+    bottom: 0;
+    left: 0;
+    z-index: 26;
+    width: min(82vw, 19rem);
+    background: var(--bg-soft);
+    border-right: 1px solid var(--border-strong);
+    transform: translateX(-102%);
+    transition: transform 0.22s ease;
+  }
+  body.dx-drawer-open .dx-sidebar {
+    transform: none;
+  }
+  .dx-backdrop {
+    display: block;
+    position: fixed;
+    inset: var(--nav-h) 0 0 0;
+    z-index: 25;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease;
+  }
+  body.dx-drawer-open .dx-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  body.dx-drawer-open {
+    overflow: hidden;
+  }
   .dx-main {
     padding: 2rem 1.4rem 4rem;
+  }
+}
+
+@media (max-width: 38rem) {
+  .dx-nav {
+    padding: 0 1rem;
+  }
+  .dx-main {
+    padding: 1.6rem 1.1rem 3.5rem;
+  }
+  .dx-content h1 {
+    font-size: 1.9rem;
+  }
+  .dx-content > p:first-of-type,
+  .dx-content .dx-lead {
+    font-size: 1.05rem;
+  }
+  .mental {
+    padding: 18px 16px;
   }
 }
 
@@ -418,17 +493,25 @@ body {
 .mental .mm-flow {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
 }
+/* arrow + its chip wrap as one unit, so a new line starts with "→ chip" */
+.mental .mm-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+/* mockup chip sizing — compact enough that most flows fit on one line */
 .mental .mm-box {
-  padding: 13px 17px;
-  border-radius: 11px;
+  padding: 8px 12px;
+  border-radius: 9px;
   border: 1px solid var(--border-strong);
   background: var(--panel-2);
   font-family: var(--font-mono);
-  font-size: 13.5px;
+  font-size: 12.5px;
   color: var(--text);
+  white-space: nowrap;
 }
 .mental .mm-box.mm-accent {
   border-color: color-mix(in oklab, var(--accent) 50%, var(--border));

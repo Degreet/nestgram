@@ -99,10 +99,22 @@ function buildMental(node) {
   parts.forEach((c, i) => {
     const accent = c.endsWith(ACCENT_MARK);
     const label = accent ? c.slice(0, -1).trim() : c;
-    chips.push(
-      el('span', { className: accent ? ['mm-box', 'mm-accent'] : ['mm-box'] }, [text(label)]),
-    );
-    if (i < parts.length - 1) chips.push(el('span', { className: ['mm-arrow'] }, [text(ARROW)]));
+    const box = el('span', { className: accent ? ['mm-box', 'mm-accent'] : ['mm-box'] }, [
+      text(label),
+    ]);
+    // After the first chip, the arrow travels with its following chip as one
+    // unbreakable step — a wrapped line then starts with "→ chip" instead of
+    // leaving the arrow dangling at the end of the previous line.
+    if (i === 0) {
+      chips.push(box);
+    } else {
+      chips.push(
+        el('span', { className: ['mm-step'] }, [
+          el('span', { className: ['mm-arrow'] }, [text(ARROW)]),
+          box,
+        ]),
+      );
+    }
   });
   asElement(node, 'div', { className: ['mental', 'not-content'] });
   return setChildren(node, [
