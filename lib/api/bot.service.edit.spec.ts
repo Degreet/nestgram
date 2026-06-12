@@ -46,6 +46,31 @@ describe('editMessageText overloads (target first, then text)', () => {
       text: 'hi',
     });
   });
+
+  // Since Bot API 10.1 `text` is optional (rich_message can replace it), but
+  // the bare-name keeps its positional slot — options-only stays available.
+  it('chat-based without text: (chat_id, message_id, options)', async () => {
+    const calls = mockFetch();
+    await bot().editMessageText(42, 7, {
+      rich_message: { markdown: '# hi' },
+    });
+    expect(calls[0].body).toEqual({
+      chat_id: 42,
+      message_id: 7,
+      rich_message: { markdown: '# hi' },
+    });
+  });
+
+  it('inline without text: (inline_message_id, options)', async () => {
+    const calls = mockFetch();
+    await bot().editMessageText('inline-1', {
+      rich_message: { markdown: '# hi' },
+    });
+    expect(calls[0].body).toEqual({
+      inline_message_id: 'inline-1',
+      rich_message: { markdown: '# hi' },
+    });
+  });
 });
 
 describe('editMessageReplyMarkup overloads', () => {

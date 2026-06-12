@@ -112,6 +112,7 @@ const ENUM_LITERALS: Readonly<Record<string, readonly string[]>> = {
   '*.parse_mode': ['HTML', 'Markdown', 'MarkdownV2'],
   'sendDice.emoji': ['🎲', '🎯', '🏀', '⚽', '🎳', '🎰'],
   'sendPoll.type': ['quiz', 'regular'],
+  'answerChatJoinRequestQuery.result': ['approve', 'decline', 'queue'],
   'Chat.type': CHAT_TYPES,
   'ChatFullInfo.type': CHAT_TYPES,
   'InputSticker.format': STICKER_FORMATS,
@@ -180,6 +181,7 @@ export interface MethodOverride {
  */
 const METHOD_OVERRIDES: Readonly<Record<string, MethodOverride>> = {
   sendMessage: { returnType: 'Message', wrap: WRAP_SINGLE },
+  sendRichMessage: { returnType: 'Message', wrap: WRAP_SINGLE },
   forwardMessage: { returnType: 'Message', wrap: WRAP_SINGLE },
   sendPhoto: { returnType: 'Message', wrap: WRAP_SINGLE },
   sendMediaGroup: { returnType: 'Message[]', wrap: WRAP_ARRAY },
@@ -191,4 +193,22 @@ export function getMethodOverride(
   methodName: string,
 ): MethodOverride | undefined {
   return METHOD_OVERRIDES[methodName];
+}
+
+// --- Forced positional content ------------------------------------------------
+
+/**
+ * Optional spec fields that keep their positional slot in the generated
+ * `bot.<method>()` sugar (inline/chat dual methods only). Bot API 10.1 made
+ * `editMessageText.text` optional (a `rich_message` may replace it), but
+ * text-first calls dominate — DX keeps the positional shape; an options-only
+ * overload covers the rich path. Fields listed here must be plain strings:
+ * the runtime dispatch tells them apart from the options bag via `typeof`.
+ */
+const FORCED_POSITIONAL_CONTENT: Readonly<Record<string, readonly string[]>> = {
+  editMessageText: ['text'],
+};
+
+export function forcedPositionalContent(methodName: string): readonly string[] {
+  return FORCED_POSITIONAL_CONTENT[methodName] ?? [];
 }

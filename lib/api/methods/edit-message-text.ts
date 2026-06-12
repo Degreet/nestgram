@@ -3,6 +3,7 @@ import { Message } from '../../events';
 import type { BotService } from '../bot.service';
 import type {
   RawInlineKeyboardMarkup,
+  RawInputRichMessage,
   RawLinkPreviewOptions,
   RawMessage,
   RawMessageEntity,
@@ -13,15 +14,16 @@ export interface EditMessageTextOptions {
   chat_id?: number | string;
   message_id?: number;
   inline_message_id?: string;
-  text: string;
+  text?: string;
   parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
   entities?: RawMessageEntity[];
   link_preview_options?: RawLinkPreviewOptions;
+  rich_message?: RawInputRichMessage;
   reply_markup?: RawInlineKeyboardMarkup | { toJSON(): unknown };
 }
 
 /**
- * Use this method to edit text and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
+ * Use this method to edit text, rich and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
  * @see https://core.telegram.org/bots/api#editmessagetext
  */
 export class EditMessageText extends ApiMethod<
@@ -30,7 +32,7 @@ export class EditMessageText extends ApiMethod<
 > {
   readonly method = 'editMessageText';
 
-  constructor(payload: EditMessageTextOptions) {
+  constructor(payload?: EditMessageTextOptions) {
     super(payload);
   }
 

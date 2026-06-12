@@ -378,6 +378,7 @@ export interface RawChatFullInfo {
   first_profile_audio?: RawAudio;
   unique_gift_colors?: RawUniqueGiftColors;
   paid_message_star_count?: number;
+  guard_bot?: User;
 }
 
 export interface RawChatInviteLink {
@@ -401,6 +402,7 @@ export interface RawChatJoinRequest {
   date: number;
   bio?: string;
   invite_link?: RawChatInviteLink;
+  query_id?: string;
 }
 
 export interface RawChatLocation {
@@ -1204,6 +1206,11 @@ export type RawInputMedia =
   | InputMediaPhoto
   | InputMediaVideo;
 
+export interface RawInputMediaLink {
+  type: 'link';
+  url: string;
+}
+
 export interface RawInputMediaLocation {
   type: 'location';
   latitude: number;
@@ -1231,6 +1238,7 @@ export interface RawInputMediaVenue {
 
 export type RawInputMessageContent =
   | RawInputTextMessageContent
+  | RawInputRichMessageContent
   | RawInputLocationMessageContent
   | RawInputVenueMessageContent
   | RawInputContactMessageContent
@@ -1283,6 +1291,7 @@ export interface RawInputPollOption {
 
 export type RawInputPollOptionMedia =
   | InputMediaAnimation
+  | RawInputMediaLink
   | InputMediaLivePhoto
   | RawInputMediaLocation
   | InputMediaPhoto
@@ -1303,6 +1312,17 @@ export interface RawInputProfilePhotoAnimated {
 export interface RawInputProfilePhotoStatic {
   type: 'static';
   photo: string | InputFile;
+}
+
+export interface RawInputRichMessage {
+  html?: string;
+  markdown?: string;
+  is_rtl?: boolean;
+  skip_entity_detection?: boolean;
+}
+
+export interface RawInputRichMessageContent {
+  rich_message: RawInputRichMessage;
 }
 
 export interface RawInputSticker {
@@ -1406,6 +1426,10 @@ export interface RawKeyboardButtonRequestUsers {
 export interface RawLabeledPrice {
   label: string;
   amount: number;
+}
+
+export interface RawLink {
+  url: string;
 }
 
 export interface RawLinkPreviewOptions {
@@ -1524,6 +1548,7 @@ export interface RawMessage {
   link_preview_options?: RawLinkPreviewOptions;
   suggested_post_info?: RawSuggestedPostInfo;
   effect_id?: string;
+  rich_message?: RawRichMessage;
   animation?: RawAnimation;
   audio?: RawAudio;
   document?: RawDocument;
@@ -1892,6 +1917,7 @@ export interface RawPollMedia {
   animation?: RawAnimation;
   audio?: RawAudio;
   document?: RawDocument;
+  link?: RawLink;
   live_photo?: RawLivePhoto;
   location?: RawLocation;
   photo?: RawPhotoSize[];
@@ -2029,6 +2055,351 @@ export interface RawRevenueWithdrawalStatePending {
 export interface RawRevenueWithdrawalStateSucceeded {
   type: 'succeeded';
   date: number;
+  url: string;
+}
+
+export type RawRichBlock =
+  | RawRichBlockParagraph
+  | RawRichBlockSectionHeading
+  | RawRichBlockPreformatted
+  | RawRichBlockFooter
+  | RawRichBlockDivider
+  | RawRichBlockMathematicalExpression
+  | RawRichBlockAnchor
+  | RawRichBlockList
+  | RawRichBlockBlockQuotation
+  | RawRichBlockPullQuotation
+  | RawRichBlockCollage
+  | RawRichBlockSlideshow
+  | RawRichBlockTable
+  | RawRichBlockDetails
+  | RawRichBlockMap
+  | RawRichBlockAnimation
+  | RawRichBlockAudio
+  | RawRichBlockPhoto
+  | RawRichBlockVideo
+  | RawRichBlockVoiceNote
+  | RawRichBlockThinking;
+
+export interface RawRichBlockAnchor {
+  type: 'anchor';
+  name: string;
+}
+
+export interface RawRichBlockAnimation {
+  type: 'animation';
+  animation: RawAnimation;
+  has_spoiler?: boolean;
+  caption?: RawRichBlockCaption;
+}
+
+export interface RawRichBlockAudio {
+  type: 'audio';
+  audio: RawAudio;
+  caption?: RawRichBlockCaption;
+}
+
+export interface RawRichBlockBlockQuotation {
+  type: 'blockquote';
+  blocks: RawRichBlock[];
+  credit?: RawRichText;
+}
+
+export interface RawRichBlockCaption {
+  text: RawRichText;
+  credit?: RawRichText;
+}
+
+export interface RawRichBlockCollage {
+  type: 'collage';
+  blocks: RawRichBlock[];
+  caption?: RawRichBlockCaption;
+}
+
+export interface RawRichBlockDetails {
+  type: 'details';
+  summary: RawRichText;
+  blocks: RawRichBlock[];
+  is_open?: boolean;
+}
+
+export interface RawRichBlockDivider {
+  type: 'divider';
+}
+
+export interface RawRichBlockFooter {
+  type: 'footer';
+  text: RawRichText;
+}
+
+export interface RawRichBlockList {
+  type: 'list';
+  items: RawRichBlockListItem[];
+}
+
+export interface RawRichBlockListItem {
+  label: string;
+  blocks: RawRichBlock[];
+  has_checkbox?: boolean;
+  is_checked?: boolean;
+  value?: number;
+  type?: string;
+}
+
+export interface RawRichBlockMap {
+  type: 'map';
+  location: RawLocation;
+  zoom: number;
+  width: number;
+  height: number;
+  caption?: RawRichBlockCaption;
+}
+
+export interface RawRichBlockMathematicalExpression {
+  type: 'mathematical_expression';
+  expression: string;
+}
+
+export interface RawRichBlockParagraph {
+  type: 'paragraph';
+  text: RawRichText;
+}
+
+export interface RawRichBlockPhoto {
+  type: 'photo';
+  photo: RawPhotoSize[];
+  has_spoiler?: boolean;
+  caption?: RawRichBlockCaption;
+}
+
+export interface RawRichBlockPreformatted {
+  type: 'pre';
+  text: RawRichText;
+  language?: string;
+}
+
+export interface RawRichBlockPullQuotation {
+  type: 'pullquote';
+  text: RawRichText;
+  credit?: RawRichText;
+}
+
+export interface RawRichBlockSectionHeading {
+  type: 'heading';
+  text: RawRichText;
+  size: number;
+}
+
+export interface RawRichBlockSlideshow {
+  type: 'slideshow';
+  blocks: RawRichBlock[];
+  caption?: RawRichBlockCaption;
+}
+
+export interface RawRichBlockTable {
+  type: 'table';
+  cells: RawRichBlockTableCell[][];
+  is_bordered?: boolean;
+  is_striped?: boolean;
+  caption?: RawRichText;
+}
+
+export interface RawRichBlockTableCell {
+  text?: RawRichText;
+  is_header?: boolean;
+  colspan?: number;
+  rowspan?: number;
+  align: string;
+  valign: string;
+}
+
+export interface RawRichBlockThinking {
+  type: 'thinking';
+  text: RawRichText;
+}
+
+export interface RawRichBlockVideo {
+  type: 'video';
+  video: RawVideo;
+  has_spoiler?: boolean;
+  caption?: RawRichBlockCaption;
+}
+
+export interface RawRichBlockVoiceNote {
+  type: 'voice_note';
+  voice_note: RawVoice;
+  caption?: RawRichBlockCaption;
+}
+
+export interface RawRichMessage {
+  blocks: RawRichBlock[];
+  is_rtl?: boolean;
+}
+
+export type RawRichText =
+  | RawRichTextBold
+  | RawRichTextItalic
+  | RawRichTextUnderline
+  | RawRichTextStrikethrough
+  | RawRichTextSpoiler
+  | RawRichTextDateTime
+  | RawRichTextTextMention
+  | RawRichTextSubscript
+  | RawRichTextSuperscript
+  | RawRichTextMarked
+  | RawRichTextCode
+  | RawRichTextCustomEmoji
+  | RawRichTextMathematicalExpression
+  | RawRichTextUrl
+  | RawRichTextEmailAddress
+  | RawRichTextPhoneNumber
+  | RawRichTextBankCardNumber
+  | RawRichTextMention
+  | RawRichTextHashtag
+  | RawRichTextCashtag
+  | RawRichTextBotCommand
+  | RawRichTextAnchor
+  | RawRichTextAnchorLink
+  | RawRichTextReference
+  | RawRichTextReferenceLink;
+
+export interface RawRichTextAnchor {
+  type: 'anchor';
+  name: string;
+}
+
+export interface RawRichTextAnchorLink {
+  type: 'anchor_link';
+  text: RawRichText;
+  anchor_name: string;
+}
+
+export interface RawRichTextBankCardNumber {
+  type: 'bank_card_number';
+  text: RawRichText;
+  bank_card_number: string;
+}
+
+export interface RawRichTextBold {
+  type: 'bold';
+  text: RawRichText;
+}
+
+export interface RawRichTextBotCommand {
+  type: 'bot_command';
+  text: RawRichText;
+  bot_command: string;
+}
+
+export interface RawRichTextCashtag {
+  type: 'cashtag';
+  text: RawRichText;
+  cashtag: string;
+}
+
+export interface RawRichTextCode {
+  type: 'code';
+  text: RawRichText;
+}
+
+export interface RawRichTextCustomEmoji {
+  type: 'custom_emoji';
+  custom_emoji_id: string;
+  alternative_text: string;
+}
+
+export interface RawRichTextDateTime {
+  type: 'date_time';
+  text: RawRichText;
+  unix_time: number;
+  date_time_format: string;
+}
+
+export interface RawRichTextEmailAddress {
+  type: 'email_address';
+  text: RawRichText;
+  email_address: string;
+}
+
+export interface RawRichTextHashtag {
+  type: 'hashtag';
+  text: RawRichText;
+  hashtag: string;
+}
+
+export interface RawRichTextItalic {
+  type: 'italic';
+  text: RawRichText;
+}
+
+export interface RawRichTextMarked {
+  type: 'marked';
+  text: RawRichText;
+}
+
+export interface RawRichTextMathematicalExpression {
+  type: 'mathematical_expression';
+  expression: string;
+}
+
+export interface RawRichTextMention {
+  type: 'mention';
+  text: RawRichText;
+  username: string;
+}
+
+export interface RawRichTextPhoneNumber {
+  type: 'phone_number';
+  text: RawRichText;
+  phone_number: string;
+}
+
+export interface RawRichTextReference {
+  type: 'reference';
+  text: RawRichText;
+  name: string;
+}
+
+export interface RawRichTextReferenceLink {
+  type: 'reference_link';
+  text: RawRichText;
+  reference_name: string;
+}
+
+export interface RawRichTextSpoiler {
+  type: 'spoiler';
+  text: RawRichText;
+}
+
+export interface RawRichTextStrikethrough {
+  type: 'strikethrough';
+  text: RawRichText;
+}
+
+export interface RawRichTextSubscript {
+  type: 'subscript';
+  text: RawRichText;
+}
+
+export interface RawRichTextSuperscript {
+  type: 'superscript';
+  text: RawRichText;
+}
+
+export interface RawRichTextTextMention {
+  type: 'text_mention';
+  text: RawRichText;
+  user: User;
+}
+
+export interface RawRichTextUnderline {
+  type: 'underline';
+  text: RawRichText;
+}
+
+export interface RawRichTextUrl {
+  type: 'url';
+  text: RawRichText;
   url: string;
 }
 

@@ -7,6 +7,8 @@ import {
   AddStickerToSetOptions,
   AnswerCallbackQuery,
   AnswerCallbackQueryOptions,
+  AnswerChatJoinRequestQuery,
+  AnswerChatJoinRequestQueryOptions,
   AnswerGuestQuery,
   AnswerGuestQueryOptions,
   AnswerInlineQuery,
@@ -210,6 +212,8 @@ import {
   SendAudioOptions,
   SendChatAction,
   SendChatActionOptions,
+  SendChatJoinRequestWebApp,
+  SendChatJoinRequestWebAppOptions,
   SendChecklist,
   SendChecklistOptions,
   SendContact,
@@ -240,6 +244,10 @@ import {
   SendPhotoOptions,
   SendPoll,
   SendPollOptions,
+  SendRichMessage,
+  SendRichMessageDraft,
+  SendRichMessageDraftOptions,
+  SendRichMessageOptions,
   SendSticker,
   SendStickerOptions,
   SendVenue,
@@ -394,6 +402,28 @@ export abstract class GeneratedBotMethods {
       token,
       signal,
     });
+  }
+
+  /**
+   * Use this method to process a received chat join request query. Returns True on success.
+   * @param chat_join_request_query_id Unique identifier of the join request query
+   * @param result Result of the query. Must be either "approve" to allow the user to join the chat, "decline" to disallow the user to join the chat, or "queue" to leave the decision to other administrators.
+   * @see https://core.telegram.org/bots/api#answerchatjoinrequestquery
+   */
+  answerChatJoinRequestQuery(
+    chat_join_request_query_id: AnswerChatJoinRequestQueryOptions['chat_join_request_query_id'],
+    result: AnswerChatJoinRequestQueryOptions['result'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new AnswerChatJoinRequestQuery({
+        chat_join_request_query_id,
+        result,
+        ...rest,
+      }),
+      { token, signal },
+    );
   }
 
   /**
@@ -1274,7 +1304,7 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to edit animation, audio, document, live photo, photo, or video messages, or to add media to text messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo, a live photo, or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
+   * Use this method to edit animation, audio, document, live photo, photo, or video messages, or to replace a text or a rich message with a media. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo, a live photo, or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
    * @see https://core.telegram.org/bots/api#editmessagemedia
    */
   editMessageMedia(
@@ -1429,7 +1459,7 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to edit text and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
+   * Use this method to edit text, rich and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
    * @see https://core.telegram.org/bots/api#editmessagetext
    */
   editMessageText(
@@ -1454,12 +1484,37 @@ export abstract class GeneratedBotMethods {
     >,
   ): Promise<ResultOf<EditMessageText>>;
   editMessageText(
+    chat_id: NonNullable<EditMessageTextOptions['chat_id']>,
+    message_id: NonNullable<EditMessageTextOptions['message_id']>,
+    options?: MethodOptions<
+      Omit<
+        EditMessageTextOptions,
+        'chat_id' | 'message_id' | 'inline_message_id' | 'text'
+      >
+    >,
+  ): Promise<ResultOf<EditMessageText>>;
+  editMessageText(
+    inline_message_id: NonNullable<EditMessageTextOptions['inline_message_id']>,
+    options?: MethodOptions<
+      Omit<
+        EditMessageTextOptions,
+        'chat_id' | 'message_id' | 'inline_message_id' | 'text'
+      >
+    >,
+  ): Promise<ResultOf<EditMessageText>>;
+  editMessageText(
     target:
       | NonNullable<EditMessageTextOptions['chat_id']>
       | NonNullable<EditMessageTextOptions['inline_message_id']>,
-    second:
+    second?:
       | NonNullable<EditMessageTextOptions['message_id']>
-      | NonNullable<EditMessageTextOptions['text']>,
+      | NonNullable<EditMessageTextOptions['text']>
+      | MethodOptions<
+          Omit<
+            EditMessageTextOptions,
+            'chat_id' | 'message_id' | 'inline_message_id' | 'text'
+          >
+        >,
     c0OrOptions?:
       | NonNullable<EditMessageTextOptions['text']>
       | MethodOptions<
@@ -1477,30 +1532,37 @@ export abstract class GeneratedBotMethods {
   ): Promise<ResultOf<EditMessageText>> {
     // A numeric 2nd arg is message_id → the chat-based overload; otherwise inline.
     if (typeof second === 'number') {
-      const { token, signal, ...rest } = chatOptions ?? {};
+      // A string 3rd arg fills the text slot; otherwise it's the options bag.
+      const { token, signal, ...rest } =
+        (typeof c0OrOptions === 'string' ? chatOptions : c0OrOptions) ?? {};
       return this.call(
         new EditMessageText({
           chat_id: target,
           message_id: second,
-          text: c0OrOptions as NonNullable<EditMessageTextOptions['text']>,
+          ...(typeof c0OrOptions === 'string' ? { text: c0OrOptions } : {}),
           ...rest,
         }),
         { token, signal },
       );
     }
+    // A string 2nd arg fills the text slot; otherwise it's the options bag.
     const { token, signal, ...rest } =
-      (c0OrOptions as MethodOptions<
-        Omit<
-          EditMessageTextOptions,
-          'chat_id' | 'message_id' | 'inline_message_id' | 'text'
-        >
-      >) ?? {};
+      (typeof second === 'string'
+        ? (c0OrOptions as
+            | MethodOptions<
+                Omit<
+                  EditMessageTextOptions,
+                  'chat_id' | 'message_id' | 'inline_message_id' | 'text'
+                >
+              >
+            | undefined)
+        : second) ?? {};
     return this.call(
       new EditMessageText({
         inline_message_id: target as NonNullable<
           EditMessageTextOptions['inline_message_id']
         >,
-        text: second,
+        ...(typeof second === 'string' ? { text: second } : {}),
         ...rest,
       }),
       { token, signal },
@@ -2488,6 +2550,28 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
+   * Use this method to process a received chat join request query by showing a Mini App to the user before deciding the outcome. Returns True on success.
+   * @param chat_join_request_query_id Unique identifier of the join request query
+   * @param web_app_url The URL of the Mini App to be opened
+   * @see https://core.telegram.org/bots/api#sendchatjoinrequestwebapp
+   */
+  sendChatJoinRequestWebApp(
+    chat_join_request_query_id: SendChatJoinRequestWebAppOptions['chat_join_request_query_id'],
+    web_app_url: SendChatJoinRequestWebAppOptions['web_app_url'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new SendChatJoinRequestWebApp({
+        chat_join_request_query_id,
+        web_app_url,
+        ...rest,
+      }),
+      { token, signal },
+    );
+  }
+
+  /**
    * Use this method to send a checklist on behalf of a connected business account. On success, the sent Message is returned.
    * @param business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
    * @param chat_id Unique identifier for the target chat or username of the target bot in the format @username
@@ -2806,6 +2890,48 @@ export abstract class GeneratedBotMethods {
       token,
       signal,
     });
+  }
+
+  /**
+   * Use this method to send rich messages. If the message contains a block with a media element, then the bot must have the right to send the media to the chat. On success, the sent Message is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param rich_message The message to be sent
+   * @see https://core.telegram.org/bots/api#sendrichmessage
+   */
+  sendRichMessage(
+    chat_id: SendRichMessageOptions['chat_id'],
+    rich_message: SendRichMessageOptions['rich_message'],
+    callOptions?: MethodOptions<
+      Omit<SendRichMessageOptions, 'chat_id' | 'rich_message'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SendRichMessage({ chat_id, rich_message, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
+   * Use this method to stream a partial rich message to a user while the message is being generated. Note that the streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is finalized, you must call sendRichMessage with the complete message to persist it in the user's chat. Returns True on success.
+   * @param chat_id Unique identifier for the target private chat
+   * @param draft_id Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are animated.
+   * @param rich_message The partial message to be streamed
+   * @see https://core.telegram.org/bots/api#sendrichmessagedraft
+   */
+  sendRichMessageDraft(
+    chat_id: SendRichMessageDraftOptions['chat_id'],
+    draft_id: SendRichMessageDraftOptions['draft_id'],
+    rich_message: SendRichMessageDraftOptions['rich_message'],
+    callOptions?: MethodOptions<
+      Omit<SendRichMessageDraftOptions, 'chat_id' | 'draft_id' | 'rich_message'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new SendRichMessageDraft({ chat_id, draft_id, rich_message, ...rest }),
+      { token, signal },
+    );
   }
 
   /**
