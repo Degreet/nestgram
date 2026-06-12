@@ -330,16 +330,16 @@ function buildCodeIsland(node) {
     asElement(node, 'figure', { className: ['code-island'] });
     return setChildren(node, []);
   }
-  const mark = node.attributes && node.attributes.mark ? Number(node.attributes.mark) : 0;
+  const mark = (node.attributes && node.attributes.mark) || '';
   const className = label ? ['code-island', 'is-framed'] : ['code-island'];
   const props = { className };
-  // Carry the 1-based marked line on the figure. In hast `hProperties`, a
-  // data attribute is written camelCase (`dataMark`) so remark-rehype
-  // serializes it as `data-mark`. The highlight itself is applied by
-  // rehype-nestgram-codemark, which runs AFTER Astro's Shiki step (a Shiki
-  // transformer is unreliable here — Astro caches highlighted HTML keyed on
-  // lang+theme+code only, not meta).
-  if (mark > 0) props.dataMark = String(mark);
+  // Carry the marked lines on the figure verbatim ("6", "3,5", "11-12"). In
+  // hast `hProperties`, a data attribute is written camelCase (`dataMark`) so
+  // remark-rehype serializes it as `data-mark`. The highlight itself is
+  // applied by rehype-nestgram-codemark, which runs AFTER Astro's Shiki step
+  // (a Shiki transformer is unreliable here — Astro caches highlighted HTML
+  // keyed on lang+theme+code only, not meta).
+  if (mark) props.dataMark = String(mark);
 
   const kids = [];
   if (label) {
