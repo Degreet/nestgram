@@ -47,13 +47,11 @@ describe('editMessageText overloads (target first, then text)', () => {
     });
   });
 
-  // Since Bot API 10.1 `text` is optional (rich_message can replace it), but
-  // the bare-name keeps its positional slot — options-only stays available.
-  it('chat-based without text: (chat_id, message_id, options)', async () => {
+  // Since Bot API 10.1 the content slot also takes an InputRichMessage —
+  // a string fills `text`, an object fills `rich_message`.
+  it('chat-based rich: (chat_id, message_id, richMessage)', async () => {
     const calls = mockFetch();
-    await bot().editMessageText(42, 7, {
-      rich_message: { markdown: '# hi' },
-    });
+    await bot().editMessageText(42, 7, { markdown: '# hi' });
     expect(calls[0].body).toEqual({
       chat_id: 42,
       message_id: 7,
@@ -61,14 +59,22 @@ describe('editMessageText overloads (target first, then text)', () => {
     });
   });
 
-  it('inline without text: (inline_message_id, options)', async () => {
+  it('inline rich: (inline_message_id, richMessage)', async () => {
     const calls = mockFetch();
-    await bot().editMessageText('inline-1', {
-      rich_message: { markdown: '# hi' },
-    });
+    await bot().editMessageText('inline-1', { markdown: '# hi' });
     expect(calls[0].body).toEqual({
       inline_message_id: 'inline-1',
       rich_message: { markdown: '# hi' },
+    });
+  });
+
+  it('inline with options: (inline_message_id, text, options)', async () => {
+    const calls = mockFetch();
+    await bot().editMessageText('inline-1', 'hi', { parse_mode: 'HTML' });
+    expect(calls[0].body).toEqual({
+      inline_message_id: 'inline-1',
+      text: 'hi',
+      parse_mode: 'HTML',
     });
   });
 });

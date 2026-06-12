@@ -68,6 +68,15 @@ describe('Message actions', () => {
     });
   });
 
+  it('editText() takes a rich message in the content slot', () => {
+    const { bot, calls } = fakeBot();
+    message(bot).editText({ markdown: '# updated' });
+    expect(calls[0]).toEqual({
+      method: 'editMessageText',
+      args: [1, 5, { markdown: '# updated' }, undefined],
+    });
+  });
+
   it('editReplyMarkup() edits this message keyboard', () => {
     const { bot, calls } = fakeBot();
     const markup = { inline_keyboard: [] };

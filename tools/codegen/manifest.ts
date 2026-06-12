@@ -198,17 +198,35 @@ export function getMethodOverride(
 // --- Forced positional content ------------------------------------------------
 
 /**
- * Optional spec fields that keep their positional slot in the generated
- * `bot.<method>()` sugar (inline/chat dual methods only). Bot API 10.1 made
- * `editMessageText.text` optional (a `rich_message` may replace it), but
- * text-first calls dominate — DX keeps the positional shape; an options-only
- * overload covers the rich path. Fields listed here must be plain strings:
- * the runtime dispatch tells them apart from the options bag via `typeof`.
+ * A required positional content slot fed by two mutually-exclusive spec
+ * fields (inline/chat dual methods only). Bot API 10.1 made
+ * `editMessageText.text` and `rich_message` each "required if the other
+ * isn't specified" — the spec marks both optional, but a call without either
+ * is invalid. The sugar models that as one required positional slot: a string
+ * fills `stringField`, an object fills `objectField`. The generator refuses
+ * to emit if a spec change ever makes this dispatch unsound (see
+ * emit-bot-methods `inlineDualContent`).
  */
-const FORCED_POSITIONAL_CONTENT: Readonly<Record<string, readonly string[]>> = {
-  editMessageText: ['text'],
+export interface PositionalContentSlot {
+  /** Plain-string field the slot fills when the arg is a string. */
+  stringField: string;
+  /** Object field the slot fills otherwise. */
+  objectField: string;
+}
+
+const FORCED_POSITIONAL_CONTENT: Readonly<
+  Record<string, PositionalContentSlot>
+> = {
+  editMessageText: { stringField: 'text', objectField: 'rich_message' },
 };
 
-export function forcedPositionalContent(methodName: string): readonly string[] {
-  return FORCED_POSITIONAL_CONTENT[methodName] ?? [];
+export function forcedPositionalSlot(
+  methodName: string,
+): PositionalContentSlot | undefined {
+  return FORCED_POSITIONAL_CONTENT[methodName];
+}
+
+/** Every method with a forced slot — the emitter asserts none goes stale. */
+export function forcedPositionalMethodNames(): readonly string[] {
+  return Object.keys(FORCED_POSITIONAL_CONTENT);
 }

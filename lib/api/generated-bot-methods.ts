@@ -1465,40 +1465,25 @@ export abstract class GeneratedBotMethods {
   editMessageText(
     chat_id: NonNullable<EditMessageTextOptions['chat_id']>,
     message_id: NonNullable<EditMessageTextOptions['message_id']>,
-    text: NonNullable<EditMessageTextOptions['text']>,
+    content:
+      | NonNullable<EditMessageTextOptions['text']>
+      | NonNullable<EditMessageTextOptions['rich_message']>,
     options?: MethodOptions<
       Omit<
         EditMessageTextOptions,
-        'chat_id' | 'message_id' | 'inline_message_id' | 'text'
+        'chat_id' | 'message_id' | 'inline_message_id' | 'text' | 'rich_message'
       >
     >,
   ): Promise<ResultOf<EditMessageText>>;
   editMessageText(
     inline_message_id: NonNullable<EditMessageTextOptions['inline_message_id']>,
-    text: NonNullable<EditMessageTextOptions['text']>,
+    content:
+      | NonNullable<EditMessageTextOptions['text']>
+      | NonNullable<EditMessageTextOptions['rich_message']>,
     options?: MethodOptions<
       Omit<
         EditMessageTextOptions,
-        'chat_id' | 'message_id' | 'inline_message_id' | 'text'
-      >
-    >,
-  ): Promise<ResultOf<EditMessageText>>;
-  editMessageText(
-    chat_id: NonNullable<EditMessageTextOptions['chat_id']>,
-    message_id: NonNullable<EditMessageTextOptions['message_id']>,
-    options?: MethodOptions<
-      Omit<
-        EditMessageTextOptions,
-        'chat_id' | 'message_id' | 'inline_message_id' | 'text'
-      >
-    >,
-  ): Promise<ResultOf<EditMessageText>>;
-  editMessageText(
-    inline_message_id: NonNullable<EditMessageTextOptions['inline_message_id']>,
-    options?: MethodOptions<
-      Omit<
-        EditMessageTextOptions,
-        'chat_id' | 'message_id' | 'inline_message_id' | 'text'
+        'chat_id' | 'message_id' | 'inline_message_id' | 'text' | 'rich_message'
       >
     >,
   ): Promise<ResultOf<EditMessageText>>;
@@ -1506,63 +1491,72 @@ export abstract class GeneratedBotMethods {
     target:
       | NonNullable<EditMessageTextOptions['chat_id']>
       | NonNullable<EditMessageTextOptions['inline_message_id']>,
-    second?:
+    second:
       | NonNullable<EditMessageTextOptions['message_id']>
       | NonNullable<EditMessageTextOptions['text']>
-      | MethodOptions<
-          Omit<
-            EditMessageTextOptions,
-            'chat_id' | 'message_id' | 'inline_message_id' | 'text'
-          >
-        >,
-    c0OrOptions?:
+      | NonNullable<EditMessageTextOptions['rich_message']>,
+    contentOrOptions?:
       | NonNullable<EditMessageTextOptions['text']>
+      | NonNullable<EditMessageTextOptions['rich_message']>
       | MethodOptions<
           Omit<
             EditMessageTextOptions,
-            'chat_id' | 'message_id' | 'inline_message_id' | 'text'
+            | 'chat_id'
+            | 'message_id'
+            | 'inline_message_id'
+            | 'text'
+            | 'rich_message'
           >
         >,
     chatOptions?: MethodOptions<
       Omit<
         EditMessageTextOptions,
-        'chat_id' | 'message_id' | 'inline_message_id' | 'text'
+        'chat_id' | 'message_id' | 'inline_message_id' | 'text' | 'rich_message'
       >
     >,
   ): Promise<ResultOf<EditMessageText>> {
     // A numeric 2nd arg is message_id → the chat-based overload; otherwise inline.
     if (typeof second === 'number') {
-      // A string 3rd arg fills the text slot; otherwise it's the options bag.
-      const { token, signal, ...rest } =
-        (typeof c0OrOptions === 'string' ? chatOptions : c0OrOptions) ?? {};
+      // The 3rd arg is the content slot: a string fills text, an object fills rich_message.
+      const { token, signal, ...rest } = chatOptions ?? {};
       return this.call(
         new EditMessageText({
           chat_id: target,
           message_id: second,
-          ...(typeof c0OrOptions === 'string' ? { text: c0OrOptions } : {}),
+          ...(typeof contentOrOptions === 'string'
+            ? { text: contentOrOptions }
+            : {
+                rich_message: contentOrOptions as NonNullable<
+                  EditMessageTextOptions['rich_message']
+                >,
+              }),
           ...rest,
         }),
         { token, signal },
       );
     }
-    // A string 2nd arg fills the text slot; otherwise it's the options bag.
+    // The 2nd arg is the content slot: a string fills text, an object fills rich_message.
     const { token, signal, ...rest } =
-      (typeof second === 'string'
-        ? (c0OrOptions as
-            | MethodOptions<
-                Omit<
-                  EditMessageTextOptions,
-                  'chat_id' | 'message_id' | 'inline_message_id' | 'text'
-                >
-              >
-            | undefined)
-        : second) ?? {};
+      (contentOrOptions as
+        | MethodOptions<
+            Omit<
+              EditMessageTextOptions,
+              | 'chat_id'
+              | 'message_id'
+              | 'inline_message_id'
+              | 'text'
+              | 'rich_message'
+            >
+          >
+        | undefined) ?? {};
     return this.call(
       new EditMessageText({
         inline_message_id: target as NonNullable<
           EditMessageTextOptions['inline_message_id']
         >,
-        ...(typeof second === 'string' ? { text: second } : {}),
+        ...(typeof second === 'string'
+          ? { text: second }
+          : { rich_message: second }),
         ...rest,
       }),
       { token, signal },

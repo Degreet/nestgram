@@ -18,7 +18,7 @@ import {
   InputMediaPhoto,
   InputMediaVideo,
 } from '../api/input-media';
-import type { RawMessage } from './raw-update.types';
+import type { RawInputRichMessage, RawMessage } from './raw-update.types';
 import {
   Animation,
   Audio,
@@ -116,11 +116,18 @@ export class Message extends TelegramObject {
     });
   }
 
-  editText(text: string, options?: MethodOptions<EditMessageTextOptions>) {
+  // Options omit the content fields: the slot already carries text OR
+  // rich_message, and a second copy via options would send both — invalid.
+  editText(
+    content: string | RawInputRichMessage,
+    options?: MethodOptions<
+      Omit<EditMessageTextOptions, 'text' | 'rich_message'>
+    >,
+  ) {
     return this.botService.editMessageText(
       this.chat.id,
       this.message_id,
-      text,
+      content,
       options,
     );
   }
