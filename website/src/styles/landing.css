@@ -232,7 +232,7 @@ body {
 /* hero (C poster) */
 .hero {
   position: relative;
-  padding: 60px 0 70px;
+  padding-block: 60px 70px;
 }
 .hero .lion-bg {
   position: absolute;
@@ -275,7 +275,7 @@ body {
   font-weight: 700;
 }
 .hero h1 {
-  font-size: clamp(54px, 12vw, 132px);
+  font-size: clamp(38px, 12vw, 132px);
   line-height: 0.86;
   letter-spacing: -0.045em;
   margin-top: 30px;
@@ -352,7 +352,7 @@ body {
 /* versus strip (C) */
 .versus {
   margin-top: 16px;
-  padding: 40px 0;
+  padding-block: 40px;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -388,7 +388,7 @@ body {
 
 /* section scaffolding (A) */
 .blk {
-  padding: 92px 0;
+  padding-block: 92px;
   position: relative;
 }
 .sec-head {
@@ -447,16 +447,12 @@ body {
   flex-direction: column;
   gap: 13px;
 }
+/* NB: not flex — the items are prose with inline <em>/<span> children, and
+   flex would lay those text nodes out as columns (visible on narrow screens) */
 .compare li {
-  display: flex;
-  gap: 11px;
   font-size: 15.5px;
   color: var(--text-2);
   line-height: 1.55;
-}
-.compare li svg {
-  flex: none;
-  margin-top: 3px;
 }
 @media (max-width: 760px) {
   .compare {
@@ -727,7 +723,7 @@ body {
 /* final cta (A) */
 .final {
   text-align: center;
-  padding: 100px 0 90px;
+  padding-block: 100px 90px;
   position: relative;
 }
 .final h2 {
@@ -801,5 +797,78 @@ body {
   .foot-in {
     grid-template-columns: 1fr 1fr;
     gap: 24px;
+  }
+}
+
+/* ---- phones (≤480px) ---- */
+@media (max-width: 480px) {
+  .wrap {
+    padding: 0 18px;
+  }
+  .nav {
+    gap: 12px;
+    height: 64px;
+  }
+  .nav .brand {
+    font-size: 17px;
+  }
+  .nav .brand img {
+    width: 28px;
+    height: 28px;
+  }
+  .nav-right {
+    gap: 8px;
+  }
+  .nav-right .btn {
+    padding: 9px 13px;
+    font-size: 13.5px;
+  }
+  .ghub {
+    padding: 7px 10px;
+    font-size: 12.5px;
+  }
+  .hero {
+    padding-block: 40px 56px;
+  }
+  .hero .tag {
+    font-size: 11px;
+    padding: 6px 11px;
+  }
+  .hero .sub {
+    margin-top: 24px;
+  }
+  .hero .cta {
+    margin-top: 30px;
+  }
+  .hero .cta .btn {
+    padding: 13px 20px;
+    font-size: 15px;
+  }
+  .hero .cmd {
+    font-size: 13px;
+    padding: 12px 14px;
+  }
+  .blk {
+    padding-block: 64px;
+  }
+  .compare .col {
+    padding: 20px 18px 22px;
+  }
+  .pipe {
+    padding: 24px 16px;
+  }
+  .win pre {
+    padding: 16px 14px;
+    font-size: 12.5px;
+  }
+  .warnbox {
+    font-size: 12.5px;
+    padding: 14px 14px;
+  }
+  .final {
+    padding-block: 72px 64px;
+  }
+  .final p {
+    font-size: 16px;
   }
 }
