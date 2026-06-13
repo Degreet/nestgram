@@ -56,11 +56,7 @@ function harness(
     }),
   } as unknown as BotService;
 
-  const source = new PollingUpdateSource(
-    { token: 't', polling },
-    bot,
-    resolverFor(routes),
-  );
+  const source = new PollingUpdateSource(bot, polling, resolverFor(routes));
   return { source, bot, offsets };
 }
 
@@ -125,8 +121,8 @@ describe('PollingUpdateSource', () => {
       }),
     } as unknown as BotService;
     const source = new PollingUpdateSource(
-      { token: 't', polling: { backoffMs: 1, idleMs: 1 } },
       bot,
+      { backoffMs: 1, idleMs: 1 },
       resolverFor(),
     );
 

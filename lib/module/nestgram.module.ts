@@ -61,7 +61,22 @@ export class NestgramModule {
     StageRegistry,
     UpdateDispatcher,
     AllowedUpdatesResolver,
-    PollingUpdateSource,
+    // Built per-bot now (one poller per bot). The single-bot path constructs it
+    // from the top-level polling config; multi-bot builds its own per bot.
+    {
+      provide: PollingUpdateSource,
+      useFactory: (
+        options: NestgramModuleOptions,
+        bot: BotService,
+        resolver: AllowedUpdatesResolver,
+      ): PollingUpdateSource =>
+        new PollingUpdateSource(
+          bot,
+          typeof options.polling === 'object' ? options.polling : undefined,
+          resolver,
+        ),
+      inject: [Providers.NESTGRAM_OPTIONS, BotService, AllowedUpdatesResolver],
+    },
     WebhookUpdateSource,
     // The active transport, chosen by config: webhook if configured, else
     // polling. Bootstrap injects UPDATE_SOURCE and only starts it when a
