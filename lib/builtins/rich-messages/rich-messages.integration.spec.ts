@@ -3,7 +3,6 @@ import { NestFactory } from '@nestjs/core';
 import { of } from 'rxjs';
 
 import { RichMessagesInterceptor } from './rich-messages.interceptor';
-import { RichMessagesModule } from './rich-messages.module';
 import { BotModule } from '../../api/bot.module';
 import { DefaultParseModeInterceptor } from '../parse-mode';
 import {
@@ -11,8 +10,6 @@ import {
   ApiExecutionContext,
   ApiRequest,
 } from '../../api/request';
-import { NestgramConfigError } from '../../exceptions';
-
 const noop: ApiCallHandler = { handle: () => of(undefined) };
 
 function sendMessageRequest(): {
@@ -33,27 +30,14 @@ function sendMessageRequest(): {
   return { ctx, request };
 }
 
-describe('RichMessagesModule', () => {
-  it('forRoot rejects an unknown dialect', () => {
-    expect(() =>
-      RichMessagesModule.forRoot({ dialect: 'bbcode' as never }),
-    ).toThrow(NestgramConfigError);
-  });
-
-  it('forRoot rejects an unknown mode', () => {
-    expect(() =>
-      RichMessagesModule.forRoot({
-        dialect: 'markdown',
-        mode: 'sometimes' as never,
-      }),
-    ).toThrow(NestgramConfigError);
-  });
-
-  it('feeds its settings into the pipeline interceptor when imported', async () => {
+describe('richMessages option', () => {
+  it('feeds its settings into the pipeline interceptor when set', async () => {
     @Module({
       imports: [
-        BotModule.forRoot({ token: '1:T' }),
-        RichMessagesModule.forRoot({ dialect: 'markdown' }),
+        BotModule.forRoot({
+          token: '1:T',
+          richMessages: { dialect: 'markdown' },
+        }),
       ],
     })
     class AppModule {}
@@ -75,7 +59,7 @@ describe('RichMessagesModule', () => {
     }
   });
 
-  it('stays opt-in: without the module the interceptor is a passthrough', async () => {
+  it('stays opt-in: without the option the interceptor is a passthrough', async () => {
     @Module({
       imports: [BotModule.forRoot({ token: '1:T' })],
     })
@@ -98,8 +82,11 @@ describe('RichMessagesModule', () => {
   it('a configured default parseMode never leaks into the rewritten rich call', async () => {
     @Module({
       imports: [
-        BotModule.forRoot({ token: '1:T', parseMode: 'HTML' }),
-        RichMessagesModule.forRoot({ dialect: 'markdown' }),
+        BotModule.forRoot({
+          token: '1:T',
+          parseMode: 'HTML',
+          richMessages: { dialect: 'markdown' },
+        }),
       ],
     })
     class ParseModeAppModule {}

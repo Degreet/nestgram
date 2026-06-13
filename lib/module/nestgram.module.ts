@@ -104,6 +104,7 @@ export class NestgramModule {
         BotModule.forRoot({
           token: options.token,
           parseMode: options.parseMode,
+          richMessages: options.richMessages,
           apiInterceptors: options.apiInterceptors,
           throttle: options.throttle,
           throttler: options.throttler,
@@ -131,6 +132,7 @@ export class NestgramModule {
           useFactory: (resolved: NestgramModuleOptions) => ({
             token: resolved.token,
             parseMode: resolved.parseMode,
+            richMessages: resolved.richMessages,
             throttle: resolved.throttle,
           }),
           // Static (a class can't resolve through the value factory) — like apiInterceptors.

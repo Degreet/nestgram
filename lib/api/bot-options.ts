@@ -2,12 +2,18 @@ import { ModuleMetadata, Type } from '@nestjs/common';
 
 import type { ApiInterceptor } from './request';
 import type { ParseModeValue } from './parse-mode';
+import type { RichMessagesOptions } from '../builtins/rich-messages/rich-messages.types';
 import type { ThrottleOptions } from '../builtins/throttle/throttle.types';
 
 export interface BotOptions {
   token: string;
   /** Default `parse_mode` applied to sends that omit one. */
   parseMode?: ParseModeValue;
+  /**
+   * Send plain outgoing text as Bot API 10.1 rich messages (headings, tables,
+   * dividers). Omit to keep plain `sendMessage`. See {@link RichMessagesOptions}.
+   */
+  richMessages?: RichMessagesOptions;
   /** Extra outbound API interceptors, run after the built-ins (before the throttler). */
   apiInterceptors?: Type<ApiInterceptor>[];
   /** Send rate-limiting: `true`/omitted = on with defaults, `false` = off, or tune it. */

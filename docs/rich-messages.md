@@ -1,6 +1,6 @@
 ---
 title: Rich messages
-description: Send headings, tables and block-formatted text with Bot API 10.1 rich messages — per call or bot-wide with RichMessagesModule.
+description: Send headings, tables and block-formatted text with Bot API 10.1 rich messages — per call or bot-wide with the richMessages option.
 sidebar:
   group: Events & replies
   order: 34
@@ -52,26 +52,26 @@ await message.editText('plain update');
 await message.editText({ markdown: '# Rich update' });
 ```
 
-## Rich by default: RichMessagesModule
+## Rich by default: the `richMessages` option
 
 Writing `new SendRichMessage(...)` for every reply defeats `return 'text'`.
-Import `RichMessagesModule` once and every plain outgoing text — string
+Set the `richMessages` option and every plain outgoing text — string
 returns, `message.answer()`, `reply()` — is rewritten into `sendRichMessage`
 with your configured dialect as the source:
 
-:::code[app.module.ts]{mark="10"}
+:::code[app.module.ts]{mark="9"}
 
 ```ts
 import { Module } from '@nestjs/common';
-import { NestgramModule, RichMessagesModule } from 'nestgram';
+import { NestgramModule } from 'nestgram';
 
 @Module({
   imports: [
     NestgramModule.forRoot({
       token: process.env.BOT_TOKEN ?? '',
       polling: true,
+      richMessages: { dialect: 'markdown' },
     }),
-    RichMessagesModule.forRoot({ dialect: 'markdown' }),
   ],
 })
 export class AppModule {}
@@ -79,7 +79,7 @@ export class AppModule {}
 
 :::
 
-This is strictly **opt-in** — without the import nothing changes. The rewrite
+This is strictly **opt-in** — without the option nothing changes. The rewrite
 is an ordinary API interceptor in the outbound pipeline (no privileged core),
 and it deliberately skips calls that state their own formatting intent:
 an explicit `parse_mode`, `entities`, or `link_preview_options` keeps the
@@ -101,7 +101,11 @@ tags. Everything else stays a normal `sendMessage`, formatted by your
 default `parseMode` as before:
 
 ```ts
-RichMessagesModule.forRoot({ dialect: 'markdown', mode: 'dynamic' });
+NestgramModule.forRoot({
+  token: process.env.BOT_TOKEN ?? '',
+  polling: true,
+  richMessages: { dialect: 'markdown', mode: 'dynamic' },
+});
 ```
 
 ```ts

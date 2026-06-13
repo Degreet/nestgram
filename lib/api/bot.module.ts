@@ -10,7 +10,12 @@ import { API_INTERCEPTORS, ApiInterceptor, ApiPipeline } from './request';
 // the barrel also re-exports the handler-side auto-answer interceptor, which
 // would drag the engine/module graph into the api layer (and cycle).
 import { DefaultParseModeInterceptor } from '../builtins/parse-mode';
-import { RichMessagesInterceptor } from '../builtins/rich-messages';
+import {
+  RICH_MESSAGES_SETTINGS,
+  RichMessagesInterceptor,
+  RichMessagesSettings,
+  resolveRichMessagesSettings,
+} from '../builtins/rich-messages';
 import { ThrottleInterceptor, ThrottleModule } from '../builtins/throttle';
 import { TokenValidationInterceptor } from '../builtins/token-validation';
 
@@ -23,7 +28,7 @@ export class BotModule {
    * first: token validation (its constructor also fail-fasts on a missing
    * configured token at boot), rich-messages rewrite (before parse-mode, so an
    * injected default `parse_mode` can't read as explicit formatting intent;
-   * inert unless `RichMessagesModule.forRoot` provided its settings), default
+   * inert unless the `richMessages` option set its settings), default
    * parse-mode, any user-supplied interceptors, then the throttler innermost
    * (closest to the wire, so it reads `chat_id` after the mutators). The
    * built-ins are ordinary `ApiInterceptor`s — no privileged core; a user can
@@ -55,6 +60,15 @@ export class BotModule {
     const throttleSlot = throttler ?? ThrottleInterceptor;
     return [
       ...leading,
+      // Resolved from the `richMessages` option (or `null` when omitted) — the
+      // RichMessagesInterceptor in `leading` reads this and stays a passthrough
+      // when it's null. Mirrors how ThrottleModule resolves THROTTLE_SETTINGS.
+      {
+        provide: RICH_MESSAGES_SETTINGS,
+        useFactory: (options: BotOptions): RichMessagesSettings | null =>
+          resolveRichMessagesSettings(options.richMessages),
+        inject: [Providers.BOT_OPTIONS],
+      },
       // The default ThrottleInterceptor comes from the imported ThrottleModule;
       // only a custom throttler is provided here.
       ...(throttler ? [throttler] : []),

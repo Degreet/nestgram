@@ -1,4 +1,4 @@
-import { Inject, Injectable, Optional } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import type { Observable } from 'rxjs';
 
 import {
@@ -20,8 +20,8 @@ import {
  * rewrite covers them. Implemented as an ordinary {@link ApiInterceptor} — no
  * privileged core; a user could write the same hook.
  *
- * Opt-in: without `RichMessagesModule.forRoot` the settings token resolves to
- * nothing and the interceptor is a passthrough. A call that states its own
+ * Opt-in: without the `richMessages` option the settings token is `null` and
+ * the interceptor is a passthrough. A call that states its own
  * formatting intent (`parse_mode`, `entities`) or asks for an option the rich
  * path can't honor (`link_preview_options`) is left untouched — which is why
  * this runs BEFORE the default parse-mode injector (an injected default must
@@ -52,7 +52,6 @@ export class RichMessagesInterceptor implements ApiInterceptor {
   };
 
   constructor(
-    @Optional()
     @Inject(RICH_MESSAGES_SETTINGS)
     private readonly settings: RichMessagesSettings | null,
   ) {}

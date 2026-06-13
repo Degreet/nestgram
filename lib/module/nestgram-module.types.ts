@@ -4,6 +4,7 @@ import { PollingOptions } from '../engine/source';
 import type { AllowedUpdate } from '../engine/context/update-kind';
 import type { ApiInterceptor } from '../api/request';
 import type { ParseModeValue } from '../api/parse-mode';
+import type { RichMessagesOptions } from '../builtins/rich-messages/rich-messages.types';
 import type { ThrottleOptions } from '../builtins/throttle/throttle.types';
 
 /**
@@ -64,6 +65,11 @@ export interface NestgramModuleOptions {
    * `parse_mode: undefined` to opt that call out.
    */
   parseMode?: ParseModeValue;
+  /**
+   * Send plain outgoing text as Bot API 10.1 rich messages (headings, tables,
+   * dividers). Omit to keep plain `sendMessage`. See {@link RichMessagesOptions}.
+   */
+  richMessages?: RichMessagesOptions;
   /**
    * Extra outbound {@link ApiInterceptor}s — run after the built-ins (token
    * validation, default parse mode) and before the throttler, on every API call.
