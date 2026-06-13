@@ -10,7 +10,7 @@ import {
   StageRegistry,
   UpdateDispatcher,
 } from '../engine/dispatcher';
-import { AllowedUpdatesResolver, UpdateSource } from '../engine/source';
+import { BotSourceFactory, UpdateSource } from '../engine/source';
 
 function makeBootstrap(options: Partial<NestgramModuleOptions>) {
   const getMe = jest.fn().mockResolvedValue({ username: 'mybot' });
@@ -26,9 +26,7 @@ function makeBootstrap(options: Partial<NestgramModuleOptions>) {
     { start, stop: jest.fn() } as unknown as UpdateSource,
     { getMe } as unknown as BotService,
     { get: jest.fn() } as unknown as ModuleRef,
-    {
-      resolve: jest.fn().mockReturnValue([]),
-    } as unknown as AllowedUpdatesResolver,
+    { create: jest.fn().mockReturnValue(null) } as unknown as BotSourceFactory,
   );
 
   return { bootstrap, getMe, start };

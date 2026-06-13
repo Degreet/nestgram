@@ -15,11 +15,7 @@ import {
   StageRegistry,
   UpdateDispatcher,
 } from '../engine/dispatcher';
-import {
-  AllowedUpdatesResolver,
-  PollingUpdateSource,
-  UpdateSource,
-} from '../engine/source';
+import { BotSourceFactory, UpdateSource } from '../engine/source';
 import { BotConfigResolver } from './bot-config';
 import { NestgramModuleOptions } from './nestgram-module.types';
 
@@ -41,8 +37,8 @@ export class NestgramBootstrap
   implements OnApplicationBootstrap, OnApplicationShutdown
 {
   private readonly logger = new Logger(NestgramBootstrap.name);
-  /** Per-bot pollers started for a multi-bot config (one per polling bot). */
-  private readonly fleet: PollingUpdateSource[] = [];
+  /** Per-bot sources started for a multi-bot config (one per bot with a transport). */
+  private readonly fleet: UpdateSource[] = [];
 
   constructor(
     @Inject(Providers.NESTGRAM_OPTIONS)
@@ -56,7 +52,7 @@ export class NestgramBootstrap
     private readonly source: UpdateSource,
     private readonly botService: BotService,
     private readonly moduleRef: ModuleRef,
-    private readonly allowedUpdatesResolver: AllowedUpdatesResolver,
+    private readonly sourceFactory: BotSourceFactory,
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
@@ -85,33 +81,33 @@ export class NestgramBootstrap
   }
 
   /**
-   * Multi-bot transport: build and start one poller per bot that has `polling`,
-   * each dispatching with its OWN BotService so a reply goes back through the bot
-   * that received the update. Webhook bots are skipped with a warning — per-bot
-   * webhook (distinct delivery paths) is not wired yet.
+   * Multi-bot transport: build and start one source per bot via
+   * {@link BotSourceFactory}, each dispatching with its OWN BotService so a reply
+   * goes back through the bot that received the update. The factory returns no
+   * source for a webhook bot (per-bot webhook delivery isn't auto-wired) — warn,
+   * since such a bot needs a custom update source to receive.
    */
   private async startFleet(): Promise<void> {
     const bots = BotConfigResolver.resolve(this.options);
     for (const bot of bots) {
-      if (!bot.polling) {
+      const botService = this.moduleRef.get<BotService>(getBotToken(bot.name), {
+        strict: false,
+      });
+      const source = this.sourceFactory.create(botService, {
+        polling: bot.polling,
+        webhook: bot.webhook,
+      });
+      if (!source) {
         if (bot.webhook) {
           this.logger.warn(
-            `Bot "${bot.name}" is configured for webhook, which isn't supported ` +
-              `per-bot yet — it will not receive updates.`,
+            `Bot "${bot.name}" uses webhook, which isn't auto-wired per-bot yet — ` +
+              `give it a custom update source to receive updates.`,
           );
         }
         continue;
       }
-      const botService = this.moduleRef.get<BotService>(getBotToken(bot.name), {
-        strict: false,
-      });
       const me = await botService.getMe();
       this.logger.log(`Bot "${bot.name}" connected as @${me.username}`);
-      const source = new PollingUpdateSource(
-        botService,
-        typeof bot.polling === 'object' ? bot.polling : undefined,
-        this.allowedUpdatesResolver,
-      );
       await source.start((update) =>
         this.dispatcher.dispatch(update, botService),
       );

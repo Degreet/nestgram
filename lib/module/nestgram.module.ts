@@ -16,6 +16,7 @@ import {
 } from '../engine/dispatcher';
 import {
   AllowedUpdatesResolver,
+  BotSourceFactory,
   PollingUpdateSource,
   UpdateSource,
   WebhookUpdateSource,
@@ -61,6 +62,9 @@ export class NestgramModule {
     StageRegistry,
     UpdateDispatcher,
     AllowedUpdatesResolver,
+    // Builds the per-bot update source for the multi-bot fleet (NestgramBootstrap
+    // uses it instead of constructing sources itself).
+    BotSourceFactory,
     // Built per-bot now (one poller per bot). The single-bot path constructs it
     // from the top-level polling config; multi-bot builds its own per bot.
     {
