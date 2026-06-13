@@ -11,6 +11,10 @@ import { RawMessage } from '../events/raw-update.types';
  * so an absent middle part can never collide with another. In a 1:1 chat
  * `chat.id === from.id`, so this collapses to a per-user key automatically.
  *
+ * In a multi-bot app it also scopes by the BOT that received the update
+ * (outermost), so the same user+chat on two different bots never shares session
+ * or FSM state.
+ *
  * Returns `undefined` when there is no chat to scope to (nothing to scope to
  * that update). Override via the `key` option for a group-shared,
  * global-per-user, or any custom scope.
@@ -36,6 +40,12 @@ export function defaultConversationKey(
   }
   if (source?.business_connection_id !== undefined) {
     parts.push(`b${source.business_connection_id}`);
+  }
+
+  // The bot is the OUTERMOST scope: a conversation belongs to the bot that
+  // received it, so two bots can't bleed state across one user+chat.
+  if (ctx.bot?.name) {
+    parts.unshift(`n${ctx.bot.name}`);
   }
 
   return parts.join(':');
