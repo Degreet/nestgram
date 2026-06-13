@@ -1,6 +1,6 @@
 export * from './i18n.types';
 export * from './translate';
-export * from './i18n-manager';
+export * from './i18n.service';
 export * from './i18n.stage';
 export * from './i18n.module';
 export * from './sources';

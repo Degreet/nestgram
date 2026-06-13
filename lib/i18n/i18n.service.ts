@@ -9,14 +9,14 @@ import type { ResolvedI18nOptions, TranslateFn } from './i18n.types';
 /**
  * Resolves the locale for each update and seeds the ambient store so the free
  * {@link t} / {@link locale} helpers work anywhere in the call chain — the i18n
- * counterpart of {@link SessionManager}, driven by {@link I18nStage}. Provided by
+ * counterpart of {@link SessionService}, driven by {@link I18nStage}. Provided by
  * `I18nModule`; a no-op (returns the key) when its config is absent.
  *
  * Catalogs are static config, so a locale-bound translator is built once per
  * locale and reused; only the per-update locale lookup runs on the hot path.
  */
 @Injectable()
-export class I18nManager {
+export class I18nService {
   private readonly logger = new Logger('I18n');
   private readonly translators = new Map<string, TranslateFn>();
   private readonly missingWarned = new Set<string>();
@@ -56,7 +56,7 @@ export class I18nManager {
     ctx: TelegramExecutionContext,
     config: ResolvedI18nOptions,
   ): string {
-    const resolve = config.resolveLocale ?? defaultResolveLocale;
+    const resolve = config.resolveLocale ?? I18nService.defaultResolveLocale;
     const candidate = resolve(ctx);
     return candidate !== undefined && config.backend.hasLocale(candidate)
       ? candidate
@@ -101,11 +101,11 @@ export class I18nManager {
         `returning the key verbatim.`,
     );
   }
-}
 
-/** Default locale resolution: the sender's Telegram `language_code`. */
-function defaultResolveLocale(
-  ctx: TelegramExecutionContext,
-): string | undefined {
-  return ctx.from?.language_code;
+  /** Default locale resolution: the sender's Telegram `language_code`. */
+  private static defaultResolveLocale(
+    ctx: TelegramExecutionContext,
+  ): string | undefined {
+    return ctx.from?.language_code;
+  }
 }

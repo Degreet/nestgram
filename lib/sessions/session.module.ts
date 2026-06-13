@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 
 import { Providers } from '../providers';
-import { SessionManager } from './session-manager';
+import { SessionService } from './session.service';
 import { SessionStage } from './session.stage';
 import type { SessionOptions } from './session.types';
 
@@ -34,10 +34,10 @@ export interface SessionModuleAsyncOptions
 @Module({})
 export class SessionModule {
   private static readonly providers: Provider[] = [
-    SessionManager,
+    SessionService,
     SessionStage,
   ];
-  private static readonly moduleExports = [SessionManager];
+  private static readonly moduleExports = [SessionService];
 
   static forRoot(options: SessionOptions = {}): DynamicModule {
     return {

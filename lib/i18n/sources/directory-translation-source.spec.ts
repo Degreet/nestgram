@@ -6,7 +6,7 @@ import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { DynamicModule, INestApplicationContext } from '@nestjs/common';
 
-import { I18nManager } from '../i18n-manager';
+import { I18nService } from '../i18n.service';
 import { I18nModule } from '../i18n.module';
 import { directoryTranslations } from './directory-translation-source';
 
@@ -75,7 +75,7 @@ describe('directoryTranslations', () => {
         { logger: false },
       );
     try {
-      const i18n = app.get(I18nManager);
+      const i18n = app.get(I18nService);
       expect(i18n.translator('uk')('hi', { name: 'Ann' })).toBe('Привіт, Ann!');
       expect(i18n.translator('en')('cart.empty')).toBe('Empty');
     } finally {

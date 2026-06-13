@@ -1,5 +1,5 @@
 import { runAmbient } from '../../ambient';
-import { FlatTranslatorBackend, I18nManager } from '../../i18n';
+import { FlatTranslatorBackend, I18nService } from '../../i18n';
 import { TelegramExecutionContext } from '../context';
 import { HearsKeyPredicate } from './hears-key.predicate';
 
@@ -8,8 +8,8 @@ const TRANSLATIONS = {
   uk: { 'menu.remind': '➕ Нагадати' },
 };
 
-function manager(): I18nManager {
-  return new I18nManager({
+function manager(): I18nService {
+  return new I18nService({
     backend: new FlatTranslatorBackend(TRANSLATIONS),
     defaultLocale: 'en',
   });

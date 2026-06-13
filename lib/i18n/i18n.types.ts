@@ -80,8 +80,8 @@ export interface I18nOptions extends I18nBaseOptions {
 /**
  * {@link I18nOptions} with the catalog resolved to a {@link TranslatorBackend} —
  * `translations`/`source` already wrapped in the flat backend, `source` already
- * loaded. What `I18nManager` receives (the module normalises config at boot, so
- * the manager never deals with loading or formats).
+ * loaded. What `I18nService` receives (the module normalises config at boot, so
+ * the service never deals with loading or formats).
  */
 export interface ResolvedI18nOptions extends I18nBaseOptions {
   backend: TranslatorBackend;

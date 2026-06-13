@@ -1,6 +1,6 @@
 /**
  * i18n end to end through a booted app: `I18nModule.forRoot` wires I18N_OPTIONS →
- * I18nManager → I18nStage, the stage hook discovers and runs the stage before
+ * I18nService → I18nStage, the stage hook discovers and runs the stage before
  * matching, so `@HearsKey` routes a localized button and `t()` resolves inside
  * the handler — all via real DI + the dispatcher, no manual wiring.
  */

@@ -6,7 +6,7 @@ import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { INestApplicationContext } from '@nestjs/common';
 
-import { I18nManager } from '../i18n-manager';
+import { I18nService } from '../i18n.service';
 import { I18nModule } from '../i18n.module';
 import { fluentBackend, fluentDirectory } from './fluent-translator-backend';
 
@@ -80,7 +80,7 @@ describe('fluentBackend', () => {
       app = await NestFactory.createApplicationContext(FluentAppModule, {
         logger: false,
       });
-      expect(app.get(I18nManager).translator('en')('hi', { name: 'Bo' })).toBe(
+      expect(app.get(I18nService).translator('en')('hi', { name: 'Bo' })).toBe(
         'Hello, Bo!',
       );
     } finally {

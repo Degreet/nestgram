@@ -4,7 +4,7 @@ import { getAmbient } from '../../ambient';
 import { SESSION } from '../../sessions/session.constants';
 
 /**
- * Injects the per-update session object — loaded by `SessionManager` before the
+ * Injects the per-update session object — loaded by `SessionService` before the
  * handler runs (when `session` is configured on the module) and persisted after
  * the handler succeeds. Mutate it in place:
  *

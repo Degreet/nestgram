@@ -28,7 +28,7 @@ interface SessionBinding {
  * future improvement.
  */
 @Injectable()
-export class SessionManager {
+export class SessionService {
   private readonly fallbackStore = new MemorySessionStore();
 
   constructor(

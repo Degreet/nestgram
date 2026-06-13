@@ -3,7 +3,7 @@ import { Logger } from '@nestjs/common';
 import { runAmbient } from '../ambient';
 import { TelegramExecutionContext } from '../engine/context';
 import { FlatTranslatorBackend } from './backends';
-import { I18nManager } from './i18n-manager';
+import { I18nService } from './i18n.service';
 import { interpolate, locale, t } from './translate';
 import type { ResolvedI18nOptions } from './i18n.types';
 
@@ -14,13 +14,13 @@ const TRANSLATIONS = {
 
 function manager(
   extra?: Partial<Omit<ResolvedI18nOptions, 'backend'>>,
-): I18nManager {
+): I18nService {
   const config = extra && {
     backend: new FlatTranslatorBackend(TRANSLATIONS),
     defaultLocale: 'en',
     ...extra,
   };
-  return new I18nManager(config);
+  return new I18nService(config);
 }
 
 function ctxWithLanguage(language_code?: string): TelegramExecutionContext {
@@ -54,7 +54,7 @@ describe('free t() / locale() without i18n', () => {
   });
 });
 
-describe('I18nManager.resolve', () => {
+describe('I18nService.resolve', () => {
   it('resolves the sender language and translates with interpolation', () => {
     runAmbient(() => {
       manager({}).resolve(ctxWithLanguage('uk'));
@@ -115,7 +115,7 @@ describe('free t() with an explicit locale', () => {
   });
 });
 
-describe('I18nManager logMissingKeys', () => {
+describe('I18nService logMissingKeys', () => {
   it('warns once per missing locale+key when enabled, and not otherwise', () => {
     const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
     try {
@@ -145,7 +145,7 @@ describe('I18nManager logMissingKeys', () => {
   });
 });
 
-describe('I18nManager.translator (explicit locale, no ambient)', () => {
+describe('I18nService.translator (explicit locale, no ambient)', () => {
   it('translates for a given locale outside any ambient context', () => {
     const translate = manager({}).translator('uk');
     expect(translate('hi', { name: 'Ann' })).toBe('Привіт, Ann!');

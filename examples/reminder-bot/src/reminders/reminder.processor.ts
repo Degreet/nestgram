@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { BotService, escapeHtml, I18nManager } from 'nestgram';
+import { BotService, escapeHtml, I18nService } from 'nestgram';
 import { Job } from 'bullmq';
 
 import { REMINDER_QUEUE } from './reminder.constants';
@@ -14,7 +14,7 @@ export class ReminderProcessor extends WorkerHost {
   constructor(
     private readonly reminders: ReminderService,
     private readonly bot: BotService,
-    private readonly i18n: I18nManager,
+    private readonly i18n: I18nService,
   ) {
     super();
   }

@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 
 import { Providers } from '../providers';
-import { FsmManager } from './fsm-manager';
+import { FsmService } from './fsm.service';
 import { FsmStage } from './fsm.stage';
 import type { FsmOptions } from './fsm.types';
 
@@ -30,8 +30,8 @@ export interface FsmModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
  */
 @Module({})
 export class FsmModule {
-  private static readonly providers: Provider[] = [FsmManager, FsmStage];
-  private static readonly moduleExports = [FsmManager];
+  private static readonly providers: Provider[] = [FsmService, FsmStage];
+  private static readonly moduleExports = [FsmService];
 
   static forRoot(options: FsmOptions = {}): DynamicModule {
     return {

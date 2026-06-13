@@ -12,7 +12,7 @@ const PLACEHOLDER = /\{(\w+)\}/g;
 /**
  * Interpolate `{name}` placeholders in a template. An unmatched placeholder is
  * left as-is, so a typo is visible rather than silently blanked. Pure — shared
- * by the locale-bound translators `I18nManager` builds.
+ * by the locale-bound translators `I18nService` builds.
  */
 export function interpolate(
   template: string,

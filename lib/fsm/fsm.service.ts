@@ -11,7 +11,7 @@ import type { FsmBinding, FsmOptions, FsmSnapshot } from './fsm.types';
  * Loads the FSM record into the ambient store before matching — so a `State`
  * predicate can route on it and a handler can read/transition it via `@Fsm()`.
  * Driven by {@link FsmStage}; a no-op when its config is absent. Mirrors
- * `SessionManager`, but has no `save`: `FsmContext` writes transitions through
+ * `SessionService`, but has no `save`: `FsmContext` writes transitions through
  * immediately rather than on commit.
  *
  * No per-key locking (v1), same caveat as sessions: concurrent updates for one
@@ -19,7 +19,7 @@ import type { FsmBinding, FsmOptions, FsmSnapshot } from './fsm.types';
  * a future improvement for the concurrent webhook source.
  */
 @Injectable()
-export class FsmManager {
+export class FsmService {
   private readonly fallbackStore = new MemoryStore();
 
   constructor(

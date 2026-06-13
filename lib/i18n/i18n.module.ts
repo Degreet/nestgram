@@ -8,7 +8,7 @@ import {
 import { NestgramConfigError } from '../exceptions';
 import { Providers } from '../providers';
 import { FlatTranslatorBackend } from './backends/flat-translator-backend';
-import { I18nManager } from './i18n-manager';
+import { I18nService } from './i18n.service';
 import { I18nStage } from './i18n.stage';
 import type {
   I18nOptions,
@@ -30,7 +30,7 @@ export interface I18nModuleAsyncOptions
  * Normalise user config into resolved options: validate that exactly one of
  * `translations`/`source`/`backend` is set, eagerly load a source's catalogs
  * (once, at boot), and wrap the flat forms in {@link FlatTranslatorBackend} — so
- * the manager only ever sees a ready {@link TranslatorBackend}.
+ * the service only ever sees a ready {@link TranslatorBackend}.
  */
 async function resolveI18nOptions(
   options: I18nOptions,
@@ -63,13 +63,13 @@ async function resolveI18nOptions(
  * Import it once in your app — `I18nModule.forRoot({ translations, defaultLocale })`
  * — alongside `NestgramModule`. It's a self-contained module (nothing in the
  * engine is privileged): its stage is discovered by the dispatcher's stage hook,
- * and `I18nManager` is exported so a queue worker can translate against an
+ * and `I18nService` is exported so a queue worker can translate against an
  * explicit locale (`i18n.translator(locale)`) even without an update in flight.
  */
 @Module({})
 export class I18nModule {
-  private static readonly providers: Provider[] = [I18nManager, I18nStage];
-  private static readonly moduleExports = [I18nManager];
+  private static readonly providers: Provider[] = [I18nService, I18nStage];
+  private static readonly moduleExports = [I18nService];
 
   static forRoot(options: I18nOptions): DynamicModule {
     return {
