@@ -2,6 +2,8 @@ import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
 import { APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core';
 
 import { BotModule } from '../api';
+import { BotOptions } from '../api/bot-options';
+import { BotConfigResolver } from './bot-config';
 import { ContextFactory, EventFactory } from '../engine/context';
 import { RouteExplorer, RouteMatcher, RouteTable } from '../engine/discovery';
 import { NestgramConfigError } from '../exceptions';
@@ -97,19 +99,28 @@ export class NestgramModule {
     Providers.NESTGRAM_OPTIONS,
   ];
 
+  /**
+   * Normalize the config and take the single bot's options. Multi-bot wiring
+   * (one BotService + source per bot) is in progress on the `feature/multi-bot`
+   * branch — until it lands, a `bots: []` with more than one entry is rejected
+   * here, while the single-bot path runs entirely through the same resolver.
+   */
+  private static resolveSingleBot(options: NestgramModuleOptions): BotOptions {
+    const [bot, ...more] = BotConfigResolver.resolve(options);
+    if (more.length > 0) {
+      throw new NestgramConfigError(
+        'Multiple bots are configured, but multi-bot wiring is still in ' +
+          'progress on this build — use a single `token` for now.',
+      );
+    }
+    return bot.options;
+  }
+
   static forRoot(options: NestgramModuleOptions): DynamicModule {
     return {
       module: NestgramModule,
       imports: [
-        BotModule.forRoot({
-          token: options.token,
-          parseMode: options.parseMode,
-          richMessages: options.richMessages,
-          ignoreNotModified: options.ignoreNotModified,
-          apiInterceptors: options.apiInterceptors,
-          throttle: options.throttle,
-          throttler: options.throttler,
-        }),
+        BotModule.forRoot(NestgramModule.resolveSingleBot(options)),
         DiscoveryModule,
       ],
       // No controllers: the webhook receiver isn't auto-registered. The author
@@ -130,13 +141,8 @@ export class NestgramModule {
         ...(options.imports ?? []),
         BotModule.forRootAsync({
           inject: [Providers.NESTGRAM_OPTIONS],
-          useFactory: (resolved: NestgramModuleOptions) => ({
-            token: resolved.token,
-            parseMode: resolved.parseMode,
-            richMessages: resolved.richMessages,
-            ignoreNotModified: resolved.ignoreNotModified,
-            throttle: resolved.throttle,
-          }),
+          useFactory: (resolved: NestgramModuleOptions) =>
+            NestgramModule.resolveSingleBot(resolved),
           // Static (a class can't resolve through the value factory) — like apiInterceptors.
           apiInterceptors: options.apiInterceptors,
           throttler: options.throttler,
