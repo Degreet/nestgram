@@ -12,12 +12,13 @@
  */
 import { BotApiSpec, SpecField, SpecType } from './spec.types';
 import { classToFileName, methodToClassName } from './names';
-import { enumLiterals, overrideFieldType } from './manifest';
+import { enumLiterals, namedTypeFor, overrideFieldType } from './manifest';
 
 /** A resolved type, independent of how it will be written to TS. */
 export type IrType =
   | { kind: 'primitive'; ts: string }
   | { kind: 'literalUnion'; literals: string[] }
+  | { kind: 'namedType'; name: string }
   | { kind: 'reference'; name: string }
   | { kind: 'array'; element: IrType }
   | { kind: 'union'; variants: IrType[] };
@@ -62,6 +63,27 @@ export function collectReferences(type: IrType, into: Set<string>): void {
       return;
     case 'union':
       type.variants.forEach((variant) => collectReferences(variant, into));
+      return;
+    default:
+      return;
+  }
+}
+
+/**
+ * Collects every named hand-owned type reachable in a type tree (e.g.
+ * `ParseModeValue`) — distinct from spec-object references, since the emitters
+ * import them from a different module.
+ */
+export function collectNamedTypes(type: IrType, into: Set<string>): void {
+  switch (type.kind) {
+    case 'namedType':
+      into.add(type.name);
+      return;
+    case 'array':
+      collectNamedTypes(type.element, into);
+      return;
+    case 'union':
+      type.variants.forEach((variant) => collectNamedTypes(variant, into));
       return;
     default:
       return;
@@ -140,6 +162,10 @@ function resolveFieldType(owner: string, field: SpecField): IrType {
   const override = overrideFieldType(owner, field.name);
   if (override) {
     return override;
+  }
+  const named = namedTypeFor(owner, field.name);
+  if (named) {
+    return { kind: 'namedType', name: named };
   }
   const literals = enumLiterals(owner, field.name);
   if (literals) {

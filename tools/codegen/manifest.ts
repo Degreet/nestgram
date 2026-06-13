@@ -109,7 +109,6 @@ const STICKER_FORMATS = ['static', 'animated', 'video'];
 const THUMB_MIME_TYPES = ['image/jpeg', 'image/gif', 'video/mp4'];
 
 const ENUM_LITERALS: Readonly<Record<string, readonly string[]>> = {
-  '*.parse_mode': ['HTML', 'Markdown', 'MarkdownV2'],
   'sendDice.emoji': ['🎲', '🎯', '🏀', '⚽', '🎳', '🎰'],
   'sendPoll.type': ['quiz', 'regular'],
   'answerChatJoinRequestQuery.result': ['approve', 'decline', 'queue'],
@@ -128,6 +127,23 @@ export function enumLiterals(
   field: string,
 ): readonly string[] | undefined {
   return ENUM_LITERALS[`${owner}.${field}`] ?? ENUM_LITERALS[`*.${field}`];
+}
+
+/**
+ * Enum fields promoted to a NAMED, hand-owned exported type instead of an inline
+ * literal union — for values referenced widely enough to deserve a name. The
+ * type itself is hand-written (`ParseModeValue` in lib/api/parse-mode.ts); the
+ * manifest only names it at the field position, and the emitters add the import
+ * (all named types currently live in the parse-mode module). Keyed like
+ * {@link ENUM_LITERALS}.
+ */
+const NAMED_TYPES: Readonly<Record<string, string>> = {
+  '*.parse_mode': 'ParseModeValue',
+};
+
+/** The named type a field is promoted to, or `undefined` for a plain field. */
+export function namedTypeFor(owner: string, field: string): string | undefined {
+  return NAMED_TYPES[`${owner}.${field}`] ?? NAMED_TYPES[`*.${field}`];
 }
 
 // --- BotService method generation --------------------------------------------

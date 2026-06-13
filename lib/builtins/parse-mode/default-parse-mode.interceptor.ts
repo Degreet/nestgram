@@ -6,11 +6,12 @@ import {
   ApiExecutionContext,
   ApiInterceptor,
 } from '../../api/request';
+import type { ParseModeValue } from '../../api/parse-mode';
 import { Providers } from '../../providers';
 
 /** Module options this interceptor reads (only the configured default mode). */
 interface ParseModeOptions {
-  parseMode?: string;
+  parseMode?: ParseModeValue;
 }
 
 /**
@@ -29,7 +30,7 @@ interface ParseModeOptions {
 @Injectable()
 export class DefaultParseModeInterceptor implements ApiInterceptor {
   private readonly logger = new Logger(DefaultParseModeInterceptor.name);
-  private readonly defaultParseMode?: string;
+  private readonly defaultParseMode?: ParseModeValue;
 
   constructor(@Inject(Providers.BOT_OPTIONS) options: ParseModeOptions) {
     this.defaultParseMode = options.parseMode;

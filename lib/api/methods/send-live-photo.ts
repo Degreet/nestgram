@@ -11,6 +11,7 @@ import type {
   RawReplyParameters,
   RawSuggestedPostParameters,
 } from '../../events/raw-update.types';
+import type { ParseModeValue } from '../parse-mode';
 
 export interface SendLivePhotoOptions {
   business_connection_id?: string;
@@ -20,7 +21,7 @@ export interface SendLivePhotoOptions {
   live_photo: InputFile | string;
   photo: InputFile | string;
   caption?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
   show_caption_above_media?: boolean;
   has_spoiler?: boolean;

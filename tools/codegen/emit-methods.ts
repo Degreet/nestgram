@@ -8,7 +8,13 @@
  * Output is unformatted; the orchestrator runs it through the project's
  * Prettier so committed files match lint-staged.
  */
-import { collectReferences, IrMethod, IrObject, IrType } from './ir';
+import {
+  collectNamedTypes,
+  collectReferences,
+  IrMethod,
+  IrObject,
+  IrType,
+} from './ir';
 import {
   applyFieldTypeOverride,
   getMethodOverride,
@@ -20,6 +26,12 @@ import { irTypeToTs } from './type-resolver';
 import { classJsdoc } from './jsdoc';
 
 const INPUT_FILE = 'InputFile';
+
+/**
+ * Module the named hand-owned types (`ParseModeValue`) are imported from,
+ * relative to a method file in `lib/api/methods/`.
+ */
+const NAMED_TYPES_IMPORT = '../parse-mode';
 
 export interface MethodEmitConfig {
   /** Import specifier for the hand-written ApiMethod base, relative to output. */
@@ -119,6 +131,9 @@ function buildImports(
     collectReferences(method.returnType, refs);
   }
 
+  const namedTypes = new Set<string>();
+  method.args.forEach((arg) => collectNamedTypes(arg.type, namedTypes));
+
   const rawTypes = new Set<string>();
   const inputMediaTypes = new Set<string>();
   let needsUser = false;
@@ -169,6 +184,13 @@ function buildImports(
   }
   if (needsUser) {
     lines.push(`import type { User } from '../../events/user';`);
+  }
+  if (namedTypes.size > 0) {
+    lines.push(
+      `import type { ${[...namedTypes]
+        .sort()
+        .join(', ')} } from '${NAMED_TYPES_IMPORT}';`,
+    );
   }
   return lines.join('\n');
 }

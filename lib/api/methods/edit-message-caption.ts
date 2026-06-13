@@ -4,6 +4,7 @@ import type {
   RawMessage,
   RawMessageEntity,
 } from '../../events/raw-update.types';
+import type { ParseModeValue } from '../parse-mode';
 
 export interface EditMessageCaptionOptions {
   business_connection_id?: string;
@@ -11,7 +12,7 @@ export interface EditMessageCaptionOptions {
   message_id?: number;
   inline_message_id?: string;
   caption?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
   show_caption_above_media?: boolean;
   reply_markup?: RawInlineKeyboardMarkup | { toJSON(): unknown };

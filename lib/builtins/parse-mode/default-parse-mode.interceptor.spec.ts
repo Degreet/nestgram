@@ -4,6 +4,7 @@ import { of } from 'rxjs';
 import { DefaultParseModeInterceptor } from './default-parse-mode.interceptor';
 import { ApiCallHandler, ApiExecutionContext } from '../../api/request';
 import { ApiRequest } from '../../api/request';
+import { ParseMode, ParseModeValue } from '../../api/parse-mode';
 
 const noop: ApiCallHandler = { handle: () => of(undefined) };
 
@@ -25,7 +26,7 @@ function context(
 }
 
 function run(
-  defaultParseMode: string | undefined,
+  defaultParseMode: ParseModeValue | undefined,
   method: string,
   payload: Record<string, unknown>,
 ): Record<string, unknown> {
@@ -39,28 +40,34 @@ function run(
 
 describe('DefaultParseModeInterceptor', () => {
   it('injects the default on a text send that omits parse_mode', () => {
-    expect(run('HTML', 'sendMessage', { text: 'hi' }).parse_mode).toBe('HTML');
+    expect(run(ParseMode.Html, 'sendMessage', { text: 'hi' }).parse_mode).toBe(
+      'HTML',
+    );
   });
 
   it('injects the default on a caption send', () => {
-    expect(run('HTML', 'sendPhoto', { caption: 'hi' }).parse_mode).toBe('HTML');
+    expect(run(ParseMode.Html, 'sendPhoto', { caption: 'hi' }).parse_mode).toBe(
+      'HTML',
+    );
   });
 
   it('leaves non-formattable methods untouched', () => {
-    expect('parse_mode' in run('HTML', 'getUpdates', { offset: 1 })).toBe(
-      false,
-    );
+    expect(
+      'parse_mode' in run(ParseMode.Html, 'getUpdates', { offset: 1 }),
+    ).toBe(false);
   });
 
   it('does not override an explicit parse_mode', () => {
     expect(
-      run('HTML', 'sendMessage', { text: 'hi', parse_mode: 'MarkdownV2' })
-        .parse_mode,
+      run(ParseMode.Html, 'sendMessage', {
+        text: 'hi',
+        parse_mode: 'MarkdownV2',
+      }).parse_mode,
     ).toBe('MarkdownV2');
   });
 
   it('does not inject when entities are present', () => {
-    const payload = run('HTML', 'sendMessage', {
+    const payload = run(ParseMode.Html, 'sendMessage', {
       text: 'hi',
       entities: [{ type: 'bold', offset: 0, length: 2 }],
     });
@@ -68,7 +75,7 @@ describe('DefaultParseModeInterceptor', () => {
   });
 
   it('does not inject when caption_entities are present', () => {
-    const payload = run('HTML', 'sendPhoto', {
+    const payload = run(ParseMode.Html, 'sendPhoto', {
       caption: 'hi',
       caption_entities: [{ type: 'bold', offset: 0, length: 2 }],
     });

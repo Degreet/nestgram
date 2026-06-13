@@ -11,6 +11,7 @@ import type {
   RawReplyParameters,
   RawSuggestedPostParameters,
 } from '../../events/raw-update.types';
+import type { ParseModeValue } from '../parse-mode';
 
 export interface SendAnimationOptions {
   business_connection_id?: string;
@@ -23,7 +24,7 @@ export interface SendAnimationOptions {
   height?: number;
   thumbnail?: InputFile | string;
   caption?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
   show_caption_above_media?: boolean;
   has_spoiler?: boolean;

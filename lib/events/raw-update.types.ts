@@ -14,6 +14,7 @@ import {
   InputMediaPhoto,
   InputMediaVideo,
 } from '../api/input-media';
+import type { ParseModeValue } from '../api/parse-mode';
 
 export interface RawAcceptedGiftTypes {
   unlimited_gifts: boolean;
@@ -873,7 +874,7 @@ export interface RawInlineQueryResultAudio {
   audio_url: string;
   title: string;
   caption?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
   performer?: string;
   audio_duration?: number;
@@ -886,7 +887,7 @@ export interface RawInlineQueryResultCachedAudio {
   id: string;
   audio_file_id: string;
   caption?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
   reply_markup?: RawInlineKeyboardMarkup;
   input_message_content?: RawInputMessageContent;
@@ -899,7 +900,7 @@ export interface RawInlineQueryResultCachedDocument {
   document_file_id: string;
   description?: string;
   caption?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
   reply_markup?: RawInlineKeyboardMarkup;
   input_message_content?: RawInputMessageContent;
@@ -911,7 +912,7 @@ export interface RawInlineQueryResultCachedGif {
   gif_file_id: string;
   title?: string;
   caption?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
   show_caption_above_media?: boolean;
   reply_markup?: RawInlineKeyboardMarkup;
@@ -924,7 +925,7 @@ export interface RawInlineQueryResultCachedMpeg4Gif {
   mpeg4_file_id: string;
   title?: string;
   caption?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
   show_caption_above_media?: boolean;
   reply_markup?: RawInlineKeyboardMarkup;
@@ -938,7 +939,7 @@ export interface RawInlineQueryResultCachedPhoto {
   title?: string;
   description?: string;
   caption?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
   show_caption_above_media?: boolean;
   reply_markup?: RawInlineKeyboardMarkup;
@@ -960,7 +961,7 @@ export interface RawInlineQueryResultCachedVideo {
   title: string;
   description?: string;
   caption?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
   show_caption_above_media?: boolean;
   reply_markup?: RawInlineKeyboardMarkup;
@@ -973,7 +974,7 @@ export interface RawInlineQueryResultCachedVoice {
   voice_file_id: string;
   title: string;
   caption?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
   reply_markup?: RawInlineKeyboardMarkup;
   input_message_content?: RawInputMessageContent;
@@ -998,7 +999,7 @@ export interface RawInlineQueryResultDocument {
   id: string;
   title: string;
   caption?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
   document_url: string;
   mime_type: string;
@@ -1028,7 +1029,7 @@ export interface RawInlineQueryResultGif {
   thumbnail_mime_type?: 'image/jpeg' | 'image/gif' | 'video/mp4';
   title?: string;
   caption?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
   show_caption_above_media?: boolean;
   reply_markup?: RawInlineKeyboardMarkup;
@@ -1063,7 +1064,7 @@ export interface RawInlineQueryResultMpeg4Gif {
   thumbnail_mime_type?: 'image/jpeg' | 'image/gif' | 'video/mp4';
   title?: string;
   caption?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
   show_caption_above_media?: boolean;
   reply_markup?: RawInlineKeyboardMarkup;
@@ -1080,7 +1081,7 @@ export interface RawInlineQueryResultPhoto {
   title?: string;
   description?: string;
   caption?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
   show_caption_above_media?: boolean;
   reply_markup?: RawInlineKeyboardMarkup;
@@ -1119,7 +1120,7 @@ export interface RawInlineQueryResultVideo {
   thumbnail_url: string;
   title: string;
   caption?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
   show_caption_above_media?: boolean;
   video_width?: number;
@@ -1136,7 +1137,7 @@ export interface RawInlineQueryResultVoice {
   voice_url: string;
   title: string;
   caption?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
   voice_duration?: number;
   reply_markup?: RawInlineKeyboardMarkup;
@@ -1145,7 +1146,7 @@ export interface RawInlineQueryResultVoice {
 
 export interface RawInputChecklist {
   title: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   title_entities?: RawMessageEntity[];
   tasks: RawInputChecklistTask[];
   others_can_add_tasks?: boolean;
@@ -1155,7 +1156,7 @@ export interface RawInputChecklist {
 export interface RawInputChecklistTask {
   id: number;
   text: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   text_entities?: RawMessageEntity[];
 }
 
@@ -1352,7 +1353,7 @@ export interface RawInputStoryContentVideo {
 
 export interface RawInputTextMessageContent {
   message_text: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   entities?: RawMessageEntity[];
   link_preview_options?: RawLinkPreviewOptions;
 }

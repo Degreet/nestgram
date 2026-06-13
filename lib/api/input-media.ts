@@ -1,4 +1,5 @@
 import { InputFile } from './input-file';
+import type { ParseModeValue } from './parse-mode';
 
 /**
  * Media items for albums and editable media (`sendMediaGroup`,
@@ -14,7 +15,7 @@ export interface InputMediaAudio {
   media: string | InputFile;
   thumbnail?: string | InputFile;
   caption?: string;
-  parse_mode?: string;
+  parse_mode?: ParseModeValue;
   caption_entities?: any[];
   duration?: number;
   performer?: string;
@@ -26,7 +27,7 @@ export interface InputMediaDocument {
   media: string | InputFile;
   thumbnail?: string | InputFile;
   caption?: string;
-  parse_mode?: string;
+  parse_mode?: ParseModeValue;
   caption_entities?: any[];
   disable_content_type_detection?: boolean;
 }
@@ -35,7 +36,7 @@ export interface InputMediaPhoto {
   type: 'photo';
   media: string | InputFile;
   caption?: string;
-  parse_mode?: string;
+  parse_mode?: ParseModeValue;
   caption_entities?: any[];
   show_caption_above_media?: boolean;
   has_spoiler?: boolean;
@@ -48,7 +49,7 @@ export interface InputMediaVideo {
   cover?: string | InputFile;
   start_timestamp?: number;
   caption?: string;
-  parse_mode?: string;
+  parse_mode?: ParseModeValue;
   caption_entities?: any[];
   show_caption_above_media?: boolean;
   width?: number;
@@ -63,7 +64,7 @@ export interface InputMediaAnimation {
   media: string | InputFile;
   thumbnail?: string | InputFile;
   caption?: string;
-  parse_mode?: string;
+  parse_mode?: ParseModeValue;
   caption_entities?: any[];
   show_caption_above_media?: boolean;
   width?: number;
@@ -77,7 +78,7 @@ export interface InputMediaLivePhoto {
   media: string | InputFile;
   photo: string | InputFile;
   caption?: string;
-  parse_mode?: string;
+  parse_mode?: ParseModeValue;
   caption_entities?: any[];
   show_caption_above_media?: boolean;
   has_spoiler?: boolean;

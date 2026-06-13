@@ -16,8 +16,8 @@ import { buildIr, IrType } from './ir';
 import { loadSpec } from './spec-loader';
 import { irTypeToTs } from './type-resolver';
 
-const EXPECTED_METHODS = 176;
-const EXPECTED_OBJECTS = 303;
+const EXPECTED_METHODS = 180;
+const EXPECTED_OBJECTS = 359;
 
 function assert(condition: boolean, message: string): void {
   if (!condition) {
@@ -148,7 +148,7 @@ function selfTest(): void {
   );
   assert(mediaKind('sendMessage') === null, 'sendMessage is not multipart');
 
-  // Enum literal-union recovery (manifest table): sendDice.emoji + parse_mode.
+  // Enum literal-union recovery (manifest table): sendDice.emoji.
   const sendDice = ir.methods.find((m) => m.name === 'sendDice');
   const emoji = sendDice?.args.find((a) => a.name === 'emoji');
   if (emoji) {
@@ -158,12 +158,13 @@ function selfTest(): void {
       'sendDice.emoji enum union',
     );
   }
+  // Named-type promotion (manifest table): parse_mode → the hand-owned enum type.
   const parseMode = sendMessage?.args.find((a) => a.name === 'parse_mode');
   if (parseMode) {
     assertTs(
       parseMode.type,
-      "'HTML' | 'Markdown' | 'MarkdownV2'",
-      'parse_mode enum union (owner-agnostic)',
+      'ParseModeValue',
+      'parse_mode named type (owner-agnostic)',
     );
   }
 

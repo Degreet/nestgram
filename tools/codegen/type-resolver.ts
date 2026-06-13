@@ -30,6 +30,8 @@ export function irTypeToTs(type: IrType): string {
       return type.ts;
     case 'literalUnion':
       return type.literals.map(quoteLiteral).join(' | ');
+    case 'namedType':
+      return type.name;
     case 'reference':
       return resolveReference(type.name);
     case 'array': {

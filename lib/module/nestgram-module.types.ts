@@ -3,6 +3,7 @@ import { ModuleMetadata, Type } from '@nestjs/common';
 import { PollingOptions } from '../engine/source';
 import type { AllowedUpdate } from '../engine/context/update-kind';
 import type { ApiInterceptor } from '../api/request';
+import type { ParseModeValue } from '../api/parse-mode';
 import type { ThrottleOptions } from '../builtins/throttle/throttle.types';
 
 /**
@@ -62,7 +63,7 @@ export interface NestgramModuleOptions {
    * `parse_mode`; pass `parse_mode` explicitly on a call to override, or
    * `parse_mode: undefined` to opt that call out.
    */
-  parseMode?: string;
+  parseMode?: ParseModeValue;
   /**
    * Extra outbound {@link ApiInterceptor}s — run after the built-ins (token
    * validation, default parse mode) and before the throttler, on every API call.

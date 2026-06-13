@@ -12,6 +12,7 @@ import type {
   RawReplyParameters,
   RawSuggestedPostParameters,
 } from '../../events/raw-update.types';
+import type { ParseModeValue } from '../parse-mode';
 
 export interface SendMessageOptions {
   business_connection_id?: string;
@@ -19,7 +20,7 @@ export interface SendMessageOptions {
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   text: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   entities?: RawMessageEntity[];
   link_preview_options?: RawLinkPreviewOptions;
   disable_notification?: boolean;

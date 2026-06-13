@@ -9,6 +9,7 @@ import type {
   RawReplyParameters,
   RawSuggestedPostParameters,
 } from '../../events/raw-update.types';
+import type { ParseModeValue } from '../parse-mode';
 
 export interface CopyMessageOptions {
   chat_id: number | string;
@@ -18,7 +19,7 @@ export interface CopyMessageOptions {
   message_id: number;
   video_start_timestamp?: number;
   caption?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
   show_caption_above_media?: boolean;
   disable_notification?: boolean;

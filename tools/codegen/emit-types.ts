@@ -7,7 +7,7 @@
  *
  * Output is unformatted; the orchestrator runs it through the project Prettier.
  */
-import { collectReferences, Ir, IrObject } from './ir';
+import { collectNamedTypes, collectReferences, Ir, IrObject } from './ir';
 import { isInputMediaName, resolveReference, SKIP_OBJECTS } from './manifest';
 import { irTypeToTs } from './type-resolver';
 
@@ -44,11 +44,16 @@ function emitObject(object: IrObject): string {
 
 function buildImports(objects: IrObject[]): string {
   const refs = new Set<string>();
+  const namedTypes = new Set<string>();
   for (const object of objects) {
     if (object.kind === 'interface') {
-      object.fields.forEach((field) => collectReferences(field.type, refs));
+      object.fields.forEach((field) => {
+        collectReferences(field.type, refs);
+        collectNamedTypes(field.type, namedTypes);
+      });
     } else if (object.kind === 'alias') {
       collectReferences(object.type, refs);
+      collectNamedTypes(object.type, namedTypes);
     }
   }
 
@@ -78,6 +83,13 @@ function buildImports(objects: IrObject[]): string {
       `import { ${[...inputMedia]
         .sort()
         .join(', ')} } from '../api/input-media';`,
+    );
+  }
+  if (namedTypes.size > 0) {
+    lines.push(
+      `import type { ${[...namedTypes]
+        .sort()
+        .join(', ')} } from '../api/parse-mode';`,
     );
   }
   return lines.join('\n');

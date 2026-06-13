@@ -11,6 +11,7 @@ import type {
   RawReplyParameters,
   RawSuggestedPostParameters,
 } from '../../events/raw-update.types';
+import type { ParseModeValue } from '../parse-mode';
 
 export interface SendDocumentOptions {
   business_connection_id?: string;
@@ -20,7 +21,7 @@ export interface SendDocumentOptions {
   document: InputFile | string;
   thumbnail?: InputFile | string;
   caption?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
   disable_content_type_detection?: boolean;
   disable_notification?: boolean;

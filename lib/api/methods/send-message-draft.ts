@@ -1,12 +1,13 @@
 import { ApiMethod } from './api-method';
 import type { RawMessageEntity } from '../../events/raw-update.types';
+import type { ParseModeValue } from '../parse-mode';
 
 export interface SendMessageDraftOptions {
   chat_id: number;
   message_thread_id?: number;
   draft_id: number;
   text?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   entities?: RawMessageEntity[];
 }
 

@@ -8,6 +8,7 @@ import type {
   RawMessage,
   RawMessageEntity,
 } from '../../events/raw-update.types';
+import type { ParseModeValue } from '../parse-mode';
 
 export interface EditMessageTextOptions {
   business_connection_id?: string;
@@ -15,7 +16,7 @@ export interface EditMessageTextOptions {
   message_id?: number;
   inline_message_id?: string;
   text?: string;
-  parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+  parse_mode?: ParseModeValue;
   entities?: RawMessageEntity[];
   link_preview_options?: RawLinkPreviewOptions;
   rich_message?: RawInputRichMessage;

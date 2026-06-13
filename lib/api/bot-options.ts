@@ -1,12 +1,13 @@
 import { ModuleMetadata, Type } from '@nestjs/common';
 
 import type { ApiInterceptor } from './request';
+import type { ParseModeValue } from './parse-mode';
 import type { ThrottleOptions } from '../builtins/throttle/throttle.types';
 
 export interface BotOptions {
   token: string;
   /** Default `parse_mode` applied to sends that omit one. */
-  parseMode?: string;
+  parseMode?: ParseModeValue;
   /** Extra outbound API interceptors, run after the built-ins (before the throttler). */
   apiInterceptors?: Type<ApiInterceptor>[];
   /** Send rate-limiting: `true`/omitted = on with defaults, `false` = off, or tune it. */
