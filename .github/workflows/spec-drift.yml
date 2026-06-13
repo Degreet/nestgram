@@ -25,6 +25,12 @@ permissions:
   pull-requests: write
   issues: write
 
+# A manual dispatch and the daily cron must not race on the shared spec/bot-api-bump
+# branch and PR. Serialize them; let an in-flight run finish rather than cancel it.
+concurrency:
+  group: spec-drift
+  cancel-in-progress: false
+
 jobs:
   drift:
     name: Bump vendored spec on a new Bot API release
