@@ -1,14 +1,22 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { BotService } from '../../api';
 import { RawUpdate } from '../../events/raw-update.types';
-import { Providers } from '../../providers';
-import type {
-  NestgramModuleOptions,
-  WebhookOptions,
-} from '../../module/nestgram-module.types';
+import { DEFAULT_BOT_NAME } from '../../providers';
+import type { WebhookOptions } from '../../module/nestgram-module.types';
 import { AllowedUpdatesResolver } from './allowed-updates.resolver';
 import { UpdateListener, UpdateSource } from './update-source';
+
+/**
+ * One webhook bot of a multi-bot app, paired with whether it is the app default.
+ * `NestgramModule` provides these as the `WEBHOOK_SOURCES` array; the ready-made
+ * multi-bot webhook controllers inject it to route an inbound POST to the right
+ * bot (by `source.name` or `source.ownsSecret`).
+ */
+export interface WebhookSourceEntry {
+  source: WebhookUpdateSource;
+  isDefault: boolean;
+}
 
 /**
  * Webhook update source.
@@ -19,20 +27,23 @@ import { UpdateListener, UpdateSource } from './update-source';
  * calls {@link verifySecret} then {@link deliver}. Implements the same
  * {@link UpdateSource} contract as polling, so the dispatcher and the rest of the
  * engine are unchanged.
+ *
+ * Bound to ONE bot: it takes that bot's `BotService` and webhook config at
+ * construction (mirroring {@link PollingUpdateSource}), so a multi-bot app builds
+ * one per webhook bot. The single-bot path constructs it from the top-level
+ * webhook config via a factory provider.
  */
 @Injectable()
 export class WebhookUpdateSource implements UpdateSource {
   private readonly logger = new Logger(WebhookUpdateSource.name);
-  private readonly config?: WebhookOptions;
   private onUpdate?: UpdateListener;
 
   constructor(
-    @Inject(Providers.NESTGRAM_OPTIONS) options: NestgramModuleOptions,
     private readonly botService: BotService,
+    private readonly config: WebhookOptions | undefined,
     private readonly allowedUpdatesResolver: AllowedUpdatesResolver,
-  ) {
-    this.config = options.webhook;
-  }
+    readonly name: string = DEFAULT_BOT_NAME,
+  ) {}
 
   async start(onUpdate: UpdateListener): Promise<void> {
     if (!this.config) {
@@ -52,8 +63,8 @@ export class WebhookUpdateSource implements UpdateSource {
     // a controller — the author does. Remind here (the one moment we know a
     // webhook is configured) so a missing controller isn't a silent 404.
     this.logger.log(
-      `Webhook registered: ${this.config.url} — a controller must serve this ` +
-        'URL (register WebhookController or your own).',
+      `Webhook registered for "${this.name}": ${this.config.url} — a controller ` +
+        'must serve this URL (register a webhook controller or your own).',
     );
   }
 
@@ -74,6 +85,21 @@ export class WebhookUpdateSource implements UpdateSource {
       return true;
     }
     return headerSecret === this.config.secretToken;
+  }
+
+  /**
+   * Whether this bot OWNS the incoming secret: a secret is configured AND the
+   * header matches it. Unlike {@link verifySecret} (which accepts anything when no
+   * secret is set), this is a positive identification — used to route a SHARED
+   * endpoint's update to the right bot by its secret token. A bot without a
+   * `secretToken` can never own a request, so it is unroutable on a shared
+   * endpoint (give each bot a distinct secret).
+   */
+  ownsSecret(headerSecret?: string): boolean {
+    return (
+      this.config?.secretToken !== undefined &&
+      headerSecret === this.config.secretToken
+    );
   }
 
   /** Hand a received update to the dispatcher (called by `WebhookController`). */

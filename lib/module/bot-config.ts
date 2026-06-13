@@ -58,6 +58,7 @@ export class BotConfigResolver {
     );
     this.assertUniqueNames(resolved);
     this.assertUniqueTokens(resolved);
+    this.assertUniqueWebhookSecrets(resolved);
     return this.applyDefault(resolved);
   }
 
@@ -132,6 +133,30 @@ export class BotConfigResolver {
         );
       }
       seen.add(bot.options.token);
+    }
+  }
+
+  /**
+   * Webhook secret tokens must be distinct across bots: the shared-endpoint
+   * webhook controller routes an inbound update to the bot whose secret matches,
+   * so a shared secret would silently misroute (first-match wins). Only bots that
+   * set a `secretToken` are checked — an absent one is a separate (insecure)
+   * config the source warns about at startup.
+   */
+  private static assertUniqueWebhookSecrets(bots: ResolvedBot[]): void {
+    const seen = new Set<string>();
+    for (const bot of bots) {
+      const secret = bot.webhook?.secretToken;
+      if (secret === undefined) {
+        continue;
+      }
+      if (seen.has(secret)) {
+        throw new NestgramConfigError(
+          `Two bots share a webhook secretToken (bot "${bot.name}") — each ` +
+            'needs its own so a shared endpoint can route to the right bot.',
+        );
+      }
+      seen.add(secret);
     }
   }
 

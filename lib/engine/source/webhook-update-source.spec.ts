@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 
 import { WebhookUpdateSource } from './webhook-update-source';
 import { BotService } from '../../api';
-import { NestgramModuleOptions } from '../../module/nestgram-module.types';
+import { WebhookOptions } from '../../module/nestgram-module.types';
 import { RawUpdate } from '../../events/raw-update.types';
 import { RouteTable } from '../discovery';
 import { Route } from '../discovery/route.types';
@@ -14,7 +14,7 @@ function listenerOn(updateType: string): Route {
 }
 
 function make(
-  webhook: NestgramModuleOptions['webhook'],
+  webhook: WebhookOptions | undefined,
   token = '123:ABC',
   routes: Route[] = [],
 ) {
@@ -22,8 +22,8 @@ function make(
   const deleteWebhook = jest.fn().mockResolvedValue(true);
   const bot = { token, setWebhook, deleteWebhook } as unknown as BotService;
   const source = new WebhookUpdateSource(
-    { token, webhook } as NestgramModuleOptions,
     bot,
+    webhook,
     new AllowedUpdatesResolver(new RouteTable(routes)),
   );
   return { source, setWebhook, deleteWebhook };
@@ -104,6 +104,30 @@ describe('WebhookUpdateSource', () => {
     const { source } = make({ url: 'https://x/h' });
     expect(source.verifySecret(undefined)).toBe(true);
     expect(source.verifySecret('whatever')).toBe(true);
+  });
+
+  it('ownsSecret is a positive match: true only when a secret is set and equal', () => {
+    const { source } = make({ url: 'https://x/h', secretToken: 's3cret' });
+    expect(source.ownsSecret('s3cret')).toBe(true);
+    expect(source.ownsSecret('nope')).toBe(false);
+    expect(source.ownsSecret(undefined)).toBe(false);
+  });
+
+  it('ownsSecret is always false without a configured secret (unroutable on a shared endpoint)', () => {
+    const { source } = make({ url: 'https://x/h' });
+    expect(source.ownsSecret(undefined)).toBe(false);
+    expect(source.ownsSecret('whatever')).toBe(false);
+  });
+
+  it('carries the bot name (defaults to the single-bot default)', () => {
+    expect(make({ url: 'https://x/h' }).source.name).toBe('default');
+    const named = new WebhookUpdateSource(
+      { token: 't' } as unknown as BotService,
+      { url: 'https://x/h' },
+      new AllowedUpdatesResolver(new RouteTable([])),
+      'sales',
+    );
+    expect(named.name).toBe('sales');
   });
 
   it('deliver forwards the update to the listener set in start', async () => {

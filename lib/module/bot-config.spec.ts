@@ -116,6 +116,36 @@ describe('BotConfigResolver', () => {
     ).toThrow(/share a token/);
   });
 
+  it('rejects two webhook bots sharing a secret token', () => {
+    expect(() =>
+      BotConfigResolver.resolve({
+        bots: [
+          {
+            name: 'a',
+            token: 'A',
+            webhook: { url: 'https://x/a', secretToken: 'SAME' },
+          },
+          {
+            name: 'b',
+            token: 'B',
+            webhook: { url: 'https://x/b', secretToken: 'SAME' },
+          },
+        ],
+      }),
+    ).toThrow(/share a webhook secretToken/);
+  });
+
+  it('allows webhook bots without secrets (uniqueness only checks set secrets)', () => {
+    expect(() =>
+      BotConfigResolver.resolve({
+        bots: [
+          { name: 'a', token: 'A', webhook: { url: 'https://x/a' } },
+          { name: 'b', token: 'B', webhook: { url: 'https://x/b' } },
+        ],
+      }),
+    ).not.toThrow();
+  });
+
   it('rejects more than one default', () => {
     expect(() =>
       BotConfigResolver.resolve({

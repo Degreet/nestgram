@@ -83,9 +83,10 @@ export class NestgramBootstrap
   /**
    * Multi-bot transport: build and start one source per bot via
    * {@link BotSourceFactory}, each dispatching with its OWN BotService so a reply
-   * goes back through the bot that received the update. The factory returns no
-   * source for a webhook bot (per-bot webhook delivery isn't auto-wired) — warn,
-   * since such a bot needs a custom update source to receive.
+   * goes back through the bot that received the update. A polling bot gets a
+   * poller; a webhook bot gets its per-bot {@link WebhookUpdateSource} (started
+   * here to register the webhook — updates then arrive over HTTP via a webhook
+   * controller). A bot with no transport yields no source and is skipped.
    */
   private async startFleet(): Promise<void> {
     const bots = BotConfigResolver.resolve(this.options);
@@ -93,17 +94,12 @@ export class NestgramBootstrap
       const botService = this.moduleRef.get<BotService>(getBotToken(bot.name), {
         strict: false,
       });
-      const source = this.sourceFactory.create(botService, {
-        polling: bot.polling,
-        webhook: bot.webhook,
-      });
+      const source = this.sourceFactory.create(
+        botService,
+        { polling: bot.polling, webhook: bot.webhook },
+        bot.name,
+      );
       if (!source) {
-        if (bot.webhook) {
-          this.logger.warn(
-            `Bot "${bot.name}" uses webhook, which isn't auto-wired per-bot yet — ` +
-              `give it a custom update source to receive updates.`,
-          );
-        }
         continue;
       }
       const me = await botService.getMe();

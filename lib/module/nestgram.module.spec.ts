@@ -1,4 +1,4 @@
-import { Injectable, Logger, Module } from '@nestjs/common';
+import { Inject, Injectable, Logger, Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { BotService } from '../api';
@@ -22,7 +22,7 @@ import {
 } from '../api/request';
 import type { Observable } from 'rxjs';
 import { Providers } from '../providers';
-import { WebhookUpdateSource } from '../engine/source';
+import { WebhookSourceEntry, WebhookUpdateSource } from '../engine/source';
 import { NestgramModule } from './nestgram.module';
 
 const originalFetch = global.fetch;
@@ -646,6 +646,77 @@ describe('@Bot param', () => {
     await dispatcher.dispatch(messageUpdate(1, 'hi'));
 
     expect(router.seenName).toBe('default');
+
+    await app.close();
+  });
+});
+
+// Multi-bot webhook: each webhook bot gets a per-bot WebhookUpdateSource under
+// getWebhookSourceToken(name), aggregated into WEBHOOK_SOURCES for the ready-made
+// controllers. Booting starts the fleet, registering each bot's webhook.
+@Injectable()
+class WebhookSourcesConsumer {
+  constructor(
+    @Inject(Providers.WEBHOOK_SOURCES) readonly entries: WebhookSourceEntry[],
+  ) {}
+}
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      bots: [
+        {
+          name: 'support',
+          token: '111:SUPPORT',
+          default: true,
+          webhook: {
+            url: 'https://x/telegram/webhook/support',
+            secretToken: 's',
+          },
+        },
+        {
+          name: 'sales',
+          token: '222:SALES',
+          webhook: {
+            url: 'https://x/telegram/webhook/sales',
+            secretToken: 'x',
+          },
+        },
+      ],
+    }),
+  ],
+  providers: [WebhookSourcesConsumer],
+})
+class MultiBotWebhookAppModule {}
+
+describe('multi-bot webhook (forRoot bots: [])', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it('provides WEBHOOK_SOURCES — one per webhook bot, each its own source, default flagged', async () => {
+    // getMe + setWebhook (start) + deleteWebhook (close) hit fetch at boot; stub it.
+    global.fetch = (async () => ({
+      json: async () => ({ ok: true, result: { username: 'bot' } }),
+    })) as unknown as typeof fetch;
+
+    const app = await NestFactory.createApplicationContext(
+      MultiBotWebhookAppModule,
+      { logger: false },
+    );
+    const { entries } = app.get(WebhookSourcesConsumer);
+
+    expect(entries).toHaveLength(2);
+    expect(entries.map((e) => e.source.name).sort()).toEqual([
+      'sales',
+      'support',
+    ]);
+    const support = entries.find((e) => e.source.name === 'support');
+    expect(support?.isDefault).toBe(true);
+    expect(support?.source).toBeInstanceOf(WebhookUpdateSource);
+    // Routing primitives the controllers rely on are wired per bot.
+    expect(support?.source.ownsSecret('s')).toBe(true);
+    expect(support?.source.ownsSecret('x')).toBe(false);
 
     await app.close();
   });
