@@ -24,7 +24,16 @@ export class ContextFactory {
     private readonly eventFactory: EventFactory,
   ) {}
 
-  wrap(update: Readonly<RawUpdate>): TelegramExecutionContext | null {
+  /**
+   * `bot` is the bot that received THIS update — threaded by the dispatcher from
+   * the per-bot source, so the event's `answer()` and `ctx.bot` act through the
+   * right bot. Falls back to the injected default for the single-bot path (and
+   * any caller that dispatches without naming a bot).
+   */
+  wrap(
+    update: Readonly<RawUpdate>,
+    bot?: BotService,
+  ): TelegramExecutionContext | null {
     const kind = resolveKind(update);
     if (kind === null) {
       this.warnUnmodelled(update);
@@ -34,7 +43,7 @@ export class ContextFactory {
     return new TelegramExecutionContext(
       update,
       kind,
-      this.botService,
+      bot ?? this.botService,
       this.eventFactory,
     );
   }

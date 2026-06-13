@@ -99,6 +99,36 @@ describe('UpdateDispatcher', () => {
     expect(handled).toEqual(['reply from start']);
   });
 
+  it('threads the given bot into the context, falling back to the default', async () => {
+    let seenBot: BotService | undefined;
+    const contextFactory = new ContextFactory(fakeBot(), new EventFactory());
+    const executorFactory = {
+      create: () => (ctx: { bot: BotService }) => {
+        seenBot = ctx.bot;
+        return Promise.resolve(undefined);
+      },
+    } as unknown as HandlerExecutorFactory;
+    const resultHandler = {
+      handle: () => Promise.resolve(),
+    } as unknown as ResultHandler;
+    const dispatcher = new UpdateDispatcher(
+      contextFactory,
+      new RouteTable([route('message', 'h')]),
+      new RouteMatcher(),
+      executorFactory,
+      resultHandler,
+      new StageRegistry(),
+    );
+
+    const botB = { token: 'BOT_B' } as unknown as BotService;
+    await dispatcher.dispatch(messageUpdate(1, 'hi'), botB);
+    expect(seenBot).toBe(botB);
+
+    // Omitted → the ContextFactory's injected default (token 'TEST').
+    await dispatcher.dispatch(messageUpdate(2, 'hi'));
+    expect(seenBot?.token).toBe('TEST');
+  });
+
   it('runs only the first matching route (first-match)', async () => {
     const { dispatcher, calls } = makeDispatcher([
       route('message', 'first'),

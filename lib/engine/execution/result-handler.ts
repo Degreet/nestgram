@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { TelegramExecutionContext } from '../context/telegram-execution-context';
 import { TelegramEvent } from '../context/event-factory';
-import { BotService } from '../../api';
 import { ApiMethod } from '../../api/methods';
 
 /** An event that can reply to itself (e.g. `Message.answer`). */
@@ -25,8 +24,6 @@ interface Answerable {
 export class ResultHandler {
   private readonly logger = new Logger(ResultHandler.name);
 
-  constructor(private readonly bot: BotService) {}
-
   async handle(result: unknown, ctx: TelegramExecutionContext): Promise<void> {
     if (typeof result === 'string') {
       const event = ctx.event;
@@ -41,7 +38,9 @@ export class ResultHandler {
     }
 
     if (result instanceof ApiMethod) {
-      await this.bot.call(result);
+      // The bot that received this update — not a global default — so a returned
+      // command object (new SendMessage(...)) goes out through the right bot.
+      await ctx.bot.call(result);
     }
   }
 

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
+import type { BotService } from '../../api';
 import { runAmbient } from '../../ambient';
 import { ContextFactory } from '../context';
 import {
@@ -42,12 +43,17 @@ export class UpdateDispatcher {
     private readonly stages: StageRegistry,
   ) {}
 
-  async dispatch(update: RawUpdate): Promise<void> {
+  /**
+   * `bot` is the bot whose source delivered this update; threaded into the
+   * context so replies go back through it. Omitted (single-bot, tests) → the
+   * context uses the default bot.
+   */
+  async dispatch(update: RawUpdate, bot?: BotService): Promise<void> {
     // Each update runs inside its own ambient context, so sessions, locale/`t()`
     // and any user stage are reachable anywhere in the call chain without a ctx arg.
     await runAmbient(async () => {
       try {
-        const ctx = this.contextFactory.wrap(update);
+        const ctx = this.contextFactory.wrap(update, bot);
         if (!ctx) {
           return;
         }
