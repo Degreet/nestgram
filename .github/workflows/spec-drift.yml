@@ -1,0 +1,114 @@
+name: Bot API spec drift
+
+# Polls the vendored Telegram Bot API spec daily and opens a PR when a NEW Bot
+# API version lands. Daily — not more often — because the upstream source
+# (PaulSonOfLars) re-scrapes the docs once a day, so a finer cadence cannot
+# lower latency. Releases follow no fixed weekday or date, so daily is the only
+# way to catch one within ~24h.
+#
+# The gate is the `botApiVersion` STRING, not raw output drift: Telegram's prose
+# is embedded in our generated JSDoc, so the emitted files churn on cosmetic doc
+# edits the upstream re-scrape picks up. Gating on the version keeps daily polling
+# noise-free — prose tweaks fold into the next real version bump.
+#
+# Runs only where the `SPEC_DRIFT` repo variable is set to `true` (the
+# development repo). Elsewhere — e.g. a public mirror — the job is inert, and the
+# workflow file names no repository.
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # daily, 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  drift:
+    name: Bump vendored spec on a new Bot API release
+    if: vars.SPEC_DRIFT == 'true'
+    runs-on: ubuntu-latest
+    env:
+      HUSKY: 0
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Update vendored spec & detect a new version
+        id: check
+        run: |
+          before=$(node -p "require('./tools/codegen/spec/spec-version.json').botApiVersion")
+          npm run spec:update
+          after=$(node -p "require('./tools/codegen/spec/spec-version.json').botApiVersion")
+          echo "version=$after" >> "$GITHUB_OUTPUT"
+          if [ "$before" = "$after" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Still on $after — no new Bot API release."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "New Bot API release: $before -> $after"
+          fi
+
+      - name: Regenerate API surface
+        if: steps.check.outputs.changed == 'true'
+        run: npm run generate
+
+      - name: Full gate (lint, build, test, staleness check)
+        id: gate
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          npm run lint
+          npm run build
+          npm test
+          npm run generate -- --check
+
+      - name: Open the spec-bump PR
+        if: steps.check.outputs.changed == 'true' && steps.gate.outcome == 'success'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: spec/bot-api-bump
+          commit-message: 'chore(spec): ${{ steps.check.outputs.version }}'
+          title: 'chore(spec): ${{ steps.check.outputs.version }}'
+          body: |
+            Automated vendored-spec bump to **${{ steps.check.outputs.version }}**.
+
+            Regenerated API types, method classes, and the surface snapshot. Lint,
+            build, test, and `generate --check` all passed in CI before this PR
+            was opened.
+
+            Review the codegen manifest seam if a new rich-event method or a new
+            IR shape landed — those need a manual entry the generator can't infer.
+          labels: |
+            spec
+            automated
+
+      - name: Flag a manual seam when the gate fails
+        if: ${{ always() && steps.check.outputs.changed == 'true' && steps.gate.outcome == 'failure' }}
+        uses: actions/github-script@v7
+        env:
+          SPEC_VERSION: ${{ steps.check.outputs.version }}
+        with:
+          script: |
+            const version = process.env.SPEC_VERSION;
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `${version}: codegen gate failed — manual seam needed`,
+              body: [
+                `The vendored spec bumped to **${version}**, but the codegen gate`,
+                '(lint / build / test / `generate --check`) failed — likely a new IR',
+                'shape or a rich-event method that needs a manifest entry.',
+                '',
+                'Run `npm run spec:update && npm run generate` locally, add the seam in',
+                '`tools/codegen/manifest.ts`, and open the bump PR by hand.',
+              ].join('\n'),
+              labels: ['spec', 'manual-seam'],
+            });
