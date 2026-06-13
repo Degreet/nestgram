@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Provider } from '@nestjs/common';
 
 import { Providers } from '../../providers';
 import { ChatLimiterRegistry } from './chat-limiter-registry';
@@ -19,19 +19,17 @@ interface ThrottleConfigSource {
 }
 
 /**
- * Wires the throttle feature. This module is the composition root: it resolves
- * the settings from `BotOptions`, builds the shared global bucket and per-chat
- * registry (parameterised by those settings + the clock), and exposes the
- * interceptor. The {@link ThrottleInterceptor} therefore receives ready
- * collaborators and assembles nothing itself.
- *
- * A plain provider-grouping module (no `forRoot`): `BotModule` imports it and
- * places the exported interceptor in its ordered pipeline, so interceptor order
- * stays owned by `BotModule`, not scattered. `CLOCK` defaults to `SystemClock`
- * and can be overridden (e.g. a `FakeClock` in tests) by re-providing the token.
+ * The throttle feature's providers — settings resolved from `BotOptions`, the
+ * shared bucket + per-chat registry parameterised by them and the clock, and the
+ * interceptor. A hoisted function (callable from the `@Module` decorator below)
+ * so the SAME provider set can be spliced directly into a per-bot module: there
+ * each resolves THAT bot's `BOT_OPTIONS`, giving every bot its own throttle state
+ * — which an imported module couldn't do, as it would resolve a global token.
+ * `CLOCK` defaults to `SystemClock`; re-provide the token to override (e.g. a
+ * `FakeClock` in tests).
  */
-@Module({
-  providers: [
+export function throttleProviders(): Provider[] {
+  return [
     { provide: CLOCK, useClass: SystemClock },
     {
       provide: THROTTLE_SETTINGS,
@@ -64,7 +62,17 @@ interface ThrottleConfigSource {
       inject: [THROTTLE_SETTINGS, CLOCK],
     },
     ThrottleInterceptor,
-  ],
+  ];
+}
+
+/**
+ * The throttle composition root as a standalone module (kept for back-compat and
+ * direct import). `BotModule` no longer imports it — it splices
+ * {@link throttleProviders} into each per-bot module so the settings resolve that
+ * bot's options — but the module stays public.
+ */
+@Module({
+  providers: throttleProviders(),
   exports: [ThrottleInterceptor],
 })
 export class ThrottleModule {}

@@ -1,23 +1,12 @@
 import { BotOptions } from '../api/bot-options';
 import type { PollingOptions } from '../engine/source';
 import { NestgramConfigError } from '../exceptions';
+import { DEFAULT_BOT_NAME } from '../providers';
 import {
   BotDefinition,
   NestgramModuleOptions,
   WebhookOptions,
 } from './nestgram-module.types';
-
-/** The name an unnamed single bot takes — what bare `BotService` resolves to. */
-export const DEFAULT_BOT_NAME = 'default';
-
-/**
- * The DI token a bot's `BotService` is provided under, keyed by name. `@InjectBot`
- * is sugar over `@Inject(getBotToken(name))`; a free function because it is the
- * established Nest token-helper idiom (`getRepositoryToken` and friends).
- */
-export function getBotToken(name: string = DEFAULT_BOT_NAME): string {
-  return `nestgram:bot:${name}`;
-}
 
 /**
  * One bot after config normalization: its name, whether it is the default, its
@@ -147,20 +136,25 @@ export class BotConfigResolver {
   }
 
   /**
-   * Settle which bot is the default: the one bot in a single-bot app, or the one
-   * flagged `default: true`. At most one may be flagged; with several bots and
-   * none flagged, there is no default (a bare `BotService` injection then throws,
-   * by design — the caller must name the bot).
+   * Settle which bot is the default — the one a bare `BotService` (and
+   * `@InjectBot()` with no name) resolves to. A single bot is implicitly the
+   * default. With several bots, AT MOST one may be flagged `default: true` (more
+   * than one is rejected). None is allowed too — co-equal bots (e.g. white-label
+   * tenants) with no primary: a bare `BotService` injection is then ambiguous and
+   * unavailable, and each bot is reached only via `@InjectBot(name)` / `@Bot()`.
+   * We never silently pick the first — that would make the default depend on
+   * array order.
    */
   private static applyDefault(bots: ResolvedBot[]): ResolvedBot[] {
+    if (bots.length === 1) {
+      bots[0].isDefault = true;
+      return bots;
+    }
     const flagged = bots.filter((bot) => bot.isDefault);
     if (flagged.length > 1) {
       throw new NestgramConfigError(
         'More than one bot is marked `default: true` — at most one may be.',
       );
-    }
-    if (bots.length === 1) {
-      bots[0].isDefault = true;
     }
     return bots;
   }

@@ -34,7 +34,7 @@ describe('richMessages option', () => {
   it('feeds its settings into the pipeline interceptor when set', async () => {
     @Module({
       imports: [
-        BotModule.forRoot({
+        BotModule.forBot('default', {
           token: '1:T',
           richMessages: { dialect: 'markdown' },
         }),
@@ -46,7 +46,7 @@ describe('richMessages option', () => {
       logger: false,
     });
     try {
-      const interceptor = app.get(RichMessagesInterceptor);
+      const interceptor = app.get(RichMessagesInterceptor, { strict: false });
       const { ctx, request } = sendMessageRequest();
       interceptor.intercept(ctx, noop);
       expect(request.method).toBe('sendRichMessage');
@@ -61,7 +61,7 @@ describe('richMessages option', () => {
 
   it('stays opt-in: without the option the interceptor is a passthrough', async () => {
     @Module({
-      imports: [BotModule.forRoot({ token: '1:T' })],
+      imports: [BotModule.forBot('default', { token: '1:T' })],
     })
     class PlainAppModule {}
 
@@ -69,7 +69,7 @@ describe('richMessages option', () => {
       logger: false,
     });
     try {
-      const interceptor = app.get(RichMessagesInterceptor);
+      const interceptor = app.get(RichMessagesInterceptor, { strict: false });
       const { ctx, request } = sendMessageRequest();
       interceptor.intercept(ctx, noop);
       expect(request.method).toBe('sendMessage');
@@ -82,7 +82,7 @@ describe('richMessages option', () => {
   it('a configured default parseMode never leaks into the rewritten rich call', async () => {
     @Module({
       imports: [
-        BotModule.forRoot({
+        BotModule.forBot('default', {
           token: '1:T',
           parseMode: 'HTML',
           richMessages: { dialect: 'markdown' },
@@ -97,8 +97,8 @@ describe('richMessages option', () => {
     try {
       // Pipeline order: the rich rewrite runs before the parse-mode injector —
       // exactly what keeps the injected default out of the rich payload.
-      const rich = app.get(RichMessagesInterceptor);
-      const parseMode = app.get(DefaultParseModeInterceptor);
+      const rich = app.get(RichMessagesInterceptor, { strict: false });
+      const parseMode = app.get(DefaultParseModeInterceptor, { strict: false });
       const { ctx, request } = sendMessageRequest();
       rich.intercept(ctx, noop);
       parseMode.intercept(ctx, noop);

@@ -1,13 +1,13 @@
 import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
 import { APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core';
 
-import { BotModule } from '../api';
+import { BotModule, BotService } from '../api';
 import { BotOptions } from '../api/bot-options';
 import { BotConfigResolver } from './bot-config';
 import { ContextFactory, EventFactory } from '../engine/context';
 import { RouteExplorer, RouteMatcher, RouteTable } from '../engine/discovery';
 import { NestgramConfigError } from '../exceptions';
-import { Providers } from '../providers';
+import { DEFAULT_BOT_NAME, getBotToken, Providers } from '../providers';
 import { HandlerExecutorFactory, ResultHandler } from '../engine/execution';
 import {
   StageExplorer,
@@ -100,27 +100,38 @@ export class NestgramModule {
   ];
 
   /**
-   * Normalize the config and take the single bot's options. Multi-bot wiring
-   * (one BotService + source per bot) is in progress on the `feature/multi-bot`
-   * branch — until it lands, a `bots: []` with more than one entry is rejected
-   * here, while the single-bot path runs entirely through the same resolver.
+   * Resolve the SINGLE bot for the async path. `forRootAsync` builds its bot from
+   * a runtime factory, so the count can't be known at module-definition time —
+   * multiple bots there would need dynamic provider tokens, which Nest can't do.
+   * Dynamic multi-bot is out of scope; declare several bots statically with
+   * `forRoot({ bots: [...] })` instead.
    */
   private static resolveSingleBot(options: NestgramModuleOptions): BotOptions {
     const [bot, ...more] = BotConfigResolver.resolve(options);
     if (more.length > 0) {
       throw new NestgramConfigError(
-        'Multiple bots are configured, but multi-bot wiring is still in ' +
-          'progress on this build — use a single `token` for now.',
+        'forRootAsync resolves a single bot — for several bots use ' +
+          'forRoot({ bots: [...] }) with a static array.',
       );
     }
     return bot.options;
   }
 
   static forRoot(options: NestgramModuleOptions): DynamicModule {
+    const bots = BotConfigResolver.resolve(options);
+    const defaultBot = bots.find((bot) => bot.isDefault);
+    // The engine constructs against a bare BotService. Alias it to the default;
+    // with no default (co-equal bots) alias to the first bot as an INTERNAL
+    // placeholder that is NOT exported, so a user's bare `BotService` injection
+    // still fails and forces `@InjectBot(name)`.
+    const engineBot = defaultBot ?? bots[0];
     return {
       module: NestgramModule,
       imports: [
-        BotModule.forRoot(NestgramModule.resolveSingleBot(options)),
+        // One isolated module per bot; each exports its BotService under
+        // getBotToken(name). The engine drives the default bot (Phase 2 adds a
+        // per-bot source); the rest are reachable via @InjectBot for sends.
+        ...bots.map((bot) => BotModule.forBot(bot.name, bot.options)),
         DiscoveryModule,
       ],
       // No controllers: the webhook receiver isn't auto-registered. The author
@@ -128,9 +139,14 @@ export class NestgramModule {
       // the WebhookOptions docs.
       providers: [
         { provide: Providers.NESTGRAM_OPTIONS, useValue: options },
+        // A bare BotService (and @InjectBot() with no name) resolves the default
+        // bot — exported only when one exists.
+        { provide: BotService, useExisting: getBotToken(engineBot.name) },
         ...this.engineProviders,
       ],
-      exports: this.engineExports,
+      exports: defaultBot
+        ? [...this.engineExports, BotService]
+        : [...this.engineExports],
     };
   }
 
@@ -139,7 +155,7 @@ export class NestgramModule {
       module: NestgramModule,
       imports: [
         ...(options.imports ?? []),
-        BotModule.forRootAsync({
+        BotModule.forBotAsync(DEFAULT_BOT_NAME, {
           inject: [Providers.NESTGRAM_OPTIONS],
           useFactory: (resolved: NestgramModuleOptions) =>
             NestgramModule.resolveSingleBot(resolved),
@@ -154,9 +170,10 @@ export class NestgramModule {
       // had to be known here to wire a route).
       providers: [
         ...this.createAsyncOptionsProviders(options),
+        { provide: BotService, useExisting: getBotToken(DEFAULT_BOT_NAME) },
         ...this.engineProviders,
       ],
-      exports: this.engineExports,
+      exports: [...this.engineExports, BotService],
     };
   }
 

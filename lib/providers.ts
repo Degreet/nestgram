@@ -11,3 +11,16 @@ export enum Providers {
   /** FSM config, provided by `FsmModule.forRoot`/`forRootAsync`. */
   FSM_OPTIONS = 'FSM_OPTIONS',
 }
+
+/** The name an unnamed single bot takes — what a bare `BotService` resolves to. */
+export const DEFAULT_BOT_NAME = 'default';
+
+/**
+ * The DI token a bot's `BotService` is provided under, keyed by name. `@InjectBot`
+ * is sugar over `@Inject(getBotToken(name))`; a free function because it is the
+ * established Nest token-helper idiom (`getRepositoryToken` and friends). Lives in
+ * the tokens module so both the `api` and `module` layers reach it cycle-free.
+ */
+export function getBotToken(name: string = DEFAULT_BOT_NAME): string {
+  return `nestgram:bot:${name}`;
+}

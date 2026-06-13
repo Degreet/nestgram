@@ -1,4 +1,5 @@
-import { BotConfigResolver, DEFAULT_BOT_NAME, getBotToken } from './bot-config';
+import { BotConfigResolver } from './bot-config';
+import { DEFAULT_BOT_NAME, getBotToken } from '../providers';
 import { ParseMode } from '../api/parse-mode';
 import { NestgramConfigError } from '../exceptions';
 
@@ -27,7 +28,7 @@ describe('BotConfigResolver', () => {
     });
   });
 
-  it('resolves a bots[] list, each carrying its own flags', () => {
+  it('resolves a bots[] list (co-equal, no default), each carrying its own flags', () => {
     const bots = BotConfigResolver.resolve({
       bots: [
         {
@@ -43,7 +44,7 @@ describe('BotConfigResolver', () => {
     expect(bots.map((b) => b.name)).toEqual(['support', 'sales']);
     expect(bots[0].options.parseMode).toBe(ParseMode.Html);
     expect(bots[1].webhook).toEqual({ url: 'https://x/wh' });
-    // No default flagged among several → none is the default.
+    // No flag among several co-equal bots → none is the default.
     expect(bots.every((b) => !b.isDefault)).toBe(true);
   });
 

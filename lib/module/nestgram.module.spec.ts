@@ -2,6 +2,7 @@ import { Injectable, Logger, Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { BotService } from '../api';
+import { InjectBot } from '../decorators/inject-bot.decorator';
 import { Command } from '../decorators/listeners/command.decorator';
 import { OnMessage } from '../decorators/listeners/on-message.decorator';
 import { OnCallbackQuery } from '../decorators/listeners/on-callback-query.decorator';
@@ -476,5 +477,112 @@ describe('webhook transport (real-module DI)', () => {
     expect(app.get(WebhookConsumer).source).toBeInstanceOf(WebhookUpdateSource);
 
     await app.close();
+  });
+});
+
+// Multi-bot: forRoot({ bots: [...] }) provides one isolated BotService per bot.
+@Injectable()
+class CrossBotConsumer {
+  constructor(
+    // No decorator → the default bot (support, flagged default below).
+    readonly current: BotService,
+    @InjectBot('support') readonly support: BotService,
+    @InjectBot('sales') readonly sales: BotService,
+  ) {}
+}
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      bots: [
+        { name: 'support', token: '111:SUPPORT', default: true },
+        { name: 'sales', token: '222:SALES', parseMode: 'MarkdownV2' },
+      ],
+    }),
+  ],
+  providers: [CrossBotConsumer],
+})
+class MultiBotAppModule {}
+
+describe('multi-bot (forRoot bots: [])', () => {
+  it('provides one BotService per bot, injectable by name, default as the bare token', async () => {
+    const app = await NestFactory.createApplicationContext(MultiBotAppModule, {
+      logger: false,
+    });
+    const consumer = app.get(CrossBotConsumer);
+
+    // Each bot is its own instance carrying its own token.
+    expect(consumer.support.token).toBe('111:SUPPORT');
+    expect(consumer.sales.token).toBe('222:SALES');
+    expect(consumer.sales).not.toBe(consumer.support);
+    // A bare BotService injection resolves the default bot (support).
+    expect(consumer.current).toBe(consumer.support);
+
+    await app.close();
+  });
+});
+
+// Co-equal bots: no default flagged. Each is reached only by name; a bare
+// BotService is ambiguous and not provided.
+@Injectable()
+class NamedOnlyConsumer {
+  constructor(
+    @InjectBot('a') readonly a: BotService,
+    @InjectBot('b') readonly b: BotService,
+  ) {}
+}
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      bots: [
+        { name: 'a', token: '111:A' },
+        { name: 'b', token: '222:B' },
+      ],
+    }),
+  ],
+  providers: [NamedOnlyConsumer],
+})
+class CoEqualAppModule {}
+
+@Injectable()
+class BareConsumer {
+  constructor(readonly bot: BotService) {}
+}
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      bots: [
+        { name: 'a', token: '111:A' },
+        { name: 'b', token: '222:B' },
+      ],
+    }),
+  ],
+  providers: [BareConsumer],
+})
+class CoEqualBareAppModule {}
+
+describe('multi-bot with no default (co-equal)', () => {
+  it('boots and resolves each bot by name', async () => {
+    const app = await NestFactory.createApplicationContext(CoEqualAppModule, {
+      logger: false,
+    });
+    const consumer = app.get(NamedOnlyConsumer);
+
+    expect(consumer.a.token).toBe('111:A');
+    expect(consumer.b.token).toBe('222:B');
+    expect(consumer.a).not.toBe(consumer.b);
+
+    await app.close();
+  });
+
+  it('makes a bare BotService injection fail (ambiguous — must name the bot)', async () => {
+    await expect(
+      NestFactory.createApplicationContext(CoEqualBareAppModule, {
+        logger: false,
+        abortOnError: false,
+      }),
+    ).rejects.toThrow();
   });
 });
