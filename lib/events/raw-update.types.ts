@@ -15,6 +15,7 @@ import {
   InputMediaVideo,
 } from '../api/input-media';
 import type { ParseModeValue } from '../api/parse-mode';
+import type { ButtonStyleValue } from '../keyboards/button-style';
 
 export interface RawAcceptedGiftTypes {
   unlimited_gifts: boolean;
@@ -807,7 +808,7 @@ export interface RawInaccessibleMessage {
 export interface RawInlineKeyboardButton {
   text: string;
   icon_custom_emoji_id?: string;
-  style?: string;
+  style?: ButtonStyleValue;
   url?: string;
   callback_data?: string;
   web_app?: RawWebAppInfo;
@@ -1380,7 +1381,7 @@ export interface RawInvoice {
 export interface RawKeyboardButton {
   text: string;
   icon_custom_emoji_id?: string;
-  style?: string;
+  style?: ButtonStyleValue;
   request_users?: RawKeyboardButtonRequestUsers;
   request_chat?: RawKeyboardButtonRequestChat;
   request_managed_bot?: RawKeyboardButtonRequestManagedBot;

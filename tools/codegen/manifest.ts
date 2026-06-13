@@ -132,18 +132,41 @@ export function enumLiterals(
 /**
  * Enum fields promoted to a NAMED, hand-owned exported type instead of an inline
  * literal union — for values referenced widely enough to deserve a name. The
- * type itself is hand-written (`ParseModeValue` in lib/api/parse-mode.ts); the
- * manifest only names it at the field position, and the emitters add the import
- * (all named types currently live in the parse-mode module). Keyed like
- * {@link ENUM_LITERALS}.
+ * type itself is hand-written (e.g. `ParseModeValue` in lib/api/parse-mode.ts);
+ * the manifest only names it at the field position, and the emitter adds the
+ * import from {@link NAMED_TYPE_MODULES}. Keyed like {@link ENUM_LITERALS}.
  */
 const NAMED_TYPES: Readonly<Record<string, string>> = {
   '*.parse_mode': 'ParseModeValue',
+  'InlineKeyboardButton.style': 'ButtonStyleValue',
+  'KeyboardButton.style': 'ButtonStyleValue',
 };
 
 /** The named type a field is promoted to, or `undefined` for a plain field. */
 export function namedTypeFor(owner: string, field: string): string | undefined {
   return NAMED_TYPES[`${owner}.${field}`] ?? NAMED_TYPES[`*.${field}`];
+}
+
+/**
+ * Where each named type is imported from, as a path RELATIVE TO the generated
+ * types file (`lib/events/raw-update.types.ts`) — the emitter groups its imports
+ * by this. (The bot-methods emitter imports its sole named type separately, from
+ * its own file depth.)
+ */
+const NAMED_TYPE_MODULES: Readonly<Record<string, string>> = {
+  ParseModeValue: '../api/parse-mode',
+  ButtonStyleValue: '../keyboards/button-style',
+};
+
+/** The import path for a named type, or throws if one was added without a home. */
+export function namedTypeModule(typeName: string): string {
+  const module = NAMED_TYPE_MODULES[typeName];
+  if (module === undefined) {
+    throw new Error(
+      `Named type '${typeName}' has no entry in NAMED_TYPE_MODULES — add its import path.`,
+    );
+  }
+  return module;
 }
 
 // --- BotService method generation --------------------------------------------
