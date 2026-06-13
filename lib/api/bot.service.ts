@@ -7,7 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { defer, from } from 'rxjs';
 
 import { BotOptions } from './bot-options';
-import { Providers } from '../providers';
+import { DEFAULT_BOT_NAME, Providers } from '../providers';
 import { ApiException, NestgramError } from '../exceptions';
 import { deepLink as createDeepLink, DeepLinkParams } from '../deep-links';
 import type { User } from '../events/user';
@@ -43,6 +43,12 @@ export class BotService extends GeneratedBotMethods {
   constructor(
     @Inject(Providers.BOT_OPTIONS) options: BotOptions,
     private readonly pipeline: ApiPipeline,
+    /**
+     * This bot's configured name — the `@InjectBot(name)` / `@ForBot(name)` key,
+     * `'default'` for the sole/default bot. Lets a handler tell which bot it is
+     * serving (`ctx.bot.name`, `@ForBot`).
+     */
+    readonly name: string = DEFAULT_BOT_NAME,
   ) {
     super();
     this.token = options.token;

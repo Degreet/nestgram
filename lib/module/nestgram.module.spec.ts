@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 
 import { BotService } from '../api';
 import { InjectBot } from '../decorators/inject-bot.decorator';
+import { Bot } from '../decorators/params/bot.decorator';
 import { Command } from '../decorators/listeners/command.decorator';
 import { OnMessage } from '../decorators/listeners/on-message.decorator';
 import { OnCallbackQuery } from '../decorators/listeners/on-callback-query.decorator';
@@ -616,6 +617,39 @@ async function waitForCalls(
     await new Promise((r) => setTimeout(r, 5));
   }
 }
+
+// @Bot() injects the bot that received the current update.
+@Router()
+class BotAwareRouter {
+  seenName?: string;
+
+  @OnMessage()
+  handle(_message: RawUpdate['message'], @Bot() bot: BotService): void {
+    this.seenName = bot.name;
+  }
+}
+
+@Module({
+  imports: [NestgramModule.forRoot({ token: 'TEST' })],
+  providers: [BotAwareRouter],
+})
+class BotAwareAppModule {}
+
+describe('@Bot param', () => {
+  it('injects the current update’s bot (the default, here)', async () => {
+    const app = await NestFactory.createApplicationContext(BotAwareAppModule, {
+      logger: false,
+    });
+    const dispatcher = app.get(UpdateDispatcher);
+    const router = app.get(BotAwareRouter);
+
+    await dispatcher.dispatch(messageUpdate(1, 'hi'));
+
+    expect(router.seenName).toBe('default');
+
+    await app.close();
+  });
+});
 
 describe('multi-bot polling fleet', () => {
   afterEach(() => {

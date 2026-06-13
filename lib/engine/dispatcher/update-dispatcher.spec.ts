@@ -129,6 +129,27 @@ describe('UpdateDispatcher', () => {
     expect(seenBot?.token).toBe('TEST');
   });
 
+  it('skips a bot-scoped route when the current bot does not match (@ForBot)', async () => {
+    const forBotA: RoutePredicate = {
+      matches: (ctx) => ctx.bot?.name === 'a',
+    };
+    const { dispatcher, calls } = makeDispatcher([
+      route('message', 'scoped', [forBotA]),
+    ]);
+
+    // Wrong bot → predicate rejects → no route matches.
+    await dispatcher.dispatch(messageUpdate(1, 'hi'), {
+      name: 'b',
+    } as unknown as BotService);
+    expect(calls).toEqual([]);
+
+    // Right bot → fires.
+    await dispatcher.dispatch(messageUpdate(2, 'hi'), {
+      name: 'a',
+    } as unknown as BotService);
+    expect(calls).toEqual(['scoped']);
+  });
+
   it('runs only the first matching route (first-match)', async () => {
     const { dispatcher, calls } = makeDispatcher([
       route('message', 'first'),

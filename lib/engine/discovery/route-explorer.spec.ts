@@ -151,6 +151,33 @@ describe('RouteExplorer @Match (method-level predicates)', () => {
   });
 });
 
+describe('RouteExplorer class-level predicates (@ForBot on a router)', () => {
+  const onlyBotA: RoutePredicate = { matches: () => true };
+
+  class ScopedRouter {
+    a(): string {
+      return 'a';
+    }
+    b(): string {
+      return 'b';
+    }
+  }
+  Reflect.defineMetadata(Metadata.ROUTER, {}, ScopedRouter);
+  // Class-level MATCH, exactly as @ForBot('a') on the router stores it.
+  Reflect.defineMetadata(Metadata.MATCH, [onlyBotA], ScopedRouter);
+  listen(ScopedRouter.prototype, 'a', 'message');
+  listen(ScopedRouter.prototype, 'b', 'callback_query');
+
+  it('ANDs a class-level predicate into every route of the router', () => {
+    const routes = explorerOver([new ScopedRouter()]).explore();
+
+    expect(routes).toHaveLength(2);
+    for (const route of routes) {
+      expect(route.predicates).toContain(onlyBotA);
+    }
+  });
+});
+
 describe('RouteTable', () => {
   it('preserves declaration order and indexes by update type', () => {
     const table = new RouteTable(explorerOver([new GreetRouter()]).explore());

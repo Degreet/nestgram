@@ -103,7 +103,14 @@ export class BotModule {
           options.apiInterceptors ?? [],
           options.throttler,
         ),
-        { provide: getBotToken(name), useClass: BotService },
+        {
+          provide: getBotToken(name),
+          useFactory: (
+            options: BotOptions,
+            pipeline: ApiPipeline,
+          ): BotService => new BotService(options, pipeline, name),
+          inject: [Providers.BOT_OPTIONS, ApiPipeline],
+        },
       ],
       exports: [getBotToken(name)],
     };
@@ -120,7 +127,14 @@ export class BotModule {
           options.apiInterceptors ?? [],
           options.throttler,
         ),
-        { provide: getBotToken(name), useClass: BotService },
+        {
+          provide: getBotToken(name),
+          useFactory: (
+            options: BotOptions,
+            pipeline: ApiPipeline,
+          ): BotService => new BotService(options, pipeline, name),
+          inject: [Providers.BOT_OPTIONS, ApiPipeline],
+        },
       ],
       exports: [getBotToken(name)],
     };

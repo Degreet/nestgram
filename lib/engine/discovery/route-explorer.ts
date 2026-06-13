@@ -42,6 +42,11 @@ export class RouteExplorer {
         continue;
       }
 
+      // Class-level predicates (e.g. `@ForBot('support')` on the router) AND into
+      // EVERY route the router declares — scoping the whole router to one bot.
+      const classPredicates: RoutePredicate[] =
+        Reflect.getMetadata(Metadata.MATCH, instance.constructor) ?? [];
+
       const prototype = Object.getPrototypeOf(instance);
       for (const methodName of this.scanner.getAllMethodNames(prototype)) {
         const listeners: ListenerOptions[] | undefined = Reflect.getMetadata(
@@ -61,7 +66,11 @@ export class RouteExplorer {
         for (const listener of listeners) {
           routes.push({
             updateType: listener.updateType,
-            predicates: [...(listener.predicates ?? []), ...methodPredicates],
+            predicates: [
+              ...(listener.predicates ?? []),
+              ...classPredicates,
+              ...methodPredicates,
+            ],
             instance,
             methodName,
           });
