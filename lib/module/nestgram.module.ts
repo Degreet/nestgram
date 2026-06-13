@@ -105,6 +105,7 @@ export class NestgramModule {
           token: options.token,
           parseMode: options.parseMode,
           richMessages: options.richMessages,
+          ignoreNotModified: options.ignoreNotModified,
           apiInterceptors: options.apiInterceptors,
           throttle: options.throttle,
           throttler: options.throttler,
@@ -133,6 +134,7 @@ export class NestgramModule {
             token: resolved.token,
             parseMode: resolved.parseMode,
             richMessages: resolved.richMessages,
+            ignoreNotModified: resolved.ignoreNotModified,
             throttle: resolved.throttle,
           }),
           // Static (a class can't resolve through the value factory) — like apiInterceptors.

@@ -10,6 +10,7 @@ import { API_INTERCEPTORS, ApiInterceptor, ApiPipeline } from './request';
 // the barrel also re-exports the handler-side auto-answer interceptor, which
 // would drag the engine/module graph into the api layer (and cycle).
 import { DefaultParseModeInterceptor } from '../builtins/parse-mode';
+import { IgnoreNotModifiedInterceptor } from '../builtins/ignore-not-modified';
 import {
   RICH_MESSAGES_SETTINGS,
   RichMessagesInterceptor,
@@ -26,7 +27,9 @@ export class BotModule {
    * Providers for the outbound API interceptor pipeline. `API_INTERCEPTORS` is
    * the ordered array `ApiPipeline` composes into a Nest-style onion, outermost
    * first: token validation (its constructor also fail-fasts on a missing
-   * configured token at boot), rich-messages rewrite (before parse-mode, so an
+   * configured token at boot), ignore-not-modified (a response-side catch that
+   * turns the edit no-op into a success — inert unless opted in), rich-messages
+   * rewrite (before parse-mode, so an
    * injected default `parse_mode` can't read as explicit formatting intent;
    * inert unless the `richMessages` option set its settings), default
    * parse-mode, any user-supplied interceptors, then the throttler innermost
@@ -53,6 +56,7 @@ export class BotModule {
     // provider list and the factory's inject list so they can't drift.
     const leading: Type<ApiInterceptor>[] = [
       TokenValidationInterceptor,
+      IgnoreNotModifiedInterceptor,
       RichMessagesInterceptor,
       DefaultParseModeInterceptor,
       ...userInterceptors,

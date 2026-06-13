@@ -71,6 +71,12 @@ export interface NestgramModuleOptions {
    */
   richMessages?: RichMessagesOptions;
   /**
+   * Swallow Telegram's `message is not modified` no-op on edits (e.g. a
+   * double-tapped callback button re-sending identical content). Off by
+   * default. A genuinely stale edit (`can't be edited`/`not found`) still throws.
+   */
+  ignoreNotModified?: boolean;
+  /**
    * Extra outbound {@link ApiInterceptor}s — run after the built-ins (token
    * validation, default parse mode) and before the throttler, on every API call.
    * Same `intercept(context, next)` contract as a Nest handler interceptor; the

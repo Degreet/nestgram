@@ -14,6 +14,12 @@ export interface BotOptions {
    * dividers). Omit to keep plain `sendMessage`. See {@link RichMessagesOptions}.
    */
   richMessages?: RichMessagesOptions;
+  /**
+   * Swallow Telegram's `message is not modified` no-op on edits (e.g. a
+   * double-tapped callback button re-sending identical content). Off by
+   * default. A genuinely stale edit (`can't be edited`/`not found`) still throws.
+   */
+  ignoreNotModified?: boolean;
   /** Extra outbound API interceptors, run after the built-ins (before the throttler). */
   apiInterceptors?: Type<ApiInterceptor>[];
   /** Send rate-limiting: `true`/omitted = on with defaults, `false` = off, or tune it. */
