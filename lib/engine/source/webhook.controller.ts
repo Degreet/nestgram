@@ -10,11 +10,8 @@ import {
 } from '@nestjs/common';
 
 import { RawUpdate } from '../../events/raw-update.types';
-import { WEBHOOK_PATH } from './webhook.constants';
+import { SECRET_HEADER, WEBHOOK_PATH } from './webhook.constants';
 import { WebhookUpdateSource } from './webhook-update-source';
-
-/** The header Telegram sends the configured secret token in. */
-const SECRET_HEADER = 'x-telegram-bot-api-secret-token';
 
 /** What a webhook controller exposes — the POST handler Telegram calls. */
 export interface WebhookReceiver {

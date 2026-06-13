@@ -6,3 +6,4 @@ export * from './polling-update-source';
 export * from './webhook.constants';
 export * from './webhook-update-source';
 export * from './webhook.controller';
+export * from './multibot-webhook.controller';
