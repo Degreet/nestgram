@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 
 import { NestgramBootstrap } from './nestgram.bootstrap';
 import { NestgramModuleOptions } from './nestgram-module.types';
@@ -9,7 +10,7 @@ import {
   StageRegistry,
   UpdateDispatcher,
 } from '../engine/dispatcher';
-import { UpdateSource } from '../engine/source';
+import { AllowedUpdatesResolver, UpdateSource } from '../engine/source';
 
 function makeBootstrap(options: Partial<NestgramModuleOptions>) {
   const getMe = jest.fn().mockResolvedValue({ username: 'mybot' });
@@ -24,6 +25,10 @@ function makeBootstrap(options: Partial<NestgramModuleOptions>) {
     { dispatch: jest.fn() } as unknown as UpdateDispatcher,
     { start, stop: jest.fn() } as unknown as UpdateSource,
     { getMe } as unknown as BotService,
+    { get: jest.fn() } as unknown as ModuleRef,
+    {
+      resolve: jest.fn().mockReturnValue([]),
+    } as unknown as AllowedUpdatesResolver,
   );
 
   return { bootstrap, getMe, start };

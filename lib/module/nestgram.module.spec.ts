@@ -586,3 +586,73 @@ describe('multi-bot with no default (co-equal)', () => {
     ).rejects.toThrow();
   });
 });
+
+// Phase 2: a multi-bot polling config starts one poller per bot, each
+// dispatching with its own BotService.
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      bots: [
+        { name: 'a', token: '111:AAA', polling: { idleMs: 5 }, default: true },
+        { name: 'b', token: '222:BBB', polling: { idleMs: 5 } },
+      ],
+    }),
+  ],
+  providers: [GreetRouter],
+})
+class PollingFleetAppModule {}
+
+function jsonResponse(body: unknown): Response {
+  return { json: async () => body } as Response;
+}
+
+async function waitForCalls(
+  pred: () => boolean,
+  timeoutMs = 1500,
+): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (!pred()) {
+    if (Date.now() > deadline) throw new Error('waitForCalls timed out');
+    await new Promise((r) => setTimeout(r, 5));
+  }
+}
+
+describe('multi-bot polling fleet', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.restoreAllMocks();
+  });
+
+  it('runs a poller per bot and dispatches with the originating bot', async () => {
+    // getUpdates: one update for bot A (matched by its token in the URL), then
+    // empty; everything else (getMe, deleteWebhook, bot B) returns empty/ok.
+    let servedA = false;
+    global.fetch = (async (url: string) => {
+      const target = String(url);
+      if (target.includes('/getUpdates')) {
+        if (target.includes('111:AAA') && !servedA) {
+          servedA = true;
+          return jsonResponse({ ok: true, result: [messageUpdate(1, 'hi')] });
+        }
+        return jsonResponse({ ok: true, result: [] });
+      }
+      return jsonResponse({ ok: true, result: { username: 'bot' } });
+    }) as unknown as typeof fetch;
+
+    // Spy before boot: the poller's onUpdate closure calls this.dispatcher.dispatch.
+    const dispatch = jest.spyOn(UpdateDispatcher.prototype, 'dispatch');
+
+    const app = await NestFactory.createApplicationContext(
+      PollingFleetAppModule,
+      { logger: false },
+    );
+    try {
+      await waitForCalls(() => dispatch.mock.calls.length >= 1);
+      const [, bot] = dispatch.mock.calls[0];
+      // The dispatched update was threaded with bot A's BotService.
+      expect((bot as BotService | undefined)?.token).toBe('111:AAA');
+    } finally {
+      await app.close();
+    }
+  });
+});
