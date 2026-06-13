@@ -10,14 +10,23 @@ import { UpdateKind } from '../../lib/engine/context/update-kind';
 import { emitMethodsBarrel } from './emit-barrel';
 import { emitBotMethods } from './emit-bot-methods';
 import { detectMedia, emitMethod } from './emit-methods';
+import { emitSurfaceFile } from './emit-surface';
 import { emitTypesFile } from './emit-types';
 import { formatTs } from './format';
 import { buildIr, IrType } from './ir';
 import { loadSpec } from './spec-loader';
+import { GENERATED_SURFACE } from './surface.generated';
 import { irTypeToTs } from './type-resolver';
 
-const EXPECTED_METHODS = 180;
-const EXPECTED_OBJECTS = 359;
+/**
+ * Human-anchored lower bounds. The snapshot equality below is tautological right
+ * after a `generate` (both sides derive from the same IR), so it guards only
+ * against a forgotten regenerate — not against a spec-loader/IR regression that
+ * silently drops part of the surface. The Bot API only ever grows, so a count
+ * under these floors means exactly such a regression. Bump upward only.
+ */
+const SURFACE_FLOOR_METHODS = 150;
+const SURFACE_FLOOR_OBJECTS = 300;
 
 function assert(condition: boolean, message: string): void {
   if (!condition) {
@@ -69,13 +78,25 @@ function selfTest(): void {
   );
 
   const ir = buildIr(loadSpec());
+  // Catch a catastrophic shrink the self-consistent snapshot can't (see floors).
   assert(
-    ir.methods.length === EXPECTED_METHODS,
-    `expected ${EXPECTED_METHODS} methods, got ${ir.methods.length}`,
+    ir.methods.length >= SURFACE_FLOOR_METHODS,
+    `surface shrank below floor: ${ir.methods.length} < ${SURFACE_FLOOR_METHODS} methods — likely a spec-loader/IR regression`,
   );
   assert(
-    ir.objects.length === EXPECTED_OBJECTS,
-    `expected ${EXPECTED_OBJECTS} objects, got ${ir.objects.length}`,
+    ir.objects.length >= SURFACE_FLOOR_OBJECTS,
+    `surface shrank below floor: ${ir.objects.length} < ${SURFACE_FLOOR_OBJECTS} objects — likely a spec-loader/IR regression`,
+  );
+  // Baseline is the committed snapshot (surface.generated.ts), rewritten by a
+  // full `generate`. A mismatch means the spec moved but the output wasn't
+  // regenerated — the fix is `npm run generate`, never editing a number here.
+  assert(
+    ir.methods.length === GENERATED_SURFACE.methods,
+    `surface drift: ${ir.methods.length} methods vs committed ${GENERATED_SURFACE.methods} — run \`npm run generate\``,
+  );
+  assert(
+    ir.objects.length === GENERATED_SURFACE.objects,
+    `surface drift: ${ir.objects.length} objects vs committed ${GENERATED_SURFACE.objects} — run \`npm run generate\``,
   );
 
   // Engine invariant: every UpdateKind value must be a field of the spec Update.
@@ -196,11 +217,19 @@ function parseFlagValue(name: string): string | undefined {
 const CANONICAL_METHODS_DIR = 'lib/api/methods';
 const CANONICAL_TYPES_FILE = 'lib/events/raw-update.types.ts';
 const CANONICAL_BOT_METHODS_FILE = 'lib/api/generated-bot-methods.ts';
+const CANONICAL_SURFACE_FILE = 'tools/codegen/surface.generated.ts';
 
 /** Builds the generated BotService sugar (the abstract base it extends). */
 function buildBotMethodsFile(outFile: string): Map<string, string> {
   const absolute = resolve(process.cwd(), outFile);
   const source = emitBotMethods(buildIr(loadSpec()).methods);
+  return new Map([[absolute, formatTs(source, absolute)]]);
+}
+
+/** Builds the surface snapshot (the self-test baseline counts). */
+function buildSurfaceFile(outFile: string): Map<string, string> {
+  const absolute = resolve(process.cwd(), outFile);
+  const source = emitSurfaceFile(buildIr(loadSpec()));
   return new Map([[absolute, formatTs(source, absolute)]]);
 }
 
@@ -315,12 +344,18 @@ function main(): void {
     writeFiles(buildBotMethodsFile(botMethodsOut));
     return;
   }
+  const surfaceOut = parseFlagValue('--surface-out');
+  if (surfaceOut !== undefined) {
+    writeFiles(buildSurfaceFile(surfaceOut));
+    return;
+  }
 
   // Default: full canonical generation, or `--check` freshness guard.
   const files = new Map([
     ...buildMethodFiles(CANONICAL_METHODS_DIR),
     ...buildTypeFile(CANONICAL_TYPES_FILE),
     ...buildBotMethodsFile(CANONICAL_BOT_METHODS_FILE),
+    ...buildSurfaceFile(CANONICAL_SURFACE_FILE),
   ]);
   if (process.argv.includes('--check')) {
     checkFiles(files);
