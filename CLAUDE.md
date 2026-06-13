@@ -44,7 +44,7 @@ Don't relitigate without the maintainer explicitly reopening:
   docs; pinned under `tools/codegen/spec/api.min.json`) — types + method
   classes, emitted into `lib/` and committed. `npm run generate` (manual, never
   a prebuild); `npm run spec:update` bumps the spec; `npm run generate --
-  --check` is the staleness guard. The hand-owned seam in
+--check` is the staleness guard. The hand-owned seam in
   `tools/codegen/manifest.ts` carries the judgment calls: bare names, rich
   `wrap()` bodies, multipart media config, file-field widening
   (`string | InputFile`), the enum table. A new rich-event method needs a
@@ -107,8 +107,11 @@ types live beside their feature (no global `types/`).
   or `enum` (update kinds → `UpdateKind`). A literal compared in code
   (`kind === 'callback_query'`) is the smell.
 - **Classes over free functions.** A standalone function is justified only for
-  a pure, stateless, dependency-free transform. Anything with collaborators —
-  especially DI-managed — is an `@Injectable()` provider. One-place helpers
-  stay `private` methods; types live beside their feature (`*.types.ts`).
+  a pure, stateless, dependency-free transform that stands on its own as a
+  shared utility (its own module). A helper used by one class is **never** a
+  module-level function sitting beside it — even a pure one: make it a `private`
+  method (`private static` when it touches no instance state). Anything with
+  collaborators — especially DI-managed — is an `@Injectable()` provider. Types
+  live beside their feature (`*.types.ts`).
 - Verify before claiming done: build + lint + full jest, and compile every doc
   code sample you touch.
