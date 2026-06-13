@@ -1,9 +1,11 @@
+import { ButtonStyleValue } from './button-style';
 import { KeyboardBuilder } from './keyboard-builder';
 
 interface ReplyButton {
   text: string;
   request_contact?: boolean;
   request_location?: boolean;
+  style?: ButtonStyleValue;
 }
 
 interface ReplyKeyboardMarkup {
@@ -18,8 +20,9 @@ interface ReplyKeyboardMarkup {
  * Fluent builder for a custom reply keyboard (buttons under the input field).
  *
  * Buttons go into the current row; `.row()` starts a new one, or `.columns(n)`
- * auto-wraps into a grid. A trailing `hidden` flag drops the button. Pass the
- * instance as `reply_markup` — `toJSON()` serializes to the Telegram
+ * auto-wraps into a grid. A trailing `hidden` flag drops the button; a colour
+ * modifier (`.primary()`/`.success()`/`.danger()`) styles the next button. Pass
+ * the instance as `reply_markup` — `toJSON()` serializes to the Telegram
  * `{ keyboard, ... }` shape.
  *
  * ```ts
@@ -34,9 +37,7 @@ export class ReplyKeyboard extends KeyboardBuilder<ReplyButton> {
 
   /** A plain text button (sends its label as a message when pressed). */
   text(label: string, hidden = false): this {
-    if (!hidden) {
-      this.push({ text: label });
-    }
+    this.push({ text: label }, hidden);
     return this;
   }
 
