@@ -144,6 +144,31 @@ the `buy` press — and carrying typed data in a button (`buy:42`-style)
 without magic strings — is the next page,
 [Callbacks →](/docs/callbacks).
 
+### Colouring buttons
+
+Telegram lets a button carry a `style`: `primary` (blue), `success` (green) or
+`danger` (red). A colour modifier styles the **next** button only, so it reads
+like a label on the button it precedes:
+
+:::code[confirm.router.ts]{mark="2,4"}
+
+```ts
+const keyboard = new InlineKeyboard()
+  .success()
+  .text('Confirm', 'confirm')
+  .danger()
+  .text('Cancel', 'cancel')
+  .text('Later', 'later'); // no modifier → the app's default style
+```
+
+:::
+
+The modifier is one-shot (`Later` above stays default) and is consumed even
+when the button is hidden — so a conditional button never leaks its colour onto
+the next one: `.danger().text('Delete', 'del', !canDelete)` simply drops when
+`canDelete` is false. The same `.primary()`/`.success()`/`.danger()` work on a
+`ReplyKeyboard`.
+
 ## Reply keyboards
 
 Same builder shape, for the custom keyboard under the input field:
