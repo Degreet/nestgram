@@ -177,16 +177,134 @@ This holds for the built-in per-conversation key. A custom `key` you pass to
 isolation — read `ctx.bot.name`.
 :::
 
-## Transport: polling today
+## Transport: polling or webhook
 
-Each bot runs its own long-polling loop — they poll independently, no
-coordination needed. Webhook is supported for a **single** bot (the top-level
-`token` + `webhook` config); a webhook bot inside a `bots: []` fleet isn't routed
-automatically yet, because one HTTPS endpoint has to fan inbound updates out to
-the right bot.
+Each bot has its own transport. **Polling** is the simplest — give each bot
+`polling` and it runs its own long-polling loop, no coordination needed.
 
-:::warn[Multi-bot is polling]
-In a `bots: []` app, give each bot `polling`. A fleet bot configured for
-`webhook` is skipped at startup with a warning — it won't receive updates until
-you wire a custom update source for it. Single-bot webhook is unchanged.
+**Webhook** takes one more step. A Telegram update carries no bot identity, so a
+multi-bot app has to know which bot an inbound POST is for. Two ready-made
+controllers cover that; both are opt-in (you add them to a module's
+`controllers`), and you can always write your own.
+
+### A URL per bot — `MultiBotWebhookController`
+
+Each bot gets its own route, `…/telegram/webhook/:botName`. Build the matching
+`setWebhook` URL with `webhookUrl(origin, name)` so the registered URL can't
+drift from the served route, and add the controller:
+
+:::code[app.module.ts]{mark="19,35"}
+
+```ts
+import { Module } from '@nestjs/common';
+import {
+  NestgramModule,
+  MultiBotWebhookController,
+  webhookUrl,
+} from 'nestgram';
+import { Bots } from './bots';
+
+const origin = process.env.WEBHOOK_ORIGIN ?? '';
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      bots: [
+        {
+          name: Bots.Support,
+          token: process.env.SUPPORT_TOKEN ?? '',
+          webhook: {
+            url: webhookUrl(origin, Bots.Support),
+            secretToken: process.env.SUPPORT_SECRET ?? '',
+          },
+          default: true,
+        },
+        {
+          name: Bots.Sales,
+          token: process.env.SALES_TOKEN ?? '',
+          webhook: {
+            url: webhookUrl(origin, Bots.Sales),
+            secretToken: process.env.SALES_SECRET ?? '',
+          },
+        },
+      ],
+    }),
+  ],
+  controllers: [MultiBotWebhookController],
+})
+export class AppModule {}
+```
+
 :::
+
+The `:botName` path is public, so give each webhook bot its own `secretToken` —
+the controller verifies the incoming secret against that bot before delivering.
+
+### One URL for all bots — `SharedWebhookController`
+
+Point every bot at the same `webhookUrl(origin)` (no name) and register
+`SharedWebhookController` instead. With no `:botName` to go on, it routes by the
+secret token: the bot whose `secretToken` matches the incoming header gets the
+update, falling back to the default bot.
+
+:::warn[Distinct secrets required]
+A shared endpoint can only tell the bots apart by their secret, so give each a
+**distinct** `secretToken` (the config is rejected at boot if two collide).
+Without distinct secrets every update lands on the default bot.
+:::
+
+### Write your own
+
+When neither shape fits — a bespoke route, extra receipt-time logic, your own
+auth — inject the `WEBHOOK_SOURCES` array and route however you like. Each entry
+carries the bot's `source` (with `name`, `verifySecret`/`ownsSecret`, and
+`deliver`) and whether it is the default:
+
+:::code[my-webhook.controller.ts]{mark="21"}
+
+```ts
+import {
+  Body,
+  Controller,
+  Headers,
+  HttpCode,
+  HttpStatus,
+  Inject,
+  Param,
+  Post,
+} from '@nestjs/common';
+import {
+  Providers,
+  SECRET_HEADER,
+  RawUpdate,
+  WebhookSourceEntry,
+} from 'nestgram';
+
+@Controller('telegram')
+export class MyWebhookController {
+  constructor(
+    @Inject(Providers.WEBHOOK_SOURCES)
+    private readonly bots: WebhookSourceEntry[],
+  ) {}
+
+  @Post('hook/:botName')
+  @HttpCode(HttpStatus.OK)
+  handle(
+    @Param('botName') name: string,
+    @Body() update: RawUpdate,
+    @Headers(SECRET_HEADER) secret?: string,
+  ): void {
+    const bot = this.bots.find((entry) => entry.source.name === name);
+    if (bot?.source.verifySecret(secret)) {
+      void bot.source.deliver(update);
+    }
+  }
+}
+```
+
+:::
+
+`NestgramModule` is global, so `WEBHOOK_SOURCES` resolves wherever you register
+the controller. Single-bot webhook is unchanged — there it's one bot, so the
+ready-made `WebhookController` (or `createWebhookController(path)`) is all you
+need.
