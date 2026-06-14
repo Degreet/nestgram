@@ -63,7 +63,10 @@ export class RouteExplorer {
         const methodPredicates: RoutePredicate[] =
           Reflect.getMetadata(Metadata.MATCH, prototype[methodName]) ?? [];
 
-        for (const listener of listeners) {
+        // Non-deferred listeners first, deferred (e.g. a scene step's reprompt)
+        // after — so a fallback is tried only once the strict route declined,
+        // regardless of the decorators' source order.
+        for (const listener of RouteExplorer.orderListeners(listeners)) {
           routes.push({
             updateType: listener.updateType,
             predicates: [
@@ -73,11 +76,25 @@ export class RouteExplorer {
             ],
             instance,
             methodName,
+            reply: listener.reply,
           });
         }
       }
     }
 
     return routes;
+  }
+
+  /**
+   * Stable partition: non-deferred listeners keep their declaration order, then
+   * deferred ones follow (also in order). A method's fallback routes therefore
+   * always sort after its strict routes, independent of decorator placement.
+   */
+  private static orderListeners(
+    listeners: ListenerOptions[],
+  ): ListenerOptions[] {
+    const strict = listeners.filter((listener) => !listener.deferred);
+    const deferred = listeners.filter((listener) => listener.deferred);
+    return [...strict, ...deferred];
   }
 }

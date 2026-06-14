@@ -14,4 +14,10 @@ export interface Route {
   readonly instance: object;
   /** The handler method name on that instance. */
   readonly methodName: string;
+  /**
+   * A static reply: when set, the dispatcher replies this string instead of
+   * invoking the handler. Used by a scene step's reprompt (`@Step({ invalid })`),
+   * which fires when the strict step route's filter rejected the update.
+   */
+  readonly reply?: string;
 }
