@@ -79,15 +79,18 @@ Everything needed to ship a production bot.
 - [ ] Testing utilities (dispatch fake updates against routers)
       _(in progress — `NestgramTestbed` + fake-update builders + captured sends)_
 - [ ] Pagination & media helpers
-- [ ] Auto-update the vendored Bot API spec (scheduled CI regen → PR on drift)
+- [x] Auto-update the vendored Bot API spec (scheduled CI regen → PR on drift)
+      — `.github/workflows/spec-drift.yml`: daily poll, version-gated, full gate,
+      auto-PR (issue on a manual-seam failure)
 - [ ] Prisma-style user CLI: regenerate the API layer in `node_modules` against
       a newer spec without waiting for a release
 
 ## Phase 5 — Docs site & launch
 
-- [ ] Astro docs site (custom generator — Starlight dropped), landing + the
+- [x] Astro docs site (custom generator — Starlight dropped), landing + the
       Phase 0 Markdown
-- [ ] Client-side docs search + `llms.txt` for the docs site _(in progress)_
+- [ ] Client-side docs search + `llms.txt` for the docs site _(in progress —
+      `llms.txt`/`llms-full.txt` done; search built, design pass pending)_
 - [ ] Auto-generated API reference
 - [ ] Migration guides (from nestjs-telegraf / telegraf)
 - [ ] Example gallery
