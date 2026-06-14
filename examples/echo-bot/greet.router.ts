@@ -26,7 +26,7 @@ export class GreetRouter {
   start(message: Message, @Sender() user: User) {
     const keyboard = new InlineKeyboard()
       .text('Ping me', 'ping')
-      .url('Docs', 'https://nestgram.com');
+      .url('Docs', 'https://nestgram.vercel.app');
 
     return message.answer(`Hello, ${user.first_name}!`, {
       reply_markup: keyboard,

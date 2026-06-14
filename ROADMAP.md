@@ -69,22 +69,36 @@ Everything needed to ship a production bot.
       `@Fsm()`/`fsm()` write-through context, `@AnyState()`/`@NoState()` over the
       generic `@Match` primitive, `FsmModule` on the shared KV store. Built as a
       pure builtin (stage + predicate + ambient), no privileged core.
-- [ ] Scenes / wizard flows — a higher-level layer on top of the FSM core
+- [x] Scenes / wizard flows — `@Scene`/`@Step`/`@OnEnter`/`@OnLeave`, injected
+      `SceneContext` (next/back/goto/enter/leave + a scene stack), and input-capture
+      while a scene is active (`@InScene()` opts out). On the FSM core.
 
 ## Phase 4 — Scale & DX
 
 - [ ] Multi-instance support (Redis sessions, distributed throttling)
 - [ ] CLI / schematics
-- [ ] Testing utilities (dispatch fake updates against routers)
+- [x] Testing utilities (dispatch fake updates against routers) — `NestgramTestbed`
+      + the `updates.*` fake-update factory + captured sends / `onApi` stubs
 - [ ] Pagination & media helpers
-- [ ] Auto-update the vendored Bot API spec (scheduled CI regen → PR on drift)
+- [x] Auto-update the vendored Bot API spec (scheduled CI regen → PR on drift)
+      — `.github/workflows/spec-drift.yml`: daily poll, version-gated, full gate,
+      auto-PR (issue on a manual-seam failure)
 - [ ] Prisma-style user CLI: regenerate the API layer in `node_modules` against
       a newer spec without waiting for a release
 
 ## Phase 5 — Docs site & launch
 
-- [ ] Astro docs site (custom generator — Starlight dropped), landing + the
+- [x] Astro docs site (custom generator — Starlight dropped), landing + the
       Phase 0 Markdown
+- [x] Client-side docs search (custom Pagefind UI) + `llms.txt`/`llms-full.txt`
+      for the docs site
+- [ ] AI affordances on docs pages (GitBook-style) — per-page "Open in ChatGPT" /
+      "Open in Claude" deep-links and "Connect with MCP" (serve the docs as an MCP
+      server). Builds on the existing `llms.txt`/`llms-full.txt`.
+- [ ] Clear website devDependency audit warnings (3 high-severity, all `esbuild`
+      ≤0.28 pulled transitively via `astro`/`vite`; dev-only tooling, not shipped).
+      Fix by bumping `astro`/`vite` once they ship a patched `esbuild` — NOT
+      `npm audit fix --force` (it downgrades astro to v2). Revisit before launch.
 - [ ] Auto-generated API reference
 - [ ] Migration guides (from nestjs-telegraf / telegraf)
 - [ ] Example gallery
@@ -95,10 +109,13 @@ Everything needed to ship a production bot.
 Deliberately out of the v2.0 line — bigger bets to revisit after launch, not
 MVP blockers. Designs are roughed out.
 
-- [ ] **Multi-bot webhook transport** (one HTTP app, many bots by `:botId`).
-      The outbound case already works via the per-call `token` override; the
-      inbound case needs a `bots[]` registry + a dispatch-carries-bot refactor.
-      Factors cleanly into named clients (`@InjectBot`) ⊂ multi-bot dispatch.
+- [x] **Multi-bot** (one app, many bots) — shipped ahead of schedule. A
+      `bots: []` registry, per-bot `BotService` (`@InjectBot` / `@Bot`),
+      `@ForBot` route scoping, and a dispatch-carries-bot refactor so a reply
+      goes back through the bot that received the update. Webhook fleet too:
+      per-bot `/webhook/:botName` and a single shared endpoint routed by secret
+      token (`MultiBotWebhookController` / `SharedWebhookController` +
+      `webhookUrl()`).
 - [ ] **MTProto transport (mtcute) spike** — expose the existing DX surface
       over MTProto as an opt-in transport swap (large files, methods the Bot
       API doesn't expose). Feasible because the surface is already an
