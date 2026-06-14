@@ -70,12 +70,14 @@ Everything needed to ship a production bot.
       generic `@Match` primitive, `FsmModule` on the shared KV store. Built as a
       pure builtin (stage + predicate + ambient), no privileged core.
 - [ ] Scenes / wizard flows — a higher-level layer on top of the FSM core
+      _(in progress — `@Scene`/`@Step`/`@OnEnter`/`@OnLeave` + injected `SceneContext`)_
 
 ## Phase 4 — Scale & DX
 
 - [ ] Multi-instance support (Redis sessions, distributed throttling)
 - [ ] CLI / schematics
 - [ ] Testing utilities (dispatch fake updates against routers)
+      _(in progress — `NestgramTestbed` + fake-update builders + captured sends)_
 - [ ] Pagination & media helpers
 - [ ] Auto-update the vendored Bot API spec (scheduled CI regen → PR on drift)
 - [ ] Prisma-style user CLI: regenerate the API layer in `node_modules` against
@@ -85,6 +87,7 @@ Everything needed to ship a production bot.
 
 - [ ] Astro docs site (custom generator — Starlight dropped), landing + the
       Phase 0 Markdown
+- [ ] Client-side docs search + `llms.txt` for the docs site _(in progress)_
 - [ ] Auto-generated API reference
 - [ ] Migration guides (from nestjs-telegraf / telegraf)
 - [ ] Example gallery
@@ -95,10 +98,13 @@ Everything needed to ship a production bot.
 Deliberately out of the v2.0 line — bigger bets to revisit after launch, not
 MVP blockers. Designs are roughed out.
 
-- [ ] **Multi-bot webhook transport** (one HTTP app, many bots by `:botId`).
-      The outbound case already works via the per-call `token` override; the
-      inbound case needs a `bots[]` registry + a dispatch-carries-bot refactor.
-      Factors cleanly into named clients (`@InjectBot`) ⊂ multi-bot dispatch.
+- [x] **Multi-bot** (one app, many bots) — shipped ahead of schedule. A
+      `bots: []` registry, per-bot `BotService` (`@InjectBot` / `@Bot`),
+      `@ForBot` route scoping, and a dispatch-carries-bot refactor so a reply
+      goes back through the bot that received the update. Webhook fleet too:
+      per-bot `/webhook/:botName` and a single shared endpoint routed by secret
+      token (`MultiBotWebhookController` / `SharedWebhookController` +
+      `webhookUrl()`).
 - [ ] **MTProto transport (mtcute) spike** — expose the existing DX surface
       over MTProto as an opt-in transport swap (large files, methods the Bot
       API doesn't expose). Feasible because the surface is already an
