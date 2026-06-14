@@ -65,6 +65,12 @@ object (`return new SendMessage(...)`) or call an action on the event
 (`message.answer(text, options)`) — same result, more knobs.
 :::
 
+:::note
+On a fresh TypeScript 6 project the compiler may reject an event type in a
+handler signature with `TS1272`. Import event types with `import type` — see
+[importing event types](/docs/installation#importing-event-types) for the why.
+:::
+
 ## Register it in a module
 
 Routers are plain Nest providers. List them in `providers` and Nestgram

@@ -33,6 +33,79 @@ Starting from scratch? Scaffold a Nest project first
 context with no HTTP server.
 :::
 
+## Recommended `tsconfig.json`
+
+Nestgram is decorator-driven, so the compiler needs `experimentalDecorators`
+and `emitDecoratorMetadata` (the standard Nest setup already enables both). A
+fresh Nest project on **TypeScript 6** also turns on `isolatedModules` — and
+that combination has one sharp edge worth knowing before you write your first
+handler (see the next section).
+
+:::code[tsconfig.json]{mark="7,8,9"}
+
+```json
+{
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "es2022",
+    "strict": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "outDir": "dist"
+  }
+}
+```
+
+:::
+
+## Importing event types
+
+With `isolatedModules` and `emitDecoratorMetadata` both on (the TypeScript 6
+default for new projects), the compiler refuses to read a **type** out of a
+**value** import when that type appears in a decorated handler signature:
+
+```
+error TS1272: A type referenced in a decorated signature must be imported with
+'import type' or a namespace import when 'isolatedModules' and
+'emitDecoratorMetadata' are enabled.
+```
+
+It fires on any handler with a param decorator — `start(message: Message,
+@Sender() user: User)` trips it on `User`. The fix is to split the import:
+values (decorators, classes, free functions) stay a normal import; **event
+types come in through `import type`**:
+
+:::code[greet.router.ts]{mark="1,2"}
+
+```ts
+import { Router, OnStart, Sender } from 'nestgram'; // values
+import type { Message, User } from 'nestgram'; // types
+
+@Router()
+export class GreetRouter {
+  @OnStart()
+  start(message: Message, @Sender() user: User) {
+    return `Hello, ${user.first_name}!`;
+  }
+}
+```
+
+:::
+
+:::note
+This is safe — Nestgram never reads a handler's `design:paramtypes`. Param
+injection is decorator-based and the first argument is positional, so erasing
+the type at compile time breaks nothing. Constructor DI is unaffected:
+`constructor(private readonly svc: MyService)` stays a value import (the
+constructor carries no Nestgram param decorator, so TS1272 doesn't touch it).
+Splitting the imports also clears the matching `isolatedModules` warning
+`ts-jest` prints in a new project.
+:::
+
 ## Get a bot token
 
 Every bot needs a token from Telegram's [@BotFather](https://t.me/BotFather):
