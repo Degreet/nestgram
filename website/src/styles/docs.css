@@ -1000,7 +1000,8 @@ body {
   color: var(--muted);
 }
 
-/* The modal: fixed overlay + centred panel that holds the Pagefind UI. */
+/* Custom search modal driven by Pagefind's JS API (not the default widget).
+   Fixed overlay + centred panel; the results list is the only scroll region. */
 .dx-search-modal {
   position: fixed;
   inset: 0;
@@ -1015,40 +1016,154 @@ body {
   background: rgba(3, 5, 9, 0.66);
   backdrop-filter: blur(4px);
 }
+/* Lock the page behind the modal so a wheel/touch scroll moves the results
+   list, never the document underneath. */
+html.dx-search-open,
+body.dx-search-open {
+  overflow: hidden;
+}
 .dx-search-panel {
   position: relative;
+  display: flex;
+  flex-direction: column;
   max-width: 40rem;
+  max-height: 76vh;
   margin: 8vh auto 0;
-  padding: 1rem;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-lg);
   background: var(--panel);
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
-}
-.dx-search-fallback {
-  margin: 0;
-  padding: 0.6rem 0.3rem;
-  color: var(--text-2);
-  font-size: 0.9rem;
+  overflow: hidden;
 }
 
-/* Theme the prebuilt Pagefind UI to the nestgram palette via its CSS vars. */
-#dx-search-ui {
-  --pagefind-ui-primary: var(--accent);
-  --pagefind-ui-text: var(--text);
-  --pagefind-ui-background: var(--panel);
-  --pagefind-ui-border: var(--border-strong);
-  --pagefind-ui-tag: var(--panel-2);
-  --pagefind-ui-border-width: 1px;
-  --pagefind-ui-border-radius: 10px;
-  --pagefind-ui-font: var(--font-body);
+/* ---- the input field ---- */
+.dx-search-field {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
 }
-#dx-search-ui .pagefind-ui__result-title {
+.dx-search-field__ico {
+  flex: none;
+  color: var(--muted);
+}
+.dx-search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1.02rem;
+  line-height: 1.4;
+}
+.dx-search-input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+/* Drop the browser-native search cancel/clear chrome — we ship our own. */
+.dx-search-input::-webkit-search-cancel-button,
+.dx-search-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+/* On-brand, centred close control (no default button chrome). */
+.dx-search-clear {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--bg-soft);
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.dx-search-clear:hover {
+  color: var(--text);
+  border-color: color-mix(in oklab, var(--accent) 50%, var(--border-strong));
+  background: var(--panel-2);
+}
+.dx-search-clear:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---- the results list (the only scroll region) ---- */
+.dx-search-results {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 0.5rem;
+}
+.dx-search-empty {
+  margin: 0;
+  padding: 1.4rem 0.8rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+  text-align: center;
+}
+.dx-search-empty code {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.05em 0.4em;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--a1);
+}
+.dx-search-group + .dx-search-group {
+  margin-top: 0.4rem;
+}
+.dx-search-group__label {
+  margin: 0.7rem 0.7rem 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.dx-search-hit {
+  display: block;
+  padding: 0.6rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  transition: background 0.12s, border-color 0.12s;
+}
+.dx-search-hit:hover,
+.dx-search-hit.is-active {
+  background: var(--accent-soft);
+  border-color: color-mix(in oklab, var(--accent) 38%, var(--border));
+}
+.dx-search-hit__title {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 0.96rem;
+  font-weight: 500;
   color: var(--text);
 }
-#dx-search-ui .pagefind-ui__result-excerpt {
+.dx-search-hit__excerpt {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.86rem;
+  line-height: 1.55;
   color: var(--text-2);
 }
+/* Our own highlight — brand accent, never the widget's yellow <mark>. */
+.dx-search-hit__excerpt mark.dx-hit {
+  background: transparent;
+  color: var(--a1);
+  font-weight: 600;
+}
+
 @media (max-width: 640px) {
   .dx-search-btn__txt,
   .dx-search-btn__kbd {
@@ -1056,5 +1171,6 @@ body {
   }
   .dx-search-panel {
     margin: 4vh 0.8rem 0;
+    max-height: 84vh;
   }
 }
