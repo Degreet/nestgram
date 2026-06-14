@@ -1,6 +1,6 @@
 import { createParamDecorator } from '@nestjs/common';
 
-import { scene } from '../../scenes/scene.context';
+import { currentSceneContext } from '../../scenes/scene.context';
 
 /**
  * Injects the per-update {@link SceneContext} — the scene navigation + data API
@@ -16,7 +16,11 @@ import { scene } from '../../scenes/scene.context';
  * ```
  *
  * Type the data via the annotation — `@SceneCtx() scene: SceneContext<RegData>` —
- * a param decorator cannot set the parameter's type from its argument. The same
- * context is reachable as the `scene()` free function in services/guards.
+ * a param decorator cannot set the parameter's type from its argument. This
+ * injected context is the ONLY way to drive a scene: there is no public `scene()`
+ * free function (a flow-mutating API behind ambient magic is intentionally not
+ * exposed).
  */
-export const SceneCtx = createParamDecorator((_data: unknown) => scene());
+export const SceneCtx = createParamDecorator((_data: unknown) =>
+  currentSceneContext(),
+);

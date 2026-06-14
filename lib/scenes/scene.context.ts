@@ -221,10 +221,15 @@ export class SceneContext<TData = Record<string, unknown>> {
 const sharedContext = new SceneContext();
 
 /**
- * The current update's scene context — a free function reachable anywhere in the
- * update's call chain (services, guards), the same ambient bargain as `fsm()` /
- * `t()`. `@SceneCtx()` is sugar over this for handler params.
+ * Resolves the current update's {@link SceneContext}. INTERNAL — not part of the
+ * public surface: scenes are decorator-only, so a handler reaches this solely via
+ * the injected `@SceneCtx()` param (which calls this). There is deliberately no
+ * public `scene()` free function — a flow-mutating API behind hidden ambient magic
+ * is too implicit. The context is stateless (it reads the ambient binding per
+ * call), so one shared instance serves every handler; the generic is a type view.
  */
-export function scene<TData = Record<string, unknown>>(): SceneContext<TData> {
+export function currentSceneContext<
+  TData = Record<string, unknown>,
+>(): SceneContext<TData> {
   return sharedContext as SceneContext<TData>;
 }

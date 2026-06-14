@@ -2,7 +2,7 @@ import { runAmbient, setAmbient } from '../ambient';
 import { NestgramError } from '../exceptions';
 import { TelegramExecutionContext } from '../engine/context';
 import { MemoryStore } from '../store';
-import { scene, SceneContext } from './scene.context';
+import { currentSceneContext, SceneContext } from './scene.context';
 import { SCENES, SCENES_BINDING } from './scenes.constants';
 import type {
   SceneBinding,
@@ -59,13 +59,14 @@ function active(step = 0, data: Record<string, unknown> = {}): SceneSnapshot {
 }
 
 describe('SceneContext', () => {
-  it('is reachable as the free `scene()` anywhere in the update chain', async () => {
+  it('resolves the active scene context from the ambient binding (what @SceneCtx() injects)', async () => {
     await runAmbient(async () => {
       seed(active(1, { name: 'Ann' }), fakeRunner());
-      // Simulates a service called deep in the handler chain — no injection.
-      const fromService = scene<{ name: string }>();
-      expect(fromService.current()).toEqual({ scene: 'wizard', step: 1 });
-      expect(fromService.data()).toEqual({ name: 'Ann' });
+      // The internal resolver `@SceneCtx()` is sugar over — reads the ambient
+      // binding, no injection. There is no public `scene()` free function.
+      const injected = currentSceneContext<{ name: string }>();
+      expect(injected.current()).toEqual({ scene: 'wizard', step: 1 });
+      expect(injected.data()).toEqual({ name: 'Ann' });
     });
   });
 
