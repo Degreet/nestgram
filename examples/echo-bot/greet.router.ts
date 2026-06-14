@@ -9,7 +9,12 @@ import {
   Sender,
   User,
   InlineKeyboard,
+  SceneContext,
+  SceneCtx,
+  NoScene,
 } from 'nestgram';
+
+import { FeedbackScene } from './feedback.scene';
 
 /**
  * A small bot showing the everyday Nestgram surface: commands, text and
@@ -34,12 +39,22 @@ export class GreetRouter {
     return query.answer('pong');
   }
 
+  // Start the feedback wizard — its @OnEnter shows the first prompt, and each
+  // @Step() drives the conversation forward (see feedback.scene.ts).
+  @Command('feedback')
+  feedback(message: Message, @SceneCtx() scene: SceneContext) {
+    return scene.enter(FeedbackScene);
+  }
+
   @Hears('ping')
   hearsPing() {
     return 'pong';
   }
 
+  // @NoScene() keeps the catch-all from stealing a scene step's input while the
+  // feedback wizard is running (the scene counterpart of @NoState()).
   @OnMessage()
+  @NoScene()
   echo(message: Message) {
     return message.text;
   }
