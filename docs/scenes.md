@@ -343,30 +343,29 @@ Need the store built from DI — a Redis client out of `ConfigService`?
 the other dynamic modules; the factory returns the same `{ store, key }` options.
 :::
 
-### Idle or busy: @InScene() and @NoScene()
+### Capturing input: an active scene and @InScene()
 
-Two method-level modifiers cover the meta-conditions, mirroring the FSM's
-`@AnyState()` / `@NoState()`. `@InScene()` fires only while **some** scene is
-active — a global `/cancel` that bails out of any wizard — and `@NoScene()`
-only while idle, the classic guard for a catch-all that must not steal a step's
-input:
+While a scene is running it **captures input**. Only the scene's own `@Step()`
+handlers are eligible to match — every other handler is suppressed for the
+duration of the scene. That's the behavior you want by default: a catch-all
+`@OnMessage()`, a stray `@Command`, an unrelated button handler can't steal a
+step's input or fire mid-wizard. When no scene is active, routing is normal —
+all handlers match, and the steps simply don't.
+
+So a catch-all needs **no guard** to stay out of a wizard's way:
 
 :::code[entry.router.ts]
 
 ```ts
 @Router()
 export class EntryRouter {
-  // Declared first: /cancel must win over a scene step (first match wins).
-  @Command('cancel')
-  @InScene()
-  cancel(message: Message, @SceneCtx() scene: SceneContext) {
-    return scene.leave('Cancelled.');
+  @Command('register')
+  register(message: Message, @SceneCtx() scene: SceneContext) {
+    return scene.enter(RegistrationScene);
   }
 
-  // The catch-all, declared LAST. @NoScene() keeps it from swallowing
-  // a scene step's input while a wizard is running.
+  // No guard needed: while a scene runs this is suppressed automatically.
   @OnMessage()
-  @NoScene()
   echo(message: Message) {
     return message.text;
   }
@@ -375,10 +374,53 @@ export class EntryRouter {
 
 :::
 
+To run a handler **mid-scene** — a global `/cancel` that bails out of any
+wizard, say — opt it in with `@InScene()`. It marks the handler as exempt from
+the capture, so it fires **both** while idle and while a scene is active (its
+own `@Command`/`@OnMessage`/… filters still apply):
+
+:::code[cancel.router.ts]
+
+```ts
+@Router()
+export class EntryRouter {
+  // Exempt from capture: fires mid-scene (and idle). Order doesn't matter —
+  // capture is decided by the scene gate, not first-match position.
+  @Command('cancel')
+  @InScene()
+  cancel(message: Message, @SceneCtx() scene: SceneContext) {
+    return scene.leave('Cancelled.');
+  }
+}
+```
+
+:::
+
+:::warn
+An active scene captures **all** input, not just text — an unrelated inline
+**button callback** is suppressed mid-scene too, unless its handler is marked
+`@InScene()`. If a button outside the wizard must keep working while a scene
+runs (a persistent menu, a cancel button), add `@InScene()` to its handler.
+:::
+
+:::note
+Capture is **route-matching only**. It decides which handler an update reaches;
+it does not turn off the Nest pipeline. Per-update interceptors and stages —
+throttling, i18n, the session and scene stages themselves — still run for every
+update, scene or no scene. Suppression simply means a non-exempt route does not
+**match** while a scene is active.
+:::
+
+`@InScene()` is determinism-friendly: because capture is decided by the scene
+gate (an idle predicate ANDed onto every non-step, non-exempt route at boot),
+not by declaration order, a step always wins over a would-be catch-all
+regardless of which router declares what first.
+
 :::guardrail[only in Nestgram]
-Both are one-liners over the public [`@Match()`](/docs/custom-predicates)
-primitive — the same one `@Step()` uses to AND its scene+ordinal gate. Nothing
-privileged: you could rebuild either in three lines.
+`@InScene()` is a one-liner over the public [`@Match()`](/docs/custom-predicates)
+primitive — the same one `@Step()` uses to AND its scene+ordinal gate. The
+marker is a no-op predicate the boot-time scene gate recognises; nothing
+privileged, you could rebuild it in three lines.
 :::
 
 ### Outside handlers
