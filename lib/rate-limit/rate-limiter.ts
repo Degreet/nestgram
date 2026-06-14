@@ -30,11 +30,10 @@ interface SlidingWindowEntry {
  *
  * Memory is bounded per key by the lazy prune (an entry never holds more than
  * `limit` timestamps); the only unbounded axis is the number of distinct keys
- * ever seen. The default store carries no time-based TTL on purpose: a TTL
- * shorter than a rule's window would evict a live counter and let a flood slip
- * through, and windows are per-rule and unknown to the store. For a
- * multi-instance deploy, or to evict keys that go idle, supply a Redis-backed
- * store whose native key TTL is ≳ the largest window.
+ * ever seen. Left as-is the default store keeps every key forever — set
+ * `idleTtlMs` (≥ the largest window) to evict keys idle that long, or supply a
+ * Redis-backed store whose native key TTL is ≳ the largest window for a
+ * multi-instance deploy.
  */
 @Injectable()
 export class RateLimiter {

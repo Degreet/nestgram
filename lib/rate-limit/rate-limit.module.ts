@@ -88,13 +88,17 @@ export class RateLimitModule {
   }
 
   /**
-   * The configured store, or a default {@link MemoryStore}. The default carries
-   * no time-based TTL: per-route windows are unknown here, and a TTL shorter
-   * than a rule's window would evict a live counter and let a flood through.
-   * The {@link RateLimiter}'s lazy prune bounds each entry's size; supply a
-   * Redis-backed store with a native TTL to evict idle keys at scale.
+   * The configured store, or a default {@link MemoryStore} bounded by
+   * `idleTtlMs` when set. `MemoryStore`'s TTL is a sliding expiry refreshed on
+   * each `set`, and every allowed hit does a `set`, so an actively-hitting key
+   * stays alive — only a key idle longer than `idleTtlMs` is evicted. That is
+   * lossless when `idleTtlMs` ≥ the largest window: by the time the key is
+   * evicted its window has already emptied, so the counter would have allowed
+   * the next hit anyway. Left undefined the store keeps every key forever (one
+   * entry per distinct key); set `idleTtlMs` or supply a Redis store at scale.
+   * A custom `store` owns its own expiry, so `idleTtlMs` is ignored for it.
    */
   private static resolveStore(options: RateLimitOptions): KeyValueStore {
-    return options.store ?? new MemoryStore();
+    return options.store ?? new MemoryStore(options.idleTtlMs);
   }
 }

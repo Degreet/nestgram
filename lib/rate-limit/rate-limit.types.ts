@@ -51,11 +51,20 @@ export interface RateLimitOptions {
   default?: RateLimitRule;
   /**
    * Persistence for the counters. Default: a process-local {@link MemoryStore}
-   * with no time-based TTL (see {@link RateLimiter} for why). Supply a
-   * Redis-backed store for a multi-instance deploy or to evict idle keys; its
-   * native key TTL should be ≳ the largest window.
+   * (bounded by {@link RateLimitOptions.idleTtlMs} if set, else unbounded —
+   * see {@link RateLimiter}). Supply a Redis-backed store for a multi-instance
+   * deploy; its native key TTL should be ≳ the largest window.
    */
   store?: KeyValueStore;
+  /**
+   * Evict a key's counter after it has been idle this long (ms). Bounds the
+   * default in-memory store's memory. MUST be ≥ your largest window, otherwise
+   * a key still inside an active window could be evicted and let a flood
+   * through. Default: undefined (no eviction — fine for low-cardinality bots;
+   * for many users set this or supply a Redis store). Ignored when a custom
+   * `store` is supplied (that store owns its own expiry).
+   */
+  idleTtlMs?: number;
   /**
    * Default key strategy for every rule that doesn't set its own `key`. Default
    * {@link defaultConversationKey}. Return `undefined` to skip an update.
