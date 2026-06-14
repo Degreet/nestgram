@@ -21,6 +21,7 @@
   --a2: #1f8fe6;
   --accent: var(--a2);
   --accent-soft: rgba(54, 180, 244, 0.14);
+  --gold: #ffcb7a;
   --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-body: 'Hanken Grotesk', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
@@ -89,7 +90,7 @@ body {
 .dx-nav-right {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1rem;
   margin-left: auto;
   font-size: 0.9rem;
 }
@@ -1026,18 +1027,18 @@ body {
   padding: 0.38rem 0.75rem;
   border: 1px solid var(--border-strong);
   border-radius: 9px;
-  background: var(--panel);
+  background: rgba(255, 255, 255, 0.03);
   color: var(--text);
   font-weight: 500;
   white-space: nowrap;
 }
 .dx-nav-right a.dx-star:hover {
-  border-color: color-mix(in oklab, var(--accent) 50%, var(--border-strong));
-  background: var(--accent-soft);
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.07);
 }
 .dx-star svg {
   flex: none;
-  color: var(--a1);
+  color: var(--gold);
 }
 
 /* Custom search modal driven by Pagefind's JS API (not the default widget).
