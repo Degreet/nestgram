@@ -1,6 +1,6 @@
 ---
 title: Handling errors
-description: React to Telegram API failures with typed ApiException predicates, and silence the edit no-op with ignoreNotModified.
+description: Reply by throwing a ReplyException, react to Telegram API failures with typed ApiException predicates, and silence the edit no-op with ignoreNotModified.
 sidebar:
   label: Handling errors
   group: The Nest pipeline
@@ -15,6 +15,128 @@ from an error thrown _inside_ a handler, which a standard
 
 :::mental
 Telegram rejects the call -> ApiException -> predicate -> react
+:::
+
+## Replying by throwing: `ReplyException`
+
+The other side of error handling is the **handler side** — bailing out of a
+request and telling the user why. Nest's idiom for this is `throw new
+HttpException(...)`; Nestgram's is `throw new ReplyException(...)`. Throw it
+anywhere in the pipeline — a guard, a pipe, an interceptor, or the handler — and
+a built-in global exception filter sends the reply and stops the request. No
+`return`, no threading a "denied" flag back to the handler.
+
+:::mental
+throw ReplyException -> filter catches -> reply sent -> request stops
+:::
+
+A guard is the natural home: deny **and** explain in one `throw`, instead of
+returning `false` (which is silent) and explaining somewhere else.
+
+:::code[admin.guard.ts]{mark="11"}
+
+```ts
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { ReplyException, TelegramExecutionContext } from 'nestgram';
+
+const ADMIN_IDS = [42, 1337];
+
+@Injectable()
+export class AdminGuard implements CanActivate {
+  canActivate(context: ExecutionContext): boolean {
+    const { from } = TelegramExecutionContext.of(context);
+    if (from && ADMIN_IDS.includes(from.id)) {
+      return true;
+    }
+    throw new ReplyException('Only admins can do that.');
+  }
+}
+```
+
+:::
+
+The handler never runs; the user gets the message. The same `throw` works for
+handler-level validation — guard clauses read top-to-bottom instead of nesting:
+
+:::code[rename.router.ts]{mark="9"}
+
+```ts
+import { Command } from 'nestgram';
+import { Message, ReplyException } from 'nestgram';
+
+@Router()
+export class RenameRouter {
+  @Command('rename')
+  rename(message: Message): string {
+    const name = message.text?.split(' ').slice(1).join(' ').trim();
+    if (!name) {
+      throw new ReplyException('Usage: /rename <new name>');
+    }
+    return `Renamed to ${name}.`;
+  }
+}
+```
+
+The reply mirrors a handler's [return value](/docs/replying) exactly: a string
+replies to the same chat, and a command object goes out as-is. Pass reply
+options after the text, or hand it a ready-made command:
+
+```ts
+// Text with reply options (a keyboard, a reply target…):
+throw new ReplyException('Pick one:', { reply_markup: keyboard });
+
+// A full command object — the layer beneath `message.answer(...)`:
+throw new ReplyException(new SendMessage({ chat_id, text: 'Done.' }));
+```
+
+### Answering a callback query
+
+For a button tap, the right reaction is a toast or modal alert, not a chat
+message. `AnswerException` answers the originating callback query — a subclass of
+`ReplyException`, so the same filter catches it:
+
+```ts
+// A toast on the button:
+throw new AnswerException('Too fast — slow down.');
+
+// A modal alert:
+throw new AnswerException('Not allowed', { show_alert: true });
+```
+
+Thrown on a non-callback update, it has no callback to answer, so the filter logs
+a warning and does nothing.
+
+:::note[It's a plain `@Catch` filter — no privileged core]
+`ReplyException` handling is just a global `@Catch(ReplyException)` filter
+`NestgramModule` registers — exactly the kind you could write yourself. Define
+your own domain exceptions and `@Catch(MyError)` filters the same way; they run
+in the same Nest pipeline, ahead of the framework's own error logging.
+:::
+
+It pairs naturally with [rate limiting](/docs/rate-limiting): an `onLimit`
+callback can `throw new ReplyException('Slow down.')` to warn the flooder instead
+of dropping their update silently.
+
+To turn the built-in off — and let `ReplyException`/`AnswerException` propagate
+like any other error — set `replyExceptions: false` on `NestgramModule.forRoot`:
+
+:::code[app.module.ts]{mark="8"}
+
+```ts
+import { Module } from '@nestjs/common';
+import { NestgramModule } from 'nestgram';
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      token: process.env.BOT_TOKEN ?? '',
+      replyExceptions: false,
+    }),
+  ],
+})
+export class AppModule {}
+```
+
 :::
 
 ## The problem with `description`

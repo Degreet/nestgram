@@ -62,6 +62,9 @@ Everything needed to ship a production bot.
       coerced, greedy last field)
 - [x] Pipes + `class-validator` DTOs for payloads — param pipes run through ECC
       (incl. `ValidationPipe`, with `validateCustomDecorators: true`)
+- [x] Exception → reaction — `throw new ReplyException(...)` /
+      `AnswerException(...)` from a guard/pipe/handler, mapped to a reply by a
+      built-in global `@Catch` filter (toggle with `replyExceptions`)
 
 ## Phase 3 — Conversations
 
