@@ -76,6 +76,8 @@ Everything needed to ship a production bot.
 ## Phase 4 — Scale & DX
 
 - [ ] Multi-instance support (Redis sessions, distributed throttling)
+- [x] Inbound rate-limiting (flood control) — global interceptor, sliding-window
+      per-conversation limiter, `@RateLimit` / `@SkipRateLimit`, `onLimit` reply
 - [ ] CLI / schematics
 - [x] Testing utilities (dispatch fake updates against routers) — `NestgramTestbed`
       + the `updates.*` fake-update factory + captured sends / `onApi` stubs
