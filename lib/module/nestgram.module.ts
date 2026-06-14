@@ -133,6 +133,9 @@ export class NestgramModule {
     RouteTable,
     WebhookUpdateSource,
     Providers.NESTGRAM_OPTIONS,
+    // Exported so a feature module (e.g. ScenesModule) can build its own ECC
+    // invokers for handlers it runs imperatively (scene `@OnEnter`/`@OnLeave`).
+    HandlerExecutorFactory,
   ];
 
   /**

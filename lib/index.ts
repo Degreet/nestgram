@@ -16,6 +16,7 @@ export * from './store';
 export * from './sessions';
 export * from './i18n';
 export * from './fsm';
+export * from './scenes';
 
 // Engine public surface (the update -> dispatch pipeline).
 export * from './engine/matching';

@@ -10,6 +10,8 @@ export enum Providers {
   SESSION_OPTIONS = 'SESSION_OPTIONS',
   /** FSM config, provided by `FsmModule.forRoot`/`forRootAsync`. */
   FSM_OPTIONS = 'FSM_OPTIONS',
+  /** Scenes config, provided by `ScenesModule.forRoot`/`forRootAsync`. */
+  SCENES_OPTIONS = 'SCENES_OPTIONS',
   /**
    * The per-bot webhook sources of a multi-bot app (one per webhook bot), paired
    * with whether each is the default. The ready-made multi-bot webhook
