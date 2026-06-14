@@ -21,6 +21,7 @@
   --a2: #1f8fe6;
   --accent: var(--a2);
   --accent-soft: rgba(54, 180, 244, 0.14);
+  --gold: #ffcb7a;
   --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-body: 'Hanken Grotesk', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
@@ -56,7 +57,7 @@ body {
   height: var(--nav-h);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 1.4rem;
   padding: 0 1.6rem;
   border-bottom: 1px solid var(--border);
   background: color-mix(in oklab, var(--bg) 82%, transparent);
@@ -64,6 +65,7 @@ body {
 }
 .dx-brand {
   display: flex;
+  flex: none;
   align-items: center;
   gap: 0.55rem;
   font-family: var(--font-display);
@@ -75,10 +77,21 @@ body {
 .dx-brand img {
   height: 1.7rem;
 }
+.dx-ver {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 1;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
 .dx-nav-right {
   display: flex;
   align-items: center;
-  gap: 0.9rem;
+  gap: 1rem;
+  margin-left: auto;
   font-size: 0.9rem;
 }
 .dx-nav-right a {
@@ -411,6 +424,9 @@ body {
   }
   .dx-menu-btn {
     display: inline-flex;
+  }
+  .dx-nav-right a:not(.dx-star) {
+    display: none;
   }
   /* the sidebar becomes a left drawer under the top nav */
   .dx-sidebar {
@@ -796,17 +812,20 @@ body {
   margin-top: 0.6rem;
 }
 
-/* code island */
+/* code island — the panel chrome (background, border, rounding, shadow) is on
+   the base class so EVERY code block looks the same: directive blocks with a
+   filename bar (.is-framed), plain fences wrapped server-side (.is-framed, no
+   bar), labelless :::code directives (.code-island only), and the JS fallback
+   wrapper (.is-plain). The optional filename bar (.ci-bar) is the only visual
+   difference between them. */
 .code-island {
   position: relative;
   margin: 1.6rem 0;
   border-radius: 13px;
   overflow: hidden;
   background: #080a0f;
-}
-/* wrapper the copy-button script adds around a bare Shiki <pre> */
-.code-island.is-plain {
-  background: transparent;
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.8);
 }
 
 /* ---- copy button (hover-reveal, top-right of any code block) ---- */
@@ -856,19 +875,13 @@ body {
 .code-copy.is-copied .code-copy__ico--done {
   display: inline-flex;
 }
-/* keep the button clear of the filename when chrome is present */
-.code-island .ci-bar {
-  padding-right: 92px;
-}
-.code-island.is-framed {
-  border: 1px solid var(--border-strong);
-  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.8);
-}
+/* the filename bar; padding-right keeps the copy button clear of the name */
 .code-island .ci-bar {
   display: flex;
   align-items: center;
   gap: 7px;
   padding: 10px 14px;
+  padding-right: 92px;
   background: rgba(255, 255, 255, 0.015);
   border-bottom: 1px solid var(--border);
 }
@@ -964,4 +977,249 @@ body {
   padding: 0.85rem 1.1rem;
   border-top: 1px solid var(--border);
   color: var(--text-2);
+}
+
+/* ============================================================ */
+/* Search — header trigger + Pagefind modal                     */
+/* ============================================================ */
+.dx-search-btn {
+  display: inline-flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 360px;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--text-2);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+}
+.dx-search-btn:hover {
+  color: var(--text);
+  border-color: color-mix(in oklab, var(--accent) 50%, var(--border-strong));
+}
+.dx-search-btn svg {
+  flex: none;
+}
+.dx-search-btn__kbd {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1;
+  padding: 0.18rem 0.36rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--bg-soft);
+  color: var(--muted);
+}
+.dx-nav-right a.dx-star {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.38rem 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.dx-nav-right a.dx-star:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.07);
+}
+.dx-star svg {
+  flex: none;
+  color: var(--gold);
+}
+
+/* Custom search modal driven by Pagefind's JS API (not the default widget).
+   Fixed overlay + centred panel; the results list is the only scroll region. */
+.dx-search-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+}
+.dx-search-modal[hidden] {
+  display: none;
+}
+.dx-search-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 5, 9, 0.66);
+  backdrop-filter: blur(4px);
+}
+/* Lock the page behind the modal so a wheel/touch scroll moves the results
+   list, never the document underneath. */
+html.dx-search-open,
+body.dx-search-open {
+  overflow: hidden;
+}
+.dx-search-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-width: 40rem;
+  max-height: 76vh;
+  margin: 8vh auto 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+/* ---- the input field ---- */
+.dx-search-field {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.dx-search-field__ico {
+  flex: none;
+  color: var(--muted);
+}
+.dx-search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1.02rem;
+  line-height: 1.4;
+}
+.dx-search-input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+/* Drop the browser-native search cancel/clear chrome — we ship our own. */
+.dx-search-input::-webkit-search-cancel-button,
+.dx-search-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+/* On-brand, centred close control (no default button chrome). */
+.dx-search-clear {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--bg-soft);
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.dx-search-clear:hover {
+  color: var(--text);
+  border-color: color-mix(in oklab, var(--accent) 50%, var(--border-strong));
+  background: var(--panel-2);
+}
+.dx-search-clear:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---- the results list (the only scroll region) ---- */
+.dx-search-results {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 0.5rem;
+}
+.dx-search-empty {
+  margin: 0;
+  padding: 1.4rem 0.8rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+  text-align: center;
+}
+.dx-search-empty code {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.05em 0.4em;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--a1);
+}
+.dx-search-group + .dx-search-group {
+  margin-top: 0.4rem;
+}
+.dx-search-group__label {
+  margin: 0.7rem 0.7rem 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.dx-search-hit {
+  display: block;
+  padding: 0.6rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  transition: background 0.12s, border-color 0.12s;
+}
+.dx-search-hit:hover,
+.dx-search-hit.is-active {
+  background: var(--accent-soft);
+  border-color: color-mix(in oklab, var(--accent) 38%, var(--border));
+}
+.dx-search-hit__title {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 0.96rem;
+  font-weight: 500;
+  color: var(--text);
+}
+.dx-search-hit__excerpt {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+/* Our own highlight — brand accent, never the widget's yellow <mark>. */
+.dx-search-hit__excerpt mark.dx-hit {
+  background: transparent;
+  color: var(--a1);
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .dx-search-btn__txt,
+  .dx-search-btn__kbd {
+    display: none;
+  }
+  .dx-search-btn {
+    flex: 0 0 auto;
+    max-width: none;
+  }
+  .dx-ver,
+  .dx-star__txt {
+    display: none;
+  }
+  .dx-search-panel {
+    margin: 4vh 0.8rem 0;
+    max-height: 84vh;
+  }
 }
