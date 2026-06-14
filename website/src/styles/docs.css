@@ -56,7 +56,7 @@ body {
   height: var(--nav-h);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 1.4rem;
   padding: 0 1.6rem;
   border-bottom: 1px solid var(--border);
   background: color-mix(in oklab, var(--bg) 82%, transparent);
@@ -64,6 +64,7 @@ body {
 }
 .dx-brand {
   display: flex;
+  flex: none;
   align-items: center;
   gap: 0.55rem;
   font-family: var(--font-display);
@@ -75,10 +76,21 @@ body {
 .dx-brand img {
   height: 1.7rem;
 }
+.dx-ver {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 1;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
 .dx-nav-right {
   display: flex;
   align-items: center;
-  gap: 0.9rem;
+  gap: 0.5rem;
+  margin-left: auto;
   font-size: 0.9rem;
 }
 .dx-nav-right a {
@@ -411,6 +423,9 @@ body {
   }
   .dx-menu-btn {
     display: inline-flex;
+  }
+  .dx-nav-right a:not(.dx-star) {
+    display: none;
   }
   /* the sidebar becomes a left drawer under the top nav */
   .dx-sidebar {
@@ -968,9 +983,13 @@ body {
 /* ============================================================ */
 .dx-search-btn {
   display: inline-flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 360px;
   align-items: center;
+  justify-content: flex-start;
   gap: 0.5rem;
-  padding: 0.4rem 0.7rem;
+  padding: 0.45rem 0.8rem;
   border: 1px solid var(--border-strong);
   border-radius: 10px;
   background: var(--panel);
@@ -990,6 +1009,7 @@ body {
   flex: none;
 }
 .dx-search-btn__kbd {
+  margin-left: auto;
   font-family: var(--font-mono);
   font-size: 0.72rem;
   line-height: 1;
@@ -998,6 +1018,26 @@ body {
   border-radius: 6px;
   background: var(--bg-soft);
   color: var(--muted);
+}
+.dx-nav-right a.dx-star {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.38rem 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: var(--panel);
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.dx-nav-right a.dx-star:hover {
+  border-color: color-mix(in oklab, var(--accent) 50%, var(--border-strong));
+  background: var(--accent-soft);
+}
+.dx-star svg {
+  flex: none;
+  color: var(--a1);
 }
 
 /* Custom search modal driven by Pagefind's JS API (not the default widget).
@@ -1167,6 +1207,14 @@ body.dx-search-open {
 @media (max-width: 640px) {
   .dx-search-btn__txt,
   .dx-search-btn__kbd {
+    display: none;
+  }
+  .dx-search-btn {
+    flex: 0 0 auto;
+    max-width: none;
+  }
+  .dx-ver,
+  .dx-star__txt {
     display: none;
   }
   .dx-search-panel {
