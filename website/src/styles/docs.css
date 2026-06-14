@@ -796,17 +796,20 @@ body {
   margin-top: 0.6rem;
 }
 
-/* code island */
+/* code island — the panel chrome (background, border, rounding, shadow) is on
+   the base class so EVERY code block looks the same: directive blocks with a
+   filename bar (.is-framed), plain fences wrapped server-side (.is-framed, no
+   bar), labelless :::code directives (.code-island only), and the JS fallback
+   wrapper (.is-plain). The optional filename bar (.ci-bar) is the only visual
+   difference between them. */
 .code-island {
   position: relative;
   margin: 1.6rem 0;
   border-radius: 13px;
   overflow: hidden;
   background: #080a0f;
-}
-/* wrapper the copy-button script adds around a bare Shiki <pre> */
-.code-island.is-plain {
-  background: transparent;
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.8);
 }
 
 /* ---- copy button (hover-reveal, top-right of any code block) ---- */
@@ -856,19 +859,13 @@ body {
 .code-copy.is-copied .code-copy__ico--done {
   display: inline-flex;
 }
-/* keep the button clear of the filename when chrome is present */
-.code-island .ci-bar {
-  padding-right: 92px;
-}
-.code-island.is-framed {
-  border: 1px solid var(--border-strong);
-  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.8);
-}
+/* the filename bar; padding-right keeps the copy button clear of the name */
 .code-island .ci-bar {
   display: flex;
   align-items: center;
   gap: 7px;
   padding: 10px 14px;
+  padding-right: 92px;
   background: rgba(255, 255, 255, 0.015);
   border-bottom: 1px solid var(--border);
 }

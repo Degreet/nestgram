@@ -357,25 +357,44 @@ function buildCodeIsland(node) {
   return setChildren(node, kids);
 }
 
-// ---- terminal island: wrap a bare shell fence in code-island chrome --------
-// Bare ```bash fences never reach buildCodeIsland (they aren't directives), so
-// they'd render as a plain Shiki <pre> with no chrome. Wrap such a top-level
-// code node in the same figure/.ci-bar structure, flagged as a terminal.
-function wrapTerminalIsland(codeNode, index, parent) {
-  const figure = el(
-    'figure',
-    { className: ['code-island', 'is-framed', 'is-terminal'] },
-    [
+// ---- bare fence islands: wrap a plain top-level fence in code-island chrome -
+// Bare fenced code (```ts … ```, no :::code directive) never reaches
+// buildCodeIsland, so it would render as a naked Shiki <pre> with no panel,
+// border, or copy button — visually broken next to directive blocks. Wrap every
+// such top-level fence in the same `.code-island.is-framed` chrome the directive
+// path produces, server-side, so the two are identical except for the (optional)
+// filename bar. Shell fences additionally get the terminal treatment: a
+// "Terminal" bar and the `.is-terminal` flavour.
+function wrapBareFence(codeNode, index, parent) {
+  const isTerminal = TERMINAL_LANGS.has((codeNode.lang || '').toLowerCase());
+  const className = isTerminal
+    ? ['code-island', 'is-framed', 'is-terminal']
+    : ['code-island', 'is-framed'];
+
+  // Only terminals carry a chrome bar (the traffic lights + "Terminal" label).
+  // A plain code fence has no filename, so it gets the panel/border but no bar.
+  const kids = [];
+  if (isTerminal) {
+    kids.push(
       el('div', { className: ['ci-bar'] }, [
         el('span', { className: ['ci-dot'] }),
         el('span', { className: ['ci-dot'] }),
         el('span', { className: ['ci-dot'] }),
         el('span', { className: ['ci-name'] }, [text(TERMINAL_LABEL)]),
       ]),
-      codeNode,
-    ],
-  );
-  parent.children[index] = figure;
+    );
+  }
+  kids.push(codeNode);
+
+  parent.children[index] = el('figure', { className }, kids);
+}
+
+// A node is already a code-island wrapper if it's an element whose hProperties
+// carry the `code-island` class (the figure built by buildCodeIsland or
+// wrapBareFence). Used to skip fences that already have chrome.
+function isCodeIsland(node) {
+  const cls = node && node.data && node.data.hProperties && node.data.hProperties.className;
+  return Array.isArray(cls) && cls.includes('code-island');
 }
 
 export default function remarkNestgramBlocks() {
@@ -415,13 +434,17 @@ export default function remarkNestgramBlocks() {
       }
     });
 
-    // Second pass: bare shell fences at the top level become terminal islands.
-    // (Code nodes already inside a :::code figure are children of a figure, not
-    // of the root, so they're left untouched.)
+    // Second pass: every fence that isn't already wrapped by the :::code
+    // directive gets the same code-island chrome — shell fences as terminals,
+    // everything else as a plain (barless) island. This covers bare fences at
+    // the document root AND fences nested inside other directives (e.g. a code
+    // block inside a :::tabs panel), so no code block ever renders naked.
+    // The :::code path (first pass) already wrapped its fence in a `figure`
+    // marked `code-island`; we detect that and leave those alone.
     visit(tree, 'code', (node, index, parent) => {
-      if (!parent || parent.type !== 'root' || index == null) return;
-      if (!TERMINAL_LANGS.has((node.lang || '').toLowerCase())) return;
-      wrapTerminalIsland(node, index, parent);
+      if (!parent || index == null) return;
+      if (isCodeIsland(parent)) return;
+      wrapBareFence(node, index, parent);
       return SKIP;
     });
   };
