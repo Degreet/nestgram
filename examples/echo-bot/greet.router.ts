@@ -11,7 +11,6 @@ import {
   InlineKeyboard,
   SceneContext,
   SceneCtx,
-  NoScene,
 } from 'nestgram';
 
 import { FeedbackScene } from './feedback.scene';
@@ -51,10 +50,10 @@ export class GreetRouter {
     return 'pong';
   }
 
-  // @NoScene() keeps the catch-all from stealing a scene step's input while the
-  // feedback wizard is running (the scene counterpart of @NoState()).
+  // The catch-all. While the feedback wizard is running an active scene captures
+  // input, so this is suppressed automatically — no guard needed. Mark a handler
+  // @InScene() only when it must keep firing mid-scene (e.g. a global /cancel).
   @OnMessage()
-  @NoScene()
   echo(message: Message) {
     return message.text;
   }

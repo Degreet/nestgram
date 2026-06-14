@@ -8,6 +8,7 @@ import { DiscoveryModule } from '@nestjs/core';
 
 import { Providers } from '../providers';
 import { SceneRegistry } from './scene.registry';
+import { SceneRouteGate } from './scene-route.transform';
 import { SceneService } from './scene.service';
 import { SceneStage } from './scene.stage';
 import type { ScenesOptions } from './scenes.types';
@@ -32,7 +33,9 @@ export interface ScenesModuleAsyncOptions
  * `ScenesModule.forRoot({ store })` — and list your `@Scene` classes in a module's
  * `providers`. Point the store at the same instance as sessions/FSM to share
  * persistence. Self-contained (no privileged core): its stage is discovered by
- * the dispatcher's stage hook.
+ * the dispatcher's stage hook, and its `SceneRouteGate` (a `@RouteTransform`)
+ * makes an active scene capture input by ANDing an idle gate onto every
+ * non-step, non-`@InScene()` route at boot.
  */
 @Module({})
 export class ScenesModule {
@@ -40,6 +43,7 @@ export class ScenesModule {
     SceneRegistry,
     SceneService,
     SceneStage,
+    SceneRouteGate,
   ];
   private static readonly moduleExports = [SceneRegistry];
 

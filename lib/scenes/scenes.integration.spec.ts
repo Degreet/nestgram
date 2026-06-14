@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { BotService } from '../api';
@@ -9,7 +9,7 @@ import { OnCallbackQuery } from '../decorators/listeners/on-callback-query.decor
 import { Action } from '../decorators/listeners/action.decorator';
 import { Router } from '../decorators/injectable/router.decorator';
 import { SceneCtx } from '../decorators/params/scene.decorator';
-import { NoScene } from './scene-filter.decorators';
+import { InScene } from './scene-filter.decorators';
 import { CallbackQuery, Message } from '../events';
 import { RawUpdate } from '../events/raw-update.types';
 import { UpdateDispatcher } from '../engine/dispatcher';
@@ -265,10 +265,27 @@ class EntryRouter {
     return scene.enter(SurveyScene);
   }
 
-  // The catch-all, declared LAST so commands win first (first-match-wins);
-  // @NoScene() additionally keeps it from stealing a scene step's input.
+  // @InScene() exempts this from scene suppression, so it fires mid-scene (and
+  // when idle too) — the global /cancel pattern.
+  @Command('cancel')
+  @InScene()
+  cancel(
+    _message: Message,
+    @SceneCtx() scene: SceneContext,
+  ): Promise<string | void> {
+    return scene.leave('Cancelled.');
+  }
+}
+
+/**
+ * A sibling router whose catch-all lives in a SEPARATE @Router from the scene
+ * commands. Cross-router declaration order is undefined, yet an active scene
+ * still suppresses this catch-all: capture is order-independent because the gate
+ * ANDs an idle predicate onto the route, it does not rely on first-match order.
+ */
+@Router()
+class CatchAllRouter {
   @OnMessage()
-  @NoScene()
   echo(message: Message): string {
     return `echo:${message.text}`;
   }
@@ -283,6 +300,7 @@ const store = new MemoryStore();
   ],
   providers: [
     EntryRouter,
+    CatchAllRouter,
     RegistrationScene,
     SurveyScene,
     AddressScene,
@@ -499,13 +517,13 @@ describe('Scenes (integration)', () => {
     await close();
   });
 
-  it('@NoScene() catch-all echoes when idle but never steals scene input', async () => {
+  it('an active scene captures input: a sibling catch-all is suppressed, the step wins', async () => {
     const { dispatcher, sent, close } = await boot();
 
-    await dispatcher.dispatch(textUpdate(70, 'hi')); // idle → echo
+    await dispatcher.dispatch(textUpdate(70, 'hi')); // idle → sibling echo
     await dispatcher.dispatch(textUpdate(71, '/register')); // enter scene
-    await dispatcher.dispatch(textUpdate(72, 'Dan')); // scene step, NOT echo
-    await dispatcher.dispatch(textUpdate(73, '21')); // scene step → leave
+    await dispatcher.dispatch(textUpdate(72, 'Dan')); // captured by step, NOT echo
+    await dispatcher.dispatch(textUpdate(73, '21')); // captured by step → leave
     await dispatcher.dispatch(textUpdate(74, 'bye')); // idle again → echo
 
     expect(sent).toEqual([
@@ -515,6 +533,40 @@ describe('Scenes (integration)', () => {
       'Done, Dan (21)!',
       'echo:bye',
     ]);
+
+    await close();
+  });
+
+  it('@InScene() handler (/cancel) fires mid-scene and also when idle', async () => {
+    const { dispatcher, sent, close } = await boot();
+
+    // Idle: /cancel reaches the exempt handler — its leave() throws (nothing to
+    // leave) and the dispatcher swallows the error. The proof it RAN (not the
+    // suppressed catch-all) is that no 'echo:/cancel' is produced.
+    const errors = jest
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => undefined);
+    await dispatcher.dispatch(textUpdate(90, '/cancel'));
+    expect(errors).toHaveBeenCalled(); // handler ran and leave() threw
+    errors.mockRestore();
+
+    await dispatcher.dispatch(textUpdate(91, '/register')); // enter scene
+    await dispatcher.dispatch(textUpdate(92, '/cancel')); // exempt → fires mid-scene
+    await dispatcher.dispatch(textUpdate(93, 'after')); // scene gone → sibling echo
+
+    expect(sent).toEqual(['What is your name?', 'Cancelled.', 'echo:after']);
+    expect(leaveLog).toEqual(['registration:leave']);
+
+    await close();
+  });
+
+  it('idle: normal handlers fire and steps do not match', async () => {
+    const { dispatcher, sent, close } = await boot();
+
+    await dispatcher.dispatch(textUpdate(100, 'lone')); // no scene → sibling echo
+    await dispatcher.dispatch(textUpdate(101, '30')); // no scene → echo, not a step
+
+    expect(sent).toEqual(['echo:lone', 'echo:30']);
 
     await close();
   });

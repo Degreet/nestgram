@@ -1,22 +1,23 @@
 import { Match } from '../decorators/match.decorator';
-import { inScene, noScene } from './scene-filter.predicates';
+import { inSceneMarker } from './scene-filter.predicates';
 
 /**
- * Narrows a handler to fire ONLY while a scene is active (any scene). A
- * method-level modifier (built on `@Match`) — it ANDs into every route the method
- * declares, so it composes with `@Command`/`@OnMessage`/… regardless of order:
+ * Opts a handler OUT of scene input-capture. By default an active scene captures
+ * input — while it runs, only its `@Step()` routes match and every other handler
+ * is suppressed. `@InScene()` marks a handler as exempt, so it keeps firing BOTH
+ * while idle AND while any scene is active (its own `@Command`/`@OnMessage`/…
+ * filters still apply). The canonical use is a cross-cutting in-scene control like
+ * a global `/cancel`:
  *
  * ```ts
  * @Command('cancel')
  * @InScene()
  * cancel(message: Message, @SceneCtx() scene: SceneContext) { return scene.leave('Cancelled.'); }
  * ```
+ *
+ * It is an additive marker, not a "only while a scene is active" predicate — it
+ * never narrows when the handler runs, it only exempts it from suppression. Built
+ * on the public `@Match` primitive: the marker is a no-op predicate the boot-time
+ * scene gate recognises by identity.
  */
-export const InScene = (): MethodDecorator => Match(inScene);
-
-/**
- * Narrows a handler to fire ONLY while NO scene is active (idle) — e.g. a
- * catch-all that must not steal a scene step's input. The scene counterpart of
- * `@NoState()`; same composition rules as {@link InScene}.
- */
-export const NoScene = (): MethodDecorator => Match(noScene);
+export const InScene = (): MethodDecorator => Match(inSceneMarker);
