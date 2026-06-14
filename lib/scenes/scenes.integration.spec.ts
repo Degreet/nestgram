@@ -18,6 +18,7 @@ import { MemoryStore } from '../store';
 import { OnEnter, OnLeave } from './lifecycle.decorators';
 import { Scene } from './scene.decorator';
 import { SceneContext } from './scene.context';
+import { SceneRegistry } from './scene.registry';
 import { ScenesModule } from './scenes.module';
 import { Step } from './step.decorator';
 
@@ -337,6 +338,7 @@ function callbackUpdate(update_id: number, data: string): RawUpdate {
 
 interface TestApp {
   dispatcher: UpdateDispatcher;
+  registry: SceneRegistry;
   /** The `text` of every message the bot was asked to send, in order. */
   sent: string[];
   close: () => Promise<void>;
@@ -364,6 +366,7 @@ async function boot(): Promise<TestApp> {
     });
   return {
     dispatcher: app.get(UpdateDispatcher),
+    registry: app.get(SceneRegistry),
     sent,
     close: () => app.close(),
   };
@@ -524,6 +527,19 @@ describe('Scenes (integration)', () => {
     await dispatcher.dispatch(textUpdate(62, 'next')); // still step 0 → next → step 1
 
     expect(sent).toEqual(['nav:start', 'back to one', 'to two']);
+
+    await close();
+  });
+
+  it('throws on an out-of-range numeric goto ordinal (not silently clamped)', async () => {
+    const { registry, close } = await boot();
+
+    // 'navties' has three steps (ordinals 0..2); 99 is out of range.
+    expect(() => registry.ordinalOf('navties', 99)).toThrow(
+      'Scene "navties" has no step at ordinal 99',
+    );
+    // Valid ordinals still pass through unchanged.
+    expect(registry.ordinalOf('navties', 2)).toBe(2);
 
     await close();
   });

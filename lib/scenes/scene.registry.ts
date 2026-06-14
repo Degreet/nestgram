@@ -76,10 +76,17 @@ export class SceneRegistry
   }
 
   ordinalOf(sceneId: string, step: number | string): number {
+    const steps = this.entry(sceneId).steps;
     if (typeof step === 'number') {
+      if (!Number.isInteger(step) || step < 0 || step >= steps.length) {
+        throw new NestgramError(
+          `Scene "${sceneId}" has no step at ordinal ${step} ` +
+            `(valid range 0..${steps.length - 1}).`,
+        );
+      }
       return step;
     }
-    const ordinal = this.entry(sceneId).steps.indexOf(step);
+    const ordinal = steps.indexOf(step);
     if (ordinal === -1) {
       throw new NestgramError(
         `Scene "${sceneId}" has no step named "${step}".`,
