@@ -8,7 +8,12 @@ import {
 import { ModuleRef } from '@nestjs/core';
 
 import { BotService } from '../api';
-import { RouteExplorer, RouteTable } from '../engine/discovery';
+import {
+  Route,
+  RouteExplorer,
+  RouteTable,
+  RouteTransformExplorer,
+} from '../engine/discovery';
 import { getBotToken, Providers } from '../providers';
 import {
   StageExplorer,
@@ -44,6 +49,7 @@ export class NestgramBootstrap
     @Inject(Providers.NESTGRAM_OPTIONS)
     private readonly options: NestgramModuleOptions,
     private readonly routeExplorer: RouteExplorer,
+    private readonly routeTransformExplorer: RouteTransformExplorer,
     private readonly routeTable: RouteTable,
     private readonly stageExplorer: StageExplorer,
     private readonly stageRegistry: StageRegistry,
@@ -56,7 +62,7 @@ export class NestgramBootstrap
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
-    const routes = this.routeExplorer.explore();
+    const routes = this.applyTransforms(this.routeExplorer.explore());
     this.routeTable.set(routes);
     this.logger.log(`Route table built: ${routes.length} route(s)`);
     for (const route of routes) {
@@ -78,6 +84,17 @@ export class NestgramBootstrap
       // Per-bot transport (a `bots: []` config): one poller per polling bot.
       await this.startFleet();
     }
+  }
+
+  /**
+   * Fold every discovered `@RouteTransform` over the explored routes — each
+   * transform's output feeds the next — so a feature module (scenes) can rewrite
+   * the table at boot without the engine knowing what the rewrite is for.
+   */
+  private applyTransforms(routes: Route[]): Route[] {
+    return this.routeTransformExplorer
+      .explore()
+      .reduce((acc, transform) => transform.transform(acc), routes);
   }
 
   /**

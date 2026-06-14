@@ -14,4 +14,10 @@ export interface Route {
   readonly instance: object;
   /** The handler method name on that instance. */
   readonly methodName: string;
+  /**
+   * A reply fixed at boot — the declarative form of `return string`. When set,
+   * the dispatcher emits this string instead of invoking the handler. A scene
+   * step's reprompt is one consumer, but the capability is generic.
+   */
+  readonly reply?: string;
 }

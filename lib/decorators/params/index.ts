@@ -13,4 +13,5 @@ export * from './session.decorator';
 export * from './locale.decorator';
 export * from './state.decorator';
 export * from './fsm.decorator';
+export * from './scene.decorator';
 export * from './bot.decorator';

@@ -5,7 +5,12 @@ import { BotModule, BotService } from '../api';
 import { BotOptions } from '../api/bot-options';
 import { BotConfigResolver, ResolvedBot } from './bot-config';
 import { ContextFactory, EventFactory } from '../engine/context';
-import { RouteExplorer, RouteMatcher, RouteTable } from '../engine/discovery';
+import {
+  RouteExplorer,
+  RouteMatcher,
+  RouteTable,
+  RouteTransformExplorer,
+} from '../engine/discovery';
 import { NestgramConfigError } from '../exceptions';
 import {
   DEFAULT_BOT_NAME,
@@ -56,6 +61,7 @@ export class NestgramModule {
     EventFactory,
     ContextFactory,
     RouteExplorer,
+    RouteTransformExplorer,
     RouteTable,
     RouteMatcher,
     HandlerExecutorFactory,
@@ -133,6 +139,9 @@ export class NestgramModule {
     RouteTable,
     WebhookUpdateSource,
     Providers.NESTGRAM_OPTIONS,
+    // Exported so a feature module (e.g. ScenesModule) can build its own ECC
+    // invokers for handlers it runs imperatively (scene `@OnEnter`/`@OnLeave`).
+    HandlerExecutorFactory,
   ];
 
   /**

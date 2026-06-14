@@ -74,7 +74,12 @@ export class UpdateDispatcher {
           return;
         }
 
-        const result = await this.invokerFor(route)(ctx);
+        // A static-reply route (a scene step's `invalid` reprompt) skips the
+        // handler entirely — its return value IS the reply string.
+        const result =
+          route.reply !== undefined
+            ? route.reply
+            : await this.invokerFor(route)(ctx);
         await this.resultHandler.handle(result, ctx);
 
         // Commit only on success — a thrown handler skips commit (e.g. the
