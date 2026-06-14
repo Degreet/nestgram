@@ -3,6 +3,8 @@ export * from './listeners';
 export * from './core';
 export * from './no-auto-answer.decorator';
 export * from './match.decorator';
+export * from './inject-bot.decorator';
+export * from './for-bot.decorator';
 // NOTE: `./params` is intentionally NOT re-exported here. The param decorators
 // import from `../context`, and this barrel is imported by low-level code
 // (events, EventFactory via `getTelegramObjectByUpdateType`). Including

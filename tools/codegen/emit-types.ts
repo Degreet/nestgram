@@ -8,7 +8,12 @@
  * Output is unformatted; the orchestrator runs it through the project Prettier.
  */
 import { collectNamedTypes, collectReferences, Ir, IrObject } from './ir';
-import { isInputMediaName, resolveReference, SKIP_OBJECTS } from './manifest';
+import {
+  isInputMediaName,
+  namedTypeModule,
+  resolveReference,
+  SKIP_OBJECTS,
+} from './manifest';
 import { irTypeToTs } from './type-resolver';
 
 const HEADER = `/**
@@ -85,12 +90,15 @@ function buildImports(objects: IrObject[]): string {
         .join(', ')} } from '../api/input-media';`,
     );
   }
-  if (namedTypes.size > 0) {
-    lines.push(
-      `import type { ${[...namedTypes]
-        .sort()
-        .join(', ')} } from '../api/parse-mode';`,
-    );
+  const byModule = new Map<string, string[]>();
+  for (const named of namedTypes) {
+    const module = namedTypeModule(named);
+    const names = byModule.get(module) ?? [];
+    names.push(named);
+    byModule.set(module, names);
+  }
+  for (const [module, names] of [...byModule].sort()) {
+    lines.push(`import type { ${names.sort().join(', ')} } from '${module}';`);
   }
   return lines.join('\n');
 }

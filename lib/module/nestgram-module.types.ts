@@ -32,9 +32,58 @@ export interface WebhookOptions {
   allowedUpdates?: AllowedUpdate[];
 }
 
-export interface NestgramModuleOptions {
+/**
+ * One bot in a multi-bot app's `bots: []`. Carries that bot's token, transport,
+ * and per-bot pipeline flags — each bot gets its OWN interceptor pipeline built
+ * from these, so `parseMode`/`throttle`/… are configured independently. Inject a
+ * specific bot with `@InjectBot('name')`; the current update's bot with `@Bot()`.
+ */
+export interface BotDefinition {
+  /**
+   * The bot's name — the key for `@InjectBot('name')` and `@ForBot('name')`.
+   * Optional only when there is a single bot (it becomes the default); with more
+   * than one bot, each needs a distinct name.
+   */
+  name?: string;
+  /**
+   * Make this the default bot: the one a bare `BotService` injection (and
+   * `@InjectBot()` with no name) resolves to. At most one bot may set it. A
+   * single bot is the default implicitly.
+   */
+  default?: boolean;
   /** Bot API token. */
   token: string;
+  /** Long-polling transport for this bot (see {@link NestgramModuleOptions.polling}). */
+  polling?: boolean | PollingOptions;
+  /** Webhook transport for this bot — needs a distinct `url`/path per bot. */
+  webhook?: WebhookOptions;
+  /** Default `parse_mode` for this bot's sends. */
+  parseMode?: ParseModeValue;
+  /** Rich-message rewriting for this bot. */
+  richMessages?: RichMessagesOptions;
+  /** Swallow the `message is not modified` edit no-op for this bot. */
+  ignoreNotModified?: boolean;
+  /** Extra outbound API interceptors for this bot. */
+  apiInterceptors?: Type<ApiInterceptor>[];
+  /** Send rate-limiting for this bot. */
+  throttle?: boolean | ThrottleOptions;
+  /** Replace this bot's throttler entirely. */
+  throttler?: Type<ApiInterceptor>;
+}
+
+export interface NestgramModuleOptions {
+  /**
+   * Bot API token for the single (default) bot. Pass EITHER this (single-bot) OR
+   * {@link NestgramModuleOptions.bots} (multi-bot), never both.
+   */
+  token?: string;
+  /**
+   * Run several bots from one app. Each entry is an independent bot with its own
+   * token, transport, and pipeline flags. Resolved from the options object, so a
+   * `forRootAsync` factory can build the list dynamically (e.g. from a database)
+   * without knowing the count ahead of time. Mutually exclusive with `token`.
+   */
+  bots?: BotDefinition[];
   /**
    * Long-polling transport. `true` uses defaults; pass an object to tune
    * offset/limit/timeout/etc. Omit to start the bot without a transport (e.g.

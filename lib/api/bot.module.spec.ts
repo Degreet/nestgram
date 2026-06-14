@@ -10,7 +10,7 @@ import { RichMessagesInterceptor } from '../builtins/rich-messages';
 import { ThrottleInterceptor } from '../builtins/throttle';
 import { TokenValidationInterceptor } from '../builtins/token-validation';
 
-@Module({ imports: [BotModule.forRoot({ token: '1:T' })] })
+@Module({ imports: [BotModule.forBot('default', { token: '1:T' })] })
 class DefaultApp {}
 
 class CustomThrottler implements ApiInterceptor {
@@ -20,14 +20,18 @@ class CustomThrottler implements ApiInterceptor {
 }
 
 @Module({
-  imports: [BotModule.forRoot({ token: '1:T', throttler: CustomThrottler })],
+  imports: [
+    BotModule.forBot('default', { token: '1:T', throttler: CustomThrottler }),
+  ],
 })
 class CustomApp {}
 
+// API_INTERCEPTORS is private to the per-bot module now (only the BotService
+// token is exported), so reach it non-strictly across modules.
 function interceptors(app: {
-  get: (token: string) => unknown;
+  get: (token: string, options: { strict: false }) => unknown;
 }): ApiInterceptor[] {
-  return app.get(API_INTERCEPTORS) as ApiInterceptor[];
+  return app.get(API_INTERCEPTORS, { strict: false }) as ApiInterceptor[];
 }
 
 describe('BotModule interceptor wiring', () => {

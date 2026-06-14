@@ -1,4 +1,5 @@
 import { NestgramConfigError } from '../exceptions/config.exception';
+import { ButtonStyle, StyleableButton } from './button-style';
 
 /**
  * Shared row layout for the keyboard builders.
@@ -8,10 +9,15 @@ import { NestgramConfigError } from '../exceptions/config.exception';
  * fresh row — so you get an even grid without sprinkling `.row()` calls. Hidden
  * buttons are simply never added, so they don't take a grid slot and an
  * all-hidden row collapses away on serialize.
+ *
+ * A colour modifier (`.primary()`/`.success()`/`.danger()`) styles the NEXT
+ * button only — it sets a pending style the next button consumes, so
+ * `.danger().text('Delete', 'del')` reads as "this one button is red".
  */
-export abstract class KeyboardBuilder<TButton> {
+export abstract class KeyboardBuilder<TButton extends StyleableButton> {
   protected readonly rows: TButton[][] = [[]];
   private columnLimit?: number;
+  private pendingStyle?: ButtonStyle;
 
   /**
    * Auto-wrap into rows of `count` (a grid). The limit applies to every
@@ -32,8 +38,38 @@ export abstract class KeyboardBuilder<TButton> {
     return this;
   }
 
-  /** Append a button, honoring the current column limit. */
-  protected push(button: TButton): void {
+  /** Style the next button blue — the main / affirmative action. */
+  primary(): this {
+    this.pendingStyle = ButtonStyle.Primary;
+    return this;
+  }
+
+  /** Style the next button green — a positive, confirming action. */
+  success(): this {
+    this.pendingStyle = ButtonStyle.Success;
+    return this;
+  }
+
+  /** Style the next button red — a destructive or cancelling action. */
+  danger(): this {
+    this.pendingStyle = ButtonStyle.Danger;
+    return this;
+  }
+
+  /**
+   * Append a button, honoring the current column limit. A pending colour is
+   * consumed here whether or not the button is shown — so a hidden button takes
+   * its intended style down with it instead of leaking it onto the next one.
+   */
+  protected push(button: TButton, hidden = false): void {
+    const style = this.pendingStyle;
+    this.pendingStyle = undefined;
+    if (hidden) {
+      return;
+    }
+    if (style !== undefined) {
+      button.style = style;
+    }
     const current = this.rows[this.rows.length - 1];
     if (this.columnLimit !== undefined && current.length >= this.columnLimit) {
       this.rows.push([button]);

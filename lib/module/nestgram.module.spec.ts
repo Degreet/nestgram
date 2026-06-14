@@ -1,7 +1,9 @@
-import { Injectable, Logger, Module } from '@nestjs/common';
+import { Inject, Injectable, Logger, Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { BotService } from '../api';
+import { InjectBot } from '../decorators/inject-bot.decorator';
+import { Bot } from '../decorators/params/bot.decorator';
 import { Command } from '../decorators/listeners/command.decorator';
 import { OnMessage } from '../decorators/listeners/on-message.decorator';
 import { OnCallbackQuery } from '../decorators/listeners/on-callback-query.decorator';
@@ -20,7 +22,7 @@ import {
 } from '../api/request';
 import type { Observable } from 'rxjs';
 import { Providers } from '../providers';
-import { WebhookUpdateSource } from '../engine/source';
+import { WebhookSourceEntry, WebhookUpdateSource } from '../engine/source';
 import { NestgramModule } from './nestgram.module';
 
 const originalFetch = global.fetch;
@@ -476,5 +478,286 @@ describe('webhook transport (real-module DI)', () => {
     expect(app.get(WebhookConsumer).source).toBeInstanceOf(WebhookUpdateSource);
 
     await app.close();
+  });
+});
+
+// Multi-bot: forRoot({ bots: [...] }) provides one isolated BotService per bot.
+@Injectable()
+class CrossBotConsumer {
+  constructor(
+    // No decorator → the default bot (support, flagged default below).
+    readonly current: BotService,
+    @InjectBot('support') readonly support: BotService,
+    @InjectBot('sales') readonly sales: BotService,
+  ) {}
+}
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      bots: [
+        { name: 'support', token: '111:SUPPORT', default: true },
+        { name: 'sales', token: '222:SALES', parseMode: 'MarkdownV2' },
+      ],
+    }),
+  ],
+  providers: [CrossBotConsumer],
+})
+class MultiBotAppModule {}
+
+describe('multi-bot (forRoot bots: [])', () => {
+  it('provides one BotService per bot, injectable by name, default as the bare token', async () => {
+    const app = await NestFactory.createApplicationContext(MultiBotAppModule, {
+      logger: false,
+    });
+    const consumer = app.get(CrossBotConsumer);
+
+    // Each bot is its own instance carrying its own token.
+    expect(consumer.support.token).toBe('111:SUPPORT');
+    expect(consumer.sales.token).toBe('222:SALES');
+    expect(consumer.sales).not.toBe(consumer.support);
+    // A bare BotService injection resolves the default bot (support).
+    expect(consumer.current).toBe(consumer.support);
+
+    await app.close();
+  });
+});
+
+// Co-equal bots: no default flagged. Each is reached only by name; a bare
+// BotService is ambiguous and not provided.
+@Injectable()
+class NamedOnlyConsumer {
+  constructor(
+    @InjectBot('a') readonly a: BotService,
+    @InjectBot('b') readonly b: BotService,
+  ) {}
+}
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      bots: [
+        { name: 'a', token: '111:A' },
+        { name: 'b', token: '222:B' },
+      ],
+    }),
+  ],
+  providers: [NamedOnlyConsumer],
+})
+class CoEqualAppModule {}
+
+@Injectable()
+class BareConsumer {
+  constructor(readonly bot: BotService) {}
+}
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      bots: [
+        { name: 'a', token: '111:A' },
+        { name: 'b', token: '222:B' },
+      ],
+    }),
+  ],
+  providers: [BareConsumer],
+})
+class CoEqualBareAppModule {}
+
+describe('multi-bot with no default (co-equal)', () => {
+  it('boots and resolves each bot by name', async () => {
+    const app = await NestFactory.createApplicationContext(CoEqualAppModule, {
+      logger: false,
+    });
+    const consumer = app.get(NamedOnlyConsumer);
+
+    expect(consumer.a.token).toBe('111:A');
+    expect(consumer.b.token).toBe('222:B');
+    expect(consumer.a).not.toBe(consumer.b);
+
+    await app.close();
+  });
+
+  it('makes a bare BotService injection fail (ambiguous — must name the bot)', async () => {
+    await expect(
+      NestFactory.createApplicationContext(CoEqualBareAppModule, {
+        logger: false,
+        abortOnError: false,
+      }),
+    ).rejects.toThrow();
+  });
+});
+
+// Phase 2: a multi-bot polling config starts one poller per bot, each
+// dispatching with its own BotService.
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      bots: [
+        { name: 'a', token: '111:AAA', polling: { idleMs: 5 }, default: true },
+        { name: 'b', token: '222:BBB', polling: { idleMs: 5 } },
+      ],
+    }),
+  ],
+  providers: [GreetRouter],
+})
+class PollingFleetAppModule {}
+
+function jsonResponse(body: unknown): Response {
+  return { json: async () => body } as Response;
+}
+
+async function waitForCalls(
+  pred: () => boolean,
+  timeoutMs = 1500,
+): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (!pred()) {
+    if (Date.now() > deadline) throw new Error('waitForCalls timed out');
+    await new Promise((r) => setTimeout(r, 5));
+  }
+}
+
+// @Bot() injects the bot that received the current update.
+@Router()
+class BotAwareRouter {
+  seenName?: string;
+
+  @OnMessage()
+  handle(_message: RawUpdate['message'], @Bot() bot: BotService): void {
+    this.seenName = bot.name;
+  }
+}
+
+@Module({
+  imports: [NestgramModule.forRoot({ token: 'TEST' })],
+  providers: [BotAwareRouter],
+})
+class BotAwareAppModule {}
+
+describe('@Bot param', () => {
+  it('injects the current update’s bot (the default, here)', async () => {
+    const app = await NestFactory.createApplicationContext(BotAwareAppModule, {
+      logger: false,
+    });
+    const dispatcher = app.get(UpdateDispatcher);
+    const router = app.get(BotAwareRouter);
+
+    await dispatcher.dispatch(messageUpdate(1, 'hi'));
+
+    expect(router.seenName).toBe('default');
+
+    await app.close();
+  });
+});
+
+// Multi-bot webhook: each webhook bot gets a per-bot WebhookUpdateSource under
+// getWebhookSourceToken(name), aggregated into WEBHOOK_SOURCES for the ready-made
+// controllers. Booting starts the fleet, registering each bot's webhook.
+@Injectable()
+class WebhookSourcesConsumer {
+  constructor(
+    @Inject(Providers.WEBHOOK_SOURCES) readonly entries: WebhookSourceEntry[],
+  ) {}
+}
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      bots: [
+        {
+          name: 'support',
+          token: '111:SUPPORT',
+          default: true,
+          webhook: {
+            url: 'https://x/telegram/webhook/support',
+            secretToken: 's',
+          },
+        },
+        {
+          name: 'sales',
+          token: '222:SALES',
+          webhook: {
+            url: 'https://x/telegram/webhook/sales',
+            secretToken: 'x',
+          },
+        },
+      ],
+    }),
+  ],
+  providers: [WebhookSourcesConsumer],
+})
+class MultiBotWebhookAppModule {}
+
+describe('multi-bot webhook (forRoot bots: [])', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it('provides WEBHOOK_SOURCES — one per webhook bot, each its own source, default flagged', async () => {
+    // getMe + setWebhook (start) + deleteWebhook (close) hit fetch at boot; stub it.
+    global.fetch = (async () => ({
+      json: async () => ({ ok: true, result: { username: 'bot' } }),
+    })) as unknown as typeof fetch;
+
+    const app = await NestFactory.createApplicationContext(
+      MultiBotWebhookAppModule,
+      { logger: false },
+    );
+    const { entries } = app.get(WebhookSourcesConsumer);
+
+    expect(entries).toHaveLength(2);
+    expect(entries.map((e) => e.source.name).sort()).toEqual([
+      'sales',
+      'support',
+    ]);
+    const support = entries.find((e) => e.source.name === 'support');
+    expect(support?.isDefault).toBe(true);
+    expect(support?.source).toBeInstanceOf(WebhookUpdateSource);
+    // Routing primitives the controllers rely on are wired per bot.
+    expect(support?.source.ownsSecret('s')).toBe(true);
+    expect(support?.source.ownsSecret('x')).toBe(false);
+
+    await app.close();
+  });
+});
+
+describe('multi-bot polling fleet', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.restoreAllMocks();
+  });
+
+  it('runs a poller per bot and dispatches with the originating bot', async () => {
+    // getUpdates: one update for bot A (matched by its token in the URL), then
+    // empty; everything else (getMe, deleteWebhook, bot B) returns empty/ok.
+    let servedA = false;
+    global.fetch = (async (url: string) => {
+      const target = String(url);
+      if (target.includes('/getUpdates')) {
+        if (target.includes('111:AAA') && !servedA) {
+          servedA = true;
+          return jsonResponse({ ok: true, result: [messageUpdate(1, 'hi')] });
+        }
+        return jsonResponse({ ok: true, result: [] });
+      }
+      return jsonResponse({ ok: true, result: { username: 'bot' } });
+    }) as unknown as typeof fetch;
+
+    // Spy before boot: the poller's onUpdate closure calls this.dispatcher.dispatch.
+    const dispatch = jest.spyOn(UpdateDispatcher.prototype, 'dispatch');
+
+    const app = await NestFactory.createApplicationContext(
+      PollingFleetAppModule,
+      { logger: false },
+    );
+    try {
+      await waitForCalls(() => dispatch.mock.calls.length >= 1);
+      const [, bot] = dispatch.mock.calls[0];
+      // The dispatched update was threaded with bot A's BotService.
+      expect((bot as BotService | undefined)?.token).toBe('111:AAA');
+    } finally {
+      await app.close();
+    }
   });
 });

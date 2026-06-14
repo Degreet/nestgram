@@ -1,9 +1,7 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { BotService } from '../../api';
 import { RawUpdate } from '../../events/raw-update.types';
-import { Providers } from '../../providers';
-import type { NestgramModuleOptions } from '../../module/nestgram-module.types';
 import type { AllowedUpdate } from '../context/update-kind';
 import { AllowedUpdatesResolver } from './allowed-updates.resolver';
 import {
@@ -41,8 +39,9 @@ export interface PollingOptions {
  * update. A failed fetch backs off instead of killing the loop. The bot identity
  * / health check (`getMe`) is warmed transport-agnostically in `NestgramBootstrap`.
  *
- * It reads its own polling options off the module config, so starting it is just
- * `start(onUpdate)` — see `NestgramBootstrap`.
+ * Bound to ONE bot: it takes that bot's `BotService` and polling options at
+ * construction, so a multi-bot app builds one poller per bot. The single-bot
+ * path constructs it from the top-level config via a factory provider.
  */
 @Injectable()
 export class PollingUpdateSource implements UpdateSource {
@@ -58,12 +57,11 @@ export class PollingUpdateSource implements UpdateSource {
   private running = false;
 
   constructor(
-    @Inject(Providers.NESTGRAM_OPTIONS) moduleOptions: NestgramModuleOptions,
     private readonly botService: BotService,
+    options: PollingOptions | undefined,
     private readonly allowedUpdatesResolver: AllowedUpdatesResolver,
   ) {
-    this.options =
-      typeof moduleOptions.polling === 'object' ? moduleOptions.polling : {};
+    this.options = options ?? {};
     this.offset = this.options.offset ?? 0;
     this.backoffMs = this.options.backoffMs ?? DEFAULT_POLLING_BACKOFF_MS;
     this.idleMs = this.options.idleMs ?? DEFAULT_POLLING_IDLE_MS;

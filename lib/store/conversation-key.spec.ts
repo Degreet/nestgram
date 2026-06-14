@@ -5,8 +5,10 @@ function ctx(
   chat: { id: number } | undefined,
   from: { id: number } | undefined,
   update: Record<string, unknown>,
+  botName?: string,
 ): TelegramExecutionContext {
-  return { chat, from, update } as unknown as TelegramExecutionContext;
+  const bot = botName ? { name: botName } : undefined;
+  return { chat, from, update, bot } as unknown as TelegramExecutionContext;
 }
 
 describe('defaultConversationKey', () => {
@@ -49,5 +51,19 @@ describe('defaultConversationKey', () => {
     expect(
       defaultConversationKey(ctx(undefined, { id: 7 }, {})),
     ).toBeUndefined();
+  });
+
+  it('scopes by the bot (outermost) so two bots never share state', () => {
+    const update = { message: { chat: { id: 5 }, from: { id: 5 } } };
+    const onSupport = defaultConversationKey(
+      ctx({ id: 5 }, { id: 5 }, update, 'support'),
+    );
+    const onSales = defaultConversationKey(
+      ctx({ id: 5 }, { id: 5 }, update, 'sales'),
+    );
+
+    expect(onSupport).toBe('nsupport:c5:u5');
+    expect(onSales).toBe('nsales:c5:u5');
+    expect(onSupport).not.toBe(onSales);
   });
 });

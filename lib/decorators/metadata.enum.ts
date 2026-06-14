@@ -4,6 +4,9 @@ export enum Metadata {
   ROUTER = 'ROUTER',
   NO_AUTO_ANSWER = 'NO_AUTO_ANSWER',
   UPDATE_STAGE = 'UPDATE_STAGE',
-  /** Method-level match predicates merged into every route of the method (`@Match`). */
+  /**
+   * Match predicates ANDed into routes — method-level (`@Match`, `@AnyState`) on
+   * the method, or class-level (`@ForBot` on a router) on the constructor.
+   */
   MATCH = 'MATCH',
 }

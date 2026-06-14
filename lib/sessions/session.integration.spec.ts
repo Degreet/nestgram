@@ -63,10 +63,11 @@ describe('Sessions (integration)', () => {
     await dispatcher.dispatch(incFrom(3, 9)); // different user — own session
 
     // @Session injected the loaded session each time; per-user-per-chat keeps
-    // user 7 and user 9 apart even in the same chat.
+    // user 7 and user 9 apart even in the same chat. The key is scoped by the
+    // bot too (here the default bot → `ndefault` prefix).
     expect(router.seen).toEqual([1, 2, 1]);
-    expect(store.get('c1:u7')).toEqual({ count: 2 });
-    expect(store.get('c1:u9')).toEqual({ count: 1 });
+    expect(store.get('ndefault:c1:u7')).toEqual({ count: 2 });
+    expect(store.get('ndefault:c1:u9')).toEqual({ count: 1 });
 
     await app.close();
   });

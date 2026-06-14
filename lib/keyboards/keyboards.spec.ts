@@ -129,6 +129,78 @@ describe('InlineKeyboard', () => {
       ],
     });
   });
+
+  it('a colour modifier styles the next button only (one-shot)', () => {
+    const kb = new InlineKeyboard()
+      .primary()
+      .text('Buy', 'buy')
+      .text('Info', 'info')
+      .danger()
+      .url('Cancel', 'https://x');
+
+    expect(serialize(kb)).toEqual({
+      inline_keyboard: [
+        [
+          { text: 'Buy', callback_data: 'buy', style: 'primary' },
+          { text: 'Info', callback_data: 'info' },
+          { text: 'Cancel', url: 'https://x', style: 'danger' },
+        ],
+      ],
+    });
+  });
+
+  it('exposes all three styles', () => {
+    const kb = new InlineKeyboard()
+      .primary()
+      .text('p', '1')
+      .success()
+      .text('s', '2')
+      .danger()
+      .text('d', '3');
+
+    expect(serialize(kb)).toEqual({
+      inline_keyboard: [
+        [
+          { text: 'p', callback_data: '1', style: 'primary' },
+          { text: 's', callback_data: '2', style: 'success' },
+          { text: 'd', callback_data: '3', style: 'danger' },
+        ],
+      ],
+    });
+  });
+
+  it('a hidden styled button does not leak its style onto the next', () => {
+    const kb = new InlineKeyboard()
+      .danger()
+      .text('drop', 'd', true)
+      .text('keep', 'k');
+
+    expect(serialize(kb)).toEqual({
+      inline_keyboard: [[{ text: 'keep', callback_data: 'k' }]],
+    });
+  });
+
+  it('a colour modifier attaches to the next button across a row break', () => {
+    const kb = new InlineKeyboard().primary().row().text('X', 'x');
+    expect(serialize(kb)).toEqual({
+      inline_keyboard: [[{ text: 'X', callback_data: 'x', style: 'primary' }]],
+    });
+  });
+
+  it('a styled button keeps its style when columns wraps it to a new row', () => {
+    const kb = new InlineKeyboard()
+      .columns(1)
+      .text('a', '1')
+      .danger()
+      .text('b', '2');
+
+    expect(serialize(kb)).toEqual({
+      inline_keyboard: [
+        [{ text: 'a', callback_data: '1' }],
+        [{ text: 'b', callback_data: '2', style: 'danger' }],
+      ],
+    });
+  });
 });
 
 describe('ReplyKeyboard', () => {
@@ -165,6 +237,13 @@ describe('ReplyKeyboard', () => {
   it('omits unset flags', () => {
     const kb = new ReplyKeyboard().text('Hi');
     expect(serialize(kb)).toEqual({ keyboard: [[{ text: 'Hi' }]] });
+  });
+
+  it('styles a button via a colour modifier', () => {
+    const kb = new ReplyKeyboard().success().text('Confirm').text('Plain');
+    expect(serialize(kb)).toEqual({
+      keyboard: [[{ text: 'Confirm', style: 'success' }, { text: 'Plain' }]],
+    });
   });
 });
 

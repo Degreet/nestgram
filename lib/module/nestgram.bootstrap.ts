@@ -5,16 +5,18 @@ import {
   OnApplicationBootstrap,
   OnApplicationShutdown,
 } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 
 import { BotService } from '../api';
 import { RouteExplorer, RouteTable } from '../engine/discovery';
-import { Providers } from '../providers';
+import { getBotToken, Providers } from '../providers';
 import {
   StageExplorer,
   StageRegistry,
   UpdateDispatcher,
 } from '../engine/dispatcher';
-import { UpdateSource } from '../engine/source';
+import { BotSourceFactory, UpdateSource } from '../engine/source';
+import { BotConfigResolver } from './bot-config';
 import { NestgramModuleOptions } from './nestgram-module.types';
 
 /**
@@ -35,6 +37,8 @@ export class NestgramBootstrap
   implements OnApplicationBootstrap, OnApplicationShutdown
 {
   private readonly logger = new Logger(NestgramBootstrap.name);
+  /** Per-bot sources started for a multi-bot config (one per bot with a transport). */
+  private readonly fleet: UpdateSource[] = [];
 
   constructor(
     @Inject(Providers.NESTGRAM_OPTIONS)
@@ -47,6 +51,8 @@ export class NestgramBootstrap
     @Inject(Providers.UPDATE_SOURCE)
     private readonly source: UpdateSource,
     private readonly botService: BotService,
+    private readonly moduleRef: ModuleRef,
+    private readonly sourceFactory: BotSourceFactory,
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
@@ -64,10 +70,44 @@ export class NestgramBootstrap
     this.stageRegistry.set(stages);
     this.logger.log(`Pipeline stages: ${stages.length}`);
 
-    await this.warmBotIdentity();
-
     if (this.hasTransport()) {
+      // Single-bot via the top-level transport: the existing default-bot source.
+      await this.warmBotIdentity();
       await this.source.start((update) => this.dispatcher.dispatch(update));
+    } else {
+      // Per-bot transport (a `bots: []` config): one poller per polling bot.
+      await this.startFleet();
+    }
+  }
+
+  /**
+   * Multi-bot transport: build and start one source per bot via
+   * {@link BotSourceFactory}, each dispatching with its OWN BotService so a reply
+   * goes back through the bot that received the update. A polling bot gets a
+   * poller; a webhook bot gets its per-bot {@link WebhookUpdateSource} (started
+   * here to register the webhook — updates then arrive over HTTP via a webhook
+   * controller). A bot with no transport yields no source and is skipped.
+   */
+  private async startFleet(): Promise<void> {
+    const bots = BotConfigResolver.resolve(this.options);
+    for (const bot of bots) {
+      const botService = this.moduleRef.get<BotService>(getBotToken(bot.name), {
+        strict: false,
+      });
+      const source = this.sourceFactory.create(
+        botService,
+        { polling: bot.polling, webhook: bot.webhook },
+        bot.name,
+      );
+      if (!source) {
+        continue;
+      }
+      const me = await botService.getMe();
+      this.logger.log(`Bot "${bot.name}" connected as @${me.username}`);
+      await source.start((update) =>
+        this.dispatcher.dispatch(update, botService),
+      );
+      this.fleet.push(source);
     }
   }
 
@@ -91,5 +131,6 @@ export class NestgramBootstrap
 
   async onApplicationShutdown(): Promise<void> {
     await this.source.stop();
+    await Promise.all(this.fleet.map((source) => source.stop()));
   }
 }

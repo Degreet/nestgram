@@ -1,10 +1,10 @@
-import { DynamicModule, Global, Module, Provider, Type } from '@nestjs/common';
+import { DynamicModule, Module, Provider, Type } from '@nestjs/common';
 
 import { BotService } from './bot.service';
 
 import { BotAsyncOptions, BotOptions } from './bot-options';
 import { NestgramConfigError } from '../exceptions';
-import { Providers } from '../providers';
+import { getBotToken, Providers } from '../providers';
 import { API_INTERCEPTORS, ApiInterceptor, ApiPipeline } from './request';
 // Import the send built-ins by feature subpath, not the '../builtins' barrel:
 // the barrel also re-exports the handler-side auto-answer interceptor, which
@@ -17,38 +17,34 @@ import {
   RichMessagesSettings,
   resolveRichMessagesSettings,
 } from '../builtins/rich-messages';
-import { ThrottleInterceptor, ThrottleModule } from '../builtins/throttle';
+import { ThrottleInterceptor, throttleProviders } from '../builtins/throttle';
 import { TokenValidationInterceptor } from '../builtins/token-validation';
 
-@Global()
-@Module({})
+/**
+ * Builds ONE bot — its own `BotService` reachable under `getBotToken(name)`, on
+ * its own interceptor pipeline. A static factory (not an `@Module` itself):
+ * `NestgramModule` calls `forBot` once per configured bot, so multiple bots each
+ * get an ISOLATED pipeline. The isolation comes from giving every bot its own
+ * generated module class with a PRIVATE `BOT_OPTIONS` — the interceptors and the
+ * spliced throttle providers resolve THAT bot's options, so `parseMode`,
+ * `throttle`, etc. are per-bot and each bot has its own throttle state. Only the
+ * `getBotToken(name)` provider is exported (globally); the pipeline stays private.
+ */
 export class BotModule {
   /**
-   * Providers for the outbound API interceptor pipeline. `API_INTERCEPTORS` is
-   * the ordered array `ApiPipeline` composes into a Nest-style onion, outermost
-   * first: token validation (its constructor also fail-fasts on a missing
-   * configured token at boot), ignore-not-modified (a response-side catch that
-   * turns the edit no-op into a success — inert unless opted in), rich-messages
-   * rewrite (before parse-mode, so an
-   * injected default `parse_mode` can't read as explicit formatting intent;
-   * inert unless the `richMessages` option set its settings), default
-   * parse-mode, any user-supplied interceptors, then the throttler innermost
-   * (closest to the wire, so it reads `chat_id` after the mutators). The
-   * built-ins are ordinary `ApiInterceptor`s — no privileged core; a user can
-   * add, reorder, or replace them.
-   *
-   * Built as an explicit array via `useFactory`, not a `multi`-provider token:
-   * Nest has no generic `multi: true` aggregation (a `multi` token collapses to a
-   * single, last-wins instance — `APP_*` enhancers are special-cased separately),
-   * so the factory injects every interceptor and returns them as the array.
-   *
-   * The throttle slot is `throttler ?? ThrottleInterceptor` — a user swaps the
-   * rate-limiter with one key (e.g. a Redis-backed distributed one); the default
-   * self-disables on `throttle: false`. The default `ThrottleInterceptor` is
-   * provided (with its collaborators) by the imported {@link ThrottleModule}, so
-   * only a custom throttler is provided here.
+   * The outbound API interceptor pipeline for one bot. `API_INTERCEPTORS` is the
+   * ordered array `ApiPipeline` composes into a Nest-style onion, outermost
+   * first: token validation, ignore-not-modified, rich-messages rewrite (before
+   * parse-mode, so an injected default `parse_mode` can't read as explicit
+   * formatting intent), default parse-mode, any user interceptors, then the
+   * throttler innermost. Built as an explicit array via `useFactory` — Nest has
+   * no generic `multi: true` aggregation (a `multi` token collapses to a single,
+   * last-wins instance), so the factory injects every interceptor and returns the
+   * array. The default throttler's collaborators are spliced in via
+   * {@link throttleProviders} (resolving this bot's `BOT_OPTIONS`); a custom
+   * `throttler` replaces them.
    */
-  private static interceptorProviders(
+  private static pipelineProviders(
     userInterceptors: Type<ApiInterceptor>[],
     throttler: Type<ApiInterceptor> | undefined,
   ): Provider[] {
@@ -65,17 +61,16 @@ export class BotModule {
     return [
       ...leading,
       // Resolved from the `richMessages` option (or `null` when omitted) — the
-      // RichMessagesInterceptor in `leading` reads this and stays a passthrough
-      // when it's null. Mirrors how ThrottleModule resolves THROTTLE_SETTINGS.
+      // RichMessagesInterceptor reads this and stays a passthrough when null.
       {
         provide: RICH_MESSAGES_SETTINGS,
         useFactory: (options: BotOptions): RichMessagesSettings | null =>
           resolveRichMessagesSettings(options.richMessages),
         inject: [Providers.BOT_OPTIONS],
       },
-      // The default ThrottleInterceptor comes from the imported ThrottleModule;
-      // only a custom throttler is provided here.
-      ...(throttler ? [throttler] : []),
+      // The default throttler's providers are spliced (not imported) so they
+      // resolve THIS bot's BOT_OPTIONS; a custom throttler replaces them.
+      ...(throttler ? [throttler] : throttleProviders()),
       {
         provide: API_INTERCEPTORS,
         useFactory: (...interceptors: ApiInterceptor[]): ApiInterceptor[] =>
@@ -87,57 +82,61 @@ export class BotModule {
   }
 
   /**
-   * The default throttler lives in {@link ThrottleModule} (its composition root),
-   * so import it unless the user swapped in their own `throttler` (which brings
-   * its own wiring).
+   * A fresh module class per bot, so two bots are distinct Nest modules with
+   * separate provider scopes (rather than one class re-imported, which Nest may
+   * dedupe — collapsing the per-bot `BOT_OPTIONS`). Marked `global` via the
+   * DynamicModule so the exported `getBotToken` is app-wide for `@InjectBot`.
    */
-  private static throttleImports(
-    throttler: Type<ApiInterceptor> | undefined,
-  ): NonNullable<DynamicModule['imports']> {
-    return throttler ? [] : [ThrottleModule];
+  private static moduleClass(): Type {
+    class NestgramBotModule {}
+    Module({})(NestgramBotModule);
+    return NestgramBotModule;
   }
 
-  static forRoot(options: BotOptions): DynamicModule {
+  static forBot(name: string, options: BotOptions): DynamicModule {
     return {
-      module: BotModule,
-      imports: this.throttleImports(options.throttler),
+      module: this.moduleClass(),
+      global: true,
       providers: [
-        {
-          provide: Providers.BOT_OPTIONS,
-          useValue: options,
-        },
-        ...this.interceptorProviders(
+        { provide: Providers.BOT_OPTIONS, useValue: options },
+        ...this.pipelineProviders(
           options.apiInterceptors ?? [],
           options.throttler,
         ),
         {
-          provide: BotService,
-          useClass: BotService,
+          provide: getBotToken(name),
+          useFactory: (
+            options: BotOptions,
+            pipeline: ApiPipeline,
+          ): BotService => new BotService(options, pipeline, name),
+          inject: [Providers.BOT_OPTIONS, ApiPipeline],
         },
       ],
-      exports: [Providers.BOT_OPTIONS, BotService],
+      exports: [getBotToken(name)],
     };
   }
 
-  static forRootAsync(options: BotAsyncOptions): DynamicModule {
+  static forBotAsync(name: string, options: BotAsyncOptions): DynamicModule {
     return {
-      module: BotModule,
-      imports: [
-        ...(options.imports ?? []),
-        ...this.throttleImports(options.throttler),
-      ],
+      module: this.moduleClass(),
+      global: true,
+      imports: options.imports ?? [],
       providers: [
         ...this.createAsyncProviders(options),
-        ...this.interceptorProviders(
+        ...this.pipelineProviders(
           options.apiInterceptors ?? [],
           options.throttler,
         ),
         {
-          provide: BotService,
-          useClass: BotService,
+          provide: getBotToken(name),
+          useFactory: (
+            options: BotOptions,
+            pipeline: ApiPipeline,
+          ): BotService => new BotService(options, pipeline, name),
+          inject: [Providers.BOT_OPTIONS, ApiPipeline],
         },
       ],
-      exports: [Providers.BOT_OPTIONS, BotService],
+      exports: [getBotToken(name)],
     };
   }
 
@@ -155,7 +154,7 @@ export class BotModule {
     const optionsClass = options.useClass ?? options.useExisting;
     if (!optionsClass) {
       throw new NestgramConfigError(
-        'BotModule.forRootAsync requires one of useFactory, useClass or useExisting',
+        'BotModule.forBotAsync requires one of useFactory, useClass or useExisting',
       );
     }
 
