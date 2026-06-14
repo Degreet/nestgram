@@ -73,15 +73,15 @@ describe('Context by wrapping (no mutation)', () => {
 // same ECC path as guards/interceptors/filters — proven end to end in
 // command-args/command-args.dispatch.spec.ts.
 
-describe('Not yet implemented (Phase 2+ / deferred)', () => {
+describe('Not yet implemented (deferred)', () => {
   it.todo('@Match() injects the RegExpMatchArray for a regex @Action / @Hears');
-  it.todo(
-    '@Session() injects a session object backed by a store (in-memory / Redis)',
-  );
   it.todo('message.react(emoji) reacts to the incoming message');
   it.todo('request-scoped providers resolve per update (contextId per update)');
-  it.todo('updates are processed with bounded concurrency');
-  // Shipped: webhook transport (webhook-update-source.spec, webhook.controller.spec,
-  // nestgram.module.spec wiring) and the typed callback-data factory
-  // (callback-data.factory.spec, acceptance.spec).
+  // Shipped since this checklist was written, now covered by their own specs:
+  //   - @Session() backed by a store → sessions/session.integration.spec.ts
+  //   - webhook transport → webhook-update-source.spec / webhook.controller.spec
+  //   - typed callback-data factory → callback-data.factory.spec / acceptance.spec
+  // Polling already dispatches a batch serially (bounded by construction); the
+  // open work is webhook fire-and-forget's UNBOUNDED concurrency + per-chat
+  // ordering — tracked as a backlog task, not a unit-test gap here.
 });
