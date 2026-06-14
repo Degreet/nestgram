@@ -15,9 +15,9 @@ export interface Route {
   /** The handler method name on that instance. */
   readonly methodName: string;
   /**
-   * A static reply: when set, the dispatcher replies this string instead of
-   * invoking the handler. Used by a scene step's reprompt (`@Step({ invalid })`),
-   * which fires when the strict step route's filter rejected the update.
+   * A reply fixed at boot — the declarative form of `return string`. When set,
+   * the dispatcher emits this string instead of invoking the handler. A scene
+   * step's reprompt is one consumer, but the capability is generic.
    */
   readonly reply?: string;
 }

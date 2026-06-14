@@ -53,10 +53,12 @@ export const Step = (options: SceneStepOptions = {}): MethodDecorator => {
  * always sorts these after the strict routes regardless of decorator order.
  *
  * The kinds are mirrored from the strict listeners (so a `@OnCallbackQuery()`
- * step reprompts on a callback, a text step on a message). This requires the
- * filter decorators to have run first — i.e. `@Step()` placed ABOVE its `@On*`
- * (decorators apply bottom-up) — so a misordered `invalid` fails loudly here
- * rather than silently shadowing the strict route.
+ * step reprompts on a callback, a text step on a message), so the step's `@On*`
+ * filter(s) must already have registered their `Metadata.LISTENERS` before this
+ * runs. Decorators evaluate bottom-up: the `@On*` listener(s) below run first,
+ * then `@Step()` above reads what they recorded to synthesize the deferred
+ * reprompt. Hence `@Step()` must sit ABOVE its filter; if it sees no filter
+ * (none below, or order reversed) it throws rather than silently doing nothing.
  */
 function appendReprompt(
   method: object,
