@@ -69,15 +69,16 @@ Everything needed to ship a production bot.
       `@Fsm()`/`fsm()` write-through context, `@AnyState()`/`@NoState()` over the
       generic `@Match` primitive, `FsmModule` on the shared KV store. Built as a
       pure builtin (stage + predicate + ambient), no privileged core.
-- [ ] Scenes / wizard flows — a higher-level layer on top of the FSM core
-      _(in progress — `@Scene`/`@Step`/`@OnEnter`/`@OnLeave` + injected `SceneContext`)_
+- [x] Scenes / wizard flows — `@Scene`/`@Step`/`@OnEnter`/`@OnLeave`, injected
+      `SceneContext` (next/back/goto/enter/leave + a scene stack), and input-capture
+      while a scene is active (`@InScene()` opts out). On the FSM core.
 
 ## Phase 4 — Scale & DX
 
 - [ ] Multi-instance support (Redis sessions, distributed throttling)
 - [ ] CLI / schematics
-- [ ] Testing utilities (dispatch fake updates against routers)
-      _(in progress — `NestgramTestbed` + fake-update builders + captured sends)_
+- [x] Testing utilities (dispatch fake updates against routers) — `NestgramTestbed`
+      + the `updates.*` fake-update factory + captured sends / `onApi` stubs
 - [ ] Pagination & media helpers
 - [x] Auto-update the vendored Bot API spec (scheduled CI regen → PR on drift)
       — `.github/workflows/spec-drift.yml`: daily poll, version-gated, full gate,
@@ -89,8 +90,8 @@ Everything needed to ship a production bot.
 
 - [x] Astro docs site (custom generator — Starlight dropped), landing + the
       Phase 0 Markdown
-- [ ] Client-side docs search + `llms.txt` for the docs site _(in progress —
-      `llms.txt`/`llms-full.txt` done; search built, design pass pending)_
+- [x] Client-side docs search (custom Pagefind UI) + `llms.txt`/`llms-full.txt`
+      for the docs site
 - [ ] AI affordances on docs pages (GitBook-style) — per-page "Open in ChatGPT" /
       "Open in Claude" deep-links and "Connect with MCP" (serve the docs as an MCP
       server). Builds on the existing `llms.txt`/`llms-full.txt`.
