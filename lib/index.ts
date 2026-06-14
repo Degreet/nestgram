@@ -25,3 +25,7 @@ export * from './engine/execution';
 export * from './engine/dispatcher';
 export * from './engine/source';
 export * from './module';
+
+// Testing utilities (dispatch fake updates against your routers). Jest-agnostic
+// and dependency-light — safe to ship in the barrel.
+export * from './testing';
