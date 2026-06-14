@@ -57,6 +57,12 @@ export interface TestbedOptions extends Pick<ModuleMetadata, 'imports'> {
   /** Auto-answer unanswered callback queries (on by default, as in production). */
   autoAnswerCallbackQueries?: boolean;
   /**
+   * Map a thrown `ReplyException`/`AnswerException` to a reply via the built-in
+   * filter (on by default, as in production). Set `false` to let those
+   * exceptions propagate to {@link NestgramTestbed.lastError}.
+   */
+  replyExceptions?: boolean;
+  /**
    * Extra outbound API interceptors to test alongside the capture seam. They run
    * before the capture, so their request mutations show up in `sent`.
    */
@@ -137,6 +143,7 @@ export class NestgramTestbed {
         NestgramModule.forRoot({
           token: options.token ?? TEST_TOKEN,
           autoAnswerCallbackQueries: options.autoAnswerCallbackQueries,
+          replyExceptions: options.replyExceptions,
           parseMode: options.parseMode,
           // Capture is the last interceptor: after the built-in mutators, just
           // above the throttler/wire — so it records the final request and never

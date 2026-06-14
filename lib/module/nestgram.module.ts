@@ -1,5 +1,5 @@
 import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
-import { APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core';
+import { APP_FILTER, APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core';
 
 import { BotModule, BotService } from '../api';
 import { BotOptions } from '../api/bot-options';
@@ -33,6 +33,7 @@ import {
   WebhookUpdateSource,
 } from '../engine/source';
 import { AutoAnswerCallbackInterceptor } from '../builtins/auto-answer';
+import { ReplyExceptionFilter } from '../builtins/reply-exception';
 import { NestgramBootstrap } from './nestgram.bootstrap';
 import {
   NestgramModuleAsyncOptions,
@@ -126,6 +127,10 @@ export class NestgramModule {
     // is a global interceptor that self-disables when the option is off, so it
     // stays uniform across forRoot / forRootAsync.
     { provide: APP_INTERCEPTOR, useClass: AutoAnswerCallbackInterceptor },
+    // Maps a thrown ReplyException/AnswerException to a Telegram reply via a
+    // global @Catch filter; self-disables (re-throws) when replyExceptions is
+    // false. Same "public toggleable built-in" shape as the interceptor above.
+    { provide: APP_FILTER, useClass: ReplyExceptionFilter },
   ];
 
   /**

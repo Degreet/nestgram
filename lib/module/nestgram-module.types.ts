@@ -109,6 +109,14 @@ export interface NestgramModuleOptions {
    */
   autoAnswerCallbackQueries?: boolean;
   /**
+   * Map a thrown `ReplyException`/`AnswerException` to a Telegram reply or
+   * callback answer via a built-in global `@Catch` filter — the framework's
+   * `HttpException -> filter` idiom. On by default (a thrown `ReplyException`
+   * does the obvious thing out of the box); set `false` to let those exceptions
+   * propagate like any other error (logged by the dispatcher).
+   */
+  replyExceptions?: boolean;
+  /**
    * Default `parse_mode` for outgoing sends. Applied when a call omits
    * `parse_mode`; pass `parse_mode` explicitly on a call to override, or
    * `parse_mode: undefined` to opt that call out.

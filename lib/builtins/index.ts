@@ -4,3 +4,4 @@ export * from './rich-messages';
 export * from './ignore-not-modified';
 export * from './token-validation';
 export * from './auto-answer';
+export * from './reply-exception';
