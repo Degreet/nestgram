@@ -91,6 +91,9 @@ Everything needed to ship a production bot.
       Phase 0 Markdown
 - [ ] Client-side docs search + `llms.txt` for the docs site _(in progress —
       `llms.txt`/`llms-full.txt` done; search built, design pass pending)_
+- [ ] AI affordances on docs pages (GitBook-style) — per-page "Open in ChatGPT" /
+      "Open in Claude" deep-links and "Connect with MCP" (serve the docs as an MCP
+      server). Builds on the existing `llms.txt`/`llms-full.txt`.
 - [ ] Auto-generated API reference
 - [ ] Migration guides (from nestjs-telegraf / telegraf)
 - [ ] Example gallery
