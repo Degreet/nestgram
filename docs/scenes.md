@@ -148,7 +148,7 @@ Enter it from any normal router by handing `scene.enter` the scene **class** —
 the same `@SceneCtx()` works there too. `enter` resolves to the scene's
 `@OnEnter` reply, so returning it shows the first prompt:
 
-:::code[entry.router.ts]{mark="9"}
+:::code[entry.router.ts]{mark="8"}
 
 ```ts
 import { Router, Command, Message, SceneCtx, SceneContext } from 'nestgram';
@@ -191,14 +191,17 @@ try again. Pass `invalid` to reply a reprompt instead, gated to the same step
 but kind-aware, so a text step reprompts on a non-text message and a
 callback step reprompts on a non-matching tap:
 
-:::code[age.step.ts]
+:::code[registration.scene.ts]
 
 ```ts
-@Step({ invalid: 'Please send your age as text.' })
-@OnText()
-async age(message: Message, @SceneCtx() scene: SceneContext<RegData>) {
-  await scene.update({ age: message.text });
-  return scene.next('And your email?');
+@Scene('registration')
+export class RegistrationScene {
+  @Step({ invalid: 'Please send your age as text.' })
+  @OnText()
+  async age(message: Message, @SceneCtx() scene: SceneContext<RegData>) {
+    await scene.update({ age: message.text });
+    return scene.next('And your email?');
+  }
 }
 ```
 
@@ -212,8 +215,8 @@ The filter **is** the validation, and `invalid` is the retry message.
 
 ## The SceneContext API
 
-`@SceneCtx()` (and the `scene()` free function) hands you a
-`SceneContext<TData>`. Navigation and data writes are **write-through**: they
+`@SceneCtx()` injects a `SceneContext<TData>` — the one and only way to drive a
+scene. Navigation and data writes are **write-through**: they
 persist the moment their `await` resolves — the same bargain as `FsmContext`, so
 a move survives a later send failure in the same handler. The navigation methods
 resolve to their `reply` argument, so a handler ends with
@@ -423,33 +426,8 @@ marker is a no-op predicate the boot-time scene gate recognises; nothing
 privileged, you could rebuild it in three lines.
 :::
 
-### Outside handlers
-
-The context is also reachable as the `scene()` free function — the same ambient
-bargain as `fsm()` and `t()` — so a service deep in the call chain can drive the
-current update's scene without threading a context through every signature:
-
-:::code[onboarding.service.ts]
-
-```ts
-import { Injectable } from '@nestjs/common';
-import { scene } from 'nestgram';
-import { RegistrationScene } from './registration.scene';
-
-@Injectable()
-export class OnboardingService {
-  async begin() {
-    return scene().enter(RegistrationScene); // the current update's conversation
-  }
-}
-```
-
-:::
-
 :::caution
-The ambient context rides on `AsyncLocalStorage`, which is in-process. Work you
-offload to a queue worker (BullMQ and friends) crosses a process boundary —
-`scene()` won't see the conversation there. And as with the FSM, there's no
-per-conversation locking yet: under the webhook source two rapid-fire updates
-for one conversation can interleave, last write wins. Keep step handlers fast.
+There's no per-conversation locking yet: under the webhook source two
+rapid-fire updates for one conversation can interleave, last write wins. Keep
+step handlers fast.
 :::
