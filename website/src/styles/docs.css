@@ -965,3 +965,99 @@ body {
   border-top: 1px solid var(--border);
   color: var(--text-2);
 }
+
+/* ============================================================ */
+/* Search — header trigger + Pagefind modal                     */
+/* ============================================================ */
+.dx-search-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--text-2);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+}
+.dx-search-btn:hover {
+  color: var(--text);
+  border-color: color-mix(in oklab, var(--accent) 50%, var(--border-strong));
+}
+.dx-search-btn svg {
+  flex: none;
+}
+.dx-search-btn__kbd {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1;
+  padding: 0.18rem 0.36rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--bg-soft);
+  color: var(--muted);
+}
+
+/* The modal: fixed overlay + centred panel that holds the Pagefind UI. */
+.dx-search-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+}
+.dx-search-modal[hidden] {
+  display: none;
+}
+.dx-search-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 5, 9, 0.66);
+  backdrop-filter: blur(4px);
+}
+.dx-search-panel {
+  position: relative;
+  max-width: 40rem;
+  margin: 8vh auto 0;
+  padding: 1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+.dx-search-fallback {
+  margin: 0;
+  padding: 0.6rem 0.3rem;
+  color: var(--text-2);
+  font-size: 0.9rem;
+}
+
+/* Theme the prebuilt Pagefind UI to the nestgram palette via its CSS vars. */
+#dx-search-ui {
+  --pagefind-ui-primary: var(--accent);
+  --pagefind-ui-text: var(--text);
+  --pagefind-ui-background: var(--panel);
+  --pagefind-ui-border: var(--border-strong);
+  --pagefind-ui-tag: var(--panel-2);
+  --pagefind-ui-border-width: 1px;
+  --pagefind-ui-border-radius: 10px;
+  --pagefind-ui-font: var(--font-body);
+}
+#dx-search-ui .pagefind-ui__result-title {
+  color: var(--text);
+}
+#dx-search-ui .pagefind-ui__result-excerpt {
+  color: var(--text-2);
+}
+@media (max-width: 640px) {
+  .dx-search-btn__txt,
+  .dx-search-btn__kbd {
+    display: none;
+  }
+  .dx-search-panel {
+    margin: 4vh 0.8rem 0;
+  }
+}

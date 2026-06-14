@@ -71,12 +71,42 @@ const githubUrl = 'https://github.com/Degreet/nestgram';
         <button class="dx-menu-btn" type="button" aria-label="Open docs menu">
           ☰ Menu
         </button>
+        <button class="dx-search-btn" type="button" aria-label="Search docs">
+          <svg
+            viewBox="0 0 24 24"
+            width="15"
+            height="15"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m21 21-4.3-4.3"></path>
+          </svg>
+          <span class="dx-search-btn__txt">Search</span>
+          <kbd class="dx-search-btn__kbd">/</kbd>
+        </button>
         <a href="/docs/quickstart">Docs</a>
         <a href={githubUrl}>GitHub</a>
       </nav>
     </header>
 
     <div class="dx-backdrop" aria-hidden="true"></div>
+
+    <div class="dx-search-modal" data-pagefind-ignore hidden>
+      <div class="dx-search-overlay" aria-hidden="true"></div>
+      <div
+        class="dx-search-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Search docs"
+      >
+        <div id="dx-search-ui"></div>
+      </div>
+    </div>
 
     <div class="dx-shell">
       <aside class="dx-sidebar">
@@ -109,13 +139,13 @@ const githubUrl = 'https://github.com/Degreet/nestgram';
             ))
           }
         </div>
-        <article class="dx-content">
-          <h1>{title}</h1>
+        <article class="dx-content" data-pagefind-body>
+          <h1 data-pagefind-meta="title">{title}</h1>
           <slot />
 
           {
             (prev || next) && (
-              <nav class="dx-pager">
+              <nav class="dx-pager" data-pagefind-ignore>
                 {prev ? (
                   <a class="dx-pager-btn dx-pager-prev" href={prev.href}>
                     <span class="dx-pager-dir">← Previous</span>
@@ -262,6 +292,79 @@ const githubUrl = 'https://github.com/Degreet/nestgram';
           });
           heading.prepend(anchor);
         });
+
+      // Search: Pagefind indexes the built site at /pagefind after `astro build`
+      // (see the `index` npm script). Its UI bundle is loaded lazily the first
+      // time the modal opens, so a reader who never searches pays nothing.
+      const searchBtn = document.querySelector('.dx-search-btn');
+      const searchModal = document.querySelector<HTMLElement>('.dx-search-modal');
+      const searchOverlay = searchModal?.querySelector('.dx-search-overlay');
+      let pagefindLoaded = false;
+
+      const loadPagefindUI = async () => {
+        if (pagefindLoaded) return;
+        pagefindLoaded = true;
+        // Pagefind only exists in a built site, not in `astro dev`. Guard the
+        // CSS/JS load so dev doesn't 404-spam, and surface a hint instead.
+        const css = document.createElement('link');
+        css.rel = 'stylesheet';
+        css.href = '/pagefind/pagefind-ui.css';
+        document.head.appendChild(css);
+        try {
+          // The bundle is emitted by Pagefind into dist/pagefind/ after the
+          // build, so it doesn't exist when Vite bundles this script. Build the
+          // path in a variable + @vite-ignore so Rollup leaves the import alone.
+          const uiPath = '/pagefind/pagefind-ui.js';
+          const mod = await import(/* @vite-ignore */ uiPath);
+          const PagefindUI = mod.PagefindUI ?? (window as any).PagefindUI;
+          new PagefindUI({
+            element: '#dx-search-ui',
+            showSubResults: true,
+            showImages: false,
+            resetStyles: false,
+          });
+        } catch {
+          const host = document.getElementById('dx-search-ui');
+          if (host) {
+            host.innerHTML =
+              '<p class="dx-search-fallback">Search is available in the built site (run <code>npm run build</code>), not in dev.</p>';
+          }
+        }
+      };
+
+      const openSearch = async () => {
+        if (!searchModal) return;
+        searchModal.hidden = false;
+        document.body.classList.add('dx-search-open');
+        await loadPagefindUI();
+        // Focus the Pagefind input once it has mounted.
+        window.setTimeout(() => {
+          searchModal
+            .querySelector<HTMLInputElement>('.pagefind-ui__search-input')
+            ?.focus();
+        }, 80);
+      };
+      const closeSearch = () => {
+        if (!searchModal) return;
+        searchModal.hidden = true;
+        document.body.classList.remove('dx-search-open');
+      };
+
+      searchBtn?.addEventListener('click', openSearch);
+      searchOverlay?.addEventListener('click', closeSearch);
+      document.addEventListener('keydown', (event) => {
+        if (
+          event.key === '/' &&
+          !event.metaKey &&
+          !event.ctrlKey &&
+          !/^(INPUT|TEXTAREA)$/.test((event.target as HTMLElement)?.tagName)
+        ) {
+          event.preventDefault();
+          openSearch();
+        } else if (event.key === 'Escape' && !searchModal?.hidden) {
+          closeSearch();
+        }
+      });
     </script>
   </body>
 </html>
