@@ -94,6 +94,10 @@ Everything needed to ship a production bot.
 - [ ] AI affordances on docs pages (GitBook-style) — per-page "Open in ChatGPT" /
       "Open in Claude" deep-links and "Connect with MCP" (serve the docs as an MCP
       server). Builds on the existing `llms.txt`/`llms-full.txt`.
+- [ ] Clear website devDependency audit warnings (3 high-severity, all `esbuild`
+      ≤0.28 pulled transitively via `astro`/`vite`; dev-only tooling, not shipped).
+      Fix by bumping `astro`/`vite` once they ship a patched `esbuild` — NOT
+      `npm audit fix --force` (it downgrades astro to v2). Revisit before launch.
 - [ ] Auto-generated API reference
 - [ ] Migration guides (from nestjs-telegraf / telegraf)
 - [ ] Example gallery
