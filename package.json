@@ -5,6 +5,17 @@
   "author": "Mykyta Voitsekhovskyi <mykyta@kodo.do>",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./dist/testing/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "homepage": "https://nestgram.vercel.app",
   "repository": {
     "type": "git",
