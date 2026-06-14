@@ -1,6 +1,13 @@
 import type { ApiRequest } from '../api/request';
 import { GetMe } from '../api/methods';
-import type { ApiResponder, SentCall, TestUser } from './testing.types';
+import type {
+  ApiResponder,
+  CommandClass,
+  MethodKey,
+  OptionsOf,
+  SentCall,
+  TestUser,
+} from './testing.types';
 
 /** The synthetic bot identity `getMe` returns by default (no network). */
 const DEFAULT_BOT_IDENTITY: TestUser = {
@@ -25,15 +32,52 @@ export class ApiCaptureStore {
   readonly sent: SentCall[] = [];
   /** Per-method response stubs registered via {@link onApi}. */
   private readonly responders = new Map<string, ApiResponder>();
+  /** The most recent handler error a {@link CaptureErrorFilter} recorded. */
+  private capturedError: unknown;
 
-  /** Register (or replace) the stubbed RAW result for one Bot API method. */
-  onApi(method: string, responder: ApiResponder): void {
-    this.responders.set(method, responder);
+  /**
+   * Reads the Bot API method name off a {@link MethodKey}: the bare string as-is,
+   * or a throwaway instance of a command class (`new SendMessage().method`) so the
+   * caller can name the method by its typed command, not a string literal.
+   *
+   * The instance is built with no payload on purpose — only `.method` (a
+   * class-level readonly string, set independently of the payload) is read, never
+   * the payload itself.
+   */
+  static methodNameOf(key: MethodKey): string {
+    if (typeof key === 'string') {
+      return key;
+    }
+    return new key().method;
   }
 
-  /** Forget all captured calls (the registered responders stay). */
+  /** Register (or replace) the stubbed RAW result for one Bot API method. */
+  onApi(key: MethodKey, responder: ApiResponder): void {
+    this.responders.set(ApiCaptureStore.methodNameOf(key), responder);
+  }
+
+  /** Every captured call for one method, in send order. */
+  calls<C extends CommandClass>(key: C): SentCall<OptionsOf<C>>[];
+  calls(key: string): SentCall[];
+  calls(key: MethodKey): SentCall<unknown>[] {
+    const method = ApiCaptureStore.methodNameOf(key);
+    return this.sent.filter((call) => call.method === method);
+  }
+
+  /** Record a handler error (called by {@link CaptureErrorFilter}). */
+  recordError(error: unknown): void {
+    this.capturedError = error;
+  }
+
+  /** The most recent handler error, or `undefined` if none was thrown. */
+  get lastError(): unknown {
+    return this.capturedError;
+  }
+
+  /** Forget all captured calls and the last error (registered responders stay). */
   reset(): void {
     this.sent.length = 0;
+    this.capturedError = undefined;
   }
 
   /**

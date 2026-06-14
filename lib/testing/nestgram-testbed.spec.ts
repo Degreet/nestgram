@@ -7,6 +7,7 @@
 import {
   CanActivate,
   ExecutionContext,
+  ForbiddenException,
   Injectable,
   UseGuards,
 } from '@nestjs/common';
@@ -19,6 +20,7 @@ import { Router } from '../decorators/injectable/router.decorator';
 import { CallbackData } from '../decorators/params/callback-data.decorator';
 import { CallbackQuery } from '../events/callback-query';
 import { Message } from '../events/message';
+import { SendMessage } from '../api/methods';
 import {
   ApiCallHandler,
   ApiExecutionContext,
@@ -59,6 +61,11 @@ class SampleRouter {
   @Command('secret')
   secret(): string {
     return 'you should never see this';
+  }
+
+  @Command('boom')
+  boom(): string {
+    throw new Error('handler exploded');
   }
 
   @OnMessage()
@@ -174,9 +181,9 @@ describe('NestgramTestbed — pipeline + stubs', () => {
     await bot.close();
   });
 
-  it('onApi() stubs the raw result a handler reads back', async () => {
+  it('onApi() stubs the raw result a handler reads back (command class key)', async () => {
     const bot = await NestgramTestbed.create({ routers: [SampleRouter] });
-    bot.onApi('sendMessage', () => ({
+    bot.onApi(SendMessage, () => ({
       message_id: 999,
       date: 1,
       chat: { id: 1, type: 'private' },
@@ -188,6 +195,101 @@ describe('NestgramTestbed — pipeline + stubs', () => {
     await bot.dispatch(updates.message('hi'));
 
     expect(bot.lastCall?.method).toBe('sendMessage');
+    await bot.close();
+  });
+
+  it('onApi() also accepts the bare method name (escape hatch)', async () => {
+    const bot = await NestgramTestbed.create({ routers: [SampleRouter] });
+    bot.onApi('sendMessage', () => ({
+      message_id: 7,
+      date: 1,
+      chat: { id: 1, type: 'private' },
+      text: 'stubbed',
+    }));
+
+    await bot.dispatch(updates.message('hi'));
+
+    expect(bot.lastCall?.method).toBe('sendMessage');
+    await bot.close();
+  });
+
+  it('calls() finds every send for a method (class and string keys agree)', async () => {
+    const bot = await NestgramTestbed.create({ routers: [SampleRouter] });
+
+    await bot.dispatch(updates.command('start'));
+    await bot.dispatch(updates.message('again'));
+
+    expect(bot.calls(SendMessage)).toHaveLength(2);
+    expect(bot.calls('sendMessage')).toHaveLength(2);
+    expect(bot.calls(SendMessage)[0].payload.text).toBe('Hi Test');
+    await bot.close();
+  });
+});
+
+describe('NestgramTestbed — error paths', () => {
+  it('records a thrown handler error on lastError, still swallowing by default', async () => {
+    const bot = await NestgramTestbed.create({ routers: [SampleRouter] });
+
+    // Default dispatch resolves (production fidelity — the dispatcher logs and
+    // moves on), but the error is observable.
+    await expect(
+      bot.dispatch(updates.command('boom')),
+    ).resolves.toBeUndefined();
+
+    expect(bot.lastError).toBeInstanceOf(Error);
+    expect((bot.lastError as Error).message).toBe('handler exploded');
+    expect(bot.sent).toHaveLength(0);
+    await bot.close();
+  });
+
+  it('rethrows the captured error when { rethrow: true }', async () => {
+    const bot = await NestgramTestbed.create({ routers: [SampleRouter] });
+
+    await expect(
+      bot.dispatch(updates.command('boom'), { rethrow: true }),
+    ).rejects.toThrow('handler exploded');
+    await bot.close();
+  });
+
+  it('leaves lastError undefined on a clean dispatch', async () => {
+    const bot = await NestgramTestbed.create({ routers: [SampleRouter] });
+
+    await bot.dispatch(updates.command('start'));
+
+    expect(bot.lastError).toBeUndefined();
+    await bot.close();
+  });
+
+  it('surfaces a guard denial as the thrown ForbiddenException', async () => {
+    // A Nest guard denies by throwing ForbiddenException; that real exception
+    // flows through the same filter, so it is observable on lastError — letting a
+    // test assert the guard fired, distinct from a clean no-match (undefined).
+    const bot = await NestgramTestbed.create({ routers: [SampleRouter] });
+
+    await bot.dispatch(updates.command('secret'));
+
+    expect(bot.sent).toHaveLength(0);
+    expect(bot.lastError).toBeInstanceOf(ForbiddenException);
+    await bot.close();
+  });
+
+  it('leaves lastError undefined when nothing matches', async () => {
+    const bot = await NestgramTestbed.create({ routers: [SampleRouter] });
+
+    await bot.dispatch(updates.callbackQuery('no:such:action'));
+
+    expect(bot.lastError).toBeUndefined();
+    await bot.close();
+  });
+
+  it('clears a prior error on the next clean dispatch', async () => {
+    const bot = await NestgramTestbed.create({ routers: [SampleRouter] });
+
+    await bot.dispatch(updates.command('boom'));
+    expect(bot.lastError).toBeInstanceOf(Error);
+
+    await bot.dispatch(updates.command('start'));
+    expect(bot.lastError).toBeUndefined();
     await bot.close();
   });
 });

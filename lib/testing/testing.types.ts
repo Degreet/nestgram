@@ -1,4 +1,28 @@
 import type { ApiRequest } from '../api/request';
+import type { ApiMethod } from '../api/methods';
+import type { SendMessageOptions } from '../api/methods';
+
+/**
+ * A command CLASS used as a method key — `onApi(SendMessage, …)`,
+ * `bot.calls(SendMessage)`. The harness reads the Bot API method name off a
+ * throwaway instance (`new SendMessage().method`), so a test names the method by
+ * its typed command rather than a bare string literal.
+ */
+export type CommandClass<TOptions = unknown> = new (
+  ...args: never[]
+) => ApiMethod<TOptions, unknown>;
+
+/**
+ * A method key for the assertion/stub finders: either the bare Bot API method
+ * name (`'sendMessage'`, the escape hatch) or the command class that carries it
+ * (`SendMessage` — preferred, no magic string).
+ */
+export type MethodKey = string | CommandClass;
+
+/** The payload (options) type a command class carries. */
+export type OptionsOf<C> = C extends CommandClass<infer TOptions>
+  ? TOptions
+  : never;
 
 /**
  * One outgoing Bot API call the harness captured instead of sending. `method` is
@@ -6,11 +30,18 @@ import type { ApiRequest } from '../api/request';
  * is the FINAL request payload — after every built-in interceptor (default
  * parse-mode, rich-messages, …) has run, so it is exactly what would have gone on
  * the wire. Assert on it with `expect(bot.sent[0]).toMatchObject({ method, payload })`.
+ *
+ * `TPayload` defaults to the generic request payload; the finders narrow it when
+ * the method is known (e.g. {@link NestgramTestbed.lastMessage} →
+ * {@link SendMessageOptions}).
  */
-export interface SentCall {
+export interface SentCall<TPayload = Record<string, unknown>> {
   method: string;
-  payload: Record<string, unknown>;
+  payload: TPayload;
 }
+
+/** The payload shape behind {@link NestgramTestbed.lastMessage} — a `sendMessage`. */
+export type SentMessagePayload = SendMessageOptions;
 
 /**
  * A stubbed Bot API response for one method. Receives the captured
