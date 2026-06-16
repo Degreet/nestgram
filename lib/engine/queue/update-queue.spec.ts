@@ -178,6 +178,21 @@ describe('UpdateQueue', () => {
     expect(drained).toBe(true);
   });
 
+  it('drain() gives up after drainTimeoutMs when a dispatch never finishes', async () => {
+    jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const queue = new UpdateQueue({ drainTimeoutMs: 20 });
+
+    // A wedged handler that never resolves (e.g. awaiting something that won't come).
+    void queue.enqueue(msg(1), () => new Promise<void>(() => undefined));
+    await flush();
+
+    // drain resolves despite the stuck dispatch, and logs the straggler.
+    await queue.drain();
+    expect(Logger.prototype.warn).toHaveBeenCalledTimes(1);
+
+    jest.restoreAllMocks();
+  });
+
   it('drops a key from the table once its chain drains', async () => {
     const queue = new UpdateQueue();
     const order: string[] = [];

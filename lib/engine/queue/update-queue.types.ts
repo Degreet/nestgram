@@ -24,4 +24,10 @@ export interface UpdateQueueOptions {
    * serialize together regardless.
    */
   key?: (update: RawUpdate) => string | undefined;
+  /**
+   * How long graceful shutdown waits for in-flight updates to finish before
+   * abandoning them (ms). Bounds `app.close()` so a wedged handler can't hang it
+   * forever; stragglers are logged. Defaults to `DEFAULT_DRAIN_TIMEOUT_MS`.
+   */
+  drainTimeoutMs?: number;
 }

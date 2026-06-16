@@ -4,7 +4,10 @@ import { RawUpdate } from '../../events/raw-update.types';
 import { NestgramConfigError } from '../../exceptions';
 import { defaultChatKey } from './chat-key';
 import { Semaphore } from './semaphore';
-import { DEFAULT_MAX_CONCURRENCY } from './update-queue.constants';
+import {
+  DEFAULT_DRAIN_TIMEOUT_MS,
+  DEFAULT_MAX_CONCURRENCY,
+} from './update-queue.constants';
 import { UpdateQueueOptions } from './update-queue.types';
 
 /** The dispatch to run for one update. The queue only schedules it; it does not
@@ -41,6 +44,7 @@ export class UpdateQueue {
   private readonly logger = new Logger(UpdateQueue.name);
   private readonly semaphore: Semaphore;
   private readonly maxConcurrency: number;
+  private readonly drainTimeoutMs: number;
   private readonly keyOf: (update: RawUpdate) => string | undefined;
 
   /**
@@ -69,6 +73,7 @@ export class UpdateQueue {
     }
     this.maxConcurrency = maxConcurrency;
     this.semaphore = new Semaphore(maxConcurrency);
+    this.drainTimeoutMs = options?.drainTimeoutMs ?? DEFAULT_DRAIN_TIMEOUT_MS;
     this.keyOf = options?.key ?? defaultChatKey;
   }
 
@@ -100,10 +105,34 @@ export class UpdateQueue {
     return admitted;
   }
 
-  /** Wait for every in-flight dispatch to finish — for graceful shutdown, after
-   *  the source has stopped admitting new updates. */
+  /**
+   * Wait for every in-flight dispatch to finish — for graceful shutdown, after
+   * the source has stopped admitting new updates. Bounded by `drainTimeoutMs` so
+   * a wedged handler can't hang shutdown forever; if the bound is hit the
+   * stragglers are abandoned (and logged).
+   */
   async drain(): Promise<void> {
-    await Promise.allSettled([...this.running]);
+    const settled = await this.withTimeout(
+      Promise.allSettled([...this.running]),
+    );
+    if (!settled) {
+      this.logger.warn(
+        `Shutdown drain timed out after ${this.drainTimeoutMs}ms — ` +
+          `abandoning ${this.running.size} update(s) still in flight`,
+      );
+    }
+  }
+
+  /** Resolve `true` if `work` settles within {@link drainTimeoutMs}, `false` if the
+   *  timeout wins. Always clears the timer so it can't keep the process alive. */
+  private withTimeout(work: Promise<unknown>): Promise<boolean> {
+    let timer!: ReturnType<typeof setTimeout>;
+    const timedOut = new Promise<boolean>((resolve) => {
+      timer = setTimeout(() => resolve(false), this.drainTimeoutMs);
+    });
+    return Promise.race([work.then(() => true), timedOut]).finally(() =>
+      clearTimeout(timer),
+    );
   }
 
   /** Updates dispatching right now (holding a slot). For tests/observability. */

@@ -7,3 +7,11 @@
  * chat-less updates. Tune via `updateQueue.maxConcurrency`.
  */
 export const DEFAULT_MAX_CONCURRENCY = 1000;
+
+/**
+ * Default ceiling on how long {@link UpdateQueue.drain} waits for in-flight
+ * updates on shutdown before abandoning the stragglers (and logging them). Keeps
+ * a wedged handler from hanging `app.close()` forever, while giving normal
+ * handlers ample time to finish. Tune via `updateQueue.drainTimeoutMs`.
+ */
+export const DEFAULT_DRAIN_TIMEOUT_MS = 10_000;
