@@ -61,6 +61,10 @@ Without it, polling processed updates strictly one at a time (no cross-chat
 parallelism) and webhook delivery dispatched every update concurrently (the
 race above). The queue fixes both.
 
+It's not privileged machinery: the queue is an `UpdateSource` **decorator** wrapping
+the active transport (one per bot), applied through the same public `source`
+seam you can plug into — see [Swap the update source](/docs/extending#swap-the-update-source).
+
 Tune or disable it via `forRoot`:
 
 ```ts
@@ -75,10 +79,10 @@ NestgramModule.forRoot({
 });
 ```
 
-The default key is the chat (in a multi-bot app, the bot name is prefixed
-automatically). Return `undefined` from a custom `key` to opt an update out of
-serialization; chat-less updates (`poll_answer`, inline queries, payment
-queries) opt out on their own.
+The default key is the chat. There's one queue per bot, so a multi-bot app never
+serializes two bots together even if they share a chat id. Return `undefined`
+from a custom `key` to opt an update out of serialization; chat-less updates
+(`poll_answer`, inline queries, payment queries) opt out on their own.
 
 :::caution
 The queue is **per-process**. Across multiple instances, the same conversation
