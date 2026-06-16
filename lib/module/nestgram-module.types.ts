@@ -1,6 +1,7 @@
 import { ModuleMetadata, Type } from '@nestjs/common';
 
 import { PollingOptions } from '../engine/source';
+import type { UpdateSourceFactory } from '../engine/source';
 import type { AllowedUpdate } from '../engine/context/update-kind';
 import type { ApiInterceptor } from '../api/request';
 import type { ParseModeValue } from '../api/parse-mode';
@@ -91,6 +92,16 @@ export interface NestgramModuleOptions {
    * receive updates over HTTP instead.
    */
   polling?: boolean | PollingOptions;
+  /**
+   * Plug in your own update source, or decorate the built-in one. Called once
+   * per bot with `{ default, bot, get }` — return `ctx.default` wrapped in your
+   * own `UpdateSource` decorator (e.g. a queue) to add a layer, or your own
+   * `UpdateSource` to replace ingestion entirely (the `polling`/`webhook` config
+   * then only seeds `ctx.default`, which you may ignore). Branch on `ctx.bot.name`
+   * for per-bot behaviour. The public seam the framework's own queue layer is
+   * built on — no privileged core.
+   */
+  source?: UpdateSourceFactory;
   /**
    * Webhook transport config. When set, the bot registers the webhook with
    * Telegram on boot and receives updates over HTTP instead of polling. You

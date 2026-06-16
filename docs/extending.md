@@ -63,8 +63,51 @@ hidden — you could write that interceptor yourself with the same public API.
 ## Swap the update source
 
 `polling: true` is one implementation of a small `UpdateSource` interface
-(`start(onUpdate)` / `stop()`). Provide your own to pull updates from anywhere —
-a queue, a test harness, a custom transport — without touching a single handler.
+(`start(onUpdate)` / `stop()`). Plug in your own with the `source` factory to
+pull updates from anywhere — a message queue, a test harness, a custom transport
+— or to **decorate** the built-in one, without touching a single handler.
+
+The factory runs once per bot and receives the transport the framework would
+otherwise use (`default`), the bot it serves, and a DI lookup:
+
+```ts
+// A decorator: holds the built-in source, intercepts each update.
+class LoggingSource implements UpdateSource {
+  constructor(private inner: UpdateSource) {}
+  start(onUpdate: UpdateListener) {
+    return this.inner.start((update) => {
+      console.log('update', update.update_id);
+      return onUpdate(update);
+    });
+  }
+  stop() {
+    return this.inner.stop();
+  }
+}
+
+NestgramModule.forRoot({
+  token: process.env.BOT_TOKEN,
+  webhook: { url, secretToken },
+  source: ({ default: inner, bot, get }) => {
+    // Wrap the built-in source to add a layer…
+    return new LoggingSource(inner!);
+
+    // …or ignore `inner` and replace ingestion entirely:
+    // return new KafkaUpdateSource(get(KafkaService), bot);
+  },
+});
+```
+
+- **Wrap** — return a decorator that holds `inner`, forwarding `start`/`stop` and
+  intercepting `onUpdate` (e.g. to enqueue, batch, filter, or trace). The
+  framework's own update queue is exactly this — a decorator you could write.
+- **Replace** — ignore `inner` and return your own `UpdateSource`. The
+  `polling`/`webhook` config then only seeds `default`; if you replace a webhook
+  source you also own delivery (register your own receiver) — and drop the
+  ready-made `WebhookController`, since it delivers to the built-in source you
+  replaced, which is never started (updates would be silently dropped).
+- **Per bot** — branch on `ctx.bot.name` in a multi-bot app; the factory is
+  called for each bot with its own `default` and `bot`.
 
 ## Replace a built-in
 

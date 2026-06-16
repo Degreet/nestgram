@@ -22,7 +22,13 @@ import {
 } from '../api/request';
 import type { Observable } from 'rxjs';
 import { Providers } from '../providers';
-import { WebhookSourceEntry, WebhookUpdateSource } from '../engine/source';
+import {
+  PollingUpdateSource,
+  UpdateListener,
+  UpdateSource,
+  WebhookSourceEntry,
+  WebhookUpdateSource,
+} from '../engine/source';
 import { NestgramModule } from './nestgram.module';
 
 const originalFetch = global.fetch;
@@ -717,6 +723,116 @@ describe('multi-bot webhook (forRoot bots: [])', () => {
     // Routing primitives the controllers rely on are wired per bot.
     expect(support?.source.ownsSecret('s')).toBe(true);
     expect(support?.source.ownsSecret('x')).toBe(false);
+
+    await app.close();
+  });
+});
+
+// Custom update source seam: a user-supplied `source` factory can replace
+// ingestion (no polling/webhook) or wrap the built-in transport.
+class RecordingSource implements UpdateSource {
+  started = false;
+  listener?: UpdateListener;
+  async start(onUpdate: UpdateListener): Promise<void> {
+    this.started = true;
+    this.listener = onUpdate;
+  }
+  async stop(): Promise<void> {
+    this.started = false;
+  }
+}
+
+class WrappingSource implements UpdateSource {
+  constructor(readonly inner: UpdateSource) {}
+  start(onUpdate: UpdateListener): Promise<void> {
+    return this.inner.start(onUpdate);
+  }
+  stop(): Promise<void> {
+    return this.inner.stop();
+  }
+}
+
+const replacingSource = new RecordingSource();
+let replacingFactoryCalls = 0;
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      token: '123456:TEST',
+      // No polling/webhook: the custom source IS the transport.
+      source: () => {
+        replacingFactoryCalls += 1;
+        return replacingSource;
+      },
+    }),
+  ],
+  providers: [GreetRouter],
+})
+class CustomSourceAppModule {}
+
+let wrappingSource: WrappingSource | undefined;
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      token: '123456:TEST',
+      polling: { idleMs: 5 },
+      source: ({ default: inner }) => {
+        if (!inner) {
+          throw new Error('expected the polling transport as default');
+        }
+        wrappingSource = new WrappingSource(inner);
+        return wrappingSource;
+      },
+    }),
+  ],
+  providers: [GreetRouter],
+})
+class WrappedSourceAppModule {}
+
+describe('custom update source (source seam)', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it('replaces ingestion: the custom source is started and its updates dispatch', async () => {
+    // startFleet warms identity (getMe) before starting the source.
+    global.fetch = (async () => ({
+      json: async () => ({ ok: true, result: { username: 'bot' } }),
+    })) as unknown as typeof fetch;
+
+    const app = await NestFactory.createApplicationContext(
+      CustomSourceAppModule,
+      { logger: false },
+    );
+    const router = app.get(GreetRouter);
+
+    expect(replacingSource.started).toBe(true);
+    // The factory runs exactly once — not also by the (unstarted) UPDATE_SOURCE
+    // provider — so a non-idempotent factory can't build a stray instance.
+    expect(replacingFactoryCalls).toBe(1);
+    // Drive an update through the listener the framework handed our source.
+    await replacingSource.listener?.(messageUpdate(1, 'from-custom-source'));
+    expect(router.seen.map((m) => m?.text)).toEqual(['from-custom-source']);
+
+    await app.close();
+  });
+
+  it('wraps the built-in transport: UPDATE_SOURCE is the wrapper over polling', async () => {
+    global.fetch = (async () => ({
+      json: async () => ({ ok: true, result: [] }),
+    })) as unknown as typeof fetch;
+
+    const app = await NestFactory.createApplicationContext(
+      WrappedSourceAppModule,
+      { logger: false },
+    );
+    const source = app.get<UpdateSource>(Providers.UPDATE_SOURCE);
+
+    expect(source).toBe(wrappingSource);
+    expect((source as WrappingSource).inner).toBeInstanceOf(
+      PollingUpdateSource,
+    );
 
     await app.close();
   });
