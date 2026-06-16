@@ -92,8 +92,8 @@ throw new ReplyException(new SendMessage({ chat_id, text: 'Done.' }));
 ### Answering a callback query
 
 For a button tap, the right reaction is a toast or modal alert, not a chat
-message. `AnswerException` answers the originating callback query — a subclass of
-`ReplyException`, so the same filter catches it:
+message. `AnswerException` answers the originating callback query — it shares the
+same base as `ReplyException`, so the same filter catches it:
 
 ```ts
 // A toast on the button:
@@ -107,11 +107,64 @@ Thrown on a non-callback update, it has no callback to answer, so the filter log
 a warning and does nothing.
 
 :::note[It's a plain `@Catch` filter — no privileged core]
-`ReplyException` handling is just a global `@Catch(ReplyException)` filter
+`ReplyException` handling is just a global `@Catch(ReplyExceptionBase)` filter
 `NestgramModule` registers — exactly the kind you could write yourself. Define
 your own domain exceptions and `@Catch(MyError)` filters the same way; they run
 in the same Nest pipeline, ahead of the framework's own error logging.
 :::
+
+### Sharing a service with HTTP
+
+`ReplyException` lives on the **Telegram layer** — throw it from a handler,
+guard, or interceptor, just as you'd throw `HttpException` from a controller.
+Don't throw it from a domain service you also call over HTTP: that service
+shouldn't know the shape of a Telegram reply.
+
+Instead, throw a plain **domain error** and let each transport map it. It's
+**one `@Catch` filter per transport, not one per error** — and because the
+filter holds the context, it picks the right reaction by update kind:
+
+:::code[telegram-error.filter.ts]
+
+```ts
+import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
+import {
+  CallbackQuery,
+  Message,
+  TelegramExecutionContext,
+  UpdateKind,
+} from 'nestgram';
+
+// Domain layer — transport-agnostic, reused over HTTP and Telegram:
+export abstract class AppError extends Error {}
+export class InsufficientFundsError extends AppError {
+  constructor(readonly shortBy: number) {
+    super(`Not enough funds — short by ${shortBy}.`);
+  }
+}
+
+// Telegram adapter — ONE filter for the whole AppError family:
+@Catch(AppError)
+export class TelegramErrorFilter implements ExceptionFilter {
+  async catch(error: AppError, host: ArgumentsHost): Promise<void> {
+    const ctx = TelegramExecutionContext.of(host);
+    if (ctx.kind === UpdateKind.CallbackQuery) {
+      await (ctx.event as CallbackQuery).alert(error.message);
+    } else {
+      await (ctx.event as Message).answer(error.message);
+    }
+  }
+}
+```
+
+:::
+
+The HTTP side registers its own `@Catch(AppError)` filter mapping the same error
+to, say, a `409` — the service stays oblivious to both. The trade-off is
+fundamental, and you pick per case: a `ReplyException` **knows** its presentation
+(zero filters, but Telegram-coupled), a domain error **doesn't** (reusable across
+transports, at the cost of one filter). A Telegram-only bot wants `ReplyException`
+and no filters at all.
 
 It pairs naturally with [rate limiting](/docs/rate-limiting): an `onLimit`
 callback can `throw new ReplyException('Slow down.')` to warn the flooder instead
