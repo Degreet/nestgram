@@ -1,0 +1,29 @@
+# Keeps the live docs in step with the released package.
+#
+# Vercel serves the docs from the `release` branch (its Production Branch), not
+# `main` — so merging a feature to `main` only produces a preview deploy, and the
+# public docs never describe an unreleased feature. This workflow advances
+# `release` to each `v*` tag (the tags `npm version` creates at release), so the
+# moment a version is tagged, the docs that ship with it go live.
+#
+# `release` is always an ancestor of the tagged commit (tags are cut from
+# `main`), so the push is a fast-forward.
+name: Docs release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  advance-release-branch:
+    name: Advance the release branch to the tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Fast-forward `release` to the tagged commit
+        run: git push origin "${GITHUB_SHA}:refs/heads/release"
