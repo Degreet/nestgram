@@ -16,7 +16,13 @@ import { ApiError, ApiResponse } from './api-response';
 import { createAttachedData, createInlineData } from './form-data';
 import { ApiCallContext, ApiPipeline, ApiRequest } from './request';
 import { GeneratedBotMethods } from './generated-bot-methods';
-import { ApiMethod, GetMe, GetFile, GetFileOptions } from './methods';
+import {
+  ApiMethod,
+  GetMe,
+  GetFile,
+  GetFileOptions,
+  SendMessageOptions,
+} from './methods';
 
 const TELEGRAM_API_BASE = 'https://api.telegram.org';
 
@@ -34,6 +40,13 @@ export interface CallOptions {
  * target another bot or be aborted: `bot.sendMessage(id, 'hi', { token, signal })`.
  */
 export type MethodOptions<T = unknown> = Partial<T> & CallOptions;
+
+/**
+ * Options for a text reply — a `sendMessage` payload (keyboard, reply target,
+ * parse mode…) plus the per-call controls. The single home for the type the
+ * return-value contract, `ResultHandler`, and `ReplyException` all share.
+ */
+export type ReplyOptions = MethodOptions<SendMessageOptions>;
 
 @Injectable()
 export class BotService extends GeneratedBotMethods {

@@ -1,4 +1,4 @@
-import { ExecutionContext } from '@nestjs/common';
+import { ArgumentsHost } from '@nestjs/common';
 
 import { BotService } from '../../api';
 import { User } from '../../events/user';
@@ -68,12 +68,14 @@ export class TelegramExecutionContext {
   }
 
   /**
-   * Read the Nestgram execution context out of a Nest `ExecutionContext`.
+   * Read the Nestgram execution context out of a Nest `ArgumentsHost`.
    *
    * The engine invokes handlers as `invoker(event, ctx)`, so the wrapper is at
-   * argument index 1.
+   * argument index 1. Accepts the broader `ArgumentsHost` (the supertype of
+   * `ExecutionContext`) so an exception filter — which receives an
+   * `ArgumentsHost`, not a full `ExecutionContext` — can read the same wrapper.
    */
-  static of(context: ExecutionContext): TelegramExecutionContext {
-    return context.getArgByIndex(1);
+  static of(host: ArgumentsHost): TelegramExecutionContext {
+    return host.getArgByIndex(1);
   }
 }
