@@ -131,27 +131,39 @@ import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
 import {
   CallbackQuery,
   Message,
+  t,
   TelegramExecutionContext,
   UpdateKind,
 } from 'nestgram';
 
-// Domain layer — transport-agnostic, reused over HTTP and Telegram:
-export abstract class AppError extends Error {}
+// Domain layer — transport-agnostic, reused over HTTP and Telegram. Carries a
+// stable `code` and structured fields for rendering, never the user-facing copy:
+export abstract class AppError extends Error {
+  abstract readonly code: string;
+  readonly params: Record<string, string | number> = {};
+}
 export class InsufficientFundsError extends AppError {
+  readonly code = 'insufficient_funds';
+  readonly params: Record<string, string | number>;
   constructor(readonly shortBy: number) {
-    super(`Not enough funds — short by ${shortBy}.`);
+    super(`short by ${shortBy}`); // developer-facing — logs, not the user
+    this.params = { shortBy };
   }
 }
 
-// Telegram adapter — ONE filter for the whole AppError family:
+// Telegram adapter — ONE filter for the whole AppError family. The user-facing
+// copy is rendered here from the `code` (a translation key), so the reply is
+// localized and the domain stays oblivious to it:
 @Catch(AppError)
 export class TelegramErrorFilter implements ExceptionFilter {
   async catch(error: AppError, host: ArgumentsHost): Promise<void> {
     const ctx = TelegramExecutionContext.of(host);
+    const text = t(`errors.${error.code}`, error.params);
+    // Branch by update kind — this transport's own concern, not the domain's:
     if (ctx.kind === UpdateKind.CallbackQuery) {
-      await (ctx.event as CallbackQuery).alert(error.message);
+      await (ctx.event as CallbackQuery).alert(text);
     } else {
-      await (ctx.event as Message).answer(error.message);
+      await (ctx.event as Message).answer(text);
     }
   }
 }
@@ -160,11 +172,98 @@ export class TelegramErrorFilter implements ExceptionFilter {
 :::
 
 The HTTP side registers its own `@Catch(AppError)` filter mapping the same error
-to, say, a `409` — the service stays oblivious to both. The trade-off is
-fundamental, and you pick per case: a `ReplyException` **knows** its presentation
-(zero filters, but Telegram-coupled), a domain error **doesn't** (reusable across
-transports, at the cost of one filter). A Telegram-only bot wants `ReplyException`
-and no filters at all.
+to, say, a `409` and a JSON body — the service stays oblivious to both.
+
+:::note[Two rules keep the seam clean]
+The domain error carries a stable `code` and structured fields; `error.message`
+stays developer-facing (logs). Each transport renders its **own** user copy from
+the `code` — here an [i18n](/docs/i18n) key, so the reply is localized — so adding
+an error is a new translation entry, not a new `if`. Presentation belongs to the
+transport, never the domain.
+
+Branch by **update kind within a transport** — a callback wants an alert, a
+message an answer — as freely as you like; that's the adapter's own business.
+Branching by **transport inside the domain** is the smell this whole pattern
+removes.
+:::
+
+The trade-off is fundamental, and you pick per case: a `ReplyException` **knows**
+its presentation (zero filters, but Telegram-coupled), a domain error **doesn't**
+(reusable across transports, at the cost of one filter). A Telegram-only bot wants
+`ReplyException` and no filters at all.
+
+### When the service already throws `HttpException`
+
+Plenty of existing apps have no neutral domain error — the service throws Nest's
+HTTP shortcuts directly (`throw new NotFoundException(...)`, `ForbiddenException`,
+…). You don't have to refactor them to bolt on a bot. An `HttpException` already
+carries a transport-neutral discriminator — its **status code** — so one filter
+maps the whole family to a reply, and the HTTP app stays untouched:
+
+:::code[telegram-http.filter.ts]
+
+```ts
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
+import {
+  CallbackQuery,
+  Message,
+  t,
+  TelegramExecutionContext,
+  UpdateKind,
+} from 'nestgram';
+
+// The HTTP status is the shared semantic code — key localized copy off it,
+// with a catch-all, so the service is never touched:
+const KEY_BY_STATUS: Partial<Record<number, string>> = {
+  [HttpStatus.FORBIDDEN]: 'forbidden',
+  [HttpStatus.NOT_FOUND]: 'not_found',
+  [HttpStatus.CONFLICT]: 'conflict',
+};
+
+@Catch(HttpException)
+export class TelegramHttpExceptionFilter implements ExceptionFilter {
+  async catch(error: HttpException, host: ArgumentsHost): Promise<void> {
+    const ctx = TelegramExecutionContext.of(host);
+    const text = t(`errors.${KEY_BY_STATUS[error.getStatus()] ?? 'unknown'}`);
+    if (ctx.kind === UpdateKind.CallbackQuery) {
+      await (ctx.event as CallbackQuery).alert(text);
+    } else {
+      await (ctx.event as Message).answer(text);
+    }
+  }
+}
+```
+
+:::
+
+Apply it to the **Telegram side only** — on your routers, via `@UseFilters`:
+
+```ts
+@Router()
+@UseFilters(TelegramHttpExceptionFilter)
+export class SupportRouter {
+  /* … */
+}
+```
+
+:::warn[Don't register this one globally]
+A global `@Catch(HttpException)` filter (`APP_FILTER` / `useGlobalFilters`) runs
+for HTTP requests too and would hijack your existing JSON error responses. Scope
+it with `@UseFilters` on the routers (or a shared base router) so Nest's built-in
+handler keeps serving HTTP byte-for-byte unchanged.
+:::
+
+It's a pragmatic bridge, not a hack: the status code genuinely encodes the
+semantic, so reusing it across transports is honest. That the service throws
+`HttpException` at all is still a transport leak — the cleaner endgame is the
+plain domain error above, mapped per transport. Migrate when you can; until then,
+one filter attaches the bot without touching a line of the existing app.
 
 It pairs naturally with [rate limiting](/docs/rate-limiting): an `onLimit`
 callback can `throw new ReplyException('Slow down.')` to warn the flooder instead
