@@ -296,14 +296,20 @@ The factory returns the same options object `forRoot` takes — `store`, `key`,
 
 ## Concurrent updates
 
+Load → mutate → save isn't atomic on its own, so two updates for the **same
+conversation** running at once could race on the session (last save wins).
+That's exactly what the built-in [update queue](/docs/how-nestgram-works)
+prevents: it serialises a chat's updates — they run one at a time in arrival
+order — while different chats still run in parallel. So rapid taps on an inline
+keyboard from one user are processed in order, and the race can't happen on a
+single instance.
+
 :::caution
-There is no per-key locking yet: load → mutate → save isn't atomic. With
-polling this can't bite — updates are processed one at a time. The webhook
-source dispatches concurrently, so two updates for the **same conversation**
-processed at once can race, and the last save wins. A person typing messages
-won't trigger it; rapid taps on an inline keyboard can. If that matters for
-your flow, serialise per chat in front of the bot — per-key locking is a
-planned improvement.
+Two caveats. First, the queue is per-process — across **multiple instances**
+the same conversation can still land on different workers; move the store to
+Redis and put a shared queue in front (the distributed `UpdateQueue` is on the
+roadmap). Second, if you replace the queue's `key` with something coarser than
+a chat, or set `updateQueue: false`, you opt back out of this guarantee.
 :::
 
 ## Sessions and the FSM

@@ -222,9 +222,12 @@ RateLimitModule.forRoot({
 
 :::note
 Read-modify-write on the counter is not atomic — the same trade-off sessions and
-the FSM already make. Under heavy concurrency a key can briefly exceed its limit
-by the number of in-flight updates. That's fine for protective flood control,
-and a non-issue for long polling, which processes a batch largely in order.
+the FSM already make. On a single instance the [update queue](/docs/how-nestgram-works)
+serialises a chat's updates, so a conversation's counter is read-modify-written
+in order and can't be raced by its own in-flight updates. The non-atomicity only
+shows across **multiple instances** sharing a store, where a key can briefly
+exceed its limit by the number of concurrent workers — fine for protective flood
+control.
 :::
 
 ## Configuring from DI

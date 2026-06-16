@@ -127,13 +127,15 @@ export class NestgramModule {
           : null;
         // No top-level transport: this provider's source is NOT started (the
         // bootstrap's hasTransport gate is false) — the fleet path owns building
-        // and starting any custom source. Skip the seam here so the user's
+        // and starting any custom source. Skip decoration here so the user's
         // `source` factory isn't invoked a second time (building a stray,
         // never-stopped instance). Resolve to the inert polling placeholder.
         if (inner === null) {
           return polling;
         }
-        return factory.applyUserSource(inner, botService) ?? polling;
+        // Apply the user `source` factory + the default update queue, the same
+        // composition the fleet uses.
+        return factory.decorate(inner, botService) ?? polling;
       },
       inject: [
         Providers.NESTGRAM_OPTIONS,

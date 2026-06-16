@@ -29,6 +29,7 @@ import {
   WebhookSourceEntry,
   WebhookUpdateSource,
 } from '../engine/source';
+import { QueuedUpdateSource } from '../engine/queue';
 import { NestgramModule } from './nestgram.module';
 
 const originalFetch = global.fetch;
@@ -460,11 +461,15 @@ describe('webhook transport (real-module DI)', () => {
     const app = await NestFactory.createApplicationContext(WebhookAppModule, {
       logger: false,
     });
-    const source = app.get<WebhookUpdateSource>(Providers.UPDATE_SOURCE);
-
-    expect(source).toBeInstanceOf(WebhookUpdateSource);
-    expect(source.verifySecret('s3cret')).toBe(true);
-    expect(source.verifySecret('wrong')).toBe(false);
+    // The active source is the default update queue wrapping the webhook source;
+    // the webhook source itself stays injectable by its class token (what the
+    // controller uses) and still validates the secret.
+    expect(app.get<UpdateSource>(Providers.UPDATE_SOURCE)).toBeInstanceOf(
+      QueuedUpdateSource,
+    );
+    const webhook = app.get(WebhookUpdateSource);
+    expect(webhook.verifySecret('s3cret')).toBe(true);
+    expect(webhook.verifySecret('wrong')).toBe(false);
 
     await app.close();
   });
@@ -811,14 +816,16 @@ describe('custom update source (source seam)', () => {
     // The factory runs exactly once — not also by the (unstarted) UPDATE_SOURCE
     // provider — so a non-idempotent factory can't build a stray instance.
     expect(replacingFactoryCalls).toBe(1);
-    // Drive an update through the listener the framework handed our source.
+    // Drive an update through the listener the framework handed our source. The
+    // default queue wraps it, so dispatch runs in the background after admission.
     await replacingSource.listener?.(messageUpdate(1, 'from-custom-source'));
+    await new Promise((r) => setImmediate(r));
     expect(router.seen.map((m) => m?.text)).toEqual(['from-custom-source']);
 
     await app.close();
   });
 
-  it('wraps the built-in transport: UPDATE_SOURCE is the wrapper over polling', async () => {
+  it('wraps the built-in transport, then the default queue wraps that', async () => {
     global.fetch = (async () => ({
       json: async () => ({ ok: true, result: [] }),
     })) as unknown as typeof fetch;
@@ -827,10 +834,67 @@ describe('custom update source (source seam)', () => {
       WrappedSourceAppModule,
       { logger: false },
     );
-    const source = app.get<UpdateSource>(Providers.UPDATE_SOURCE);
+    // Composition order: default queue on top of the user's source on top of
+    // the polling transport (orthogonal — `source` = ingestion, queue = layer).
+    expect(app.get<UpdateSource>(Providers.UPDATE_SOURCE)).toBeInstanceOf(
+      QueuedUpdateSource,
+    );
+    expect(wrappingSource?.inner).toBeInstanceOf(PollingUpdateSource);
 
-    expect(source).toBe(wrappingSource);
-    expect((source as WrappingSource).inner).toBeInstanceOf(
+    await app.close();
+  });
+});
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({ token: '123456:TEST', polling: { idleMs: 5 } }),
+  ],
+})
+class DefaultQueueAppModule {}
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      token: '123456:TEST',
+      polling: { idleMs: 5 },
+      updateQueue: false,
+    }),
+  ],
+})
+class NoQueueAppModule {}
+
+describe('default update queue', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it('wraps the transport in the update queue by default', async () => {
+    global.fetch = (async () => ({
+      json: async () => ({ ok: true, result: [] }),
+    })) as unknown as typeof fetch;
+
+    const app = await NestFactory.createApplicationContext(
+      DefaultQueueAppModule,
+      { logger: false },
+    );
+
+    expect(app.get<UpdateSource>(Providers.UPDATE_SOURCE)).toBeInstanceOf(
+      QueuedUpdateSource,
+    );
+
+    await app.close();
+  });
+
+  it('updateQueue: false dispatches through the bare transport (no queue)', async () => {
+    global.fetch = (async () => ({
+      json: async () => ({ ok: true, result: [] }),
+    })) as unknown as typeof fetch;
+
+    const app = await NestFactory.createApplicationContext(NoQueueAppModule, {
+      logger: false,
+    });
+
+    expect(app.get<UpdateSource>(Providers.UPDATE_SOURCE)).toBeInstanceOf(
       PollingUpdateSource,
     );
 

@@ -286,10 +286,12 @@ for long flows; a higher-level scenes/wizard layer on top of this core is
 the next item on the roadmap.
 :::
 
-:::caution
-**No per-conversation locking.** With long polling, updates are processed
-one at a time, so a user can't race their own flow. The webhook source
-handles updates concurrently — two rapid-fire messages from one user can
-interleave, and the last write wins. Keep wizard handlers fast, and don't
-park slow I/O between reading the state and transitioning it.
+:::note
+**Per-chat serialization is on by default.** The built-in
+[update queue](/docs/how-nestgram-works) runs a chat's updates one at a time in
+arrival order, so two rapid-fire messages from one user can't interleave and
+race their own flow — under both polling and webhook, on a single instance.
+Across multiple instances the same conversation can still land on different
+workers (move to a shared store + queue), so keep transitions fast regardless
+and don't park slow I/O between reading the state and transitioning it.
 :::

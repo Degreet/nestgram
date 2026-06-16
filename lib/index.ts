@@ -26,6 +26,7 @@ export * from './engine/discovery';
 export * from './engine/execution';
 export * from './engine/dispatcher';
 export * from './engine/source';
+export * from './engine/queue';
 export * from './module';
 
 // Testing utilities (dispatch fake updates against your routers). Jest-agnostic

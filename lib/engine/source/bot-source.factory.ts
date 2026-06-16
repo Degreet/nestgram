@@ -11,6 +11,7 @@ import {
   getWebhookSourceToken,
   Providers,
 } from '../../providers';
+import { QueuedUpdateSource, UpdateQueue } from '../queue';
 import { AllowedUpdatesResolver } from './allowed-updates.resolver';
 import { PollingOptions, PollingUpdateSource } from './polling-update-source';
 import { UpdateSource } from './update-source';
@@ -48,10 +49,25 @@ export class BotSourceFactory {
     transport: BotTransport,
     name: string = DEFAULT_BOT_NAME,
   ): UpdateSource | null {
-    return this.applyUserSource(
+    return this.decorate(
       this.buildTransport(transport, botService, name),
       botService,
     );
+  }
+
+  /**
+   * Produce the final per-bot source from the built-in transport (`inner`): run
+   * it through the user's `source` factory (wrap/replace), then wrap the result
+   * in the default update queue (per-chat FIFO + bounded concurrency) unless
+   * disabled. The single home for both layers — the single-bot picker delegates
+   * here too, so both paths compose them identically. `null` in → `null` out
+   * (no transport and no custom source = nothing to run).
+   */
+  decorate(
+    inner: UpdateSource | null,
+    botService: BotService,
+  ): UpdateSource | null {
+    return this.applyQueue(this.applyUserSource(inner, botService));
   }
 
   /** Build the built-in transport source for a bot, or `null` when none is configured. */
@@ -80,12 +96,10 @@ export class BotSourceFactory {
 
   /**
    * Hand the built-in source (`default`) to the user's `source` factory if one is
-   * configured, so they can wrap or replace it. The single home for the seam —
-   * the single-bot picker delegates here too, so both paths apply it identically.
-   * With no factory, the built-in source passes through unchanged. Returns `null`
-   * only when there is neither a transport nor a custom source (no source to run).
+   * configured, so they can wrap or replace it. With no factory, the built-in
+   * source passes through unchanged.
    */
-  applyUserSource(
+  private applyUserSource(
     inner: UpdateSource | null,
     botService: BotService,
   ): UpdateSource | null {
@@ -97,5 +111,21 @@ export class BotSourceFactory {
       bot: botService,
       get: (token) => this.moduleRef.get(token, { strict: false }),
     });
+  }
+
+  /**
+   * Wrap a source in the default update queue (one {@link UpdateQueue} per bot),
+   * unless `updateQueue: false` turns it off. Wraps whatever the seam produced —
+   * built-in or custom — so a custom source is queued too unless disabled.
+   */
+  private applyQueue(source: UpdateSource | null): UpdateSource | null {
+    if (source === null || this.options.updateQueue === false) {
+      return source;
+    }
+    const options =
+      typeof this.options.updateQueue === 'object'
+        ? this.options.updateQueue
+        : undefined;
+    return new QueuedUpdateSource(source, new UpdateQueue(options));
   }
 }
