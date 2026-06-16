@@ -9,7 +9,11 @@ import {
 
 import { TelegramExecutionContext, UpdateKind } from '../../engine/context';
 import { ResultHandler } from '../../engine/execution';
-import { AnswerException, ReplyException } from '../../exceptions';
+import {
+  AnswerException,
+  ReplyException,
+  ReplyExceptionBase,
+} from '../../exceptions';
 import { Providers } from '../../providers';
 import type { CallbackQuery } from '../../events';
 import type { NestgramModuleOptions } from '../../module/nestgram-module.types';
@@ -28,7 +32,7 @@ import type { NestgramModuleOptions } from '../../module/nestgram-module.types';
  * logging path, just as if the feature didn't exist.
  */
 @Injectable()
-@Catch(ReplyException)
+@Catch(ReplyExceptionBase)
 export class ReplyExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(ReplyExceptionFilter.name);
 
@@ -38,7 +42,10 @@ export class ReplyExceptionFilter implements ExceptionFilter {
     private readonly options: NestgramModuleOptions,
   ) {}
 
-  async catch(exception: ReplyException, host: ArgumentsHost): Promise<void> {
+  async catch(
+    exception: ReplyExceptionBase,
+    host: ArgumentsHost,
+  ): Promise<void> {
     if (this.options.replyExceptions === false) {
       // Self-disabled: let it flow to the dispatcher's catch like any other error.
       throw exception;
@@ -59,7 +66,7 @@ export class ReplyExceptionFilter implements ExceptionFilter {
 
   /** Resolve the exception to its Telegram reaction and dispatch it. */
   private async react(
-    exception: ReplyException,
+    exception: ReplyExceptionBase,
     ctx: TelegramExecutionContext,
   ): Promise<void> {
     if (exception instanceof AnswerException) {
@@ -67,10 +74,16 @@ export class ReplyExceptionFilter implements ExceptionFilter {
       return;
     }
 
-    // String (with or without options) or a command object — the handler
-    // return-value contract exactly. Reuse ResultHandler so reply/command
-    // semantics (and the can't-answer warning) stay in one place.
-    await this.resultHandler.handle(exception.content, ctx, exception.options);
+    if (exception instanceof ReplyException) {
+      // String (with or without options) or a command object — the handler
+      // return-value contract exactly. Reuse ResultHandler so reply/command
+      // semantics (and the can't-answer warning) stay in one place.
+      await this.resultHandler.handle(
+        exception.content,
+        ctx,
+        exception.options,
+      );
+    }
   }
 
   /** Answer the originating callback query (toast/alert). Callback-only. */

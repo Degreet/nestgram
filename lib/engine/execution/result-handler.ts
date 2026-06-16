@@ -2,11 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { TelegramExecutionContext } from '../context/telegram-execution-context';
 import { TelegramEvent } from '../context/event-factory';
-import { ApiMethod, SendMessageOptions } from '../../api/methods';
-import type { MethodOptions } from '../../api';
-
-/** Reply options applied when the result is a string (a keyboard, reply target…). */
-type ReplyOptions = MethodOptions<SendMessageOptions>;
+import { ApiMethod } from '../../api/methods';
+import type { ReplyOptions } from '../../api';
 
 /** An event that can reply to itself with optional reply options (e.g. `Message.answer`). */
 interface Answerable {
