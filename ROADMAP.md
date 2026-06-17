@@ -79,6 +79,13 @@ Everything needed to ship a production bot.
 ## Phase 4 — Scale & DX
 
 - [ ] Multi-instance support (Redis sessions, distributed throttling)
+- [x] Pluggable update-source seam — `forRoot({ source })` factory (per bot,
+      wrap or replace, DI-aware), the public extension point delivery layers are
+      built on (no privileged core)
+- [x] In-process update queue — per-chat FIFO serialization (fixes the same-chat
+      session/FSM race under webhook) + bounded concurrency / backpressure;
+      `updateQueue` option, on by default, built as an `UpdateSource` decorator on
+      the seam. Rung 1 before the distributed `UpdateQueue` port
 - [x] Inbound rate-limiting (flood control) — global interceptor, sliding-window
       per-conversation limiter, `@RateLimit` / `@SkipRateLimit`, `onLimit` reply
 - [ ] CLI / schematics

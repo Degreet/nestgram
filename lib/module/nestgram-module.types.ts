@@ -1,6 +1,8 @@
 import { ModuleMetadata, Type } from '@nestjs/common';
 
 import { PollingOptions } from '../engine/source';
+import type { UpdateSourceFactory } from '../engine/source';
+import type { UpdateQueueOptions } from '../engine/queue';
 import type { AllowedUpdate } from '../engine/context/update-kind';
 import type { ApiInterceptor } from '../api/request';
 import type { ParseModeValue } from '../api/parse-mode';
@@ -91,6 +93,29 @@ export interface NestgramModuleOptions {
    * receive updates over HTTP instead.
    */
   polling?: boolean | PollingOptions;
+  /**
+   * Plug in your own update source, or decorate the built-in one. Called once
+   * per bot with `{ default, bot, get }` — return `ctx.default` wrapped in your
+   * own `UpdateSource` decorator (e.g. a queue) to add a layer, or your own
+   * `UpdateSource` to replace ingestion entirely (the `polling`/`webhook` config
+   * then only seeds `ctx.default`, which you may ignore). Branch on `ctx.bot.name`
+   * for per-bot behaviour. The public seam the framework's own queue layer is
+   * built on — no privileged core.
+   */
+  source?: UpdateSourceFactory;
+  /**
+   * In-process update queue applied over the active source (per bot): per-chat
+   * FIFO serialization plus a bounded concurrency cap. On by default (the
+   * correctness baseline for a single-instance bot) — updates for the SAME chat
+   * dispatch one at a time in arrival order, so two quick messages can't race on
+   * that chat's session/FSM state, while different chats run in parallel up to
+   * `maxConcurrency` (the poll loop paces itself to that bound). Pass an object
+   * to tune, or `false` to dispatch every update immediately with no
+   * serialization or bound (the pre-queue behaviour — reintroduces the race).
+   * It wraps whatever `source` resolves to, so a custom source is queued too
+   * unless you turn this off.
+   */
+  updateQueue?: UpdateQueueOptions | false;
   /**
    * Webhook transport config. When set, the bot registers the webhook with
    * Telegram on boot and receives updates over HTTP instead of polling. You

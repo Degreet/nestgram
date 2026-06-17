@@ -107,19 +107,42 @@ export class NestgramModule {
       inject: [Providers.NESTGRAM_OPTIONS, BotService, AllowedUpdatesResolver],
     },
     // The active transport, chosen by config: webhook if configured, else
-    // polling. Bootstrap injects UPDATE_SOURCE and only starts it when a
-    // transport is set.
+    // polling — then run through the user's `source` factory (wrap/replace) via
+    // the same BotSourceFactory the fleet uses, so the seam applies identically.
+    // Bootstrap injects UPDATE_SOURCE and only starts it when a transport is set;
+    // the no-transport-but-custom-source case is handled on the fleet path.
     {
       provide: Providers.UPDATE_SOURCE,
       useFactory: (
         options: NestgramModuleOptions,
         polling: PollingUpdateSource,
         webhook: WebhookUpdateSource,
-      ): UpdateSource => (options.webhook ? webhook : polling),
+        botService: BotService,
+        factory: BotSourceFactory,
+      ): UpdateSource => {
+        const inner = options.webhook
+          ? webhook
+          : options.polling
+          ? polling
+          : null;
+        // No top-level transport: this provider's source is NOT started (the
+        // bootstrap's hasTransport gate is false) — the fleet path owns building
+        // and starting any custom source. Skip decoration here so the user's
+        // `source` factory isn't invoked a second time (building a stray,
+        // never-stopped instance). Resolve to the inert polling placeholder.
+        if (inner === null) {
+          return polling;
+        }
+        // Apply the user `source` factory + the default update queue, the same
+        // composition the fleet uses.
+        return factory.decorate(inner, botService) ?? polling;
+      },
       inject: [
         Providers.NESTGRAM_OPTIONS,
         PollingUpdateSource,
         WebhookUpdateSource,
+        BotService,
+        BotSourceFactory,
       ],
     },
     NestgramBootstrap,
