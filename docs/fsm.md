@@ -54,9 +54,9 @@ never match, and a transition throws instead of silently dropping a write.
 
 ## Define the states
 
-`stateGroup()` declares the steps of a flow — a factory, symmetric with
-`callbackData()` from [Callbacks](/docs/callbacks). Keep the shape of the
-data the flow collects right beside it:
+`stateGroup()` declares the steps of a flow — a factory, not a class, so the
+step ids infer cleanly in TS. Keep the shape of the data the flow collects
+right beside it:
 
 :::code[registration.states.ts]
 
