@@ -12,7 +12,7 @@ import type { DeepLinkDataDecoder } from './deep-link-data.types';
  * type-only. The payload is read inline rather than via the engine's
  * `extractPayload`, because a runtime import would close an
  * `engine -> api -> deep-links` module cycle (the same reason
- * `CallbackDataPredicate` reads `callback_query.data` directly).
+ * `CallbackRoutePredicate` reads `callback_query.data` directly).
  */
 export class DeepLinkDataPredicate implements RoutePredicate {
   constructor(private readonly definition: DeepLinkDataDecoder) {}

@@ -1,5 +1,7 @@
+import { CallbackRoutePattern } from '../callback-data';
 import { ButtonStyleValue } from './button-style';
 import { KeyboardBuilder } from './keyboard-builder';
+import { RouteParamArgs } from './route-params.types';
 
 interface InlineButton {
   text: string;
@@ -26,9 +28,37 @@ interface InlineButton {
  * ```
  */
 export class InlineKeyboard extends KeyboardBuilder<InlineButton> {
-  /** A callback button: pressing it sends `callbackData` back as an update. */
-  text(label: string, callbackData: string, hidden = false): this {
-    this.push({ text: label, callback_data: callbackData }, hidden);
+  /**
+   * A callback button. Two forms, one mechanism — a safe default and a terse
+   * shortcut, like `SendMessage` vs `message.answer`:
+   *
+   * - the framework assembles the route, checking and escaping the parameters —
+   *   `.text('Done', 'reminder/done/:id', { id })` (the template-literal types
+   *   require every `:param`);
+   * - or you interpolate it yourself — `` .text('Done', `reminder/done/${id}`) ``
+   *   — terse, no parameter check, no escaping (fine for the numeric-id case).
+   *
+   * Pressing the button sends the resulting `callback_data` back; route it with
+   * `@Action('reminder/done/:id')` + `@Param('id')`.
+   */
+  text<T extends string>(
+    label: string,
+    route: T,
+    ...rest: RouteParamArgs<T>
+  ): this;
+  text(
+    label: string,
+    route: string,
+    paramsOrHidden?: Record<string, string | number> | boolean,
+    hidden = false,
+  ): this {
+    const assembled = typeof paramsOrHidden === 'object';
+    const callbackData = assembled
+      ? CallbackRoutePattern.build(route, paramsOrHidden)
+      : route;
+    const isHidden =
+      typeof paramsOrHidden === 'boolean' ? paramsOrHidden : hidden;
+    this.push({ text: label, callback_data: callbackData }, isHidden);
     return this;
   }
 

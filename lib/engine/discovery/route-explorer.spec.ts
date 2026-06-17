@@ -7,6 +7,11 @@ import { Metadata } from '../../decorators/metadata.enum';
 import { ListenerOptions } from '../../decorators/listener-options';
 import { Match } from '../../decorators/match.decorator';
 import { RoutePredicate } from '../matching';
+import {
+  CallbackRoutePattern,
+  CallbackRoutePredicate,
+} from '../../callback-data';
+import type { TelegramExecutionContext } from '../context';
 import { RouteExplorer } from './route-explorer';
 import { RouteTable } from './route-table';
 
@@ -148,6 +153,68 @@ describe('RouteExplorer @Match (method-level predicates)', () => {
     expect(route.predicates).toEqual(
       expect.arrayContaining([adminOnly, inFlow]),
     );
+  });
+});
+
+// Attach a listener carrying a real CallbackRoutePredicate, the way @Action does.
+function listenAction(
+  prototype: object,
+  methodName: string,
+  template: string,
+): void {
+  const fn = (prototype as Record<string, unknown>)[methodName];
+  const options: ListenerOptions[] = [
+    {
+      updateType: 'callback_query',
+      predicates: [
+        new CallbackRoutePredicate(CallbackRoutePattern.compile(template)),
+      ],
+    },
+  ];
+  Reflect.defineMetadata(Metadata.LISTENERS, options, fn as object);
+}
+
+function callbackCtx(data: string): TelegramExecutionContext {
+  return {
+    update: { callback_query: { data } },
+  } as unknown as TelegramExecutionContext;
+}
+
+describe('RouteExplorer @Router prefix (callback-route namespacing)', () => {
+  class PrefixedRouter {
+    done(): string {
+      return 'done';
+    }
+  }
+  Reflect.defineMetadata(
+    Metadata.ROUTER,
+    { prefix: 'reminder' },
+    PrefixedRouter,
+  );
+  listenAction(PrefixedRouter.prototype, 'done', 'done/:id');
+
+  class PlainRouter {
+    done(): string {
+      return 'done';
+    }
+  }
+  Reflect.defineMetadata(Metadata.ROUTER, {}, PlainRouter);
+  listenAction(PlainRouter.prototype, 'done', 'done/:id');
+
+  it('prefixes a prefixable listener predicate with the router prefix', () => {
+    const [route] = explorerOver([new PrefixedRouter()]).explore();
+    const predicate = route.predicates[0];
+
+    expect(predicate.matches(callbackCtx('reminder/done/7'))).toBe(true);
+    expect(predicate.matches(callbackCtx('done/7'))).toBe(false);
+  });
+
+  it('leaves predicates untouched when the router has no prefix', () => {
+    const [route] = explorerOver([new PlainRouter()]).explore();
+    const predicate = route.predicates[0];
+
+    expect(predicate.matches(callbackCtx('done/7'))).toBe(true);
+    expect(predicate.matches(callbackCtx('reminder/done/7'))).toBe(false);
   });
 });
 

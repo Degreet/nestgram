@@ -71,6 +71,7 @@ export class UpdateDispatcher {
           ctx,
         );
         if (!route) {
+          this.warnDeadButton(update);
           return;
         }
 
@@ -94,6 +95,22 @@ export class UpdateDispatcher {
         );
       }
     });
+  }
+
+  /**
+   * A `callback_query` that matched no route is a dead button — the user pressed
+   * a button whose `callback_data` routes nowhere (a typo'd route string, or a
+   * handler that was removed). Warn as a development aid. Other unmatched updates
+   * are silently ignored: first-match-wins, and not every update has a handler.
+   */
+  private warnDeadButton(update: RawUpdate): void {
+    const data = update.callback_query?.data;
+    if (data !== undefined) {
+      this.logger.warn(
+        `Button callback_data "${data}" matched no @Action route — pressing ` +
+          `it does nothing. Check the route string against its handler.`,
+      );
+    }
   }
 
   private invokerFor(route: Route): HandlerInvoker {

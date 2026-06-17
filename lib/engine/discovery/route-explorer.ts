@@ -6,7 +6,8 @@ import {
 
 import { Metadata } from '../../decorators/metadata.enum';
 import { ListenerOptions } from '../../decorators/listener-options';
-import { RoutePredicate } from '../matching';
+import { getRouterPrefix } from '../../decorators/injectable/router.decorator';
+import { isPrefixable, RoutePredicate } from '../matching';
 import { Route } from './route.types';
 
 /**
@@ -42,6 +43,11 @@ export class RouteExplorer {
         continue;
       }
 
+      // `@Router('ns')` namespaces this router's callback routes: the prefix
+      // ANDs into every prefixable listener predicate (a string `@Action`), so
+      // `done/:id` matches `ns/done/:id`. Undefined leaves predicates untouched.
+      const prefix = getRouterPrefix(instance.constructor);
+
       // Class-level predicates (e.g. `@ForBot('support')` on the router) AND into
       // EVERY route the router declares — scoping the whole router to one bot.
       const classPredicates: RoutePredicate[] =
@@ -67,10 +73,16 @@ export class RouteExplorer {
         // after — so a fallback is tried only once the strict route declined,
         // regardless of the decorators' source order.
         for (const listener of RouteExplorer.orderListeners(listeners)) {
+          const listenerPredicates = (listener.predicates ?? []).map(
+            (predicate) =>
+              prefix !== undefined && isPrefixable(predicate)
+                ? predicate.withPrefix(prefix)
+                : predicate,
+          );
           routes.push({
             updateType: listener.updateType,
             predicates: [
-              ...(listener.predicates ?? []),
+              ...listenerPredicates,
               ...classPredicates,
               ...methodPredicates,
             ],
