@@ -2,13 +2,19 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import type { BotService } from '../../api';
 import { runAmbient } from '../../ambient';
-import { ContextFactory } from '../context';
+import { ContextFactory, TelegramExecutionContext } from '../context';
 import {
   HandlerExecutorFactory,
   HandlerInvoker,
   ResultHandler,
 } from '../execution';
-import { Route, RouteMatcher, RouteTable } from '../discovery';
+import {
+  Route,
+  RouteMatcher,
+  RouteTable,
+  UnhandledHandler,
+  UnhandledRegistry,
+} from '../discovery';
 import { StageRegistry } from './stage-registry';
 import { RawUpdate } from '../../events/raw-update.types';
 
@@ -33,6 +39,10 @@ import { RawUpdate } from '../../events/raw-update.types';
 export class UpdateDispatcher {
   private readonly logger = new Logger(UpdateDispatcher.name);
   private readonly invokers = new WeakMap<Route, HandlerInvoker>();
+  private readonly unhandledInvokers = new WeakMap<
+    UnhandledHandler,
+    HandlerInvoker
+  >();
 
   constructor(
     private readonly contextFactory: ContextFactory,
@@ -41,6 +51,7 @@ export class UpdateDispatcher {
     private readonly executorFactory: HandlerExecutorFactory,
     private readonly resultHandler: ResultHandler,
     private readonly stages: StageRegistry,
+    private readonly unhandledRegistry: UnhandledRegistry,
   ) {}
 
   /**
@@ -70,21 +81,27 @@ export class UpdateDispatcher {
           this.routeTable,
           ctx,
         );
-        if (!route) {
-          this.warnDeadButton(update);
+        if (route) {
+          // A static-reply route (a scene step's `invalid` reprompt) skips the
+          // handler entirely — its return value IS the reply string.
+          const result =
+            route.reply !== undefined
+              ? route.reply
+              : await this.invokerFor(route)(ctx);
+          await this.resultHandler.handle(result, ctx);
+        } else if (this.unhandledRegistry.all().length > 0) {
+          await this.runUnhandled(ctx);
+        } else {
+          // No route and no `@OnUnhandled` handler — nothing ran, so there is
+          // nothing to commit; leave the store as the stages loaded it.
           return;
         }
 
-        // A static-reply route (a scene step's `invalid` reprompt) skips the
-        // handler entirely — its return value IS the reply string.
-        const result =
-          route.reply !== undefined
-            ? route.reply
-            : await this.invokerFor(route)(ctx);
-        await this.resultHandler.handle(result, ctx);
-
-        // Commit only on success — a thrown handler skips commit (e.g. the
-        // session isn't persisted), keeping the store as it was.
+        // Commit only on success — a thrown handler skips commit, keeping the
+        // store as it was. Reached after a matched OR an `@OnUnhandled` handler
+        // ran, so a session write inside an `@OnUnhandled` handler persists like
+        // any other (runUnhandled isolates per-handler throws so it never aborts
+        // the commit).
         for (const stage of stages) {
           await stage.commit?.(ctx);
         }
@@ -98,19 +115,37 @@ export class UpdateDispatcher {
   }
 
   /**
-   * A `callback_query` that matched no route is a dead button — the user pressed
-   * a button whose `callback_data` routes nowhere (a typo'd route string, or a
-   * handler that was removed). Warn as a development aid. Other unmatched updates
-   * are silently ignored: first-match-wins, and not every update has a handler.
+   * No route matched — run every `@OnUnhandled` handler through the full Nest
+   * pipeline (so guards/interceptors apply and a returned value replies). They
+   * all run: these handlers observe rather than compete, so there is no
+   * first-match here. The built-in dead-button warning is one of them.
    */
-  private warnDeadButton(update: RawUpdate): void {
-    const data = update.callback_query?.data;
-    if (data !== undefined) {
-      this.logger.warn(
-        `Button callback_data "${data}" matched no @Action route — pressing ` +
-          `it does nothing. Check the route string against its handler.`,
-      );
+  private async runUnhandled(ctx: TelegramExecutionContext): Promise<void> {
+    for (const handler of this.unhandledRegistry.all()) {
+      // Each handler is an independent observer — isolate failures so one bad
+      // handler can't starve the rest (e.g. the built-in dead-button warning).
+      try {
+        const result = await this.unhandledInvokerFor(handler)(ctx);
+        await this.resultHandler.handle(result, ctx);
+      } catch (error) {
+        this.logger.error(
+          `@OnUnhandled handler "${handler.methodName}" failed`,
+          error as Error,
+        );
+      }
     }
+  }
+
+  private unhandledInvokerFor(handler: UnhandledHandler): HandlerInvoker {
+    let invoker = this.unhandledInvokers.get(handler);
+    if (!invoker) {
+      invoker = this.executorFactory.create(
+        handler.instance,
+        handler.methodName,
+      );
+      this.unhandledInvokers.set(handler, invoker);
+    }
+    return invoker;
   }
 
   private invokerFor(route: Route): HandlerInvoker {

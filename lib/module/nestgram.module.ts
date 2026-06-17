@@ -10,6 +10,8 @@ import {
   RouteMatcher,
   RouteTable,
   RouteTransformExplorer,
+  UnhandledExplorer,
+  UnhandledRegistry,
 } from '../engine/discovery';
 import { NestgramConfigError } from '../exceptions';
 import {
@@ -34,6 +36,7 @@ import {
 } from '../engine/source';
 import { AutoAnswerCallbackInterceptor } from '../builtins/auto-answer';
 import { ReplyExceptionFilter } from '../builtins/reply-exception';
+import { DeadButtonWarner } from '../builtins/unhandled';
 import { NestgramBootstrap } from './nestgram.bootstrap';
 import {
   NestgramModuleAsyncOptions,
@@ -65,6 +68,8 @@ export class NestgramModule {
     RouteTransformExplorer,
     RouteTable,
     RouteMatcher,
+    UnhandledExplorer,
+    UnhandledRegistry,
     HandlerExecutorFactory,
     ResultHandler,
     // The dispatcher runs per-update stages discovered + ordered at boot. The
@@ -154,6 +159,10 @@ export class NestgramModule {
     // global @Catch filter; self-disables (re-throws) when replyExceptions is
     // false. Same "public toggleable built-in" shape as the interceptor above.
     { provide: APP_FILTER, useClass: ReplyExceptionFilter },
+    // The dead-button warning, shipped as a default `@OnUnhandled` handler (a
+    // `@Router` discovered like any other) — public and toggleable via
+    // `warnUnhandledCallbacks`, so nothing here is privileged.
+    DeadButtonWarner,
   ];
 
   /**

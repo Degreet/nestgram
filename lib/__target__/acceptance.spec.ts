@@ -12,6 +12,7 @@ import {
   ExceptionFilter,
   ExecutionContext,
   Injectable,
+  Logger,
   Module,
   ParseIntPipe,
   UseFilters,
@@ -31,6 +32,7 @@ import {
   Message,
   NestgramModule,
   OnMessage,
+  OnUnhandled,
   Param,
   RouteTable,
   Router,
@@ -479,5 +481,159 @@ describe('deepLinkData filter() routes /start by deep-link (booted app)', () => 
   it('routes a non-Ref /start to the catch-all handler', async () => {
     await dispatcher.dispatch(messageUpdate(3, '/start other_1'));
     expect(router.log).toEqual(['plain']);
+  });
+});
+
+@Router()
+class UnhandledRouter {
+  readonly seen: number[] = [];
+
+  @Action('ping')
+  ping(query: CallbackQuery) {
+    return query.answer();
+  }
+
+  @OnUnhandled()
+  fallback(update: RawUpdate) {
+    this.seen.push(update.update_id);
+  }
+}
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      token: '123456:TEST',
+      autoAnswerCallbackQueries: false,
+    }),
+  ],
+  providers: [UnhandledRouter],
+})
+class UnhandledAppModule {}
+
+describe('@OnUnhandled (booted app)', () => {
+  let app: INestApplicationContext;
+  let dispatcher: UpdateDispatcher;
+  let router: UnhandledRouter;
+
+  beforeAll(async () => {
+    app = await NestFactory.createApplicationContext(UnhandledAppModule, {
+      logger: false,
+    });
+    dispatcher = app.get(UpdateDispatcher);
+    router = app.get(UnhandledRouter);
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  beforeEach(() => {
+    router.seen.length = 0;
+  });
+
+  it('runs the handler with the raw update when nothing matched', async () => {
+    await dispatcher.dispatch(callbackUpdate(1, 'no-such-route'));
+    expect(router.seen).toEqual([1]);
+  });
+
+  it('does not run it when a route matched', async () => {
+    await dispatcher.dispatch(callbackUpdate(2, 'ping'));
+    expect(router.seen).toEqual([]);
+  });
+
+  it('warns about a dead button via the built-in @OnUnhandled', async () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    await dispatcher.dispatch(callbackUpdate(3, 'no-such-route'));
+    expect(
+      warn.mock.calls.some((call) => String(call[0]).includes('no-such-route')),
+    ).toBe(true);
+    warn.mockRestore();
+  });
+});
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      token: '123456:TEST',
+      autoAnswerCallbackQueries: false,
+      warnUnhandledCallbacks: false,
+    }),
+  ],
+})
+class SilentUnhandledAppModule {}
+
+describe('warnUnhandledCallbacks: false (booted app)', () => {
+  let app: INestApplicationContext;
+  let dispatcher: UpdateDispatcher;
+
+  beforeAll(async () => {
+    app = await NestFactory.createApplicationContext(SilentUnhandledAppModule, {
+      logger: false,
+    });
+    dispatcher = app.get(UpdateDispatcher);
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('silences the dead-button warning', async () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    await dispatcher.dispatch(callbackUpdate(1, 'dead'));
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+});
+
+@Router()
+class ThrowingUnhandledRouter {
+  @OnUnhandled()
+  boom(): void {
+    throw new Error('boom');
+  }
+}
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      token: '123456:TEST',
+      autoAnswerCallbackQueries: false,
+    }),
+  ],
+  providers: [ThrowingUnhandledRouter],
+})
+class ThrowingUnhandledAppModule {}
+
+describe('@OnUnhandled isolation (booted app)', () => {
+  let app: INestApplicationContext;
+  let dispatcher: UpdateDispatcher;
+
+  beforeAll(async () => {
+    app = await NestFactory.createApplicationContext(
+      ThrowingUnhandledAppModule,
+      { logger: false },
+    );
+    dispatcher = app.get(UpdateDispatcher);
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('isolates a throwing handler so the built-in warner still runs', async () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const error = jest.spyOn(Logger.prototype, 'error').mockImplementation();
+
+    await dispatcher.dispatch(callbackUpdate(1, 'still-dead'));
+
+    // The throwing handler was caught and logged, and the built-in warner —
+    // another @OnUnhandled — still ran rather than being starved.
+    expect(error).toHaveBeenCalled();
+    expect(
+      warn.mock.calls.some((call) => String(call[0]).includes('still-dead')),
+    ).toBe(true);
+
+    warn.mockRestore();
+    error.mockRestore();
   });
 });
