@@ -103,6 +103,11 @@ export class Button {
     return this.spec.callback_data;
   }
 
+  /** A copy with a different label, keeping everything else — for editing. */
+  withText(text: string): Button {
+    return new Button({ ...this.spec, text });
+  }
+
   /** A copy styled blue — the main / affirmative action. */
   primary(): Button {
     return this.withStyle(ButtonStyle.Primary);

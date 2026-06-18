@@ -8,6 +8,13 @@ import { KeyboardBuilder } from './keyboard-builder';
 import { RouteParamArgs } from './route-params.types';
 
 /**
+ * How an edit addresses a button: a **route** (`'toggle/3'` for one, `'toggle/:id'`
+ * for all that fit) or a predicate over the `Button`. Position addressing uses
+ * `.updateAt()`/`.removeAt()` instead.
+ */
+type ButtonMatcher = string | ((button: Button) => boolean);
+
+/**
  * Fluent builder for an inline keyboard (buttons attached under a message).
  *
  * Three ways in, one model — a button is a value ({@link Button}):
@@ -140,8 +147,108 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
     return this;
   }
 
+  /**
+   * Adopt an existing keyboard (a native `reply_markup` from an incoming update)
+   * for editing — change a button, drop one, append a row, then send it back
+   * with `editReplyMarkup`. The source markup is left untouched.
+   *
+   * ```ts
+   * InlineKeyboard.from(query.message.reply_markup)
+   *   .setText(`toggle/${id}`, `☑ ${label}`)
+   *   .row(Button.text('Done', 'done'));
+   * ```
+   */
+  static from(markup: RawInlineKeyboardMarkup): InlineKeyboard {
+    const keyboard = new InlineKeyboard();
+    keyboard.adopt(markup.inline_keyboard);
+    return keyboard;
+  }
+
+  /**
+   * Replace every button the matcher selects. The matcher is a **route** (a
+   * concrete `'toggle/3'` hits one button; a template `'toggle/:id'` hits all
+   * that fit, with the captured params passed to `patch`) or a predicate over
+   * the `Button`. Addresses a button without caring where it sits in the grid.
+   */
+  update(
+    matcher: ButtonMatcher,
+    patch: (button: Button, params: Record<string, string>) => Button,
+  ): this {
+    const test = InlineKeyboard.matcher(matcher);
+    for (const row of this.rows) {
+      for (let index = 0; index < row.length; index++) {
+        const params = test(row[index]);
+        if (params !== null) {
+          row[index] = patch(Button.from(row[index]), params).toJSON();
+        }
+      }
+    }
+    return this;
+  }
+
+  /** Change the label of every button the matcher selects (a common `update`). */
+  setText(matcher: ButtonMatcher, text: string): this {
+    return this.update(matcher, (button) => button.withText(text));
+  }
+
+  /**
+   * Relabel a button found by its current text. A convenience for the i18n-free
+   * quick case; prefer a route (`setText('toggle/3', …)`) when you have one —
+   * labels drift and are localised, a route is the stable key.
+   */
+  replaceText(oldText: string, newText: string): this {
+    return this.setText((button) => button.label === oldText, newText);
+  }
+
+  /** Remove every button the matcher selects, collapsing rows left empty. */
+  remove(matcher: ButtonMatcher): this {
+    const test = InlineKeyboard.matcher(matcher);
+    for (let row = 0; row < this.rows.length; row++) {
+      this.rows[row] = this.rows[row].filter((button) => test(button) === null);
+    }
+    this.compactRows();
+    return this;
+  }
+
+  /** Replace the button at a grid position (row, column) — position addressing. */
+  updateAt(row: number, col: number, patch: (button: Button) => Button): this {
+    const target = this.rows[row]?.[col];
+    if (target !== undefined) {
+      this.rows[row][col] = patch(Button.from(target)).toJSON();
+    }
+    return this;
+  }
+
+  /** Remove the button at a grid position, collapsing a row left empty. */
+  removeAt(row: number, col: number): this {
+    if (this.rows[row]?.[col] !== undefined) {
+      this.rows[row].splice(col, 1);
+      this.compactRows();
+    }
+    return this;
+  }
+
   toJSON(): RawInlineKeyboardMarkup {
     return { inline_keyboard: this.filledRows };
+  }
+
+  /**
+   * Compile a matcher into a test: given a raw button, return the captured route
+   * params when it matches, or `null`. A route string compiles to a pattern (so
+   * a concrete route matches one button, a templated route matches many); a
+   * predicate matches with no captured params.
+   */
+  private static matcher(
+    matcher: ButtonMatcher,
+  ): (button: RawInlineKeyboardButton) => Record<string, string> | null {
+    if (typeof matcher === 'function') {
+      return (button) => (matcher(Button.from(button)) ? {} : null);
+    }
+    const pattern = CallbackRoutePattern.compile(matcher);
+    return (button) =>
+      button.callback_data === undefined
+        ? null
+        : pattern.match(button.callback_data);
   }
 
   /** Push one `Button` through the column flow, honoring a trailing `hidden` flag. */

@@ -69,6 +69,17 @@ describe('Button', () => {
       expect(Button.url('Docs', 'https://x.dev').callbackData).toBeUndefined();
     });
 
+    it('withText() returns a relabelled copy, keeping the rest', () => {
+      const base = Button.text('☐ Milk', 'toggle/:id', { id: 1 });
+      const checked = base.withText('☑ Milk');
+
+      expect(checked.toJSON()).toEqual({
+        text: '☑ Milk',
+        callback_data: 'toggle/1',
+      });
+      expect(base.label).toBe('☐ Milk');
+    });
+
     it('from() adopts a raw Telegram button as a value', () => {
       const raw = { text: 'Old', callback_data: 'toggle/3' };
       const button = Button.from(raw);

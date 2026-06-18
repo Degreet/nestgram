@@ -85,6 +85,29 @@ export abstract class KeyboardBuilder<TButton extends StyleableButton> {
     this.rows.push(buttons);
   }
 
+  /**
+   * Replace the builder's rows with a deep copy of `rows` — how `.from(markup)`
+   * adopts an existing keyboard for editing. The deep copy (including nested
+   * `web_app`/`copy_text`/… objects) is what lets edits never reach back into the
+   * source markup; an empty input keeps one open row.
+   */
+  protected adopt(rows: TButton[][]): void {
+    this.rows.length = 0;
+    for (const row of rows) {
+      this.rows.push(row.map((button) => structuredClone(button)));
+    }
+    if (this.rows.length === 0) {
+      this.rows.push([]);
+    }
+  }
+
+  /** Drop emptied rows, keeping at least one open row for further edits. */
+  protected compactRows(): void {
+    const kept = this.rows.filter((row) => row.length > 0);
+    this.rows.length = 0;
+    this.rows.push(...(kept.length > 0 ? kept : [[]]));
+  }
+
   /** Rows with at least one button (drops the seed row and all-hidden rows). */
   protected get filledRows(): TButton[][] {
     return this.rows.filter((row) => row.length > 0);
