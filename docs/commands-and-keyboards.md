@@ -12,22 +12,27 @@ command arguments, pull just the values you need, and send keyboards.
 
 ## Commands and their arguments
 
-`@Command('start')` matches `/start`. The text after the command is
-available without any string-slicing of your own.
+`@Command('start')` matches `/start`. To read arguments, name them in the
+template — the command becomes a **route**: `:param` captures one token, a
+trailing `:rest...` captures the remainder, and `@Param()` hands you each
+segment. A pipe decodes and validates it the Nest-native way, exactly like
+`@Get('order/:count')` with `ParseIntPipe` in an HTTP controller:
 
 :::code[order.router.ts]
 
 ```ts
-import { Router, Command, Message, Args, Payload } from 'nestgram';
+import { Router, Command, Message, Param } from 'nestgram';
+import { ParseIntPipe } from '@nestjs/common';
 
 @Router()
 export class OrderRouter {
   // /order 3 large
-  @Command('order')
-  order(message: Message, @Args() args: string[], @Payload() payload: string) {
-    // args    → ['3', 'large']
-    // payload → '3 large'
-    const [count, size] = args;
+  @Command('order :count :size')
+  order(
+    message: Message,
+    @Param('count', ParseIntPipe) count: number,
+    @Param('size') size: string,
+  ) {
     return `Ordering ${count} × ${size} size`;
   }
 }
@@ -35,40 +40,45 @@ export class OrderRouter {
 
 :::
 
-- `@Args()` gives the whitespace-split arguments.
-- `@Payload()` gives the raw remainder — handy for deep links like
-  `/start ref_123`, where `payload === 'ref_123'`.
-
-### Typed arguments
-
-`string[]` plus hand-parsing is fine for one command and tedious for ten.
-Declare the arguments once with `commandArgs(...)`, attach the schema to the
-command, and the same `@Args()` hands you a typed, coerced object:
+Matching is **exact-arity**: `@Command('order :count :size')` matches `/order`
+with exactly two arguments, never a bare `/order`. That makes handlers disjoint
+by shape — declare a shorter route alongside it and the message's argument count
+picks the right one (arity overloading):
 
 :::code[todo.router.ts]
 
 ```ts
-import { Router, Command, Message, Args, commandArgs, ArgsOf } from 'nestgram';
-
-const AddArgs = commandArgs({ amount: Number, note: String });
+import { Router, Command, Message, Param } from 'nestgram';
+import { ParseIntPipe } from '@nestjs/common';
 
 @Router()
 export class TodoRouter {
-  // /add 3 buy milk
-  @Command('add', AddArgs)
-  add(message: Message, @Args() args: ArgsOf<typeof AddArgs>) {
-    // args.amount → 3 (a real number), args.note → 'buy milk'
-    return `Added ${args.amount} × "${args.note}"`;
+  // /add 3 buy oat milk → amount 3, note "buy oat milk"
+  @Command('add :amount :note...')
+  add(
+    message: Message,
+    @Param('amount', ParseIntPipe) amount: number,
+    @Param('note') note: string,
+  ) {
+    return `Added ${amount} × "${note}"`;
+  }
+
+  // /add 3 → a different handler, chosen by argument count
+  @Command('add :amount')
+  quickAdd(message: Message, @Param('amount', ParseIntPipe) amount: number) {
+    return `Added ${amount}`;
   }
 }
 ```
 
 :::
 
-The last field is greedy — it keeps the rest of the message in one piece, so
-free text survives. A missing argument or one that doesn't fit its type
-throws a `CommandArgsError`, which an exception filter can turn into a usage
-reply. No `split`, no index, no `Number(...)` of your own.
+A trailing `:note...` is greedy — it keeps the rest of the message in one
+piece, so free text survives. A value that doesn't fit its pipe throws (e.g.
+`ParseIntPipe` on `/add abc`), which an exception filter can turn into a usage
+reply — no `split`, no index, no `Number(...)` of your own. For the
+unstructured token list, `@Args()` still gives the whitespace-split arguments
+after the command and `@Payload()` the raw remainder.
 
 ## Parameter decorators
 
@@ -92,18 +102,19 @@ export class WhoAmIRouter {
 
 :::
 
-| Decorator         | Gives you                                            |
-| ----------------- | ---------------------------------------------------- |
-| `@Sender()`       | the `User` who triggered the update                  |
-| `@Chat()`         | the `RawChat` the update happened in                 |
-| `@Args()`         | command arguments — `string[]`, or typed by a schema |
-| `@Payload()`      | raw text after the command                           |
-| `@CallbackData()` | a callback query's `data` string                     |
-| `@Session()`      | the current session object                           |
+| Decorator          | Gives you                                       |
+| ------------------ | ----------------------------------------------- |
+| `@Param('name')`   | a named segment captured from the command route |
+| `@Sender()`        | the `User` who triggered the update             |
+| `@Chat()`          | the `RawChat` the update happened in            |
+| `@Args()`          | raw command arguments (`string[]`)              |
+| `@Payload()`       | raw text after the command                      |
+| `@CallbackData()`  | a callback query's `data` string                |
+| `@Session()`       | the current session object                      |
 
-This is the everyday set, not the full list — `@Text()`, `@Caption()`,
-`@Locale()`, `@StartPayload()` and friends follow the same pattern: a named
-read of something the update already carries.
+This is the everyday set, not the full list — `@Text()`, `@Caption()` and
+`@Locale()` follow the same pattern: a named read of something the update
+already carries.
 
 :::note
 These never collide with type names — `@Sender()` is a decorator, `User` is

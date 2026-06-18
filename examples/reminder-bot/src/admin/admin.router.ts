@@ -4,7 +4,7 @@ import {
   Command,
   escapeHtml,
   Message,
-  Payload,
+  Param,
   Router,
   t,
 } from 'nestgram';
@@ -29,12 +29,9 @@ export class AdminRouter {
     return message.answer(t('admin.stats', { total, pending }));
   }
 
-  @Command('broadcast')
-  async broadcast(message: Message, @Payload() text: string) {
-    if (text.trim().length === 0) {
-      return message.answer(t('admin.broadcast.usage'));
-    }
-
+  // No text → the disjoint bare route below replies with usage (arity overloading).
+  @Command('broadcast :text...')
+  async broadcast(message: Message, @Param('text') text: string) {
     const body = t('admin.broadcast.message', { text: escapeHtml(text) });
     const chatIds = await this.reminders.knownChatIds();
     const results = await Promise.all(
@@ -49,5 +46,11 @@ export class AdminRouter {
     return message.answer(
       t('admin.broadcast.result', { sent, total: chatIds.length }),
     );
+  }
+
+  // `/broadcast` with no text — disjoint from the route above by exact arity.
+  @Command('broadcast')
+  broadcastUsage(message: Message) {
+    return message.answer(t('admin.broadcast.usage'));
   }
 }

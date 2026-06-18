@@ -228,7 +228,7 @@ describe('stacked listener decorators (integration)', () => {
 class ParamsRouter {
   seen?: { text?: string; userId?: number; args: string[] };
 
-  @Command('echo')
+  @Command('echo :rest...')
   echo(
     message: RawUpdate['message'],
     @Sender() user: User,

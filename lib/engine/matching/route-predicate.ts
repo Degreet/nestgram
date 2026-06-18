@@ -33,3 +33,26 @@ export const isPrefixable = (
   predicate: RoutePredicate,
 ): predicate is RoutePredicate & PrefixablePredicate =>
   typeof (predicate as Partial<PrefixablePredicate>).withPrefix === 'function';
+
+/**
+ * A predicate that can hand `@Param()` the named segments it captured from the
+ * update that matched it — `@Command('add :amount')` from the message text,
+ * `@Action('done/:id')` from the callback data. `@Param('amount')` asks each
+ * predicate on the matched handler for its captures and reads the named one, so
+ * it is never confused by a sibling route the matcher only evaluated.
+ *
+ * `prefix` is the handler's `@Router('ns')` prefix, re-applied by the predicates
+ * that namespace (callback routes); command routes ignore it.
+ */
+export interface RouteParamSource {
+  extractParams(
+    ctx: TelegramExecutionContext,
+    prefix: string | undefined,
+  ): Record<string, string> | null;
+}
+
+/** Whether a predicate can expose captured `@Param()` segments (see {@link RouteParamSource}). */
+export const isRouteParamSource = (
+  predicate: RoutePredicate,
+): predicate is RoutePredicate & RouteParamSource =>
+  typeof (predicate as Partial<RouteParamSource>).extractParams === 'function';

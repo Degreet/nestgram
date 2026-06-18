@@ -5,7 +5,6 @@ export * from './args.decorator';
 export * from './text.decorator';
 export * from './caption.decorator';
 export * from './payload.decorator';
-export * from './start-payload.decorator';
 export * from './callback-data.decorator';
 export * from './param.decorator';
 export * from './entity.decorator';

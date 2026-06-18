@@ -26,18 +26,17 @@ import {
   CallbackData,
   CallbackQuery,
   Command,
-  deepLinkData,
   EventState,
   Hears,
   Message,
   NestgramModule,
   OnMessage,
+  OnStart,
   OnUnhandled,
   Param,
   RouteTable,
   Router,
   Sender,
-  StartPayload,
   State,
   TelegramExecutionContext,
   UpdateDispatcher,
@@ -142,9 +141,9 @@ describe('Phase 1 acceptance (booted app)', () => {
     expect(app.get(RouteTable).size).toBe(4);
   });
 
-  it('@Command matches /start (with or without args) and injects @Sender', async () => {
-    await dispatcher.dispatch(messageUpdate(1, '/start now'));
-    expect(router.log).toEqual(['start sender=Alice text=/start now']);
+  it('@Command matches a bare /start (exact arity) and injects @Sender', async () => {
+    await dispatcher.dispatch(messageUpdate(1, '/start'));
+    expect(router.log).toEqual(['start sender=Alice text=/start']);
   });
 
   it('routes plain text to @OnMessage, not @Command', async () => {
@@ -367,73 +366,25 @@ describe('Nest pipeline via ECC (booted app)', () => {
   });
 });
 
-const StartRef = deepLinkData('ref', { userId: Number });
-
 @Router()
-class StartPayloadRouter {
-  seen: unknown = 'unset';
-
-  @Command('start')
-  start(
-    _message: Message,
-    @StartPayload(StartRef) data: { userId: number } | null,
-  ) {
-    this.seen = data;
-  }
-}
-
-@Module({
-  imports: [NestgramModule.forRoot({ token: '123456:TEST' })],
-  providers: [StartPayloadRouter],
-})
-class StartPayloadAppModule {}
-
-describe('@StartPayload deep-link data (booted app)', () => {
-  let app: INestApplicationContext;
-  let dispatcher: UpdateDispatcher;
-  let router: StartPayloadRouter;
-
-  beforeAll(async () => {
-    app = await NestFactory.createApplicationContext(StartPayloadAppModule, {
-      logger: false,
-    });
-    dispatcher = app.get(UpdateDispatcher);
-    router = app.get(StartPayloadRouter);
-  });
-
-  afterAll(async () => {
-    await app.close();
-  });
-
-  it('decodes the /start payload with the definition', async () => {
-    await dispatcher.dispatch(
-      messageUpdate(1, `/start ${StartRef.pack({ userId: 42 })}`),
-    );
-    expect(router.seen).toEqual({ userId: 42 });
-  });
-
-  it('is null when /start carries no payload', async () => {
-    await dispatcher.dispatch(messageUpdate(2, '/start'));
-    expect(router.seen).toBeNull();
-  });
-
-  it('is null when the payload is a different definition', async () => {
-    await dispatcher.dispatch(messageUpdate(3, '/start other_1'));
-    expect(router.seen).toBeNull();
-  });
-});
-
-@Router()
-class StartFilterRouter {
+class StartRouter {
   readonly log: string[] = [];
 
-  // More specific first: only a /start carrying a Ref link reaches this handler.
-  @Command('start', StartRef.filter())
-  withRef(_message: Message, @StartPayload(StartRef) data: { userId: number }) {
-    this.log.push(`ref ${data.userId}`);
+  // A typed deep link: /start ref_42 → userId 42. Declared first; exact-arity
+  // keeps it disjoint from the looser routes below.
+  @OnStart('ref_:userId')
+  withRef(_message: Message, @Param('userId', ParseIntPipe) userId: number) {
+    this.log.push(`ref ${userId}`);
   }
 
-  @Command('start')
+  // Any other single-token payload (/start other_1).
+  @OnStart(':payload')
+  withPayload(_message: Message, @Param('payload') payload: string) {
+    this.log.push(`payload ${payload}`);
+  }
+
+  // A bare /start, no payload — never swallows the deep links above.
+  @OnStart()
   plain() {
     this.log.push('plain');
   }
@@ -441,21 +392,21 @@ class StartFilterRouter {
 
 @Module({
   imports: [NestgramModule.forRoot({ token: '123456:TEST' })],
-  providers: [StartFilterRouter],
+  providers: [StartRouter],
 })
-class StartFilterAppModule {}
+class StartAppModule {}
 
-describe('deepLinkData filter() routes /start by deep-link (booted app)', () => {
+describe('@OnStart routes /start by deep-link payload (booted app)', () => {
   let app: INestApplicationContext;
   let dispatcher: UpdateDispatcher;
-  let router: StartFilterRouter;
+  let router: StartRouter;
 
   beforeAll(async () => {
-    app = await NestFactory.createApplicationContext(StartFilterAppModule, {
+    app = await NestFactory.createApplicationContext(StartAppModule, {
       logger: false,
     });
     dispatcher = app.get(UpdateDispatcher);
-    router = app.get(StartFilterRouter);
+    router = app.get(StartRouter);
   });
 
   afterAll(async () => {
@@ -466,21 +417,19 @@ describe('deepLinkData filter() routes /start by deep-link (booted app)', () => 
     router.log.length = 0;
   });
 
-  it('routes a Ref /start to the filtered handler', async () => {
-    await dispatcher.dispatch(
-      messageUpdate(1, `/start ${StartRef.pack({ userId: 42 })}`),
-    );
+  it('routes a typed deep link to the prefixed route, decoding the param', async () => {
+    await dispatcher.dispatch(messageUpdate(1, '/start ref_42'));
     expect(router.log).toEqual(['ref 42']);
   });
 
-  it('routes a plain /start to the catch-all handler', async () => {
+  it('routes a bare /start to the no-payload route', async () => {
     await dispatcher.dispatch(messageUpdate(2, '/start'));
     expect(router.log).toEqual(['plain']);
   });
 
-  it('routes a non-Ref /start to the catch-all handler', async () => {
+  it('routes any other payload to the single-token route', async () => {
     await dispatcher.dispatch(messageUpdate(3, '/start other_1'));
-    expect(router.log).toEqual(['plain']);
+    expect(router.log).toEqual(['payload other_1']);
   });
 });
 
