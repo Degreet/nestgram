@@ -60,7 +60,7 @@ export class ReminderRouter {
     return t('remind.prompt');
   }
 
-  @Command('remind')
+  @Command('remind :text...')
   @Hears(ReminderRouter.REMINDER_INPUT)
   async remind(message: Message, @Sender() user: User) {
     const parsed = this.parser.parse(

@@ -20,15 +20,28 @@ describe('CallbackRoutePredicate', () => {
     expect(p.matches(ctxWith())).toBe(false);
   });
 
-  it('exposes captured parameters via extract', () => {
-    expect(predicate('done/:id').extract('done/42')).toEqual({ id: '42' });
-    expect(predicate('done/:id').extract('open/42')).toBeNull();
+  it('exposes captured parameters via extractParams', () => {
+    expect(
+      predicate('done/:id').extractParams(ctxWith('done/42'), undefined),
+    ).toEqual({ id: '42' });
+    expect(
+      predicate('done/:id').extractParams(ctxWith('open/42'), undefined),
+    ).toBeNull();
+  });
+
+  it('re-applies the router prefix when extracting parameters', () => {
+    // The listener metadata holds the unprefixed predicate, so @Param passes the
+    // router prefix and extraction matches the namespaced wire data.
+    const p = predicate('done/:id');
+    expect(p.extractParams(ctxWith('reminder/done/42'), 'reminder')).toEqual({
+      id: '42',
+    });
+    expect(p.extractParams(ctxWith('done/42'), 'reminder')).toBeNull();
   });
 
   it('namespaces with withPrefix', () => {
     const p = predicate('done/:id').withPrefix('reminder');
     expect(p.matches(ctxWith('reminder/done/42'))).toBe(true);
     expect(p.matches(ctxWith('done/42'))).toBe(false);
-    expect(p.extract('reminder/done/42')).toEqual({ id: '42' });
   });
 });

@@ -69,9 +69,9 @@ describe('Context by wrapping (no mutation)', () => {
   });
 });
 
-// Param pipes (incl. ValidationPipe + class-validator DTOs) run through the
-// same ECC path as guards/interceptors/filters — proven end to end in
-// command-args/command-args.dispatch.spec.ts.
+// Param pipes run through the same ECC path as guards/interceptors/filters —
+// proven end to end for command routes in
+// command-args/command-routing.dispatch.spec.ts.
 
 describe('Not yet implemented (deferred)', () => {
   it.todo('@Match() injects the RegExpMatchArray for a regex @Action / @Hears');

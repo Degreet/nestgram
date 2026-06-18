@@ -1,51 +1,36 @@
 import { CommandPredicate, RoutePredicate } from '../../engine/matching';
-import type { CommandArgsFactory } from '../../command-args';
-import { NestgramConfigError } from '../../exceptions';
+import { CommandRoutePattern } from '../../command-args';
 import { createListenerDecorator } from './create-listener-decorator';
 
 const UPDATE_TYPE = 'message';
 
-/** A route predicate (`matches`) vs a `commandArgs(...)` schema (`parse`). */
-function isRoutePredicate(
-  value: RoutePredicate | CommandArgsFactory,
-): value is RoutePredicate {
-  return typeof (value as RoutePredicate).matches === 'function';
-}
-
 /**
- * Handle a bot command. `@Command('start')` matches `/start`, `/start args`,
- * `/start@BotName` and `/start@BotName args`.
+ * Handle a bot command, as a route. The template's first token is the command
+ * name; the rest are argument segments — `:param` captures one token, a literal
+ * must match, and a trailing `:rest...` captures the remainder of the message:
  *
- * Pass a `commandArgs(...)` definition to type the arguments once at the command
- * and read them with a bare `@Args()`: `@Command('add', AddArgs)` →
- * `add(msg: Message, @Args() args: ArgsOf<typeof AddArgs>)`. Extra `RoutePredicate`s
- * narrow further; the schema and predicates can be passed in any order.
+ * ```ts
+ * @Command('add :amount :note...')
+ * add(msg: Message, @Param('amount', ParseIntPipe) amount: number, @Param('note') note: string) {}
+ * ```
  *
- * Ordering: a `@Command`/`@Hears` only reliably wins over a catch-all
- * `@OnMessage()` when both are on the SAME router (method-declaration order).
- * Cross-router order is discovery order and not guaranteed.
+ * Matching is exact-arity, so the message's shape selects the handler: a bare
+ * `@Command('add')` matches `/add` with NO arguments, `@Command('add :amount')`
+ * matches exactly one, and the two are disjoint. `/add@BotName ...` is matched
+ * too. Read a captured segment with `@Param()`; a per-parameter pipe decodes and
+ * validates it the Nest-native way (`@Param('amount', ParseIntPipe)`).
+ *
+ * Extra `RoutePredicate`s narrow further. Ordering: a `@Command`/`@Hears` only
+ * reliably wins over a catch-all `@OnMessage()` when both are on the SAME router
+ * (method-declaration order); cross-router order is discovery order and not
+ * guaranteed.
  */
 export const Command = (
-  command: string,
-  ...rest: Array<RoutePredicate | CommandArgsFactory>
-): MethodDecorator => {
-  if (!command) {
-    throw new NestgramConfigError('@Command requires a non-empty command name');
-  }
-
-  const predicates = rest.filter(isRoutePredicate);
-  const schemas = rest.filter(
-    (value): value is CommandArgsFactory => !isRoutePredicate(value),
-  );
-  if (schemas.length > 1) {
-    throw new NestgramConfigError(
-      '@Command accepts at most one commandArgs(...) schema',
-    );
-  }
-
-  return createListenerDecorator(
+  template: string,
+  ...predicates: RoutePredicate[]
+): MethodDecorator =>
+  createListenerDecorator(
     UPDATE_TYPE,
-    new CommandPredicate(command, schemas[0]),
+    new CommandPredicate(CommandRoutePattern.compile(template)),
     ...predicates,
   );
-};
