@@ -8,6 +8,8 @@ import {
   RouteExplorer,
   RouteTable,
   RouteTransformExplorer,
+  UnhandledExplorer,
+  UnhandledRegistry,
 } from '../engine/discovery';
 import {
   StageExplorer,
@@ -27,6 +29,8 @@ function makeBootstrap(options: Partial<NestgramModuleOptions>) {
       explore: jest.fn().mockReturnValue([]),
     } as unknown as RouteTransformExplorer,
     { set: jest.fn() } as unknown as RouteTable,
+    { explore: jest.fn().mockReturnValue([]) } as unknown as UnhandledExplorer,
+    { set: jest.fn() } as unknown as UnhandledRegistry,
     { explore: jest.fn().mockReturnValue([]) } as unknown as StageExplorer,
     { set: jest.fn() } as unknown as StageRegistry,
     { dispatch: jest.fn() } as unknown as UpdateDispatcher,

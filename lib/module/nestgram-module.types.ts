@@ -134,6 +134,13 @@ export interface NestgramModuleOptions {
    */
   autoAnswerCallbackQueries?: boolean;
   /**
+   * Warn (in the log) when a `callback_query` matches no `@Action` route — a
+   * dead button (pressing it does nothing). On by default; set `false` to
+   * silence. The warning is itself a built-in `@OnUnhandled` handler, so you can
+   * also add your own `@OnUnhandled` to log/handle unmatched updates differently.
+   */
+  warnUnhandledCallbacks?: boolean;
+  /**
    * Map a thrown `ReplyException`/`AnswerException` to a Telegram reply or
    * callback answer via a built-in global `@Catch` filter — the framework's
    * `HttpException -> filter` idiom. On by default (a thrown `ReplyException`

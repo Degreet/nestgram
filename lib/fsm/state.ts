@@ -33,7 +33,7 @@ export type StateGroup<Name extends string> = Readonly<Record<Name, FsmState>>;
 
 /**
  * Define a group of FSM states (aiogram's `StatesGroup`), as a factory rather
- * than a class — symmetric with `callbackData()` and friendlier to infer in TS:
+ * than a class — friendlier to infer in TS:
  *
  * ```ts
  * const Reg = stateGroup('reg', ['name', 'age']); // Reg.name.id === 'reg:name'

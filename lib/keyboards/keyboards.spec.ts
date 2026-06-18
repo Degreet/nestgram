@@ -2,6 +2,7 @@ import { InlineKeyboard } from './inline-keyboard';
 import { ReplyKeyboard } from './reply-keyboard';
 import { RemoveKeyboard } from './remove-keyboard';
 import { createAttachedData } from '../api/form-data';
+import { CallbackRoutePattern } from '../callback-data';
 import { NestgramConfigError } from '../exceptions';
 
 // Serialize the way a send payload does: JSON.stringify invokes toJSON().
@@ -244,6 +245,67 @@ describe('ReplyKeyboard', () => {
     expect(serialize(kb)).toEqual({
       keyboard: [[{ text: 'Confirm', style: 'success' }, { text: 'Plain' }]],
     });
+  });
+});
+
+describe('InlineKeyboard callback routes (.text assemble form)', () => {
+  it('assembles a route from a template and parameters', () => {
+    const kb = new InlineKeyboard().text('Done', 'reminder/done/:id', {
+      id: 42,
+    });
+    expect(serialize(kb)).toEqual({
+      inline_keyboard: [[{ text: 'Done', callback_data: 'reminder/done/42' }]],
+    });
+  });
+
+  it('escapes a parameter value that contains the separator', () => {
+    const kb = new InlineKeyboard().text('Open', 'open/:slug', { slug: 'a/b' });
+    expect(serialize(kb)).toEqual({
+      inline_keyboard: [[{ text: 'Open', callback_data: 'open/a\\/b' }]],
+    });
+  });
+
+  it('round-trips a parameter value containing the escape character', () => {
+    const kb = new InlineKeyboard().text('Open', 'open/:slug', {
+      slug: 'a\\b',
+    });
+    const json = serialize(kb) as {
+      inline_keyboard: { callback_data: string }[][];
+    };
+    const data = json.inline_keyboard[0][0].callback_data;
+    expect(CallbackRoutePattern.compile('open/:slug').match(data)).toEqual({
+      slug: 'a\\b',
+    });
+  });
+
+  it('honours the hidden flag after the parameters', () => {
+    const kb = new InlineKeyboard().text('Done', 'done/:id', { id: 1 }, true);
+    expect(serialize(kb)).toEqual({ inline_keyboard: [] });
+  });
+
+  it('passes an interpolated string through unchanged (terse form)', () => {
+    const id = 7;
+    const kb = new InlineKeyboard().text('Done', `reminder/done/${id}`);
+    expect(serialize(kb)).toEqual({
+      inline_keyboard: [[{ text: 'Done', callback_data: 'reminder/done/7' }]],
+    });
+  });
+
+  it('keeps the raw two-argument form (no params)', () => {
+    const kb = new InlineKeyboard().text('Buy', 'buy:1', true);
+    expect(serialize(kb)).toEqual({ inline_keyboard: [] });
+  });
+
+  it('requires every parameter at the type level', () => {
+    // Compile-time assertions only — declared, never invoked (the calls would
+    // throw at runtime; here we just assert the type checker rejects them).
+    const assertTypes = () => {
+      // @ts-expect-error — missing the `id` parameter the template declares.
+      new InlineKeyboard().text('Done', 'reminder/done/:id');
+      // @ts-expect-error — `id` is not among the template's parameters.
+      new InlineKeyboard().text('Done', 'reminder/done/:id', { wrong: 1 });
+    };
+    expect(typeof assertTypes).toBe('function');
   });
 });
 

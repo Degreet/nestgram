@@ -1,10 +1,10 @@
 import { ESCAPE_CHARACTER, SEGMENT_SEPARATOR } from './callback-data.constants';
 
 /** Escape the separator (and the escape char) within a single segment. */
-function escapeSegment(segment: string): string {
+function escapeSegment(segment: string, separator: string): string {
   let result = '';
   for (const char of segment) {
-    if (char === ESCAPE_CHARACTER || char === SEGMENT_SEPARATOR) {
+    if (char === ESCAPE_CHARACTER || char === separator) {
       result += ESCAPE_CHARACTER;
     }
     result += char;
@@ -12,9 +12,17 @@ function escapeSegment(segment: string): string {
   return result;
 }
 
-/** Escape each segment and join them with the separator. */
-export function joinSegments(segments: string[]): string {
-  return segments.map(escapeSegment).join(SEGMENT_SEPARATOR);
+/**
+ * Escape each segment and join them with the separator. Defaults to the typed
+ * callback-data separator (`:`); the route layer joins with `/`.
+ */
+export function joinSegments(
+  segments: string[],
+  separator: string = SEGMENT_SEPARATOR,
+): string {
+  return segments
+    .map((segment) => escapeSegment(segment, separator))
+    .join(separator);
 }
 
 /**
@@ -22,7 +30,10 @@ export function joinSegments(segments: string[]): string {
  * exact inverse of {@link joinSegments}, so a value containing the separator
  * round-trips intact.
  */
-export function splitSegments(data: string): string[] {
+export function splitSegments(
+  data: string,
+  separator: string = SEGMENT_SEPARATOR,
+): string[] {
   const segments: string[] = [];
   let current = '';
   let escaped = false;
@@ -33,7 +44,7 @@ export function splitSegments(data: string): string[] {
       escaped = false;
     } else if (char === ESCAPE_CHARACTER) {
       escaped = true;
-    } else if (char === SEGMENT_SEPARATOR) {
+    } else if (char === separator) {
       segments.push(current);
       current = '';
     } else {

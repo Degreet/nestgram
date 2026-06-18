@@ -12,7 +12,9 @@ import {
   ExceptionFilter,
   ExecutionContext,
   Injectable,
+  Logger,
   Module,
+  ParseIntPipe,
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
@@ -23,15 +25,15 @@ import {
   Action,
   CallbackData,
   CallbackQuery,
-  callbackData,
   Command,
-  Data,
   deepLinkData,
   EventState,
   Hears,
   Message,
   NestgramModule,
   OnMessage,
+  OnUnhandled,
+  Param,
   RouteTable,
   Router,
   Sender,
@@ -257,32 +259,29 @@ describe('per-update ctx.state (booted app)', () => {
   });
 });
 
-const Buy = callbackData('buy', { productId: Number });
-// Two definitions deliberately share a prefix but differ in schema. They both
-// match `dup:42`; first-match routing must decode with the WINNER's own
-// definition, never a sibling route the matcher merely evaluated.
-const DupNumber = callbackData('dup', { n: Number });
-const DupString = callbackData('dup', { n: String });
-
 @Router()
 class TypedCallbackRouter {
   readonly log: string[] = [];
 
-  @Action(Buy.filter())
-  buy(_query: CallbackQuery, @Data() data: { productId: number }) {
-    this.log.push(
-      `buy product=${data.productId} type=${typeof data.productId}`,
-    );
+  @Action('buy/:productId')
+  buy(
+    _query: CallbackQuery,
+    @Param('productId', ParseIntPipe) productId: number,
+  ) {
+    this.log.push(`buy product=${productId} type=${typeof productId}`);
   }
 
-  @Action(DupNumber.filter())
-  dupNumber(_query: CallbackQuery, @Data() data: { n: number }) {
-    this.log.push(`dup n=${data.n} type=${typeof data.n}`);
+  // Two routes deliberately match the same wire value `dup/42` but capture under
+  // different names. First-match wins (dupNumber); `@Param` must read the
+  // WINNER's own `:n` segment, never the sibling's `:m`.
+  @Action('dup/:n')
+  dupNumber(_query: CallbackQuery, @Param('n', ParseIntPipe) n: number) {
+    this.log.push(`dup n=${n} type=${typeof n}`);
   }
 
-  @Action(DupString.filter())
-  dupString(_query: CallbackQuery, @Data() data: { n: string }) {
-    this.log.push(`dupString n=${data.n} type=${typeof data.n}`);
+  @Action('dup/:m')
+  dupString(_query: CallbackQuery, @Param('m') m: string) {
+    this.log.push(`dupString m=${m} type=${typeof m}`);
   }
 }
 
@@ -297,7 +296,7 @@ class TypedCallbackRouter {
 })
 class TypedCallbackAppModule {}
 
-describe('typed callback data (booted app)', () => {
+describe('typed callback routes (booted app)', () => {
   let app: INestApplicationContext;
   let dispatcher: UpdateDispatcher;
   let router: TypedCallbackRouter;
@@ -318,15 +317,15 @@ describe('typed callback data (booted app)', () => {
     router.log.length = 0;
   });
 
-  it('matches filter() and injects @Data() with the typed values', async () => {
-    await dispatcher.dispatch(callbackUpdate(1, Buy.pack({ productId: 42 })));
+  it('injects @Param() with the pipe-decoded typed value', async () => {
+    await dispatcher.dispatch(callbackUpdate(1, 'buy/42'));
     expect(router.log).toEqual(['buy product=42 type=number']);
   });
 
-  it('decodes @Data() with the winning route definition, never a sibling', async () => {
-    await dispatcher.dispatch(callbackUpdate(2, 'dup:42'));
-    // First-match wins (dupNumber), and it decodes `42` as a number with its
-    // own schema — not the String schema of the overlapping dupString route.
+  it('reads @Param() from the winning route, never a sibling', async () => {
+    await dispatcher.dispatch(callbackUpdate(2, 'dup/42'));
+    // First-match wins (dupNumber); `@Param` reads its own `:n` segment as a
+    // number, not the sibling dupString's `:m`.
     expect(router.log).toEqual(['dup n=42 type=number']);
   });
 });
@@ -482,5 +481,159 @@ describe('deepLinkData filter() routes /start by deep-link (booted app)', () => 
   it('routes a non-Ref /start to the catch-all handler', async () => {
     await dispatcher.dispatch(messageUpdate(3, '/start other_1'));
     expect(router.log).toEqual(['plain']);
+  });
+});
+
+@Router()
+class UnhandledRouter {
+  readonly seen: number[] = [];
+
+  @Action('ping')
+  ping(query: CallbackQuery) {
+    return query.answer();
+  }
+
+  @OnUnhandled()
+  fallback(update: RawUpdate) {
+    this.seen.push(update.update_id);
+  }
+}
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      token: '123456:TEST',
+      autoAnswerCallbackQueries: false,
+    }),
+  ],
+  providers: [UnhandledRouter],
+})
+class UnhandledAppModule {}
+
+describe('@OnUnhandled (booted app)', () => {
+  let app: INestApplicationContext;
+  let dispatcher: UpdateDispatcher;
+  let router: UnhandledRouter;
+
+  beforeAll(async () => {
+    app = await NestFactory.createApplicationContext(UnhandledAppModule, {
+      logger: false,
+    });
+    dispatcher = app.get(UpdateDispatcher);
+    router = app.get(UnhandledRouter);
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  beforeEach(() => {
+    router.seen.length = 0;
+  });
+
+  it('runs the handler with the raw update when nothing matched', async () => {
+    await dispatcher.dispatch(callbackUpdate(1, 'no-such-route'));
+    expect(router.seen).toEqual([1]);
+  });
+
+  it('does not run it when a route matched', async () => {
+    await dispatcher.dispatch(callbackUpdate(2, 'ping'));
+    expect(router.seen).toEqual([]);
+  });
+
+  it('warns about a dead button via the built-in @OnUnhandled', async () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    await dispatcher.dispatch(callbackUpdate(3, 'no-such-route'));
+    expect(
+      warn.mock.calls.some((call) => String(call[0]).includes('no-such-route')),
+    ).toBe(true);
+    warn.mockRestore();
+  });
+});
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      token: '123456:TEST',
+      autoAnswerCallbackQueries: false,
+      warnUnhandledCallbacks: false,
+    }),
+  ],
+})
+class SilentUnhandledAppModule {}
+
+describe('warnUnhandledCallbacks: false (booted app)', () => {
+  let app: INestApplicationContext;
+  let dispatcher: UpdateDispatcher;
+
+  beforeAll(async () => {
+    app = await NestFactory.createApplicationContext(SilentUnhandledAppModule, {
+      logger: false,
+    });
+    dispatcher = app.get(UpdateDispatcher);
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('silences the dead-button warning', async () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    await dispatcher.dispatch(callbackUpdate(1, 'dead'));
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+});
+
+@Router()
+class ThrowingUnhandledRouter {
+  @OnUnhandled()
+  boom(): void {
+    throw new Error('boom');
+  }
+}
+
+@Module({
+  imports: [
+    NestgramModule.forRoot({
+      token: '123456:TEST',
+      autoAnswerCallbackQueries: false,
+    }),
+  ],
+  providers: [ThrowingUnhandledRouter],
+})
+class ThrowingUnhandledAppModule {}
+
+describe('@OnUnhandled isolation (booted app)', () => {
+  let app: INestApplicationContext;
+  let dispatcher: UpdateDispatcher;
+
+  beforeAll(async () => {
+    app = await NestFactory.createApplicationContext(
+      ThrowingUnhandledAppModule,
+      { logger: false },
+    );
+    dispatcher = app.get(UpdateDispatcher);
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('isolates a throwing handler so the built-in warner still runs', async () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const error = jest.spyOn(Logger.prototype, 'error').mockImplementation();
+
+    await dispatcher.dispatch(callbackUpdate(1, 'still-dead'));
+
+    // The throwing handler was caught and logged, and the built-in warner —
+    // another @OnUnhandled — still ran rather than being starved.
+    expect(error).toHaveBeenCalled();
+    expect(
+      warn.mock.calls.some((call) => String(call[0]).includes('still-dead')),
+    ).toBe(true);
+
+    warn.mockRestore();
+    error.mockRestore();
   });
 });

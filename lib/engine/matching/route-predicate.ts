@@ -17,3 +17,19 @@ import type { TelegramExecutionContext } from '../context/telegram-execution-con
 export interface RoutePredicate {
   matches(ctx: TelegramExecutionContext): boolean | Promise<boolean>;
 }
+
+/**
+ * A predicate that a router prefix can namespace. `@Router('ns')` applies its
+ * prefix at discovery to every prefixable predicate on the routes it owns — so a
+ * callback route `done/:id` becomes `ns/done/:id`. Predicates that don't
+ * implement it (a regex `@Action`, a `@Match` guard-like check) are left as-is.
+ */
+export interface PrefixablePredicate {
+  withPrefix(prefix: string): RoutePredicate;
+}
+
+/** Whether a predicate opts into router-prefix namespacing (see {@link PrefixablePredicate}). */
+export const isPrefixable = (
+  predicate: RoutePredicate,
+): predicate is RoutePredicate & PrefixablePredicate =>
+  typeof (predicate as Partial<PrefixablePredicate>).withPrefix === 'function';

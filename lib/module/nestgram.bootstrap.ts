@@ -13,6 +13,8 @@ import {
   RouteExplorer,
   RouteTable,
   RouteTransformExplorer,
+  UnhandledExplorer,
+  UnhandledRegistry,
 } from '../engine/discovery';
 import { getBotToken, Providers } from '../providers';
 import {
@@ -51,6 +53,8 @@ export class NestgramBootstrap
     private readonly routeExplorer: RouteExplorer,
     private readonly routeTransformExplorer: RouteTransformExplorer,
     private readonly routeTable: RouteTable,
+    private readonly unhandledExplorer: UnhandledExplorer,
+    private readonly unhandledRegistry: UnhandledRegistry,
     private readonly stageExplorer: StageExplorer,
     private readonly stageRegistry: StageRegistry,
     private readonly dispatcher: UpdateDispatcher,
@@ -64,6 +68,7 @@ export class NestgramBootstrap
   async onApplicationBootstrap(): Promise<void> {
     const routes = this.applyTransforms(this.routeExplorer.explore());
     this.routeTable.set(routes);
+    this.unhandledRegistry.set(this.unhandledExplorer.explore());
     this.logger.log(`Route table built: ${routes.length} route(s)`);
     for (const route of routes) {
       const router = route.instance.constructor.name;

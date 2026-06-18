@@ -1,9 +1,8 @@
-import { UseInterceptors } from '@nestjs/common';
+import { ParseIntPipe, UseInterceptors } from '@nestjs/common';
 import {
   Action,
   CallbackQuery,
   Command,
-  Data,
   escapeHtml,
   Hears,
   HearsKey,
@@ -11,6 +10,7 @@ import {
   Message,
   OnHelp,
   OnStart,
+  Param,
   Router,
   Sender,
   t,
@@ -20,7 +20,7 @@ import {
 import { LoggingInterceptor } from '../common/logging.interceptor';
 import { MENU } from '../common/menu.constants';
 import { DEFAULT_LOCALE } from '../i18n/translations';
-import { DeleteCb, DoneCb } from './reminder.callbacks';
+import { DELETE_ROUTE, DONE_ROUTE } from './reminder.routes';
 import { Reminder } from './reminder.entity';
 import { ReminderKeyboards } from './reminder.keyboards';
 import { ReminderParser } from './reminder.parser';
@@ -92,16 +92,16 @@ export class ReminderRouter {
     });
   }
 
-  @Action(DoneCb.filter())
-  async done(query: CallbackQuery, @Data() data: { id: number }) {
-    await this.reminders.markDone(data.id);
+  @Action(DONE_ROUTE)
+  async done(query: CallbackQuery, @Param('id', ParseIntPipe) id: number) {
+    await this.reminders.markDone(id);
     await this.refresh(query);
     return query.answer(t('list.done'));
   }
 
-  @Action(DeleteCb.filter())
-  async drop(query: CallbackQuery, @Data() data: { id: number }) {
-    await this.reminders.remove(data.id);
+  @Action(DELETE_ROUTE)
+  async drop(query: CallbackQuery, @Param('id', ParseIntPipe) id: number) {
+    await this.reminders.remove(id);
     await this.refresh(query);
     return query.answer(t('list.deleted'));
   }

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InlineKeyboard, ReplyKeyboard, t } from 'nestgram';
 
 import { MENU } from '../common/menu.constants';
-import { DeleteCb, DoneCb } from './reminder.callbacks';
+import { DELETE_ROUTE, DONE_ROUTE } from './reminder.routes';
 import { Reminder } from './reminder.entity';
 
 @Injectable()
@@ -26,11 +26,10 @@ export class ReminderKeyboards {
     for (const reminder of reminders) {
       keyboard
         .row()
-        .text(
-          `✓ ${this.truncate(reminder.text)}`,
-          DoneCb.pack({ id: reminder.id }),
-        )
-        .text('🗑', DeleteCb.pack({ id: reminder.id }));
+        .text(`✓ ${this.truncate(reminder.text)}`, DONE_ROUTE, {
+          id: reminder.id,
+        })
+        .text('🗑', DELETE_ROUTE, { id: reminder.id });
     }
     return keyboard;
   }

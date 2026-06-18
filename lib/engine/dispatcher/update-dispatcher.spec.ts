@@ -1,6 +1,6 @@
 import { ContextFactory, EventFactory } from '../context';
 import { HandlerExecutorFactory, ResultHandler } from '../execution';
-import { RouteMatcher, RouteTable } from '../discovery';
+import { RouteMatcher, RouteTable, UnhandledRegistry } from '../discovery';
 import { Route } from '../discovery/route.types';
 import { RoutePredicate } from '../matching';
 import { RawUpdate } from '../../events/raw-update.types';
@@ -73,6 +73,7 @@ function makeDispatcher(
     executorFactory,
     resultHandler,
     new StageRegistry(stagesFor(calls)),
+    new UnhandledRegistry(),
   );
   return { dispatcher, calls, handled };
 }
@@ -118,6 +119,7 @@ describe('UpdateDispatcher', () => {
       executorFactory,
       resultHandler,
       new StageRegistry(),
+      new UnhandledRegistry(),
     );
 
     const botB = { token: 'BOT_B' } as unknown as BotService;
@@ -208,6 +210,7 @@ describe('UpdateDispatcher', () => {
       executorFactory,
       resultHandler,
       new StageRegistry(),
+      new UnhandledRegistry(),
     );
 
     await expect(
@@ -241,6 +244,7 @@ describe('UpdateDispatcher', () => {
       executorFactory,
       resultHandler,
       new StageRegistry(),
+      new UnhandledRegistry(),
     );
 
     await dispatcher.dispatch(messageUpdate(1, 'a'));
@@ -290,6 +294,7 @@ describe('UpdateDispatcher', () => {
       executorFactory,
       resultHandler,
       new StageRegistry([recordingStage(calls)]),
+      new UnhandledRegistry(),
     );
 
     await dispatcher.dispatch(messageUpdate(1, 'hi'));
