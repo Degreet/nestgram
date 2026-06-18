@@ -10,18 +10,22 @@ Match predicates decide **which handler applies** to an update. They sit on top
 of the update type: `@OnMessage()` matches any message, while `@Command`,
 `@Hears` and `@Action` match by content.
 
-| Decorator                                 | Matches                                   |
-| ----------------------------------------- | ----------------------------------------- |
-| `@Command('start')`                       | `/start`, `/start args`, `/start@BotName` |
-| `@Hears('hi')` / `@Hears(/^\d+$/)`        | message text by string or regex           |
-| `@Action('buy')` / `@Action(/buy:(\d+)/)` | `callback_query.data` by string or regex  |
-| `@OnMessage()` / `@On*()`                 | any update of that type                   |
+| Decorator                                 | Matches                                       |
+| ----------------------------------------- | --------------------------------------------- |
+| `@Command('start')`                       | `/start` (no args), `/start@BotName`          |
+| `@Command('add :amount')`                 | `/add 5` — one argument, captured by `@Param` |
+| `@Hears('hi')` / `@Hears(/^\d+$/)`        | message text by string or regex               |
+| `@Action('buy')` / `@Action(/buy:(\d+)/)` | `callback_query.data` by string or regex      |
+| `@OnMessage()` / `@On*()`                 | any update of that type                       |
 
 ## Commands
 
-`@Command('start')` matches the `/start` command — with or without arguments,
-and with an optional `@BotName` suffix (which Telegram adds in groups). The name
-is given **without** the leading slash.
+`@Command('start')` matches the `/start` command. It's **exact-arity**: a bare
+`@Command('start')` matches `/start` with **no** arguments (and an optional
+`@BotName` suffix Telegram adds in groups). To accept arguments, name them in
+the template — `@Command('add :amount')` — and read them with `@Param()`; see
+[Commands & keyboards](/docs/commands-and-keyboards). The name is given
+**without** the leading slash.
 
 :::code[support.router.ts]
 
