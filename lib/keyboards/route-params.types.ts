@@ -35,3 +35,17 @@ export type RouteParamArgs<Template extends string> = [
 ] extends [never]
   ? [hidden?: boolean]
   : [params: RouteParams<Template>, hidden?: boolean];
+
+/**
+ * The trailing arguments a `Button.text()` value takes, conditioned on the route
+ * template — like {@link RouteParamArgs} but without the `hidden` flag (a value
+ * is either created or not; a keyboard drops it via `.map(...)`/conditionals):
+ *
+ * - with `:params` — the values object is required;
+ * - without — nothing, so a plain or interpolated string needs no extra argument.
+ */
+export type RouteParamValues<Template extends string> = [
+  RouteParamName<Template>,
+] extends [never]
+  ? []
+  : [params: RouteParams<Template>];
