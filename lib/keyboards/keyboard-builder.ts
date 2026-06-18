@@ -67,7 +67,9 @@ export abstract class KeyboardBuilder<TButton extends StyleableButton> {
     if (hidden) {
       return;
     }
-    if (style !== undefined) {
+    // A button that brought its own style (a styled `Button` value) keeps it —
+    // the pending modifier only fills an unstyled button.
+    if (style !== undefined && button.style === undefined) {
       button.style = style;
     }
     const current = this.rows[this.rows.length - 1];
@@ -76,6 +78,11 @@ export abstract class KeyboardBuilder<TButton extends StyleableButton> {
     } else {
       current.push(button);
     }
+  }
+
+  /** Append a complete row of buttons, ignoring the column limit (an explicit row). */
+  protected pushRow(buttons: TButton[]): void {
+    this.rows.push(buttons);
   }
 
   /** Rows with at least one button (drops the seed row and all-hidden rows). */

@@ -1,33 +1,38 @@
+import type {
+  RawInlineKeyboardButton,
+  RawInlineKeyboardMarkup,
+} from '../events/raw-update.types';
 import { CallbackRoutePattern } from '../callback-data';
-import { ButtonStyleValue } from './button-style';
+import { Button } from './button';
 import { KeyboardBuilder } from './keyboard-builder';
 import { RouteParamArgs } from './route-params.types';
-
-interface InlineButton {
-  text: string;
-  callback_data?: string;
-  url?: string;
-  style?: ButtonStyleValue;
-}
 
 /**
  * Fluent builder for an inline keyboard (buttons attached under a message).
  *
- * Buttons go into the current row; `.row()` starts a new one, or `.columns(n)`
- * auto-wraps into a grid. A trailing `hidden` flag drops the button (handy for
- * conditional buttons: `.text('Admin', 'admin', !isAdmin)`). A colour modifier
+ * Three ways in, one model — a button is a value ({@link Button}):
+ *
+ * - **fluent shortcuts** for the everyday kinds — `.text()`, `.url()`,
+ *   `.webApp()`, `.switchInline()` — each with a trailing `hidden` flag for
+ *   conditional buttons (`.text('Admin', 'admin', !isAdmin)`);
+ * - **`.add(...buttons)`** takes `Button` values directly — the universal inlet,
+ *   so every Bot API kind is reachable (`.add(Button.pay('Pay'))`);
+ * - **`.map(items, fn)`** turns a collection into buttons, so a dynamic keyboard
+ *   reads as data, not a loop.
+ *
+ * `.row()` starts a new row (`.row(...buttons)` lays an explicit one),
+ * `.columns(n)` auto-wraps into a grid, and a colour modifier
  * (`.primary()`/`.success()`/`.danger()`) styles the next button. Pass the
- * instance as `reply_markup` — `JSON.stringify` calls `toJSON()`, serializing to
- * the Telegram `{ inline_keyboard }` shape.
+ * instance as `reply_markup` — `JSON.stringify` calls `toJSON()`.
  *
  * ```ts
  * new InlineKeyboard()
+ *   .map(products, (p) => Button.text(p.name, 'buy/:id', { id: p.id }))
  *   .columns(2)
- *   .primary().text('Buy', 'buy')
- *   .text('Info', 'info');
+ *   .row(Button.url('Catalog', site));
  * ```
  */
-export class InlineKeyboard extends KeyboardBuilder<InlineButton> {
+export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
   /**
    * A callback button. Two forms, one mechanism — a safe default and a terse
    * shortcut, like `SendMessage` vs `message.answer`:
@@ -64,11 +69,84 @@ export class InlineKeyboard extends KeyboardBuilder<InlineButton> {
 
   /** A URL button: pressing it opens the link. */
   url(label: string, url: string, hidden = false): this {
-    this.push({ text: label, url }, hidden);
+    return this.add1(Button.url(label, url), hidden);
+  }
+
+  /** A Web App button: pressing it opens the Mini App at `url`. */
+  webApp(label: string, url: string, hidden = false): this {
+    return this.add1(Button.webApp(label, url), hidden);
+  }
+
+  /** Switch to inline mode in another chat, pre-filling `query`. */
+  switchInline(label: string, query = '', hidden = false): this {
+    return this.add1(Button.switchInline(label, query), hidden);
+  }
+
+  /** Switch to inline mode in the current chat, pre-filling `query`. */
+  switchInlineCurrent(label: string, query = '', hidden = false): this {
+    return this.add1(Button.switchInlineCurrent(label, query), hidden);
+  }
+
+  /** Copy `text` to the clipboard when pressed. */
+  copyText(label: string, text: string, hidden = false): this {
+    return this.add1(Button.copyText(label, text), hidden);
+  }
+
+  /**
+   * Add `Button` values into the current flow (honoring `.columns()`). The
+   * universal inlet — every Bot API button kind is reachable as a `Button`,
+   * including the special ones (`.add(Button.pay('Pay'))`).
+   */
+  add(...buttons: Button[]): this {
+    for (const button of buttons) {
+      this.push(button.toJSON());
+    }
     return this;
   }
 
-  toJSON(): { inline_keyboard: InlineButton[][] } {
+  /**
+   * Turn a collection into buttons. `fn` returns a `Button` for each item, or a
+   * falsy value to drop it — so conditional buttons need no separate filter. The
+   * buttons feed the current flow, so `.columns(n)` lays them into a grid.
+   *
+   * ```ts
+   * .columns(2).map(items, (i) => Button.text(i.label, 'pick/:id', { id: i.id }))
+   * ```
+   */
+  map<T>(
+    items: readonly T[],
+    fn: (item: T, index: number) => Button | null | undefined | false,
+  ): this {
+    items.forEach((item, index) => {
+      const button = fn(item, index);
+      if (button) {
+        this.push(button.toJSON());
+      }
+    });
+    return this;
+  }
+
+  /**
+   * Start a new row. With buttons, lay exactly those into it (ignoring
+   * `.columns()`) — an explicit row; with none, just open a fresh row for the
+   * buttons that follow.
+   */
+  row(...buttons: Button[]): this {
+    if (buttons.length === 0) {
+      return super.row();
+    }
+    this.pushRow(buttons.map((button) => button.toJSON()));
+    super.row();
+    return this;
+  }
+
+  toJSON(): RawInlineKeyboardMarkup {
     return { inline_keyboard: this.filledRows };
+  }
+
+  /** Push one `Button` through the column flow, honoring a trailing `hidden` flag. */
+  private add1(button: Button, hidden: boolean): this {
+    this.push(button.toJSON(), hidden);
+    return this;
   }
 }
