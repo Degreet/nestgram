@@ -246,6 +246,46 @@ describe('ReplyKeyboard', () => {
       keyboard: [[{ text: 'Confirm', style: 'success' }, { text: 'Plain' }]],
     });
   });
+
+  it('covers the request/web_app button kinds', () => {
+    const kb = new ReplyKeyboard()
+      .requestContact('Phone')
+      .requestLocation('Where')
+      .row()
+      .requestPoll('Quiz', 'quiz')
+      .webApp('App', 'https://app.dev')
+      .row()
+      .requestUsers('Pick', { request_id: 1, max_quantity: 3 })
+      .requestChat('Chat', { request_id: 2, chat_is_channel: false });
+
+    expect(serialize(kb)).toEqual({
+      keyboard: [
+        [
+          { text: 'Phone', request_contact: true },
+          { text: 'Where', request_location: true },
+        ],
+        [
+          { text: 'Quiz', request_poll: { type: 'quiz' } },
+          { text: 'App', web_app: { url: 'https://app.dev' } },
+        ],
+        [
+          { text: 'Pick', request_users: { request_id: 1, max_quantity: 3 } },
+          {
+            text: 'Chat',
+            request_chat: { request_id: 2, chat_is_channel: false },
+          },
+        ],
+      ],
+    });
+  });
+
+  it('persistent maps to is_persistent', () => {
+    const kb = new ReplyKeyboard().text('Hi').persistent();
+    expect(serialize(kb)).toEqual({
+      keyboard: [[{ text: 'Hi' }]],
+      is_persistent: true,
+    });
+  });
 });
 
 describe('InlineKeyboard callback routes (.text assemble form)', () => {
