@@ -155,6 +155,58 @@ the `buy` press — and carrying typed data in a button (`buy:42`-style)
 without magic strings — is the next page,
 [Callbacks →](/docs/callbacks).
 
+### Dynamic keyboards
+
+When the buttons come from data, a button is a value (`Button`) and `.map()`
+lays a collection out — no hand-rolled loop:
+
+:::code[catalog.router.ts]
+
+```ts
+import { InlineKeyboard, Button } from 'nestgram';
+
+const keyboard = new InlineKeyboard()
+  .columns(2)
+  .map(products, (p) => Button.text(p.name, 'buy/:id', { id: p.id }))
+  .row(Button.url('Catalog', 'https://shop.dev'));
+```
+
+:::
+
+`.map(items, fn)` runs `fn` per item — return a `Button` to add it, or a falsy
+value to skip one (so a conditional button needs no separate filter).
+`.columns(n)` wraps the result into a grid and `.row(...buttons)` lays an
+explicit row. `.add(...buttons)` is the universal inlet: every Bot API kind has
+a `Button` constructor (`Button.webApp`, `Button.switchInline`,
+`Button.copyText`, `Button.pay`, …), so `.add(Button.pay('Pay'))` reaches the
+ones without a fluent shortcut.
+
+### Editing a keyboard
+
+Often you already have a keyboard — the one on the message a button press came
+from — and just want to tweak it: flip a checkbox, relabel, drop a button.
+`InlineKeyboard.from(markup)` adopts it (a copy — the original is untouched) and
+you address a button by its **route**, the same string that built and routes it:
+
+:::code[todo.router.ts]
+
+```ts
+import { InlineKeyboard } from 'nestgram';
+
+const next = InlineKeyboard.from(markup)
+  .setText(`toggle/${id}`, '☑ Done') // a concrete route → one button
+  .remove('cancel'); // drop a button
+
+// send it back: query.message.editReplyMarkup(next)
+```
+
+:::
+
+A concrete route (`toggle/3`) addresses one button; a template (`toggle/:id`)
+addresses all that fit, with the captured params passed to the patch. You can
+also address by predicate (`.update((b) => b.label === 'Old', …)`), by visible
+text (`.replaceText('Old', 'New')`), or by position (`.updateAt(row, col, …)`).
+
 ### Colouring buttons
 
 Telegram lets a button carry a `style`: `primary` (blue), `success` (green) or
@@ -204,9 +256,14 @@ return message.answer('Menu:', { reply_markup: keyboard });
 :::
 
 `.resize()` and `.oneTime()` map to the Telegram `resize_keyboard` and
-`one_time_keyboard` flags, and `.placeholder()` sets the grey
-`input_field_placeholder` — named for discoverability, but the underlying
-markup is exactly what the API expects.
+`one_time_keyboard` flags, `.persistent()` to `is_persistent`, and
+`.placeholder()` sets the grey `input_field_placeholder` — named for
+discoverability, but the underlying markup is exactly what the API expects.
+
+Beyond plain `.text()` there's a method per Bot API button kind —
+`.requestContact()`, `.requestLocation()`, `.requestPoll()`, `.webApp()`,
+`.requestUsers()` and `.requestChat()` — each taking the same trailing `hidden`
+flag.
 
 ## answer vs reply
 
