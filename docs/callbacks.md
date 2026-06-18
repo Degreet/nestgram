@@ -104,6 +104,39 @@ Use `BUY_ROUTE` in both `@Action(BUY_ROUTE)` and
 matches no handler logs a **dead-button** warning when it's pressed, so a typo
 surfaces in development.
 
+## Unhandled updates
+
+That dead-button warning is itself an `@OnUnhandled` handler — a public hook the
+framework runs when an update matches **no** route. Add your own to log a miss,
+record a metric, or reply with a fallback:
+
+:::code[fallback.router.ts]
+
+```ts
+import { Router, OnUnhandled, Sender, RawUpdate, User } from 'nestgram';
+
+@Router()
+export class FallbackRouter {
+  @OnUnhandled()
+  unhandled(update: RawUpdate, @Sender() user?: User) {
+    console.warn(`No route for update ${update.update_id} from ${user?.id}`);
+    return "Sorry, I didn't understand that.";
+  }
+}
+```
+
+:::
+
+The first parameter is the raw update — an unmatched update can be any kind, so
+it isn't a single rich event. Reach for `@Sender()`/`@Chat()` for the common
+derived values (they work for every kind), and `return` a string to reply. The
+handler runs through the full pipeline, so an unmatched `callback_query` is
+auto-answered unless you add `@NoAutoAnswer()`.
+
+Every `@OnUnhandled` handler runs (they observe, not compete), so reply from at
+most one. The built-in dead-button warning is one of them — silence it with
+`warnUnhandledCallbacks: false` in `NestgramModule.forRoot`.
+
 ## Answering the callback query
 
 Every callback query should be answered, even if you have nothing to say —
