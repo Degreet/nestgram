@@ -113,6 +113,34 @@ describe('CommandRoutePattern', () => {
     });
   });
 
+  describe('matchArgs — prefixed parameter (deep-link style)', () => {
+    it('captures the part after a literal prefix', () => {
+      const pattern = CommandRoutePattern.compile('start ref_:code');
+
+      expect(pattern.matchArgs('ref_42')).toEqual({ code: '42' });
+      expect(pattern.matchArgs('ref_abc')).toEqual({ code: 'abc' });
+    });
+
+    it('rejects a token that lacks the prefix or has nothing after it', () => {
+      const pattern = CommandRoutePattern.compile('start ref_:code');
+
+      expect(pattern.matchArgs('other_42')).toBeNull();
+      expect(pattern.matchArgs('ref_')).toBeNull();
+    });
+
+    it('round-trips a prefixed parameter through source', () => {
+      expect(CommandRoutePattern.compile('start ref_:code').source).toBe(
+        'start ref_:code',
+      );
+    });
+
+    it('rejects a greedy parameter that carries a literal prefix', () => {
+      expect(() => CommandRoutePattern.compile('start ref_:code...')).toThrow(
+        /cannot follow a literal prefix/,
+      );
+    });
+  });
+
   describe('arity overloading', () => {
     it('selects disjoint handlers by token count', () => {
       const one = CommandRoutePattern.compile('add :amount');

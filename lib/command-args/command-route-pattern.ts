@@ -6,17 +6,24 @@ import {
   COMMAND_TOKEN_JOINER,
 } from './command-route.constants';
 
-/** One compiled argument segment: a fixed literal or a (maybe greedy) parameter. */
+/**
+ * One compiled argument segment: a fixed literal, or a parameter that captures a
+ * token after an optional literal `prefix` (`ref_:code` → prefix `ref_`, param
+ * `code`). A greedy parameter (`:rest`) captures the remaining tokens and never
+ * carries a prefix.
+ */
 type CommandSegment =
   | { readonly literal: string }
-  | { readonly param: string; readonly rest: boolean };
+  | { readonly prefix: string; readonly param: string; readonly rest: boolean };
 
 /**
  * A command route compiled from a template like `add :amount :note...`. The
  * first token is the command name; every token after it is an argument segment.
- * A token starting with `:` is a parameter, anything else is a literal, and a
- * trailing `...` (`:note...`) marks the last parameter as greedy — it captures
- * the rest of the message as one value.
+ * A token containing `:` is a parameter — the text before the first `:` is a
+ * literal prefix the token must start with (`ref_:code` captures the part after
+ * `ref_`), so a bare `:code` captures the whole token. Anything without a `:` is
+ * a literal, and a trailing `...` (`:note...`) marks the last parameter as
+ * greedy — it captures the rest of the message as one value.
  *
  * Matching is **exact-arity**: a template with N argument segments matches only
  * a payload of exactly N tokens (a greedy last segment absorbs one or more
@@ -109,7 +116,19 @@ export class CommandRoutePattern {
       if (token === undefined) {
         return null;
       }
-      params[segment.param] = token;
+      if (segment.prefix.length > 0) {
+        // A prefixed parameter (`ref_:code`) needs the literal prefix and a
+        // non-empty capture after it.
+        if (
+          !token.startsWith(segment.prefix) ||
+          token.length <= segment.prefix.length
+        ) {
+          return null;
+        }
+        params[segment.param] = token.slice(segment.prefix.length);
+      } else {
+        params[segment.param] = token;
+      }
     }
 
     // Exact arity: with no greedy segment, every token must have been consumed.
@@ -121,22 +140,31 @@ export class CommandRoutePattern {
     isLast: boolean,
     ctx: { template: string; seen: Set<string> },
   ): CommandSegment {
-    if (!token.startsWith(COMMAND_PARAM_PREFIX)) {
+    const colon = token.indexOf(COMMAND_PARAM_PREFIX);
+    if (colon === -1) {
       return { literal: token };
     }
 
-    const rest = token.endsWith(COMMAND_REST_SUFFIX);
-    if (rest && !isLast) {
-      throw new NestgramConfigError(
-        `Command route "${ctx.template}" has a greedy parameter "${token}" that ` +
-          `is not last`,
-      );
+    const prefix = token.slice(0, colon);
+    let name = token.slice(colon + COMMAND_PARAM_PREFIX.length);
+
+    const rest = name.endsWith(COMMAND_REST_SUFFIX);
+    if (rest) {
+      if (!isLast) {
+        throw new NestgramConfigError(
+          `Command route "${ctx.template}" has a greedy parameter "${token}" ` +
+            `that is not last`,
+        );
+      }
+      if (prefix.length > 0) {
+        throw new NestgramConfigError(
+          `Command route "${ctx.template}" has a greedy parameter "${token}" ` +
+            `that cannot follow a literal prefix`,
+        );
+      }
+      name = name.slice(0, -COMMAND_REST_SUFFIX.length);
     }
 
-    const name = token.slice(
-      COMMAND_PARAM_PREFIX.length,
-      rest ? -COMMAND_REST_SUFFIX.length : undefined,
-    );
     if (!CommandRoutePattern.PARAM_NAME.test(name)) {
       throw new NestgramConfigError(
         `Command route "${ctx.template}" has an invalid parameter "${token}"`,
@@ -148,7 +176,7 @@ export class CommandRoutePattern {
       );
     }
     ctx.seen.add(name);
-    return { param: name, rest };
+    return { prefix, param: name, rest };
   }
 
   private static render(segment: CommandSegment): string {
@@ -156,6 +184,6 @@ export class CommandRoutePattern {
       return segment.literal;
     }
     const suffix = segment.rest ? COMMAND_REST_SUFFIX : '';
-    return `${COMMAND_PARAM_PREFIX}${segment.param}${suffix}`;
+    return `${segment.prefix}${COMMAND_PARAM_PREFIX}${segment.param}${suffix}`;
   }
 }
