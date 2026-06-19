@@ -16,6 +16,18 @@ describe('Button', () => {
       });
     });
 
+    it('toggle — prepends a ✅ when on and routes like text', () => {
+      expect(
+        Button.toggle(true, 'Email', 'pick/:id', { id: 'e' }).toJSON(),
+      ).toEqual({ text: '✅ Email', callback_data: 'pick/e' });
+    });
+
+    it('toggle — no marker when off', () => {
+      expect(
+        Button.toggle(false, 'Email', 'pick/:id', { id: 'e' }).toJSON(),
+      ).toEqual({ text: 'Email', callback_data: 'pick/e' });
+    });
+
     it('url / webApp / loginUrl', () => {
       expect(Button.url('Docs', 'https://x.dev').toJSON()).toEqual({
         text: 'Docs',

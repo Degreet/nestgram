@@ -6,7 +6,9 @@ import { CallbackRoutePattern } from '../callback-data';
 import { Button } from './button';
 import { InlineKeyboard } from './inline-keyboard';
 import {
+  CHECKBOX_DEFAULT_MARKERS,
   CHECKBOX_PARAMS,
+  CHECKBOX_RADIO_MARKERS,
   CHECKBOX_SESSION_PREFIX,
   CHECKBOX_TOGGLE_ROUTE,
 } from './checkbox.constants';
@@ -29,7 +31,7 @@ export interface CheckboxConfig<T> {
 
 /**
  * A reusable multi/single-select picker. Configured once (not subclassed), it
- * renders an inline keyboard of ☑/☐ (or 🔘/⚪) buttons routed into the
+ * renders an inline keyboard of ✅ (or 🔘/⚪) buttons routed into the
  * `checkbox/<id>/…` namespace; the built-in checkbox router turns a tap into a
  * selection change and re-renders the message in place. The framework owns the
  * markers, layout, toggle/radio math, routing, and re-render — the developer
@@ -52,8 +54,6 @@ export interface CheckboxConfig<T> {
  */
 export class CheckboxKeyboard<T = unknown> {
   private static readonly registry = new Map<string, CheckboxKeyboard>();
-  private static readonly MULTI_MARKERS = ['☑', '☐'] as const;
-  private static readonly SINGLE_MARKERS = ['🔘', '⚪'] as const;
 
   private readonly logger = new Logger(CheckboxKeyboard.name);
 
@@ -66,12 +66,12 @@ export class CheckboxKeyboard<T = unknown> {
   private readonly extraRows: Button[][] = [];
 
   constructor(private readonly config: CheckboxConfig<T>) {
-    const [on, off] =
+    const markers =
       config.multi === false
-        ? CheckboxKeyboard.SINGLE_MARKERS
-        : CheckboxKeyboard.MULTI_MARKERS;
-    this.onMarker = on;
-    this.offMarker = off;
+        ? CHECKBOX_RADIO_MARKERS
+        : CHECKBOX_DEFAULT_MARKERS;
+    this.onMarker = markers.on;
+    this.offMarker = markers.off;
     if (CheckboxKeyboard.registry.has(config.id)) {
       this.logger.warn(
         `A CheckboxKeyboard with id "${config.id}" is already registered — the ` +

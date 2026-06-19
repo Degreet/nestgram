@@ -4,6 +4,7 @@ import type {
 } from '../events/raw-update.types';
 import { CallbackRoutePattern } from '../callback-data';
 import { ButtonStyle, ButtonStyleValue } from './button-style';
+import { CHECKBOX_DEFAULT_MARKERS } from './checkbox.constants';
 import { NOOP_CALLBACK_DATA } from './noop.constants';
 import { RouteParamValues } from './route-params.types';
 
@@ -52,6 +53,36 @@ export class Button {
       ? CallbackRoutePattern.build(route, params)
       : route;
     return new Button({ text: label, callback_data: callbackData });
+  }
+
+  /**
+   * A checkbox-style callback button: a ✅ marker before the label when `on`
+   * (nothing when off), routed like {@link text}. The low-level primitive for a
+   * hand-rolled picker, so a checkbox list reads as a plain mapped keyboard —
+   *
+   * ```ts
+   * new InlineKeyboard()
+   *   .map(items, (i) => Button.toggle(sel.has(i.id), i.name, 'pick/:id', { id: i.id }))
+   *   .split(2);
+   * ```
+   *
+   * — where you own the toggle `@Action`. {@link CheckboxKeyboard} is the
+   * batteries-included widget (routing, persistence, pagination) over the same idea.
+   */
+  static toggle<T extends string>(
+    on: boolean,
+    label: string,
+    route: T,
+    ...[params]: RouteParamValues<T>
+  ): Button {
+    const marker = on
+      ? CHECKBOX_DEFAULT_MARKERS.on
+      : CHECKBOX_DEFAULT_MARKERS.off;
+    const text = marker ? `${marker} ${label}` : label;
+    const callbackData = params
+      ? CallbackRoutePattern.build(route, params)
+      : route;
+    return new Button({ text, callback_data: callbackData });
   }
 
   /** A URL button: pressing it opens the link. */

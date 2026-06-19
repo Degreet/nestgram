@@ -35,7 +35,7 @@ describe('CheckboxKeyboard', () => {
         .label((t) => t.name);
 
       const flat = rows(kb.render()).flat();
-      expect(flat.map((b) => b.text)).toEqual(['☐ Alpha', '☑ Beta', '☐ Gamma']);
+      expect(flat.map((b) => b.text)).toEqual(['Alpha', '✅ Beta', 'Gamma']);
       expect(flat.map((b) => b.callback_data)).toEqual([
         'checkbox/tags/toggle/a',
         'checkbox/tags/toggle/b',
@@ -197,19 +197,19 @@ describe('CheckboxKeyboard', () => {
         const session: Record<string, unknown> = {};
         setAmbient(SESSION, session);
 
-        const kb = new CheckboxKeyboard<Tag>({ id: 'sess', items: TAGS }).key(
-          (t) => t.id,
-        );
+        const kb = new CheckboxKeyboard<Tag>({ id: 'sess', items: TAGS })
+          .key((t) => t.id)
+          .label((t) => t.name);
 
         kb.applyToggle('a');
         kb.applyToggle('c');
         expect(session['checkbox:sess']).toEqual(['a', 'c']);
 
         // A fresh render reflects what was stored.
-        const marks = rows(kb.render())
+        const texts = rows(kb.render())
           .flat()
-          .map((b) => b.text.slice(0, 1));
-        expect(marks).toEqual(['☑', '☐', '☑']);
+          .map((b) => b.text);
+        expect(texts).toEqual(['✅ Alpha', 'Beta', '✅ Gamma']);
       });
     });
   });
