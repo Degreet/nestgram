@@ -155,30 +155,115 @@ the `buy` press — and carrying typed data in a button (`buy:42`-style)
 without magic strings — is the next page,
 [Callbacks →](/docs/callbacks).
 
+### Dynamic keyboards
+
+When the buttons come from data, a button is a value (`Button`) and `.map()`
+lays a collection out — no hand-rolled loop:
+
+:::code[catalog.router.ts]
+
+```ts
+import { InlineKeyboard, Button } from 'nestgram';
+
+const keyboard = new InlineKeyboard()
+  .map(products, (p) => Button.text(p.name, 'buy/:id', { id: p.id }))
+  .split(2)
+  .row(Button.url('Catalog', 'https://shop.dev'));
+```
+
+:::
+
+Buttons accumulate, then a layout method commits them: `.split(n)` cuts the
+accumulated buttons into rows of `n`, `.spread()` is one per row, and `.row()`
+commits a single row — so `.map(...).split(2)` reads the same as
+`.text().text().split(2)`. `.map(items, fn)` runs `fn` per item; return a
+`Button` to add it, or a falsy value to skip one. `.add(...buttons)` is the
+universal inlet: every Bot API kind has a `Button` constructor (`Button.webApp`,
+`Button.switchInline`, `Button.copyText`, `Button.pay`, …), so
+`.add(Button.pay('Pay'))` reaches the ones without a fluent shortcut.
+
+### Conditional buttons & sections
+
+`.if(condition)` keeps the **last unit** — a button, a row, a `.split()` section
+or a `.group()` — only when `condition` is true. One verb for every scope:
+
+:::code[menu.router.ts]
+
+```ts
+new InlineKeyboard()
+  .map(items, (i) => Button.text(i.label, 'pick/:id', { id: i.id }))
+  .split(3) // a 3-wide grid for everyone
+  .group((kb) => kb.text('Stats', 'stats').text('Ban', 'ban').split(2))
+  .if(isAdmin); // ...plus an admin block, only for admins
+```
+
+:::
+
+Inside `.map()` you condition a single button with `Button.if(...)` — and
+`.else(...)` gives it a fallback when hidden (a label becomes a dead-end button,
+or pass a full `Button`):
+
+:::code[shop.router.ts]
+
+```ts
+.map(products, (p) =>
+  Button.text(p.name, 'buy/:id', { id: p.id }).if(p.inStock).else('Sold out'),
+);
+```
+
+:::
+
+Use `Button.if()` for the per-item filter inside `.map()`, and the builder's
+`.if()` for a whole row, section or group.
+
+### Editing a keyboard
+
+Often you already have a keyboard — the one on the message a button press came
+from — and just want to tweak it: flip a checkbox, relabel, drop a button.
+`InlineKeyboard.from(markup)` adopts it (a copy — the original is untouched) and
+you address a button by its **route**, the same string that built and routes it:
+
+:::code[todo.router.ts]
+
+```ts
+import { InlineKeyboard } from 'nestgram';
+
+const next = InlineKeyboard.from(markup)
+  .setText(`toggle/${id}`, '☑ Done') // a concrete route → one button
+  .remove('cancel'); // drop a button
+
+// send it back: query.message.editReplyMarkup(next)
+```
+
+:::
+
+A concrete route (`toggle/3`) addresses one button; a template (`toggle/:id`)
+addresses all that fit, with the captured params passed to the patch. You can
+also address by predicate (`.update((b) => b.label === 'Old', …)`), by visible
+text (`.replaceText('Old', 'New')`), or by position (`.updateAt(row, col, …)`).
+
 ### Colouring buttons
 
 Telegram lets a button carry a `style`: `primary` (blue), `success` (green) or
-`danger` (red). A colour modifier styles the **next** button only, so it reads
-like a label on the button it precedes:
+`danger` (red). A colour modifier styles the button **just added**, so it reads
+like a label on the button it follows:
 
-:::code[confirm.router.ts]{mark="2,4"}
+:::code[confirm.router.ts]{mark="2,3"}
 
 ```ts
 const keyboard = new InlineKeyboard()
-  .success()
   .text('Confirm', 'confirm')
-  .danger()
+  .success()
   .text('Cancel', 'cancel')
+  .danger()
   .text('Later', 'later'); // no modifier → the app's default style
 ```
 
 :::
 
-The modifier is one-shot (`Later` above stays default) and is consumed even
-when the button is hidden — so a conditional button never leaks its colour onto
-the next one: `.danger().text('Delete', 'del', !canDelete)` simply drops when
-`canDelete` is false. The same `.primary()`/`.success()`/`.danger()` work on a
-`ReplyKeyboard`.
+A `Button` value styles the same way — `Button.text('Delete', 'del').danger()` —
+so it works inside `.map()`/`.add()` too. The same
+`.primary()`/`.success()`/`.danger()` work on a `ReplyKeyboard`.
 
 ## Reply keyboards
 
@@ -204,9 +289,14 @@ return message.answer('Menu:', { reply_markup: keyboard });
 :::
 
 `.resize()` and `.oneTime()` map to the Telegram `resize_keyboard` and
-`one_time_keyboard` flags, and `.placeholder()` sets the grey
-`input_field_placeholder` — named for discoverability, but the underlying
-markup is exactly what the API expects.
+`one_time_keyboard` flags, `.persistent()` to `is_persistent`, and
+`.placeholder()` sets the grey `input_field_placeholder` — named for
+discoverability, but the underlying markup is exactly what the API expects.
+
+Beyond plain `.text()` there's a method per Bot API button kind —
+`.requestContact()`, `.requestLocation()`, `.requestPoll()`, `.webApp()`,
+`.requestUsers()` and `.requestChat()` — and the same `.split(n)`/`.row()`
+layout and `.if(cond)` conditionals as an inline keyboard.
 
 ## answer vs reply
 

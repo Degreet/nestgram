@@ -79,7 +79,8 @@ describe('NestgramModule (integration)', () => {
     });
 
     const table = app.get(RouteTable);
-    expect(table.size).toBe(1);
+    // 1 user route + the built-in no-op button route.
+    expect(table.size).toBe(2);
     expect(table.ofType('message')).toHaveLength(1);
 
     const dispatcher = app.get(UpdateDispatcher);
@@ -100,7 +101,7 @@ describe('NestgramModule (integration)', () => {
 
     // The only place GreetRouter is named is the providers array; forRoot got
     // no routers list, yet the route table still found it.
-    expect(app.get(RouteTable).size).toBe(1);
+    expect(app.get(RouteTable).size).toBe(2);
 
     await app.close();
   });
@@ -137,7 +138,7 @@ describe('NestgramModule.forRootAsync (integration)', () => {
     // Token resolved via the injected config factory reached the transport.
     expect(app.get(BotService).token).toBe('ASYNC_TOKEN');
     // Engine still wired: discovery built the route table.
-    expect(app.get(RouteTable).size).toBe(1);
+    expect(app.get(RouteTable).size).toBe(2);
 
     await app.close();
   });
@@ -211,9 +212,10 @@ describe('stacked listener decorators (integration)', () => {
     const dispatcher = app.get(UpdateDispatcher);
     const router = app.get(MultiRouter);
 
-    // Two routes for the one method: one per stacked decorator.
+    // Two routes for the one method: one per stacked decorator (the
+    // callback_query side also carries the built-in no-op route).
     expect(table.ofType('message')).toHaveLength(1);
-    expect(table.ofType('callback_query')).toHaveLength(1);
+    expect(table.ofType('callback_query')).toHaveLength(2);
 
     await dispatcher.dispatch(messageUpdate(1, 'hi'));
     expect(router.hits).toEqual(['hit']);

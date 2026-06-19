@@ -43,6 +43,7 @@ import {
   User,
 } from '..';
 import { RawUpdate } from '../events/raw-update.types';
+import { NOOP_CALLBACK_DATA } from '../keyboards/noop.constants';
 
 @Injectable()
 class CounterService {
@@ -137,8 +138,9 @@ describe('Phase 1 acceptance (booted app)', () => {
   });
 
   it('discovers @Router providers into the route table — no routers list', () => {
-    // 4 listeners across one discovered router (start, hears, refresh, echo).
-    expect(app.get(RouteTable).size).toBe(4);
+    // 4 listeners across one discovered router (start, hears, refresh, echo),
+    // plus the built-in no-op button route (Button.noop / .else).
+    expect(app.get(RouteTable).size).toBe(5);
   });
 
   it('@Command matches a bare /start (exact arity) and injects @Sender', async () => {
@@ -496,6 +498,18 @@ describe('@OnUnhandled (booted app)', () => {
     expect(
       warn.mock.calls.some((call) => String(call[0]).includes('no-such-route')),
     ).toBe(true);
+    warn.mockRestore();
+  });
+
+  it('does not warn for a built-in no-op button — it is a handled route', async () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    await dispatcher.dispatch(callbackUpdate(4, NOOP_CALLBACK_DATA));
+    expect(
+      warn.mock.calls.some((call) =>
+        String(call[0]).includes(NOOP_CALLBACK_DATA),
+      ),
+    ).toBe(false);
+    expect(router.seen).toEqual([]); // matched the noop route, never @OnUnhandled
     warn.mockRestore();
   });
 });
