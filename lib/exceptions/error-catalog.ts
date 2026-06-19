@@ -33,4 +33,13 @@ export const KnownApiError = {
   blockedByUser: { code: 403, description: /bot was blocked by the user/i },
   /** The target chat does not exist (wrong id, or the bot was never there). */
   chatNotFound: { code: 400, description: /chat not found/i },
+  /**
+   * The message can no longer be edited — too old, already deleted, or not the
+   * bot's own message. Distinct from {@link notModified} (a content no-op): here
+   * the edit is genuinely impossible.
+   */
+  notEditable: {
+    code: 400,
+    description: /message can't be edited|message to edit not found/i,
+  },
 } as const satisfies Record<string, ApiErrorMatcher>;

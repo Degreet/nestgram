@@ -9,6 +9,7 @@ import {
   extractArgs,
   extractCallbackData,
   extractChat,
+  extractEditTarget,
   extractPayload,
   extractSender,
 } from './extractors';
@@ -100,6 +101,62 @@ describe('extractors', () => {
         },
       });
       expect(extractCallbackData(ctx)).toBe('open_menu');
+    });
+  });
+
+  describe('extractEditTarget', () => {
+    it('targets the message a callback is attached to', () => {
+      const ctx = wrap({
+        update_id: 1,
+        callback_query: {
+          id: 'q',
+          from: { id: 1, is_bot: false, first_name: 'A' },
+          chat_instance: 'c',
+          data: 'toggle',
+          message: {
+            message_id: 555,
+            date: 1,
+            chat: { id: 99, type: 'private' },
+          },
+        },
+      });
+      expect(extractEditTarget(ctx)).toEqual({ chat_id: 99, message_id: 555 });
+    });
+
+    it('is undefined outside a callback context (nothing of the bot to edit)', () => {
+      expect(extractEditTarget(wrap(messageUpdate('hi')))).toBeUndefined();
+    });
+
+    it('is undefined for an inaccessible message (date 0 — too old/deleted)', () => {
+      const ctx = wrap({
+        update_id: 1,
+        callback_query: {
+          id: 'q',
+          from: { id: 1, is_bot: false, first_name: 'A' },
+          chat_instance: 'c',
+          data: 'toggle',
+          message: {
+            message_id: 555,
+            date: 0,
+            chat: { id: 99, type: 'private' },
+          },
+        },
+      });
+      expect(extractEditTarget(ctx)).toBeUndefined();
+    });
+
+    it('is undefined for an inline-only callback (no message)', () => {
+      const ctx = wrap({
+        update_id: 1,
+        callback_query: {
+          id: 'q',
+          from: { id: 1, is_bot: false, first_name: 'A' },
+          chat_instance: 'c',
+          data: 'toggle',
+          inline_message_id: 'inline-1',
+        },
+      });
+      expect(extractEditTarget(ctx)).toBeUndefined();
     });
   });
 });

@@ -200,6 +200,10 @@ const WRAP_ARRAY = `wrap(raw: unknown, bot: BotService): Message[] {
   );
 }`;
 
+// Methods that edit a message in place and so return `Message | true`. The
+// engine's result-handler mirrors this set (see `isEditInPlace` in
+// lib/engine/execution/result-handler.ts) to auto-target a returned edit command
+// at the callback message — keep the two in sync when adding an editable method.
 const WRAP_EDITABLE = `wrap(raw: unknown, bot: BotService): Message | true {
   return typeof raw === 'object' && raw !== null
     ? new Message(bot, raw as Partial<RawMessage>)
