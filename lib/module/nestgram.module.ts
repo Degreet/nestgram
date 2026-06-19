@@ -37,6 +37,7 @@ import {
 import { AutoAnswerCallbackInterceptor } from '../builtins/auto-answer';
 import { ReplyExceptionFilter } from '../builtins/reply-exception';
 import { DeadButtonWarner } from '../builtins/unhandled';
+import { NoopButtonHandler } from '../builtins/noop';
 import { NestgramBootstrap } from './nestgram.bootstrap';
 import {
   NestgramModuleAsyncOptions,
@@ -163,6 +164,9 @@ export class NestgramModule {
     // `@Router` discovered like any other) — public and toggleable via
     // `warnUnhandledCallbacks`, so nothing here is privileged.
     DeadButtonWarner,
+    // Handles the reserved no-op route behind `Button.noop()`/`.else('label')`,
+    // so a dead-end button is answered (not warned). A plain `@Router`/`@Action`.
+    NoopButtonHandler,
   ];
 
   /**
