@@ -1,9 +1,10 @@
 import { Button } from './button';
 import { InlineKeyboard } from './inline-keyboard';
+import { NOOP_CALLBACK_DATA } from './noop.constants';
 
 describe('InlineKeyboard — Button sugar', () => {
   describe('.map', () => {
-    it('turns a collection into buttons, laid into a grid by .columns', () => {
+    it('turns a collection into buttons, laid into a grid by .split', () => {
       const items = [
         { id: 1, name: 'Milk' },
         { id: 2, name: 'Bread' },
@@ -11,8 +12,8 @@ describe('InlineKeyboard — Button sugar', () => {
       ];
 
       const markup = new InlineKeyboard()
-        .columns(2)
         .map(items, (i) => Button.text(i.name, 'pick/:id', { id: i.id }))
+        .split(2)
         .toJSON();
 
       expect(markup).toEqual({
@@ -26,7 +27,22 @@ describe('InlineKeyboard — Button sugar', () => {
       });
     });
 
-    it('drops an item when the callback returns a falsy value', () => {
+    it('.map().split() equals .text().text().split()', () => {
+      const viaMap = new InlineKeyboard()
+        .map([1, 2, 3], (n) => Button.text(`#${n}`, `n/${n}`))
+        .split(2)
+        .toJSON();
+      const viaText = new InlineKeyboard()
+        .text('#1', 'n/1')
+        .text('#2', 'n/2')
+        .text('#3', 'n/3')
+        .split(2)
+        .toJSON();
+
+      expect(viaMap).toEqual(viaText);
+    });
+
+    it('drops an item when the callback returns falsy', () => {
       const markup = new InlineKeyboard()
         .map([1, 2, 3], (n) =>
           n === 2 ? null : Button.text(`#${n}`, `n/${n}`),
@@ -39,14 +55,40 @@ describe('InlineKeyboard — Button sugar', () => {
       ]);
     });
 
-    it('passes the index to the callback', () => {
+    it('filters per item with Button.if(...)', () => {
+      const products = [
+        { id: 1, name: 'A', inStock: true },
+        { id: 2, name: 'B', inStock: false },
+      ];
+
       const markup = new InlineKeyboard()
-        .map(['a', 'b'], (label, index) => Button.text(label, `at/${index}`))
+        .map(products, (p) =>
+          Button.text(p.name, 'buy/:id', { id: p.id }).if(p.inStock),
+        )
         .toJSON();
 
       expect(markup.inline_keyboard[0]).toEqual([
-        { text: 'a', callback_data: 'at/0' },
-        { text: 'b', callback_data: 'at/1' },
+        { text: 'A', callback_data: 'buy/1' },
+      ]);
+    });
+
+    it('replaces a hidden button with its .else() fallback', () => {
+      const markup = new InlineKeyboard()
+        .map(
+          [
+            { id: 1, name: 'A', inStock: true },
+            { id: 2, name: 'B', inStock: false },
+          ],
+          (p) =>
+            Button.text(p.name, 'buy/:id', { id: p.id })
+              .if(p.inStock)
+              .else('Sold out'),
+        )
+        .toJSON();
+
+      expect(markup.inline_keyboard[0]).toEqual([
+        { text: 'A', callback_data: 'buy/1' },
+        { text: 'Sold out', callback_data: NOOP_CALLBACK_DATA },
       ]);
     });
   });
@@ -65,49 +107,39 @@ describe('InlineKeyboard — Button sugar', () => {
       ]);
     });
 
-    it('keeps a styled Button value over a pending colour modifier', () => {
+    it('keeps a styled Button value', () => {
       const markup = new InlineKeyboard()
-        .primary() // pending modifier...
-        .add(Button.text('Delete', 'del').danger()) // ...but the value is explicit
+        .add(Button.text('Delete', 'del').danger())
         .toJSON();
 
       expect(markup.inline_keyboard[0][0].style).toBe('danger');
     });
   });
 
-  describe('.row(...buttons)', () => {
-    it('lays exactly those buttons into one row, ignoring .columns', () => {
+  describe('.group', () => {
+    it('appends an irregular block of rows', () => {
       const markup = new InlineKeyboard()
-        .columns(1)
-        .row(
-          Button.text('A', 'a'),
-          Button.text('B', 'b'),
-          Button.text('C', 'c'),
+        .text('Home', 'home')
+        .row()
+        .group((kb) =>
+          kb
+            .text('a', 'a')
+            .text('b', 'b')
+            .text('c', 'c')
+            .row()
+            .text('d', 'd')
+            .row(),
         )
         .toJSON();
 
       expect(markup.inline_keyboard).toEqual([
+        [{ text: 'Home', callback_data: 'home' }],
         [
-          { text: 'A', callback_data: 'a' },
-          { text: 'B', callback_data: 'b' },
-          { text: 'C', callback_data: 'c' },
+          { text: 'a', callback_data: 'a' },
+          { text: 'b', callback_data: 'b' },
+          { text: 'c', callback_data: 'c' },
         ],
-      ]);
-    });
-
-    it('reads as map body + an explicit footer row', () => {
-      const markup = new InlineKeyboard()
-        .columns(2)
-        .map([1, 2], (n) => Button.text(`#${n}`, `n/${n}`))
-        .row(Button.url('Help', 'https://x.dev'))
-        .toJSON();
-
-      expect(markup.inline_keyboard).toEqual([
-        [
-          { text: '#1', callback_data: 'n/1' },
-          { text: '#2', callback_data: 'n/2' },
-        ],
-        [{ text: 'Help', url: 'https://x.dev' }],
+        [{ text: 'd', callback_data: 'd' }],
       ]);
     });
   });
@@ -127,14 +159,6 @@ describe('InlineKeyboard — Button sugar', () => {
         { text: 'Here', switch_inline_query_current_chat: '' },
         { text: 'Copy', copy_text: { text: 'CODE' } },
       ]);
-    });
-
-    it('honours the trailing hidden flag', () => {
-      const markup = new InlineKeyboard()
-        .webApp('App', 'https://app.dev', true)
-        .toJSON();
-
-      expect(markup.inline_keyboard).toEqual([]);
     });
   });
 });

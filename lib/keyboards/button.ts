@@ -4,6 +4,7 @@ import type {
 } from '../events/raw-update.types';
 import { CallbackRoutePattern } from '../callback-data';
 import { ButtonStyle, ButtonStyleValue } from './button-style';
+import { NOOP_CALLBACK_DATA } from './noop.constants';
 import { RouteParamValues } from './route-params.types';
 
 /**
@@ -15,19 +16,24 @@ import { RouteParamValues } from './route-params.types';
  *
  * ```ts
  * new InlineKeyboard()
- *   .map(products, (p) => Button.text(p.name, 'buy/:id', { id: p.id }))
- *   .columns(2)
- *   .row(Button.url('Catalog', site), Button.switchInline('Share'));
+ *   .map(products, (p) =>
+ *     Button.text(p.name, 'buy/:id', { id: p.id }).if(p.inStock).else('Sold out'),
+ *   )
+ *   .split(2);
  * ```
  *
  * One static constructor per Bot API inline-button kind; the colour modifiers
- * (`.primary()`/`.success()`/`.danger()`) return a styled copy, so a `Button` is
- * never mutated in place.
+ * (`.primary()`/`.success()`/`.danger()`) and `.if()`/`.else()` all return a new
+ * value, so a `Button` is never mutated in place.
  *
  * @see https://core.telegram.org/bots/api#inlinekeyboardbutton
  */
 export class Button {
-  private constructor(private readonly spec: RawInlineKeyboardButton) {}
+  private constructor(
+    private readonly spec: RawInlineKeyboardButton,
+    private readonly hidden = false,
+    private readonly fallback?: Button,
+  ) {}
 
   /**
    * A callback button. Two forms, one mechanism: the framework assembles the
@@ -89,6 +95,11 @@ export class Button {
     return new Button({ text: label, pay: true });
   }
 
+  /** A dead-end button — pressing it does nothing (a built-in just answers it). */
+  static noop(label: string): Button {
+    return new Button({ text: label, callback_data: NOOP_CALLBACK_DATA });
+  }
+
   /** Adopt a raw Telegram button as a value — for editing an existing keyboard. */
   static from(raw: RawInlineKeyboardButton): Button {
     return new Button({ ...raw });
@@ -104,9 +115,41 @@ export class Button {
     return this.spec.callback_data;
   }
 
+  /**
+   * Keep this button only when `condition` is true; otherwise it is dropped when
+   * added to a keyboard (or replaced by {@link else}). Lets `.map()` filter and
+   * conditional buttons read in one line.
+   */
+  if(condition: boolean): Button {
+    return new Button(this.spec, !condition, this.fallback);
+  }
+
+  /**
+   * The button to show in place of this one when {@link if} hid it — a label (a
+   * dead-end {@link noop}, e.g. `'Sold out'`) or a full replacement `Button`.
+   */
+  else(fallback: string | Button): Button {
+    return new Button(
+      this.spec,
+      this.hidden,
+      typeof fallback === 'string' ? Button.noop(fallback) : fallback,
+    );
+  }
+
+  /**
+   * Resolve the conditional for the keyboard: the button to render, or `null`
+   * when it was hidden with no fallback.
+   */
+  resolve(): Button | null {
+    if (!this.hidden) {
+      return this;
+    }
+    return this.fallback ?? null;
+  }
+
   /** A copy with a different label, keeping everything else — for editing. */
   withText(text: string): Button {
-    return new Button({ ...this.spec, text });
+    return new Button({ ...this.spec, text }, this.hidden, this.fallback);
   }
 
   /** A copy styled blue — the main / affirmative action. */
@@ -130,6 +173,6 @@ export class Button {
   }
 
   private withStyle(style: ButtonStyleValue): Button {
-    return new Button({ ...this.spec, style });
+    return new Button({ ...this.spec, style }, this.hidden, this.fallback);
   }
 }

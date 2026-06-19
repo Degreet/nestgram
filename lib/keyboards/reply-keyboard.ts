@@ -12,16 +12,16 @@ type PollType = 'quiz' | 'regular';
 /**
  * Fluent builder for a custom reply keyboard (buttons under the input field).
  *
- * Buttons go into the current row; `.row()` starts a new one, or `.columns(n)`
- * auto-wraps into a grid. Beyond plain `.text()` buttons there is a method per
- * Bot API kind — `.requestContact()`, `.requestLocation()`, `.requestPoll()`,
- * `.webApp()`, `.requestUsers()`, `.requestChat()` — each with a trailing
- * `hidden` flag. The flags (`.resize()`/`.oneTime()`/`.persistent()`/
+ * Buttons accumulate in the current row; `.split(n)` lays them into rows of `n`,
+ * `.spread()` is one per row, and `.row()` commits a single row. Beyond plain
+ * `.text()` there is a method per Bot API kind — `.requestContact()`,
+ * `.requestLocation()`, `.requestPoll()`, `.webApp()`, `.requestUsers()`,
+ * `.requestChat()`. The flags (`.resize()`/`.oneTime()`/`.persistent()`/
  * `.selective()`/`.placeholder()`) map to the Telegram markup options. Pass the
  * instance as `reply_markup` — `toJSON()` serializes to `{ keyboard, ... }`.
  *
  * ```ts
- * new ReplyKeyboard().text('My orders').row().text('Help').resize().oneTime();
+ * new ReplyKeyboard().text('My orders').text('Help').row().resize().oneTime();
  * ```
  */
 export class ReplyKeyboard extends KeyboardBuilder<RawKeyboardButton> {
@@ -32,46 +32,45 @@ export class ReplyKeyboard extends KeyboardBuilder<RawKeyboardButton> {
   private placeholderText?: string;
 
   /** A plain text button (sends its label as a message when pressed). */
-  text(label: string, hidden = false): this {
-    return this.add1({ text: label }, hidden);
+  text(label: string): this {
+    this.pushButton({ text: label });
+    return this;
   }
 
   /** Ask the user to share their phone number. */
-  requestContact(label: string, hidden = false): this {
-    return this.add1({ text: label, request_contact: true }, hidden);
+  requestContact(label: string): this {
+    this.pushButton({ text: label, request_contact: true });
+    return this;
   }
 
   /** Ask the user to share their location. */
-  requestLocation(label: string, hidden = false): this {
-    return this.add1({ text: label, request_location: true }, hidden);
+  requestLocation(label: string): this {
+    this.pushButton({ text: label, request_location: true });
+    return this;
   }
 
   /** Ask the user to create a poll — `type` restricts it to a quiz or regular poll. */
-  requestPoll(label: string, type?: PollType, hidden = false): this {
-    return this.add1({ text: label, request_poll: { type } }, hidden);
+  requestPoll(label: string, type?: PollType): this {
+    this.pushButton({ text: label, request_poll: { type } });
+    return this;
   }
 
   /** A Web App button: pressing it opens the Mini App at `url`. */
-  webApp(label: string, url: string, hidden = false): this {
-    return this.add1({ text: label, web_app: { url } }, hidden);
+  webApp(label: string, url: string): this {
+    this.pushButton({ text: label, web_app: { url } });
+    return this;
   }
 
   /** Ask the user to pick users (the request is identified by `request_id`). */
-  requestUsers(
-    label: string,
-    request: RawKeyboardButtonRequestUsers,
-    hidden = false,
-  ): this {
-    return this.add1({ text: label, request_users: request }, hidden);
+  requestUsers(label: string, request: RawKeyboardButtonRequestUsers): this {
+    this.pushButton({ text: label, request_users: request });
+    return this;
   }
 
   /** Ask the user to pick a chat (the request is identified by `request_id`). */
-  requestChat(
-    label: string,
-    request: RawKeyboardButtonRequestChat,
-    hidden = false,
-  ): this {
-    return this.add1({ text: label, request_chat: request }, hidden);
+  requestChat(label: string, request: RawKeyboardButtonRequestChat): this {
+    this.pushButton({ text: label, request_chat: request });
+    return this;
   }
 
   /** Fit the keyboard to its buttons (`resize_keyboard`). */
@@ -115,11 +114,5 @@ export class ReplyKeyboard extends KeyboardBuilder<RawKeyboardButton> {
         input_field_placeholder: this.placeholderText,
       }),
     };
-  }
-
-  /** Push one button through the column flow, honoring a trailing `hidden` flag. */
-  private add1(button: RawKeyboardButton, hidden: boolean): this {
-    this.push(button, hidden);
-    return this;
   }
 }

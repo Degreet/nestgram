@@ -1,4 +1,5 @@
 import { Button } from './button';
+import { NOOP_CALLBACK_DATA } from './noop.constants';
 
 describe('Button', () => {
   describe('constructors map to the Bot API button shape', () => {
@@ -89,6 +90,46 @@ describe('Button', () => {
       // A copy — mutating the returned JSON does not touch the source.
       button.toJSON().text = 'Changed';
       expect(raw.text).toBe('Old');
+    });
+  });
+
+  describe('conditional (.if / .else) and noop', () => {
+    const buy = Button.text('Buy', 'buy/:id', { id: 1 });
+
+    it('resolve() returns the button itself when .if(true)', () => {
+      const shown = buy.if(true);
+      expect(shown.resolve()).toBe(shown);
+      expect(shown.resolve()?.toJSON()).toEqual({
+        text: 'Buy',
+        callback_data: 'buy/1',
+      });
+    });
+
+    it('resolve() is null when .if(false) with no fallback', () => {
+      expect(buy.if(false).resolve()).toBeNull();
+    });
+
+    it('.else(label) yields a noop dead-end button when hidden', () => {
+      expect(buy.if(false).else('Sold out').resolve()?.toJSON()).toEqual({
+        text: 'Sold out',
+        callback_data: NOOP_CALLBACK_DATA,
+      });
+    });
+
+    it('.else(Button) yields the given fallback when hidden', () => {
+      const fallback = Button.url('Notify', 'https://x.dev');
+      expect(buy.if(false).else(fallback).resolve()).toBe(fallback);
+    });
+
+    it('an unhidden button ignores its .else()', () => {
+      expect(buy.if(true).else('Sold out').resolve()?.label).toBe('Buy');
+    });
+
+    it('Button.noop(label) is a dead-end button', () => {
+      expect(Button.noop('Nothing').toJSON()).toEqual({
+        text: 'Nothing',
+        callback_data: NOOP_CALLBACK_DATA,
+      });
     });
   });
 });

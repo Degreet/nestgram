@@ -1,3 +1,4 @@
+import { Button } from './button';
 import { InlineKeyboard } from './inline-keyboard';
 import { ReplyKeyboard } from './reply-keyboard';
 import { RemoveKeyboard } from './remove-keyboard';
@@ -10,8 +11,8 @@ function serialize(markup: unknown): unknown {
   return JSON.parse(JSON.stringify(markup));
 }
 
-describe('InlineKeyboard', () => {
-  it('lays buttons into rows', () => {
+describe('InlineKeyboard layout', () => {
+  it('commits accumulated buttons as a row with .row()', () => {
     const kb = new InlineKeyboard()
       .text('Buy', 'buy:1')
       .text('Info', 'info:1')
@@ -29,8 +30,8 @@ describe('InlineKeyboard', () => {
     });
   });
 
-  it('drops empty trailing rows', () => {
-    const kb = new InlineKeyboard().text('Only', 'x').row();
+  it('flushes leftover accumulated buttons as a final row', () => {
+    const kb = new InlineKeyboard().text('Only', 'x');
     expect(serialize(kb)).toEqual({
       inline_keyboard: [[{ text: 'Only', callback_data: 'x' }]],
     });
@@ -44,18 +45,15 @@ describe('InlineKeyboard', () => {
     );
   });
 
-  it('columns(n) auto-wraps buttons into a grid (uneven last row)', () => {
+  it('.split(n) cuts the accumulated buttons into rows of n (uneven last row)', () => {
     const kb = new InlineKeyboard()
-      .columns(2)
       .text('a', '1')
       .text('b', '2')
       .text('c', '3')
       .text('d', '4')
-      .text('e', '5');
+      .text('e', '5')
+      .split(2);
 
-    expect(
-      (serialize(kb) as { inline_keyboard: unknown[][] }).inline_keyboard,
-    ).toHaveLength(3);
     expect(serialize(kb)).toEqual({
       inline_keyboard: [
         [
@@ -71,33 +69,25 @@ describe('InlineKeyboard', () => {
     });
   });
 
-  it('columns coexists with an explicit row()', () => {
-    const kb = new InlineKeyboard()
-      .text('top', 't')
-      .row()
-      .columns(2)
-      .text('a', '1')
-      .text('b', '2')
-      .text('c', '3');
-
+  it('.spread() lays one button per row', () => {
+    const kb = new InlineKeyboard().text('a', '1').text('b', '2').spread();
     expect(serialize(kb)).toEqual({
       inline_keyboard: [
-        [{ text: 'top', callback_data: 't' }],
-        [
-          { text: 'a', callback_data: '1' },
-          { text: 'b', callback_data: '2' },
-        ],
-        [{ text: 'c', callback_data: '3' }],
+        [{ text: 'a', callback_data: '1' }],
+        [{ text: 'b', callback_data: '2' }],
       ],
     });
   });
 
-  it('columns set mid-row counts buttons already in that row', () => {
+  it('each .split() is its own section — different widths compose', () => {
     const kb = new InlineKeyboard()
       .text('a', '1')
-      .columns(2)
       .text('b', '2')
-      .text('c', '3');
+      .split(2)
+      .text('c', '3')
+      .text('d', '4')
+      .text('e', '5')
+      .split(3);
 
     expect(serialize(kb)).toEqual({
       inline_keyboard: [
@@ -105,39 +95,45 @@ describe('InlineKeyboard', () => {
           { text: 'a', callback_data: '1' },
           { text: 'b', callback_data: '2' },
         ],
-        [{ text: 'c', callback_data: '3' }],
+        [
+          { text: 'c', callback_data: '3' },
+          { text: 'd', callback_data: '4' },
+          { text: 'e', callback_data: '5' },
+        ],
       ],
     });
   });
 
-  it('columns(0) is rejected', () => {
-    expect(() => new InlineKeyboard().columns(0)).toThrow(NestgramConfigError);
+  it('.split(0) is rejected', () => {
+    expect(() => new InlineKeyboard().text('a', '1').split(0)).toThrow(
+      NestgramConfigError,
+    );
   });
 
-  it('hidden buttons are excluded (and an all-hidden row collapses)', () => {
-    const kb = new InlineKeyboard()
-      .text('keep', 'k')
-      .text('drop', 'd', true)
-      .row()
-      .text('gone', 'g', 1 > 0) // any boolean expression
-      .row()
-      .text('last', 'l');
-
+  it('.row(...buttons) commits an explicit row', () => {
+    const kb = new InlineKeyboard().row(
+      Button.text('A', 'a'),
+      Button.text('B', 'b'),
+    );
     expect(serialize(kb)).toEqual({
       inline_keyboard: [
-        [{ text: 'keep', callback_data: 'k' }],
-        [{ text: 'last', callback_data: 'l' }],
+        [
+          { text: 'A', callback_data: 'a' },
+          { text: 'B', callback_data: 'b' },
+        ],
       ],
     });
   });
+});
 
-  it('a colour modifier styles the next button only (one-shot)', () => {
+describe('InlineKeyboard colours (postfix)', () => {
+  it('styles the just-added button', () => {
     const kb = new InlineKeyboard()
-      .primary()
       .text('Buy', 'buy')
+      .primary()
       .text('Info', 'info')
-      .danger()
-      .url('Cancel', 'https://x');
+      .url('Cancel', 'https://x')
+      .danger();
 
     expect(serialize(kb)).toEqual({
       inline_keyboard: [
@@ -152,12 +148,12 @@ describe('InlineKeyboard', () => {
 
   it('exposes all three styles', () => {
     const kb = new InlineKeyboard()
-      .primary()
       .text('p', '1')
-      .success()
+      .primary()
       .text('s', '2')
-      .danger()
-      .text('d', '3');
+      .success()
+      .text('d', '3')
+      .danger();
 
     expect(serialize(kb)).toEqual({
       inline_keyboard: [
@@ -169,36 +165,94 @@ describe('InlineKeyboard', () => {
       ],
     });
   });
+});
 
-  it('a hidden styled button does not leak its style onto the next', () => {
+describe('InlineKeyboard .if() conditionals', () => {
+  it('drops the last button when false, keeps it when true', () => {
     const kb = new InlineKeyboard()
-      .danger()
-      .text('drop', 'd', true)
-      .text('keep', 'k');
-
-    expect(serialize(kb)).toEqual({
-      inline_keyboard: [[{ text: 'keep', callback_data: 'k' }]],
-    });
-  });
-
-  it('a colour modifier attaches to the next button across a row break', () => {
-    const kb = new InlineKeyboard().primary().row().text('X', 'x');
-    expect(serialize(kb)).toEqual({
-      inline_keyboard: [[{ text: 'X', callback_data: 'x', style: 'primary' }]],
-    });
-  });
-
-  it('a styled button keeps its style when columns wraps it to a new row', () => {
-    const kb = new InlineKeyboard()
-      .columns(1)
-      .text('a', '1')
-      .danger()
-      .text('b', '2');
+      .text('keep', 'k')
+      .text('admin', 'a')
+      .if(false)
+      .text('also', 'b')
+      .if(true);
 
     expect(serialize(kb)).toEqual({
       inline_keyboard: [
-        [{ text: 'a', callback_data: '1' }],
-        [{ text: 'b', callback_data: '2', style: 'danger' }],
+        [
+          { text: 'keep', callback_data: 'k' },
+          { text: 'also', callback_data: 'b' },
+        ],
+      ],
+    });
+  });
+
+  it('consumes the unit, so a passing .if() is not re-targeted by a later .if()', () => {
+    const kb = new InlineKeyboard()
+      .text('a', 'a')
+      .if(true)
+      .if(false) // targets nothing — the button above was already kept
+      .split(1);
+
+    expect(serialize(kb)).toEqual({
+      inline_keyboard: [[{ text: 'a', callback_data: 'a' }]],
+    });
+  });
+
+  it('drops a whole row when false', () => {
+    const kb = new InlineKeyboard()
+      .text('top', 't')
+      .row()
+      .row(Button.text('secret', 's'))
+      .if(false);
+
+    expect(serialize(kb)).toEqual({
+      inline_keyboard: [[{ text: 'top', callback_data: 't' }]],
+    });
+  });
+
+  it('drops a whole split section when false', () => {
+    const kb = new InlineKeyboard()
+      .text('a', '1')
+      .text('b', '2')
+      .split(2)
+      .text('x', 'x')
+      .text('y', 'y')
+      .split(2)
+      .if(false);
+
+    expect(serialize(kb)).toEqual({
+      inline_keyboard: [
+        [
+          { text: 'a', callback_data: '1' },
+          { text: 'b', callback_data: '2' },
+        ],
+      ],
+    });
+  });
+
+  it('drops a whole group when false (irregular admin section)', () => {
+    const build = (isAdmin: boolean) =>
+      new InlineKeyboard()
+        .text('Home', 'home')
+        .row()
+        .group((kb) =>
+          kb
+            .row(Button.text('a', 'a'), Button.text('b', 'b'))
+            .row(Button.text('c', 'c')),
+        )
+        .if(isAdmin);
+
+    expect(serialize(build(false))).toEqual({
+      inline_keyboard: [[{ text: 'Home', callback_data: 'home' }]],
+    });
+    expect(serialize(build(true))).toEqual({
+      inline_keyboard: [
+        [{ text: 'Home', callback_data: 'home' }],
+        [
+          { text: 'a', callback_data: 'a' },
+          { text: 'b', callback_data: 'b' },
+        ],
+        [{ text: 'c', callback_data: 'c' }],
       ],
     });
   });
@@ -222,13 +276,8 @@ describe('ReplyKeyboard', () => {
     });
   });
 
-  it('supports columns grid and hidden buttons', () => {
-    const kb = new ReplyKeyboard()
-      .columns(2)
-      .text('a')
-      .text('skip', true)
-      .text('b')
-      .text('c');
+  it('.split(n) lays a grid', () => {
+    const kb = new ReplyKeyboard().text('a').text('b').text('c').split(2);
 
     expect(serialize(kb)).toEqual({
       keyboard: [[{ text: 'a' }, { text: 'b' }], [{ text: 'c' }]],
@@ -240,8 +289,8 @@ describe('ReplyKeyboard', () => {
     expect(serialize(kb)).toEqual({ keyboard: [[{ text: 'Hi' }]] });
   });
 
-  it('styles a button via a colour modifier', () => {
-    const kb = new ReplyKeyboard().success().text('Confirm').text('Plain');
+  it('styles a button via a postfix colour modifier', () => {
+    const kb = new ReplyKeyboard().text('Confirm').success().text('Plain');
     expect(serialize(kb)).toEqual({
       keyboard: [[{ text: 'Confirm', style: 'success' }, { text: 'Plain' }]],
     });
@@ -256,7 +305,8 @@ describe('ReplyKeyboard', () => {
       .webApp('App', 'https://app.dev')
       .row()
       .requestUsers('Pick', { request_id: 1, max_quantity: 3 })
-      .requestChat('Chat', { request_id: 2, chat_is_channel: false });
+      .requestChat('Chat', { request_id: 2, chat_is_channel: false })
+      .row();
 
     expect(serialize(kb)).toEqual({
       keyboard: [
@@ -318,11 +368,6 @@ describe('InlineKeyboard callback routes (.text assemble form)', () => {
     });
   });
 
-  it('honours the hidden flag after the parameters', () => {
-    const kb = new InlineKeyboard().text('Done', 'done/:id', { id: 1 }, true);
-    expect(serialize(kb)).toEqual({ inline_keyboard: [] });
-  });
-
   it('passes an interpolated string through unchanged (terse form)', () => {
     const id = 7;
     const kb = new InlineKeyboard().text('Done', `reminder/done/${id}`);
@@ -331,14 +376,8 @@ describe('InlineKeyboard callback routes (.text assemble form)', () => {
     });
   });
 
-  it('keeps the raw two-argument form (no params)', () => {
-    const kb = new InlineKeyboard().text('Buy', 'buy:1', true);
-    expect(serialize(kb)).toEqual({ inline_keyboard: [] });
-  });
-
   it('requires every parameter at the type level', () => {
-    // Compile-time assertions only — declared, never invoked (the calls would
-    // throw at runtime; here we just assert the type checker rejects them).
+    // Compile-time assertions only — declared, never invoked.
     const assertTypes = () => {
       // @ts-expect-error — missing the `id` parameter the template declares.
       new InlineKeyboard().text('Done', 'reminder/done/:id');
