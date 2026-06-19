@@ -166,20 +166,55 @@ lays a collection out — no hand-rolled loop:
 import { InlineKeyboard, Button } from 'nestgram';
 
 const keyboard = new InlineKeyboard()
-  .columns(2)
   .map(products, (p) => Button.text(p.name, 'buy/:id', { id: p.id }))
+  .split(2)
   .row(Button.url('Catalog', 'https://shop.dev'));
 ```
 
 :::
 
-`.map(items, fn)` runs `fn` per item — return a `Button` to add it, or a falsy
-value to skip one (so a conditional button needs no separate filter).
-`.columns(n)` wraps the result into a grid and `.row(...buttons)` lays an
-explicit row. `.add(...buttons)` is the universal inlet: every Bot API kind has
-a `Button` constructor (`Button.webApp`, `Button.switchInline`,
-`Button.copyText`, `Button.pay`, …), so `.add(Button.pay('Pay'))` reaches the
-ones without a fluent shortcut.
+Buttons accumulate, then a layout method commits them: `.split(n)` cuts the
+accumulated buttons into rows of `n`, `.spread()` is one per row, and `.row()`
+commits a single row — so `.map(...).split(2)` reads the same as
+`.text().text().split(2)`. `.map(items, fn)` runs `fn` per item; return a
+`Button` to add it, or a falsy value to skip one. `.add(...buttons)` is the
+universal inlet: every Bot API kind has a `Button` constructor (`Button.webApp`,
+`Button.switchInline`, `Button.copyText`, `Button.pay`, …), so
+`.add(Button.pay('Pay'))` reaches the ones without a fluent shortcut.
+
+### Conditional buttons & sections
+
+`.if(condition)` keeps the **last unit** — a button, a row, a `.split()` section
+or a `.group()` — only when `condition` is true. One verb for every scope:
+
+:::code[menu.router.ts]
+
+```ts
+new InlineKeyboard()
+  .map(items, (i) => Button.text(i.label, 'pick/:id', { id: i.id }))
+  .split(3) // a 3-wide grid for everyone
+  .group((kb) => kb.text('Stats', 'stats').text('Ban', 'ban').split(2))
+  .if(isAdmin); // ...plus an admin block, only for admins
+```
+
+:::
+
+Inside `.map()` you condition a single button with `Button.if(...)` — and
+`.else(...)` gives it a fallback when hidden (a label becomes a dead-end button,
+or pass a full `Button`):
+
+:::code[shop.router.ts]
+
+```ts
+.map(products, (p) =>
+  Button.text(p.name, 'buy/:id', { id: p.id }).if(p.inStock).else('Sold out'),
+);
+```
+
+:::
+
+Use `Button.if()` for the per-item filter inside `.map()`, and the builder's
+`.if()` for a whole row, section or group.
 
 ### Editing a keyboard
 
@@ -210,27 +245,25 @@ text (`.replaceText('Old', 'New')`), or by position (`.updateAt(row, col, …)`)
 ### Colouring buttons
 
 Telegram lets a button carry a `style`: `primary` (blue), `success` (green) or
-`danger` (red). A colour modifier styles the **next** button only, so it reads
-like a label on the button it precedes:
+`danger` (red). A colour modifier styles the button **just added**, so it reads
+like a label on the button it follows:
 
-:::code[confirm.router.ts]{mark="2,4"}
+:::code[confirm.router.ts]{mark="2,3"}
 
 ```ts
 const keyboard = new InlineKeyboard()
-  .success()
   .text('Confirm', 'confirm')
-  .danger()
+  .success()
   .text('Cancel', 'cancel')
+  .danger()
   .text('Later', 'later'); // no modifier → the app's default style
 ```
 
 :::
 
-The modifier is one-shot (`Later` above stays default) and is consumed even
-when the button is hidden — so a conditional button never leaks its colour onto
-the next one: `.danger().text('Delete', 'del', !canDelete)` simply drops when
-`canDelete` is false. The same `.primary()`/`.success()`/`.danger()` work on a
-`ReplyKeyboard`.
+A `Button` value styles the same way — `Button.text('Delete', 'del').danger()` —
+so it works inside `.map()`/`.add()` too. The same
+`.primary()`/`.success()`/`.danger()` work on a `ReplyKeyboard`.
 
 ## Reply keyboards
 
@@ -262,8 +295,8 @@ discoverability, but the underlying markup is exactly what the API expects.
 
 Beyond plain `.text()` there's a method per Bot API button kind —
 `.requestContact()`, `.requestLocation()`, `.requestPoll()`, `.webApp()`,
-`.requestUsers()` and `.requestChat()` — each taking the same trailing `hidden`
-flag.
+`.requestUsers()` and `.requestChat()` — and the same `.split(n)`/`.row()`
+layout and `.if(cond)` conditionals as an inline keyboard.
 
 ## answer vs reply
 
