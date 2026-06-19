@@ -40,10 +40,11 @@ export class Button {
   static text<T extends string>(
     label: string,
     route: T,
-    ...params: RouteParamValues<T>
+    ...[params]: RouteParamValues<T>
   ): Button {
-    const callbackData =
-      params.length > 0 ? CallbackRoutePattern.build(route, params[0]) : route;
+    const callbackData = params
+      ? CallbackRoutePattern.build(route, params)
+      : route;
     return new Button({ text: label, callback_data: callbackData });
   }
 
