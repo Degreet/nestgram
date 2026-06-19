@@ -66,8 +66,8 @@ export class Button {
    *   .split(2);
    * ```
    *
-   * — where you own the toggle `@Action`. {@link CheckboxKeyboard} is the
-   * batteries-included widget (routing, persistence, pagination) over the same idea.
+   * — where you own the toggle `@Action`. `InlineKeyboard.checkboxes(...)` is the
+   * batteries-included builder (routing, persistence, pagination) over the same idea.
    */
   static toggle<T extends string>(
     on: boolean,
