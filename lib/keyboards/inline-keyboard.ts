@@ -3,8 +3,10 @@ import type {
   RawInlineKeyboardMarkup,
 } from '../events/raw-update.types';
 import { CallbackRoutePattern } from '../callback-data';
+import { NestgramConfigError } from '../exceptions/config.exception';
 import { Button } from './button';
 import { KeyboardBuilder } from './keyboard-builder';
+import { NOOP_CALLBACK_DATA } from './noop.constants';
 import { RouteParamValues } from './route-params.types';
 
 /**
@@ -13,6 +15,18 @@ import { RouteParamValues } from './route-params.types';
  * `.updateAt()`/`.removeAt()` instead.
  */
 type ButtonMatcher = string | ((button: Button) => boolean);
+
+/** Options for {@link InlineKeyboard.paginate}. */
+export interface PaginateOptions {
+  /** Max buttons shown per page (rows are kept whole, never split across pages). */
+  size: number;
+  /** The page to render, 0-based (default 0). */
+  page?: number;
+  /** Label for the previous-page control (default `‹`). */
+  prev?: string;
+  /** Label for the next-page control (default `›`). */
+  next?: string;
+}
 
 /**
  * Fluent builder for an inline keyboard (buttons attached under a message).
@@ -39,6 +53,9 @@ type ButtonMatcher = string | ((button: Button) => boolean);
  * ```
  */
 export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
+  /** Default `paginate()` navigation labels, overridable per call. */
+  private static readonly PAGINATE_LABELS = { prev: '‹', next: '›' } as const;
+
   /**
    * A callback button. Two forms, one mechanism — a safe default and a terse
    * shortcut, like `SendMessage` vs `message.answer`:
@@ -132,6 +149,103 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
       this.add(...buttons);
     }
     return super.row();
+  }
+
+  /**
+   * Paginate the rows built so far: keep only the current page and append a
+   * `‹ page/total ›` navigation row whose arrows route to `route` with the
+   * target page number. `route` is a template with exactly one `:param` for the
+   * page (`'shop/page/:n'`), filled by the framework; handle it with
+   * `@Action('shop/page/:n')` + `@Param('n')` returning the keyboard at that page.
+   *
+   * Rows are kept whole — `size` is a max button budget per page, not a hard
+   * cut — so a `.split(2)` grid paginates by pairs. A single page (everything
+   * fits) renders no controls. Append your own rows (a Back/Done button) AFTER
+   * this call to keep them off the paged region.
+   *
+   * ```ts
+   * .map(items, (i) => Button.text(i.name, 'open/:id', { id: i.id }))
+   *   .split(2)
+   *   .paginate('list/page/:n', { size: 8 });
+   * ```
+   */
+  paginate(route: string, options: PaginateOptions): this {
+    if (!Number.isInteger(options.size) || options.size < 1) {
+      throw new NestgramConfigError(
+        'paginate(route) requires a positive integer size',
+      );
+    }
+    const pattern = CallbackRoutePattern.compile(route);
+    const [pageParam, ...extra] = pattern.paramNames;
+    if (pageParam === undefined || extra.length > 0) {
+      throw new NestgramConfigError(
+        `paginate(route) needs a route with exactly one :param for the page (got "${route}")`,
+      );
+    }
+
+    if (this.pending.length > 0) {
+      this.spread(); // commit any not-yet-laid-out buttons, one per row
+    }
+    const pages = this.pageRows(options.size);
+    if (pages.length <= 1) {
+      return this; // everything fits — no controls
+    }
+
+    const current = Math.min(Math.max(options.page ?? 0, 0), pages.length - 1);
+    const prev = options.prev ?? InlineKeyboard.PAGINATE_LABELS.prev;
+    const next = options.next ?? InlineKeyboard.PAGINATE_LABELS.next;
+    this.rows.length = 0;
+    this.rows.push(...pages[current]);
+    this.rows.push(
+      this.navRow(pattern, pageParam, current, pages.length, prev, next),
+    );
+    return this;
+  }
+
+  /** Group the committed rows into pages of at most `size` buttons, keeping rows whole. */
+  private pageRows(size: number): RawInlineKeyboardButton[][][] {
+    const pages: RawInlineKeyboardButton[][][] = [];
+    let page: RawInlineKeyboardButton[][] = [];
+    let count = 0;
+    for (const row of this.rows) {
+      if (count + row.length > size && page.length > 0) {
+        pages.push(page);
+        page = [];
+        count = 0;
+      }
+      page.push(row);
+      count += row.length;
+    }
+    if (page.length > 0) {
+      pages.push(page);
+    }
+    return pages;
+  }
+
+  private navRow(
+    pattern: CallbackRoutePattern,
+    pageParam: string,
+    current: number,
+    total: number,
+    prev: string,
+    next: string,
+  ): RawInlineKeyboardButton[] {
+    const link = (page: number, text: string): RawInlineKeyboardButton => ({
+      text,
+      callback_data: pattern.build({ [pageParam]: page }),
+    });
+    const nav: RawInlineKeyboardButton[] = [];
+    if (current > 0) {
+      nav.push(link(current - 1, prev));
+    }
+    nav.push({
+      text: `${current + 1}/${total}`,
+      callback_data: NOOP_CALLBACK_DATA,
+    });
+    if (current < total - 1) {
+      nav.push(link(current + 1, next));
+    }
+    return nav;
   }
 
   /**

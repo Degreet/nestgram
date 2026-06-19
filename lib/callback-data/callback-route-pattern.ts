@@ -69,6 +69,13 @@ export class CallbackRoutePattern {
     return new CallbackRoutePattern(segments);
   }
 
+  /** The parameter names in declaration order (`reminder/done/:id` → `['id']`). */
+  get paramNames(): string[] {
+    return this.segments.flatMap((segment) =>
+      'param' in segment ? [segment.param] : [],
+    );
+  }
+
   /** The route template this pattern was compiled from (`reminder/done/:id`). */
   get source(): string {
     return this.segments
