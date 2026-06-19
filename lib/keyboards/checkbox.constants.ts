@@ -1,4 +1,17 @@
 /**
+ * The callback-route a checkbox toggle button owns. Shared by the checkbox scope
+ * (which builds it into each button) and the built-in checkbox router (which
+ * matches it) — the one place the `checkbox/<id>/toggle/<item>` contract lives.
+ */
+export const CHECKBOX_TOGGLE_ROUTE = 'checkbox/:cb/toggle/:item';
+
+/** The `:param` names in {@link CHECKBOX_TOGGLE_ROUTE}, so build and route can't desync. */
+export const CHECKBOX_PARAMS = { cb: 'cb', item: 'item' } as const;
+
+/** Prefix under which the zero-config default persists a selection in the session. */
+export const CHECKBOX_SESSION_PREFIX = 'checkbox:';
+
+/**
  * Default checkbox glyphs: a ✅ on the selected item and nothing on the rest —
  * the colour emoji reads cleanly in Telegram (unlike the monochrome ☑/☐ text
  * symbols). Shared by `Button.toggle()` and the InlineKeyboard checkbox builder.

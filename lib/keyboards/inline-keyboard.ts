@@ -1,3 +1,5 @@
+import { Logger } from '@nestjs/common';
+
 import type {
   RawInlineKeyboardButton,
   RawInlineKeyboardMarkup,
@@ -5,9 +7,26 @@ import type {
 import { CallbackRoutePattern } from '../callback-data';
 import { NestgramConfigError } from '../exceptions/config.exception';
 import { Button } from './button';
+import { CheckboxBinding } from './checkbox-binding';
+import {
+  CHECKBOX_DEFAULT_MARKERS,
+  CHECKBOX_PARAMS,
+  CHECKBOX_RADIO_MARKERS,
+  CHECKBOX_TOGGLE_ROUTE,
+} from './checkbox.constants';
+import type { CheckboxBuilder, CheckboxConfig } from './checkbox.types';
 import { KeyboardBuilder } from './keyboard-builder';
 import { NOOP_CALLBACK_DATA } from './noop.constants';
 import { RouteParamValues } from './route-params.types';
+
+/** A keyboard's lazily-rendered checkbox section — re-run on every `toJSON()`. */
+interface CheckboxSection {
+  readonly id: string;
+  readonly build: CheckboxBuilder;
+  readonly binding: CheckboxBinding;
+  /** Index among the eager rows where the rendered section is spliced in. */
+  readonly at: number;
+}
 
 /**
  * How an edit addresses a button: a **route** (`'toggle/3'` for one, `'toggle/:id'`
@@ -55,6 +74,12 @@ export interface PaginateOptions {
 export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
   /** Default `paginate()` navigation labels, overridable per call. */
   private static readonly PAGINATE_LABELS = { prev: '‹', next: '›' } as const;
+
+  /** Checkbox groups by id, so the built-in router can re-render one on a tap. */
+  private static readonly checkboxRegistry = new Map<string, InlineKeyboard>();
+  private static readonly logger = new Logger(InlineKeyboard.name);
+
+  private checkboxSection?: CheckboxSection;
 
   /**
    * A callback button. Two forms, one mechanism — a safe default and a terse
@@ -249,6 +274,80 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
   }
 
   /**
+   * A checkbox / radio group, built with the full keyboard sugar inside `build`
+   * (`cb.toggle(...)`, `.map`, `.split`, …) and re-rendered from state on every
+   * `toJSON()`. `id` owns the `checkbox/<id>/*` route namespace; the built-in
+   * checkbox router turns a tap into a selection change (per `config`) and edits
+   * the message in place — no `@Action` to write. The group is just part of the
+   * keyboard, so your own buttons (`.row(...)`) compose around it.
+   *
+   * Declare it once (a provider or a `render()` reused for mount + re-render) so
+   * it survives restarts; an inline keyboard thrown straight from a handler works
+   * too, but its registration is lost on restart (state in the session store is
+   * not — the user just re-opens).
+   *
+   * Two rules make the re-render correct:
+   * - **`id` must be static** — one per checkbox TYPE, never per user (`` `tags:${userId}` ``
+   *   leaks the registry and routes stale keyboards into newer ones). Per-user
+   *   state comes from the session, keyed by the conversation, not from the id.
+   * - **`build` must purely READ state** — it re-runs on every `toJSON()` (which
+   *   may fire more than once per response), so it must not write or have side
+   *   effects, and must read state fresh from the ambient/service inside, never
+   *   capture a request-scoped local.
+   *
+   * One checkbox group per keyboard (a second `.checkboxes()` throws).
+   *
+   * ```ts
+   * new InlineKeyboard()
+   *   .checkboxes('tags', (cb) =>
+   *     cb.map(TAGS, (t) => cb.toggle(session().tags.has(t.id), t.name, t.id)).split(1),
+   *   { onChange: (ids) => (session().tags = new Set(ids)) })
+   *   .row(Button.text('✓ Done', 'tags/done'));
+   * ```
+   */
+  checkboxes(
+    id: string,
+    build: CheckboxBuilder,
+    config: CheckboxConfig = {},
+  ): this {
+    if (this.checkboxSection !== undefined) {
+      throw new NestgramConfigError(
+        'A keyboard can hold one checkbox group; call .checkboxes() once per keyboard.',
+      );
+    }
+    if (this.pending.length > 0) {
+      this.row(); // commit any loose buttons before the section starts
+    }
+    if (InlineKeyboard.checkboxRegistry.has(id)) {
+      InlineKeyboard.logger.warn(
+        `A checkbox group with id "${id}" is already registered — the newer one ` +
+          "wins and the older one's buttons will route to it. Give each a unique id.",
+      );
+    }
+    this.checkboxSection = {
+      id,
+      build,
+      binding: new CheckboxBinding(id, config),
+      at: this.rows.length,
+    };
+    InlineKeyboard.checkboxRegistry.set(id, this);
+    return this;
+  }
+
+  /** The keyboard owning checkbox group `id` — used by the built-in checkbox router. */
+  static resolveCheckbox(id: string): InlineKeyboard | undefined {
+    return InlineKeyboard.checkboxRegistry.get(id);
+  }
+
+  /** Apply a tap on `item` to checkbox group `id` (toggle/radio + persist). */
+  applyCheckboxToggle(id: string, item: string): void {
+    const section = this.checkboxSection;
+    if (section?.id === id) {
+      section.binding.applyToggle(item);
+    }
+  }
+
+  /**
    * Adopt an existing keyboard (a native `reply_markup` from an incoming update)
    * for editing — change a button, drop one, append a row, then send it back
    * with `editReplyMarkup`. The source markup is left untouched.
@@ -330,7 +429,19 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
   }
 
   toJSON(): RawInlineKeyboardMarkup {
-    return { inline_keyboard: this.filledRows };
+    const own = this.filledRows;
+    const section = this.checkboxSection;
+    if (section === undefined) {
+      return { inline_keyboard: own };
+    }
+    // Re-render the checkbox section fresh (reads current state) and splice it in.
+    const scope = new CheckboxScope(section.id, section.binding.multi);
+    section.build(scope);
+    const rendered = scope.toJSON().inline_keyboard;
+    const at = Math.min(section.at, own.length);
+    return {
+      inline_keyboard: [...own.slice(0, at), ...rendered, ...own.slice(at)],
+    };
   }
 
   /** Resolve each button's `.if()`/`.else()` into the raw buttons to render. */
@@ -358,5 +469,53 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
       button.callback_data === undefined
         ? null
         : pattern.match(button.callback_data);
+  }
+}
+
+/**
+ * The builder handed to `InlineKeyboard.checkboxes(id, build)`. It is a full
+ * `InlineKeyboard` (so `.map`/`.split`/`.row`/… all work) plus `cb.toggle(...)`,
+ * which renders a checkbox button routed into this group's `checkbox/<id>/*`
+ * namespace and marked from the per-item `active` state.
+ *
+ * Kept in this file (not its own) on purpose: it `extends InlineKeyboard` and is
+ * constructed by `InlineKeyboard.toJSON()`, so splitting it out would form an
+ * import cycle that breaks the `extends` at load time.
+ */
+export class CheckboxScope extends InlineKeyboard {
+  constructor(
+    private readonly checkboxId: string,
+    private readonly multi: boolean,
+  ) {
+    super();
+  }
+
+  /**
+   * A checkbox button as a `Button` value — drop it into `.map`/`.add`. `active`
+   * decides the marker (✅/'' for multi, 🔘/⚪ for radio, or a per-button
+   * `markers`), `item` is its id within the group. The framework routes the tap
+   * and re-renders; you never write the toggle handler.
+   *
+   * ```ts
+   * cb.map(items, (i) => cb.toggle(sel.has(i.id), i.name, i.id)).split(2);
+   * ```
+   */
+  toggle(
+    active: boolean,
+    label: string,
+    item: string | number,
+    markers?: { on: string; off: string },
+  ): Button {
+    const glyphs =
+      markers ??
+      (this.multi ? CHECKBOX_DEFAULT_MARKERS : CHECKBOX_RADIO_MARKERS);
+    const glyph = active ? glyphs.on : glyphs.off;
+    return Button.from({
+      text: glyph ? `${glyph} ${label}` : label,
+      callback_data: CallbackRoutePattern.build(CHECKBOX_TOGGLE_ROUTE, {
+        [CHECKBOX_PARAMS.cb]: this.checkboxId,
+        [CHECKBOX_PARAMS.item]: String(item),
+      }),
+    });
   }
 }

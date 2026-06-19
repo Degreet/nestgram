@@ -38,6 +38,7 @@ import { AutoAnswerCallbackInterceptor } from '../builtins/auto-answer';
 import { ReplyExceptionFilter } from '../builtins/reply-exception';
 import { DeadButtonWarner } from '../builtins/unhandled';
 import { NoopButtonHandler } from '../builtins/noop';
+import { CheckboxRouter } from '../builtins/checkbox';
 import { NestgramBootstrap } from './nestgram.bootstrap';
 import {
   NestgramModuleAsyncOptions,
@@ -167,6 +168,10 @@ export class NestgramModule {
     // Handles the reserved no-op route behind `Button.noop()`/`.else('label')`,
     // so a dead-end button is answered (not warned). A plain `@Router`/`@Action`.
     NoopButtonHandler,
+    // Drives every `InlineKeyboard.checkboxes(...)` group — resolves the keyboard
+    // by id, applies the tapped selection change, re-renders in place. A plain
+    // public `@Router`/`@Action`, dormant until a `checkbox/...` callback arrives.
+    CheckboxRouter,
   ];
 
   /**
