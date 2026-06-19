@@ -87,5 +87,24 @@ describe('ApiException predicates', () => {
         ApiException.isChatNotFound(apiException(403, 'chat not found')),
       ).toBe(false);
     });
+
+    it('isNotEditable', () => {
+      expect(
+        ApiException.isNotEditable(
+          apiException(400, "Bad Request: message can't be edited"),
+        ),
+      ).toBe(true);
+      expect(
+        ApiException.isNotEditable(
+          apiException(400, 'Bad Request: message to edit not found'),
+        ),
+      ).toBe(true);
+      // A content no-op is `isNotModified`, not `isNotEditable`.
+      expect(
+        ApiException.isNotEditable(
+          apiException(400, 'Bad Request: message is not modified'),
+        ),
+      ).toBe(false);
+    });
   });
 });

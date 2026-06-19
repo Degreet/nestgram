@@ -15,6 +15,12 @@ import {
  * never drift (DRY).
  */
 
+/**
+ * The `date` of an inaccessible message — the Bot API sets it to `0` so a bot
+ * can tell a real message from one it can no longer read (and so cannot edit).
+ */
+const INACCESSIBLE_MESSAGE_DATE = 0;
+
 /** The raw message carried by the update, if its kind has one. */
 function messageOf(ctx: TelegramExecutionContext): RawMessage | undefined {
   if (ctx.kind === UpdateKind.CallbackQuery) {
@@ -38,6 +44,34 @@ export function extractChat(
   ctx: TelegramExecutionContext,
 ): RawChat | undefined {
   return messageOf(ctx)?.chat;
+}
+
+/** Addresses the message an edit-in-place return value targets. */
+export interface EditTarget {
+  chat_id: number;
+  message_id: number;
+}
+
+/**
+ * The message a callback is attached to — what a bare-keyboard or edit-command
+ * return value edits in place. Defined only for a callback query over an
+ * accessible message; `undefined` everywhere else — a plain update has no
+ * message of the bot's own to edit, and an inaccessible one (too old/deleted)
+ * can't be edited — which is the signal to warn instead of making a doomed call.
+ */
+export function extractEditTarget(
+  ctx: TelegramExecutionContext,
+): EditTarget | undefined {
+  if (ctx.kind !== UpdateKind.CallbackQuery) {
+    return undefined;
+  }
+
+  const message = messageOf(ctx);
+  if (!message || message.date === INACCESSIBLE_MESSAGE_DATE) {
+    return undefined;
+  }
+
+  return { chat_id: message.chat.id, message_id: message.message_id };
 }
 
 /** The text the update carries (message text, or callback-query data). */

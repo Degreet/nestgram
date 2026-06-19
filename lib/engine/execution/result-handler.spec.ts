@@ -1,12 +1,34 @@
+import { Logger } from '@nestjs/common';
+
 import { ResultHandler } from './result-handler';
 import { TelegramExecutionContext } from '../context';
 import { BotService } from '../../api';
-import { ApiMethod, GetMe } from '../../api/methods';
+import {
+  ApiMethod,
+  EditMessageReplyMarkup,
+  EditMessageText,
+  GetMe,
+} from '../../api/methods';
+import { InlineKeyboard } from '../../keyboards';
+import { ApiException } from '../../exceptions';
 
 // The handler reads the per-update bot off the context (ctx.bot), so the mock
 // bot is carried by the context, not injected into the handler.
 function ctxWith(event: unknown, bot: BotService): TelegramExecutionContext {
   return { kind: 'message', event, bot } as unknown as TelegramExecutionContext;
+}
+
+// A callback context whose attached message is the bot's own, editable one.
+function callbackCtx(bot: BotService): TelegramExecutionContext {
+  return {
+    kind: 'callback_query',
+    update: {
+      callback_query: {
+        message: { message_id: 555, chat: { id: 99, type: 'private' } },
+      },
+    },
+    bot,
+  } as unknown as TelegramExecutionContext;
 }
 
 describe('ResultHandler', () => {
@@ -60,5 +82,101 @@ describe('ResultHandler', () => {
       handler.handle({ message_id: 7 }, ctxWith({}, bot)),
     ).resolves.toBeUndefined();
     expect(called).toEqual([]);
+  });
+
+  describe('edit-in-place', () => {
+    it('edits the callback message markup when a bare keyboard is returned', async () => {
+      const keyboard = new InlineKeyboard().text('Done', 'done');
+
+      await handler.handle(keyboard, callbackCtx(bot));
+
+      expect(called).toHaveLength(1);
+      const command = called[0] as EditMessageReplyMarkup;
+      expect(command).toBeInstanceOf(EditMessageReplyMarkup);
+      expect(command.payload).toMatchObject({
+        chat_id: 99,
+        message_id: 555,
+        reply_markup: keyboard,
+      });
+    });
+
+    it('warns and does nothing when a keyboard is returned outside a callback', async () => {
+      const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+
+      await handler.handle(
+        new InlineKeyboard().text('x', 'x'),
+        ctxWith({}, bot),
+      );
+
+      expect(called).toEqual([]);
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('no message to edit in place'),
+      );
+      warn.mockRestore();
+    });
+
+    it('fills chat_id/message_id on an untargeted edit command from the callback', async () => {
+      await handler.handle(
+        new EditMessageText({ text: 'updated' }),
+        callbackCtx(bot),
+      );
+
+      expect(called).toHaveLength(1);
+      const command = called[0] as EditMessageText;
+      expect(command).toBeInstanceOf(EditMessageText);
+      expect(command.payload).toMatchObject({
+        chat_id: 99,
+        message_id: 555,
+        text: 'updated',
+      });
+    });
+
+    it('leaves an explicitly-targeted edit command untouched', async () => {
+      const command = new EditMessageText({
+        chat_id: 5,
+        message_id: 9,
+        text: 'x',
+      });
+
+      await handler.handle(command, callbackCtx(bot));
+
+      // Passed straight through — same instance, no retargeting.
+      expect(called).toEqual([command]);
+    });
+
+    it('warns instead of throwing when the target message is not editable', async () => {
+      const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+      bot = {
+        call: () =>
+          Promise.reject(
+            new ApiException(
+              {
+                ok: false,
+                error_code: 400,
+                description: "message can't be edited",
+              },
+              {},
+            ),
+          ),
+      } as unknown as BotService;
+
+      await expect(
+        handler.handle(new InlineKeyboard().text('x', 'x'), callbackCtx(bot)),
+      ).resolves.toBeUndefined();
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('Could not edit the message in place'),
+      );
+      warn.mockRestore();
+    });
+
+    it('rethrows a non-editability error from an auto-edit', async () => {
+      bot = {
+        call: () => Promise.reject(new Error('network down')),
+      } as unknown as BotService;
+
+      await expect(
+        handler.handle(new InlineKeyboard().text('x', 'x'), callbackCtx(bot)),
+      ).rejects.toThrow('network down');
+    });
   });
 });

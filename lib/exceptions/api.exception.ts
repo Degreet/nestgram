@@ -68,4 +68,13 @@ export class ApiException extends NestgramError {
   static isChatNotFound(error: unknown): error is ApiException {
     return ApiException.matches(error, KnownApiError.chatNotFound);
   }
+
+  /**
+   * The message can no longer be edited — too old, deleted, or not the bot's
+   * own (`400 message can't be edited` / `message to edit not found`). Distinct
+   * from {@link isNotModified}, which is a content no-op.
+   */
+  static isNotEditable(error: unknown): error is ApiException {
+    return ApiException.matches(error, KnownApiError.notEditable);
+  }
 }

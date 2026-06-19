@@ -62,6 +62,10 @@ From raw update to action, in order:
    unchanged.
 6. **Result handling.** A returned `string` becomes a reply; a returned
    command object (`new SendPhoto(...)`) is executed; `void` does nothing.
+   Inside a callback, this extends symmetrically to editing the message in
+   place: a returned `InlineKeyboard` edits its markup, and a returned edit
+   command (`new EditMessageText(...)`) has its `chat_id`/`message_id` filled
+   from the callback message — no manual target plumbing.
 
 ## Handlers and parameters
 
