@@ -321,9 +321,13 @@ That's the whole flow — `open` + a Done handler. A few knobs:
 - **Seed defaults:** `{ default: ['news'] }` pre-ticks options on the first render,
   before any tap. Once a selection is saved it wins — an empty selection is a real
   choice, not "seed me again".
-- **Custom store:** pass `{ onChange: (ids) => … }` (the whole set) or
-  `{ onToggle: (id, on) => … }` (a per-item delta) to persist somewhere other than
-  the session — a DB row, FSM data.
+- **Custom store:** to keep the selection somewhere other than the session, pass a
+  `selected` reader **together with** a writer — `onChange: (ids) => …` (the whole
+  set) or `onToggle: (id, on) => …` (a per-item delta). The pair is required:
+  `selected` reads the current set on every render, so keep it sync and cheap (FSM
+  data on the ambient rail, an already-loaded object — not a live DB call); the
+  writer persists each change. A writer with no `selected` throws — the group would
+  have nowhere to read the set back from, so toggling would break.
 - **Static `id`, declare once:** the group registers by `id`, so use one stable id
   per checkbox _type_ (not per user — per-user state is the session's job). Throw it
   inline from a handler and it works for the life of the process; declare it once in

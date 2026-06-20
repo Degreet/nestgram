@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 
 import { getAmbient } from '../ambient';
+import { NestgramConfigError } from '../exceptions/config.exception';
 import { SESSION } from '../sessions/session.constants';
 import { CHECKBOX_SESSION_PREFIX } from './checkbox.constants';
 import type { CheckboxConfig } from './checkbox.types';
@@ -21,7 +22,22 @@ export class CheckboxBinding {
   constructor(
     private readonly id: string,
     private readonly config: CheckboxConfig,
-  ) {}
+  ) {
+    if (config.onChange && config.onToggle) {
+      throw new NestgramConfigError(
+        `Checkbox "${id}": onChange and onToggle are mutually exclusive — ` +
+          'pick the whole-set writer or the per-item one, not both.',
+      );
+    }
+    if ((config.onChange || config.onToggle) && !config.selected) {
+      throw new NestgramConfigError(
+        `Checkbox "${id}": a custom store (onChange/onToggle) needs a matching ` +
+          'selected reader — the binding has nowhere to read the current set from ' +
+          'otherwise, so toggling breaks. Add selected, or drop both for the ' +
+          'session-backed default.',
+      );
+    }
+  }
 
   /** Whether this group is multi-select (default) rather than single-select (radio). */
   get multi(): boolean {
@@ -71,6 +87,9 @@ export class CheckboxBinding {
     }
   }
 
+  // The prefix is also a safety boundary: a group id reaches this from user-facing
+  // code, and prefixing keeps a hostile id like `__proto__` out of a bare session
+  // key (`checkbox:__proto__`, never `__proto__`). Don't drop it in a refactor.
   private get sessionField(): string {
     return `${CHECKBOX_SESSION_PREFIX}${this.id}`;
   }
@@ -88,14 +107,13 @@ export class CheckboxBinding {
   }
 
   /**
-   * The pre-tap selection from `default`, normalized. Empty unless the session
-   * genuinely backs this group: a custom `onChange`/`onToggle` store owns its own
-   * initial state, and reseeding on every render would diverge from it. A radio
-   * group seeds at most one id, never two ticks.
+   * The pre-tap selection from `default`, normalized. A radio group seeds at most
+   * one id, never two ticks. Only ever reached on the session-backed path — a
+   * custom store carries its own `selected` reader (enforced in the constructor),
+   * so `default` never applies there and can't diverge from it.
    */
   private seed(): string[] {
-    const sessionBacked = !this.config.onChange && !this.config.onToggle;
-    if (!sessionBacked || !this.config.default) {
+    if (!this.config.default) {
       return [];
     }
     const ids = [...this.config.default].map(String);

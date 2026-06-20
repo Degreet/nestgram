@@ -210,21 +210,6 @@ describe('InlineKeyboard.checkboxes', () => {
       ).toEqual(['Alpha', '✅ Beta', 'Gamma']);
     });
 
-    it('is ignored for a custom store — onChange seeds its own state', () => {
-      runAmbient(() => {
-        setAmbient(SESSION, {});
-        const kb = tagsKeyboard('seed-custom', {
-          default: ['a'],
-          onChange: () => undefined,
-        });
-        expect(
-          rows(kb)
-            .flat()
-            .map((b) => b.text),
-        ).toEqual(['Alpha', 'Beta', 'Gamma']); // not reseeded on the onChange path
-      });
-    });
-
     it('seeds at most one id for a radio group', () => {
       runAmbient(() => {
         setAmbient(SESSION, {});
@@ -249,6 +234,32 @@ describe('InlineKeyboard.checkboxes', () => {
         cb.map(TAGS, (t) => cb.toggle(t.name, t.id)).split(1),
       ),
     ).toThrow(/one checkbox group/);
+  });
+
+  describe('config contract', () => {
+    const build =
+      (id: string, config: CheckboxConfig): (() => InlineKeyboard) =>
+      () =>
+        tagsKeyboard(id, config);
+
+    it('rejects a custom store with no selected reader (toggling would break)', () => {
+      expect(build('no-reader', { onChange: () => undefined })).toThrow(
+        /selected reader/,
+      );
+      expect(build('no-reader2', { onToggle: () => undefined })).toThrow(
+        /selected reader/,
+      );
+    });
+
+    it('rejects onChange and onToggle together', () => {
+      expect(
+        build('both-writers', {
+          selected: () => new Set<string>(),
+          onChange: () => undefined,
+          onToggle: () => undefined,
+        }),
+      ).toThrow(/mutually exclusive/);
+    });
   });
 
   it('cb.done() routes to checkbox/<id>/done', () => {
