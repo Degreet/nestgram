@@ -325,6 +325,9 @@ full keyboard sugar plus `cb.toggle(label, item)` — a checkbox button **auto-m
 (✅/☐) from whether it's selected, so you never compute the marker. `cb.done(label)`
 adds a Done button for the group, and `@OnCheckboxDone(id)` handles it with the
 picks delivered straight to `@CheckboxIds(id)` — no route string, no toggle handler.
+Here `save` returns a string, which answers the tap as a brief **toast** (a quick
+ack); to leave a durable summary in the chat, take the `CallbackQuery` first arg and
+reply with `query.message?.answer(...)` instead.
 The selection lives in **per-message keyboard state** under `checkbox:<id>` —
 auto-wired, no import. It reuses your session store's backend when sessions are on
 (so it is highload-safe across servers), else an in-process store.
@@ -380,12 +383,12 @@ menu() {
   const [category] = selectedIds('category'); // the chosen category
   const tags = category ? this.tags.byCategory(category) : [];
   return new InlineKeyboard()
-    .radio('category', (cb) => cb.map(CATS, (c) => cb.toggle(c.name, c.id)).split(2))
-    .paginate('category', { size: 8 }) // categories scroll…
-    .checkboxes('tags', (cb) => cb.map(tags, (t) => cb.toggle(t.name, t.id)).split(2), {
+    .radio('category', (cb) =>
+      cb.map(CATS, (c) => cb.toggle(c.name, c.id)).split(2).paginate('category', { size: 8 }))
+    .checkboxes('tags', (cb) =>
+      cb.map(tags, (t) => cb.toggle(t.name, t.id)).split(2).paginate('tags', { size: 8 }), {
       scope: () => selectedIds('category')[0], // a separate tag set per category
-    })
-    .paginate('tags', { size: 8 }); // …and so do the tags
+    });
 }
 ```
 
@@ -400,10 +403,12 @@ destructured `category` — it must, because the callback can run later against 
 keyboard built earlier (on Done, or a custom action), where a captured `category`
 would be stale.
 
-`.paginate(id)` after a group scrolls **that group's** buttons (`size` per page),
-and a checkbox tap keeps the page it's on — the cursor lives in the keyboard's
-callback-data, recovered each tap. This is the full picker: two scrollable,
-linked, scoped lists, with no nav or toggle handlers of your own.
+`.paginate(id)` inside a group's build scrolls only the rows **above** it (`size`
+per page), and a checkbox tap keeps the page it's on — the cursor lives in the
+keyboard's callback-data, recovered each tap. Rows added **after** `.paginate` form
+a separate section that doesn't scroll, so a trailing Done/Reset row stays pinned on
+every page (see [Actions](#actions--reset-and-your-own)). This is the full picker:
+two scrollable, linked, scoped lists, with no nav or toggle handlers of your own.
 
 #### Actions — Reset and your own
 
