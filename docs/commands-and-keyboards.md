@@ -332,9 +332,26 @@ That's the whole flow — `open` + a Done handler. A few knobs:
   have nowhere to read the set back from, so toggling would break.
 - **Static `id`, declare once:** the group registers by `id`, so use one stable id
   per checkbox _type_ (not per user — the per-message state keeps users apart for
-  you). Throw it inline from a handler and it works for the life of the process;
-  declare it once in a provider and re-renders survive a restart (the selection
-  itself survives when its store is durable — a shared/Redis-backed one).
+  you). Throw it inline from a handler and it works for the life of the process —
+  but the registration is lost on a restart.
+- **`@KeyboardRender(id)` for restart-safe, dynamic keyboards:** put the keyboard in
+  one method, mark it, and call it to show — the framework re-invokes the **same**
+  method to re-render on each tap. It runs fresh, so it re-derives its data (pull
+  tags from a service, read the current state) and the whole keyboard reflects the
+  latest state; and because it's discovered at boot, re-rendering survives a
+  restart. May be `async`.
+
+  ```ts
+  @Command('topics')
+  open() { return this.menu(); }
+
+  @KeyboardRender('topics')
+  menu() {
+    return new InlineKeyboard().checkboxes('topics', (cb) =>
+      cb.map(this.topics.all(), (t) => cb.toggle(t.name, t.id)).split(1),
+    );
+  }
+  ```
 
 For full manual control — your own toggle `@Action`, custom routing — `Button.toggle`
 is the low-level primitive the group is built on.

@@ -5,6 +5,8 @@ import { NestgramBootstrap } from './nestgram.bootstrap';
 import { NestgramModuleOptions } from './nestgram-module.types';
 import { BotService } from '../api';
 import {
+  KeyboardRenderExplorer,
+  KeyboardRenderRegistry,
   RouteExplorer,
   RouteTable,
   RouteTransformExplorer,
@@ -31,6 +33,10 @@ function makeBootstrap(options: Partial<NestgramModuleOptions>) {
     { set: jest.fn() } as unknown as RouteTable,
     { explore: jest.fn().mockReturnValue([]) } as unknown as UnhandledExplorer,
     { set: jest.fn() } as unknown as UnhandledRegistry,
+    {
+      explore: jest.fn().mockReturnValue([]),
+    } as unknown as KeyboardRenderExplorer,
+    { set: jest.fn() } as unknown as KeyboardRenderRegistry,
     { explore: jest.fn().mockReturnValue([]) } as unknown as StageExplorer,
     { set: jest.fn() } as unknown as StageRegistry,
     { dispatch: jest.fn() } as unknown as UpdateDispatcher,

@@ -6,3 +6,5 @@ export * from './route-table';
 export * from './route-matcher';
 export * from './unhandled-explorer';
 export * from './unhandled-registry';
+export * from './keyboard-render-explorer';
+export * from './keyboard-render-registry';

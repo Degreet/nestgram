@@ -13,6 +13,8 @@ export enum Metadata {
   MATCH = 'MATCH',
   /** Marks an `@Injectable()` as a boot-time route-table transform. */
   ROUTE_TRANSFORM = 'ROUTE_TRANSFORM',
+  /** The keyboard group id(s) a `@KeyboardRender(...)` method (re)builds. */
+  KEYBOARD_RENDER = 'KEYBOARD_RENDER',
   /** The scene id a `@Scene('id')` class declares (on the constructor). */
   SCENE = 'SCENE',
   /** Marks a method as a `@Step()` of a scene, carrying its options. */

@@ -6,6 +6,8 @@ import { BotOptions } from '../api/bot-options';
 import { BotConfigResolver, ResolvedBot } from './bot-config';
 import { ContextFactory, EventFactory } from '../engine/context';
 import {
+  KeyboardRenderExplorer,
+  KeyboardRenderRegistry,
   RouteExplorer,
   RouteMatcher,
   RouteTable,
@@ -75,6 +77,10 @@ export class NestgramModule {
     UnhandledRegistry,
     HandlerExecutorFactory,
     ResultHandler,
+    // Discovers `@KeyboardRender(...)` builders at boot so the checkbox router can
+    // re-invoke a group's keyboard fresh on a tap (re-render survives restart).
+    KeyboardRenderExplorer,
+    KeyboardRenderRegistry,
     // The dispatcher runs per-update stages discovered + ordered at boot. The
     // stages themselves live in their own modules a user imports — i18n in
     // I18nModule, sessions in SessionModule — so nothing here is privileged; a

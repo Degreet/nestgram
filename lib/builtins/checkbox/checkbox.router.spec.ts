@@ -6,7 +6,7 @@ import { CheckboxRouter } from './checkbox.router';
 describe('CheckboxRouter', () => {
   const router = new CheckboxRouter();
 
-  it('applies the tapped change and returns the keyboard for an in-place edit', () => {
+  it('applies the tapped change and returns the inline keyboard for an in-place edit', async () => {
     const set = new Set<string>(['a']);
     const keyboard = new InlineKeyboard().checkboxes(
       'router-multi',
@@ -20,20 +20,21 @@ describe('CheckboxRouter', () => {
       },
     );
 
-    const result = router.toggle('router-multi', 'b');
+    // No KeyboardRenderRegistry here → falls back to the inline-registered keyboard.
+    const result = await router.toggle('router-multi', 'b');
 
     expect([...set].sort()).toEqual(['a', 'b']);
     expect(result).toBe(keyboard); // returned bare → ng-71 edits the markup in place
   });
 
-  it('warns and no-ops for an unregistered id (lost on restart)', () => {
+  it('warns and no-ops for an id with neither a builder nor a live keyboard', async () => {
     const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
 
-    const result = router.toggle('never-registered', 'x');
+    const result = await router.toggle('never-registered', 'x');
 
     expect(result).toBeUndefined();
     expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('not registered'),
+      expect.stringContaining('lost on restart'),
     );
     warn.mockRestore();
   });

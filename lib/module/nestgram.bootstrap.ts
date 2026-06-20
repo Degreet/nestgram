@@ -9,6 +9,8 @@ import { ModuleRef } from '@nestjs/core';
 
 import { BotService } from '../api';
 import {
+  KeyboardRenderExplorer,
+  KeyboardRenderRegistry,
   Route,
   RouteExplorer,
   RouteTable,
@@ -55,6 +57,8 @@ export class NestgramBootstrap
     private readonly routeTable: RouteTable,
     private readonly unhandledExplorer: UnhandledExplorer,
     private readonly unhandledRegistry: UnhandledRegistry,
+    private readonly keyboardRenderExplorer: KeyboardRenderExplorer,
+    private readonly keyboardRenderRegistry: KeyboardRenderRegistry,
     private readonly stageExplorer: StageExplorer,
     private readonly stageRegistry: StageRegistry,
     private readonly dispatcher: UpdateDispatcher,
@@ -69,6 +73,7 @@ export class NestgramBootstrap
     const routes = this.applyTransforms(this.routeExplorer.explore());
     this.routeTable.set(routes);
     this.unhandledRegistry.set(this.unhandledExplorer.explore());
+    this.keyboardRenderRegistry.set(this.keyboardRenderExplorer.explore());
     this.logger.log(`Route table built: ${routes.length} route(s)`);
     for (const route of routes) {
       const router = route.instance.constructor.name;
