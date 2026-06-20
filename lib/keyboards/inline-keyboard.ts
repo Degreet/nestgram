@@ -300,8 +300,7 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
    * ```ts
    * new InlineKeyboard()
    *   .checkboxes('tags', (cb) =>
-   *     cb.map(TAGS, (t) => cb.toggle(session().tags.has(t.id), t.name, t.id)).split(1),
-   *   { onChange: (ids) => (session().tags = new Set(ids)) })
+   *     cb.map(TAGS, (t) => cb.toggle(t.name, t.id)).split(1))
    *   .row(Button.text('✓ Done', 'tags/done'));
    * ```
    */
@@ -434,8 +433,13 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
     if (section === undefined) {
       return { inline_keyboard: own };
     }
-    // Re-render the checkbox section fresh (reads current state) and splice it in.
-    const scope = new CheckboxScope(section.id, section.binding.multi);
+    // Re-render the checkbox section fresh: read the current selection once and
+    // hand it to the scope, so `cb.toggle` auto-marks each item.
+    const scope = new CheckboxScope(
+      section.id,
+      section.binding.multi,
+      section.binding.selected(),
+    );
     section.build(scope);
     const rendered = scope.toJSON().inline_keyboard;
     const at = Math.min(section.at, own.length);
@@ -472,11 +476,19 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
   }
 }
 
+/** Per-button overrides for `cb.toggle` — both optional. */
+export interface CheckboxToggleOptions {
+  /** Override the checked state (default: whether `item` is in the group's selection). */
+  active?: boolean;
+  /** Override the checked/unchecked glyphs for this one button. */
+  markers?: { on: string; off: string };
+}
+
 /**
  * The builder handed to `InlineKeyboard.checkboxes(id, build)`. It is a full
  * `InlineKeyboard` (so `.map`/`.split`/`.row`/… all work) plus `cb.toggle(...)`,
  * which renders a checkbox button routed into this group's `checkbox/<id>/*`
- * namespace and marked from the per-item `active` state.
+ * namespace and **auto-marked** from the group's current selection.
  *
  * Kept in this file (not its own) on purpose: it `extends InlineKeyboard` and is
  * constructed by `InlineKeyboard.toJSON()`, so splitting it out would form an
@@ -486,28 +498,32 @@ export class CheckboxScope extends InlineKeyboard {
   constructor(
     private readonly checkboxId: string,
     private readonly multi: boolean,
+    private readonly selection: ReadonlySet<string>,
   ) {
     super();
   }
 
   /**
-   * A checkbox button as a `Button` value — drop it into `.map`/`.add`. `active`
-   * decides the marker (✅/'' for multi, 🔘/⚪ for radio, or a per-button
-   * `markers`), `item` is its id within the group. The framework routes the tap
-   * and re-renders; you never write the toggle handler.
+   * A checkbox button as a `Button` value — drop it into `.map`/`.add`. `item` is
+   * its id within the group; the marker (✅/'' for multi, 🔘/⚪ for radio) is set
+   * automatically from whether `item` is currently selected. The framework routes
+   * the tap and re-renders — you never write the toggle handler.
+   *
+   * Override per button with `opts.active` (force the marker) or `opts.markers`
+   * (custom glyphs):
    *
    * ```ts
-   * cb.map(items, (i) => cb.toggle(sel.has(i.id), i.name, i.id)).split(2);
+   * cb.map(items, (i) => cb.toggle(i.name, i.id)).split(2);
    * ```
    */
   toggle(
-    active: boolean,
     label: string,
     item: string | number,
-    markers?: { on: string; off: string },
+    opts?: CheckboxToggleOptions,
   ): Button {
+    const active = opts?.active ?? this.selection.has(String(item));
     const glyphs =
-      markers ??
+      opts?.markers ??
       (this.multi ? CHECKBOX_DEFAULT_MARKERS : CHECKBOX_RADIO_MARKERS);
     const glyph = active ? glyphs.on : glyphs.off;
     return Button.from({

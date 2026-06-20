@@ -9,7 +9,10 @@ import type { CheckboxScope } from './inline-keyboard';
 export interface CheckboxConfig {
   /** Checkboxes (many, default) or radio (exactly one). */
   multi?: boolean;
-  /** READ the currently-selected ids. Omit for the session-backed default. */
+  /**
+   * READ the currently-selected ids. Omit for the session-backed default. Called
+   * on every render (and once per tap) — keep it cheap and pure, no I/O.
+   */
   selected?: () => Iterable<string | number>;
   /** WRITE the new full set, once. Mutually exclusive with `onToggle`. */
   onChange?: (ids: string[]) => void;

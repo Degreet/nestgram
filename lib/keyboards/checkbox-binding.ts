@@ -75,27 +75,24 @@ export class CheckboxBinding {
     return `${CHECKBOX_SESSION_PREFIX}${this.id}`;
   }
 
-  private sessionStore(): Record<string, unknown> | undefined {
-    const session = getAmbient<Record<string, unknown>>(SESSION);
-    if (!session) {
-      this.logger.warn(
-        `Checkbox "${this.id}" has no selected/onChange and no active session — ` +
-          'the selection cannot persist. Import SessionModule, or pass ' +
-          'selected/onChange.',
-      );
-    }
-    return session;
-  }
-
+  // Reading the selection (every render) is silent — no session simply means an
+  // empty selection. The warning belongs on the write path: a tap that can't
+  // persist is the real problem.
   private sessionGet(): string[] {
-    const value = this.sessionStore()?.[this.sessionField];
+    const session = getAmbient<Record<string, unknown>>(SESSION);
+    const value = session?.[this.sessionField];
     return Array.isArray(value) ? value.map(String) : [];
   }
 
   private sessionSet(ids: string[]): void {
-    const store = this.sessionStore();
-    if (store) {
-      store[this.sessionField] = ids;
+    const session = getAmbient<Record<string, unknown>>(SESSION);
+    if (!session) {
+      this.logger.warn(
+        `Checkbox "${this.id}" has no selected/onChange and no active session — ` +
+          'the tap cannot persist. Import SessionModule, or pass selected/onChange.',
+      );
+      return;
     }
+    session[this.sessionField] = ids;
   }
 }

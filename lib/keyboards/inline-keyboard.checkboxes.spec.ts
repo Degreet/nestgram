@@ -2,6 +2,7 @@ import { runAmbient, setAmbient } from '../ambient';
 import { SESSION } from '../sessions/session.constants';
 import { Button } from './button';
 import { InlineKeyboard } from './inline-keyboard';
+import type { CheckboxConfig } from './checkbox.types';
 
 interface Tag {
   id: string;
@@ -22,12 +23,17 @@ interface Cell {
 const rows = (kb: InlineKeyboard): Cell[][] =>
   kb.toJSON().inline_keyboard as Cell[][];
 
+/** A vertical tags keyboard whose selection comes from `config`. */
+const tagsKeyboard = (id: string, config: CheckboxConfig): InlineKeyboard =>
+  new InlineKeyboard().checkboxes(
+    id,
+    (cb) => cb.map(TAGS, (t) => cb.toggle(t.name, t.id)).split(1),
+    config,
+  );
+
 describe('InlineKeyboard.checkboxes', () => {
-  it('renders marked toggle buttons routed into checkbox/<id>/toggle/<item>', () => {
-    const chosen = new Set(['b']);
-    const kb = new InlineKeyboard().checkboxes('cb-render', (cb) =>
-      cb.map(TAGS, (t) => cb.toggle(chosen.has(t.id), t.name, t.id)).split(1),
-    );
+  it('auto-marks each button from the selection and routes by item', () => {
+    const kb = tagsKeyboard('cb-render', { selected: () => new Set(['b']) });
 
     const flat = rows(kb).flat();
     expect(flat.map((b) => b.text)).toEqual(['Alpha', '✅ Beta', 'Gamma']);
@@ -42,7 +48,7 @@ describe('InlineKeyboard.checkboxes', () => {
     const kb = new InlineKeyboard()
       .row(Button.text('Title', 'noop'))
       .checkboxes('cb-splice', (cb) =>
-        cb.map(TAGS, (t) => cb.toggle(false, t.name, t.id)).split(1),
+        cb.map(TAGS, (t) => cb.toggle(t.name, t.id)).split(1),
       )
       .row(Button.text('✓ Done', 'tags/done'));
 
@@ -54,11 +60,9 @@ describe('InlineKeyboard.checkboxes', () => {
     expect(layout).toHaveLength(5); // Title + 3 items + Done
   });
 
-  it('re-renders from current state on each toJSON (re-run)', () => {
+  it('re-renders from the current selection on each toJSON', () => {
     const chosen = new Set<string>();
-    const kb = new InlineKeyboard().checkboxes('cb-rerun', (cb) =>
-      cb.map(TAGS, (t) => cb.toggle(chosen.has(t.id), t.name, t.id)).split(1),
-    );
+    const kb = tagsKeyboard('cb-rerun', { selected: () => chosen });
 
     expect(
       rows(kb)
@@ -73,18 +77,16 @@ describe('InlineKeyboard.checkboxes', () => {
     ).toEqual(['Alpha', 'Beta', '✅ Gamma']);
   });
 
-  it('uses radio glyphs and an optional per-button marker', () => {
+  it('uses radio glyphs, with per-button active and marker overrides', () => {
     const kb = new InlineKeyboard().checkboxes(
       'radio',
       (cb) =>
         cb
           .map(TAGS, (t) =>
-            cb.toggle(
-              t.id === 'a',
-              t.name,
-              t.id,
-              t.id === 'c' ? { on: '⭐', off: '' } : undefined,
-            ),
+            cb.toggle(t.name, t.id, {
+              active: t.id === 'a', // force this one on
+              markers: t.id === 'c' ? { on: '⭐', off: '' } : undefined,
+            }),
           )
           .split(1),
       { multi: false },
@@ -103,18 +105,13 @@ describe('InlineKeyboard.checkboxes', () => {
   describe('resolveCheckbox + applyCheckboxToggle', () => {
     it('registers under its id and applies a multi-select toggle', () => {
       const set = new Set<string>(['a']);
-      const kb = new InlineKeyboard().checkboxes(
-        'multi',
-        (cb) =>
-          cb.map(TAGS, (t) => cb.toggle(set.has(t.id), t.name, t.id)).split(1),
-        {
-          selected: () => set,
-          onChange: (ids) => {
-            set.clear();
-            ids.forEach((id) => set.add(id));
-          },
+      const kb = tagsKeyboard('multi', {
+        selected: () => set,
+        onChange: (ids) => {
+          set.clear();
+          ids.forEach((id) => set.add(id));
         },
-      );
+      });
 
       expect(InlineKeyboard.resolveCheckbox('multi')).toBe(kb);
 
@@ -126,41 +123,40 @@ describe('InlineKeyboard.checkboxes', () => {
 
     it('replaces the selection for a radio group', () => {
       const set = new Set<string>(['a']);
-      const kb = new InlineKeyboard().checkboxes(
-        'r',
-        (cb) =>
-          cb.map(TAGS, (t) => cb.toggle(set.has(t.id), t.name, t.id)).split(1),
-        {
-          multi: false,
-          selected: () => set,
-          onChange: (ids) => {
-            set.clear();
-            ids.forEach((id) => set.add(id));
-          },
+      const kb = tagsKeyboard('r', {
+        multi: false,
+        selected: () => set,
+        onChange: (ids) => {
+          set.clear();
+          ids.forEach((id) => set.add(id));
         },
-      );
+      });
 
       kb.applyCheckboxToggle('r', 'b');
       expect([...set]).toEqual(['b']);
     });
+
+    it('ignores a toggle addressed to a different group id', () => {
+      const set = new Set<string>(['a']);
+      let changed = false;
+      const kb = tagsKeyboard('mine', {
+        selected: () => set,
+        onChange: () => {
+          changed = true;
+        },
+      });
+      kb.applyCheckboxToggle('not-mine', 'b');
+      expect([...set]).toEqual(['a']); // untouched
+      expect(changed).toBe(false); // onChange never fired
+    });
   });
 
-  it('persists to the ambient session by default (no selected/onChange)', () => {
+  it('persists to and reads from the ambient session by default', () => {
     runAmbient(() => {
       const session: Record<string, unknown> = {};
       setAmbient(SESSION, session);
 
-      const kb = new InlineKeyboard().checkboxes('sess', (cb) =>
-        cb
-          .map(TAGS, (t) =>
-            cb.toggle(
-              ((session['checkbox:sess'] as string[]) ?? []).includes(t.id),
-              t.name,
-              t.id,
-            ),
-          )
-          .split(1),
-      );
+      const kb = tagsKeyboard('sess', {});
 
       kb.applyCheckboxToggle('sess', 'a');
       kb.applyCheckboxToggle('sess', 'c');
@@ -174,12 +170,10 @@ describe('InlineKeyboard.checkboxes', () => {
   });
 
   it('rejects a second checkbox group on one keyboard', () => {
-    const kb = new InlineKeyboard().checkboxes('first', (cb) =>
-      cb.map(TAGS, (t) => cb.toggle(false, t.name, t.id)).split(1),
-    );
+    const kb = tagsKeyboard('first', {});
     expect(() =>
       kb.checkboxes('second', (cb) =>
-        cb.map(TAGS, (t) => cb.toggle(false, t.name, t.id)).split(1),
+        cb.map(TAGS, (t) => cb.toggle(t.name, t.id)).split(1),
       ),
     ).toThrow(/one checkbox group/);
   });

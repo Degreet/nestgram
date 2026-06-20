@@ -10,8 +10,7 @@ describe('CheckboxRouter', () => {
     const set = new Set<string>(['a']);
     const keyboard = new InlineKeyboard().checkboxes(
       'router-multi',
-      (cb) =>
-        cb.map(['a', 'b'], (id) => cb.toggle(set.has(id), id, id)).split(1),
+      (cb) => cb.map(['a', 'b'], (id) => cb.toggle(id, id)).split(1),
       {
         selected: () => set,
         onChange: (ids) => {
