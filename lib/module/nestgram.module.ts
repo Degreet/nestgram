@@ -6,6 +6,8 @@ import { BotOptions } from '../api/bot-options';
 import { BotConfigResolver, ResolvedBot } from './bot-config';
 import { ContextFactory, EventFactory } from '../engine/context';
 import {
+  KeyboardRenderExplorer,
+  KeyboardRenderRegistry,
   RouteExplorer,
   RouteMatcher,
   RouteTable,
@@ -38,6 +40,10 @@ import { AutoAnswerCallbackInterceptor } from '../builtins/auto-answer';
 import { ReplyExceptionFilter } from '../builtins/reply-exception';
 import { DeadButtonWarner } from '../builtins/unhandled';
 import { NoopButtonHandler } from '../builtins/noop';
+import { CheckboxRouter } from '../builtins/checkbox';
+import { PaginationRouter } from '../builtins/pagination';
+import { KeyboardStateService, KeyboardStateStage } from '../keyboards/state';
+import { PaginationCursorStage } from '../keyboards/pagination-cursor.stage';
 import { NestgramBootstrap } from './nestgram.bootstrap';
 import {
   NestgramModuleAsyncOptions,
@@ -73,6 +79,10 @@ export class NestgramModule {
     UnhandledRegistry,
     HandlerExecutorFactory,
     ResultHandler,
+    // Discovers `@KeyboardRender(...)` builders at boot so the checkbox router can
+    // re-invoke a group's keyboard fresh on a tap (re-render survives restart).
+    KeyboardRenderExplorer,
+    KeyboardRenderRegistry,
     // The dispatcher runs per-update stages discovered + ordered at boot. The
     // stages themselves live in their own modules a user imports — i18n in
     // I18nModule, sessions in SessionModule — so nothing here is privileged; a
@@ -167,6 +177,22 @@ export class NestgramModule {
     // Handles the reserved no-op route behind `Button.noop()`/`.else('label')`,
     // so a dead-end button is answered (not warned). A plain `@Router`/`@Action`.
     NoopButtonHandler,
+    // Drives every `InlineKeyboard.checkboxes(...)` group — resolves the keyboard
+    // by id, applies the tapped selection change, re-renders in place. A plain
+    // public `@Router`/`@Action`, dormant until a `checkbox/...` callback arrives.
+    CheckboxRouter,
+    // Drives every `InlineKeyboard.paginate(id, …)` section — recovers each
+    // section's page from the callback + incoming markup and re-renders through the
+    // `@KeyboardRender` builder. Dormant until a `pagego/...` callback arrives.
+    PaginationRouter,
+    // Per-message keyboard state (checkbox selection, later page cursors), loaded
+    // and saved per update by its stage. Always on (no import) so live keyboards
+    // work out of the box; the store is resolved from config/sessions/memory.
+    KeyboardStateService,
+    KeyboardStateStage,
+    // Recovers paginated sections' page cursors from the incoming markup each tap,
+    // so a re-render (toggle or page tap) keeps every section on its page.
+    PaginationCursorStage,
   ];
 
   /**

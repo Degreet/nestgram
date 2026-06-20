@@ -8,6 +8,7 @@ import type { ApiInterceptor } from '../api/request';
 import type { ParseModeValue } from '../api/parse-mode';
 import type { RichMessagesOptions } from '../builtins/rich-messages/rich-messages.types';
 import type { ThrottleOptions } from '../builtins/throttle/throttle.types';
+import type { KeyboardStateOptions } from '../keyboards/state/keyboard-state.types';
 
 /**
  * Options for `NestgramModule.forRoot`.
@@ -179,6 +180,12 @@ export interface NestgramModuleOptions {
   throttle?: boolean | ThrottleOptions;
   /** Replace the default throttler entirely (e.g. a Redis-backed distributed one). */
   throttler?: Type<ApiInterceptor>;
+  /**
+   * Per-message keyboard state (checkbox selections, page cursors) — auto-wired,
+   * configure only to override the store. Defaults to the session store's backend
+   * when sessions are on, else in-memory. See {@link KeyboardStateOptions}.
+   */
+  keyboardState?: KeyboardStateOptions;
 }
 
 /** A class that can produce `NestgramModuleOptions` (for `useClass`/`useExisting`). */

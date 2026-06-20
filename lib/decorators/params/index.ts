@@ -14,3 +14,4 @@ export * from './state.decorator';
 export * from './fsm.decorator';
 export * from './scene.decorator';
 export * from './bot.decorator';
+export * from './checkbox-ids.decorator';

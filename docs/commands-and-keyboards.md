@@ -102,15 +102,15 @@ export class WhoAmIRouter {
 
 :::
 
-| Decorator          | Gives you                                       |
-| ------------------ | ----------------------------------------------- |
-| `@Param('name')`   | a named segment captured from the command route |
-| `@Sender()`        | the `User` who triggered the update             |
-| `@Chat()`          | the `RawChat` the update happened in            |
-| `@Args()`          | raw command arguments (`string[]`)              |
-| `@Payload()`       | raw text after the command                      |
-| `@CallbackData()`  | a callback query's `data` string                |
-| `@Session()`       | the current session object                      |
+| Decorator         | Gives you                                       |
+| ----------------- | ----------------------------------------------- |
+| `@Param('name')`  | a named segment captured from the command route |
+| `@Sender()`       | the `User` who triggered the update             |
+| `@Chat()`         | the `RawChat` the update happened in            |
+| `@Args()`         | raw command arguments (`string[]`)              |
+| `@Payload()`      | raw text after the command                      |
+| `@CallbackData()` | a callback query's `data` string                |
+| `@Session()`      | the current session object                      |
 
 This is the everyday set, not the full list — `@Text()`, `@Caption()` and
 `@Locale()` follow the same pattern: a named read of something the update
@@ -215,6 +215,245 @@ or pass a full `Button`):
 
 Use `Button.if()` for the per-item filter inside `.map()`, and the builder's
 `.if()` for a whole row, section or group.
+
+### Pagination
+
+A long list doesn't fit one screen. `.paginate(id, { size })` keeps only the
+current page and appends a `‹ 2/5 ›` nav row — and **you write no nav handler**.
+Put the keyboard in a `@KeyboardRender(id)` method; the framework owns the nav
+route, re-invokes that method on a tap, and edits the message in place:
+
+:::code[shop.router.ts]
+
+```ts
+import {
+  Router,
+  Command,
+  KeyboardRender,
+  Message,
+  InlineKeyboard,
+  Button,
+} from 'nestgram';
+
+@Router()
+export class ShopRouter {
+  @Command('shop')
+  open(message: Message) {
+    return message.answer('Our products:', { reply_markup: this.menu() });
+  }
+
+  @KeyboardRender('shop')
+  menu() {
+    return new InlineKeyboard()
+      .map(this.products.all(), (p) => Button.text(p.name, `buy/${p.id}`))
+      .split(2)
+      .paginate('shop', { size: 8 });
+  }
+}
+```
+
+:::
+
+`id` names the section; the framework owns its `pagego/<id>/…` route and reads the
+current page back from the keyboard's own callback-data — so the cursor lives in
+the message, surviving a restart with no store. `size` is the max buttons per page;
+rows stay whole, so a `.split(2)` grid paginates by pairs. One page renders no
+controls. `prev`/`next` override the `‹`/`›` labels.
+
+**Two lists, independently:** call `.paginate()` once per section — each scrolls
+on its own, and navigating one keeps the other's page. Rows added _after_ a call
+form the next section, so a trailing Done/Back button stays off the paged region:
+
+```ts
+@KeyboardRender('cats', 'tags')
+menu() {
+  return new InlineKeyboard()
+    .map(this.cats.all(), (c) => Button.text(c.name, `cat/${c.id}`)).split(2)
+    .paginate('cats', { size: 8 })
+    .map(this.tags.all(), (t) => Button.text(t.name, `tag/${t.id}`)).split(2)
+    .paginate('tags', { size: 8 });
+}
+```
+
+A paginated keyboard needs `@KeyboardRender` to be navigable (a tap re-renders by
+rebuilding the page); an inline keyboard thrown from a handler can't change page.
+
+### Checkboxes and radio groups
+
+A multi-select picker is the same builder with one method — `.checkboxes()`. The
+framework owns the markers, the routing, the toggle, and the re-render, so **you
+write no toggle handler**: a tap flips the selection and the message updates in
+place.
+
+:::code[notify.router.ts]
+
+```ts
+import {
+  Router,
+  Command,
+  OnCheckboxDone,
+  CheckboxIds,
+  Message,
+  InlineKeyboard,
+} from 'nestgram';
+
+@Router()
+export class NotifyRouter {
+  @Command('notify')
+  open(message: Message) {
+    return message.answer('Pick what to hear about:', {
+      reply_markup: new InlineKeyboard().checkboxes('topics', (cb) =>
+        cb
+          .map(TOPICS, (t) => cb.toggle(t.name, t.id))
+          .split(1)
+          .row(cb.done('✓ Done')),
+      ),
+    });
+  }
+
+  @OnCheckboxDone('topics')
+  save(@CheckboxIds('topics') topics: string[]) {
+    return `Saved ${topics.join(', ')} ✅`;
+  }
+}
+```
+
+:::
+
+`.checkboxes(id, build, config?)` carves out a group: inside `build` you have the
+full keyboard sugar plus `cb.toggle(label, item)` — a checkbox button **auto-marked**
+(✅/☐) from whether it's selected, so you never compute the marker. `cb.done(label)`
+adds a Done button for the group, and `@OnCheckboxDone(id)` handles it with the
+picks delivered straight to `@CheckboxIds(id)` — no route string, no toggle handler.
+Here `save` returns a string, which answers the tap as a brief **toast** (a quick
+ack); to leave a durable summary in the chat, take the `CallbackQuery` first arg and
+reply with `query.message?.answer(...)` instead.
+The selection lives in **per-message keyboard state** under `checkbox:<id>` —
+auto-wired, no import. It reuses your session store's backend when sessions are on
+(so it is highload-safe across servers), else an in-process store.
+
+That's the whole flow — `open` + a Done handler. A few knobs:
+
+- **Radio:** `.radio(id, build, config?)` is single-select sugar (one of `🔘`/`⚪`)
+  — same as `.checkboxes(id, build, { multi: false })`, just without the flag.
+- **Seed defaults:** `{ default: ['news'] }` pre-ticks options on the first render,
+  before any tap. Once a selection is saved it wins — an empty selection is a real
+  choice, not "seed me again".
+- **Custom store:** to keep the selection somewhere other than the default keyboard
+  state, pass a `selected` reader **together with** a writer — `onChange: (ids) => …` (the whole
+  set) or `onToggle: (id, on) => …` (a per-item delta). The pair is required:
+  `selected` reads the current set on every render, so keep it sync and cheap (FSM
+  data on the ambient rail, an already-loaded object — not a live DB call); the
+  writer persists each change. A writer with no `selected` throws — the group would
+  have nowhere to read the set back from, so toggling would break.
+- **Static `id`, declare once:** the group registers by `id`, so use one stable id
+  per checkbox _type_ (not per user — the per-message state keeps users apart for
+  you). Throw it inline from a handler and it works for the life of the process —
+  but the registration is lost on a restart.
+- **`@KeyboardRender(id)` for restart-safe, dynamic keyboards:** put the keyboard in
+  one method, mark it, and call it to show — the framework re-invokes the **same**
+  method to re-render on each tap. It runs fresh, so it re-derives its data (pull
+  tags from a service, read the current state) and the whole keyboard reflects the
+  latest state; and because it's discovered at boot, re-rendering survives a
+  restart. May be `async`.
+
+  ```ts
+  @Command('topics')
+  open(message: Message) {
+    return message.answer('Pick topics:', { reply_markup: this.menu() });
+  }
+
+  @KeyboardRender('topics')
+  menu() {
+    return new InlineKeyboard().checkboxes('topics', (cb) =>
+      cb.map(this.topics.all(), (t) => cb.toggle(t.name, t.id)).split(1),
+    );
+  }
+  ```
+
+#### Linked groups — a category drives its tags
+
+Several groups can share one keyboard, each with its own id, and a `@KeyboardRender`
+builder can read one group's pick to drive another with `selectedIds(id)`. The
+classic: a category radio decides which tags to show.
+
+```ts
+@KeyboardRender('category', 'tags')
+menu() {
+  const [category] = selectedIds('category'); // the chosen category
+  const tags = category ? this.tags.byCategory(category) : [];
+  return new InlineKeyboard()
+    .radio('category', (cb) =>
+      cb.map(CATS, (c) => cb.toggle(c.name, c.id)).split(2).paginate('category', { size: 8 }))
+    .checkboxes('tags', (cb) =>
+      cb.map(tags, (t) => cb.toggle(t.name, t.id)).split(2).paginate('tags', { size: 8 }), {
+      scope: () => selectedIds('category')[0], // a separate tag set per category
+    });
+}
+```
+
+`.radio(id, …)` is the single-select group. Tapping a category re-renders with that
+category's tags — the builder re-derives from the just-applied state. `scope` keys
+the tags group's selection by the category (`checkbox:tags:<category>`), so each
+category remembers its own picks: switching never mixes them, and switching back
+restores them. `@CheckboxIds('tags')` on Done reads the current category's set.
+
+`scope` **re-reads** the rail (`() => selectedIds('category')[0]`), not the
+destructured `category` — it must, because the callback can run later against a
+keyboard built earlier (on Done, or a custom action), where a captured `category`
+would be stale.
+
+`.paginate(id)` inside a group's build scrolls only the rows **above** it (`size`
+per page), and a checkbox tap keeps the page it's on — the cursor lives in the
+keyboard's callback-data, recovered each tap. Rows added **after** `.paginate` form
+a separate section that doesn't scroll, so a trailing Done/Reset row stays pinned on
+every page (see [Actions](#actions--reset-and-your-own)). This is the full picker:
+two scrollable, linked, scoped lists, with no nav or toggle handlers of your own.
+
+#### Actions — Reset and your own
+
+`cb.clear(label)` is a built-in **Reset** — it clears the group's selection (the
+current scope's, if scoped) and re-renders, no handler:
+
+```ts
+.row(cb.clear('♻ Reset'), cb.done('✓ Done'))
+```
+
+Anything else is just a normal `@Action`: mutate the selection through the rail
+(`setSelectedIds` / `clearSelectedIds`) and `return this.menu()` to re-render — the
+same "return a keyboard → edit in place". Select-all is yours (you have the dataset):
+
+```ts
+@KeyboardRender('category', 'tags')
+menu() {
+  const [category] = selectedIds('category');
+  const tags = category ? this.tags.byCategory(category) : [];
+  return new InlineKeyboard()
+    .radio('category', (cb) => cb.map(CATS, (c) => cb.toggle(c.name, c.id)))
+    .checkboxes('tags', (cb) =>
+      cb.map(tags, (t) => cb.toggle(t.name, t.id))
+        .split(2)
+        .row(Button.text('Select all', 'topics/all'), cb.clear('Reset'), cb.done('Done')),
+      { scope: () => selectedIds('category')[0] });
+}
+
+@Action('topics/all')
+selectAll() {
+  const [category] = selectedIds('category');
+  setSelectedIds('tags', this.tags.byCategory(category).map((t) => t.id)); // scope-aware
+  return this.menu(); // re-render
+}
+```
+
+`setSelectedIds`/`clearSelectedIds` are scope-aware (they go through the group's
+binding); `selectedIds` reads. The mutation runs on the tap, then `this.menu()`
+re-projects it — a custom action is a pure state change, never a parallel render
+path. `cb.toggle` / `cb.clear` / `cb.done` are the built-in button verbs; a custom
+action is a plain `@Action` + the rail writers. That's the whole model — a complex
+picker stays a single declarative builder.
+
+For full manual control — your own toggle `@Action`, custom routing — `Button.toggle`
+is the low-level primitive the group is built on.
 
 ### Editing a keyboard
 
