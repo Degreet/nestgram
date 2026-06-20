@@ -177,4 +177,28 @@ describe('InlineKeyboard.checkboxes', () => {
       ),
     ).toThrow(/one checkbox group/);
   });
+
+  it('cb.done() routes to checkbox/<id>/done', () => {
+    const kb = new InlineKeyboard().checkboxes(
+      'dn',
+      (cb) =>
+        cb
+          .map(TAGS, (t) => cb.toggle(t.name, t.id))
+          .split(1)
+          .row(cb.done('✓ Save')),
+      { selected: () => new Set(['a']) },
+    );
+    const layout = rows(kb);
+    expect(layout[layout.length - 1]).toEqual([
+      { text: '✓ Save', callback_data: 'checkbox/dn/done' },
+    ]);
+  });
+
+  it('checkboxSelection() exposes the current picks (for @CheckboxIds)', () => {
+    const kb = tagsKeyboard('sel', { selected: () => new Set(['a', 'c']) });
+    expect(kb.checkboxSelection().sort()).toEqual(['a', 'c']);
+    expect(
+      InlineKeyboard.resolveCheckbox('sel')?.checkboxSelection().sort(),
+    ).toEqual(['a', 'c']);
+  });
 });

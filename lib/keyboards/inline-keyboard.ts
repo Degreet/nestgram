@@ -10,6 +10,7 @@ import { Button } from './button';
 import { CheckboxBinding } from './checkbox-binding';
 import {
   CHECKBOX_DEFAULT_MARKERS,
+  CHECKBOX_DONE_ROUTE,
   CHECKBOX_PARAMS,
   CHECKBOX_RADIO_MARKERS,
   CHECKBOX_TOGGLE_ROUTE,
@@ -346,6 +347,13 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
     }
   }
 
+  /** This keyboard's checkbox selection — what `@CheckboxIds(id)` reads on Done. */
+  checkboxSelection(): string[] {
+    return this.checkboxSection
+      ? [...this.checkboxSection.binding.selected()]
+      : [];
+  }
+
   /**
    * Adopt an existing keyboard (a native `reply_markup` from an incoming update)
    * for editing — change a button, drop one, append a row, then send it back
@@ -531,6 +539,20 @@ export class CheckboxScope extends InlineKeyboard {
       callback_data: CallbackRoutePattern.build(CHECKBOX_TOGGLE_ROUTE, {
         [CHECKBOX_PARAMS.cb]: this.checkboxId,
         [CHECKBOX_PARAMS.item]: String(item),
+      }),
+    });
+  }
+
+  /**
+   * A Done button for the group — routes to `checkbox/<id>/done`, handled by a
+   * `@OnCheckboxDone(id)` method (where `@CheckboxIds(id)` hands you the picks).
+   * No magic route string to write.
+   */
+  done(label: string): Button {
+    return Button.from({
+      text: label,
+      callback_data: CallbackRoutePattern.build(CHECKBOX_DONE_ROUTE, {
+        [CHECKBOX_PARAMS.cb]: this.checkboxId,
       }),
     });
   }

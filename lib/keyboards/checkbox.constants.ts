@@ -5,7 +5,10 @@
  */
 export const CHECKBOX_TOGGLE_ROUTE = 'checkbox/:cb/toggle/:item';
 
-/** The `:param` names in {@link CHECKBOX_TOGGLE_ROUTE}, so build and route can't desync. */
+/** The route a `cb.done()` button owns — matched by `@OnCheckboxDone(id)`. */
+export const CHECKBOX_DONE_ROUTE = 'checkbox/:cb/done';
+
+/** The `:param` names in the checkbox routes, so build and route can't desync. */
 export const CHECKBOX_PARAMS = { cb: 'cb', item: 'item' } as const;
 
 /** Prefix under which the zero-config default persists a selection in the session. */
