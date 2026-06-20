@@ -157,5 +157,25 @@ describe('InlineKeyboard.paginate', () => {
           .paginate('list/:a/:b', { size: 2 }),
       ).toThrow(/exactly one :param/);
     });
+
+    it('rejects a second paginated region on one keyboard', () => {
+      expect(() =>
+        new InlineKeyboard()
+          .map(items(5), (i) => Button.text(`i${i.id}`, 'o/:id', { id: i.id }))
+          .split(1)
+          .paginate('a/page/:n', { size: 2 })
+          .paginate('b/page/:n', { size: 2 }),
+      ).toThrow(/once/);
+    });
+
+    it('rejects paginate() sharing a keyboard with a checkbox group', () => {
+      expect(() =>
+        new InlineKeyboard()
+          .checkboxes('tags', (cb) =>
+            cb.map(items(5), (i) => cb.toggle(`i${i.id}`, i.id)).split(1),
+          )
+          .paginate('list/page/:n', { size: 2 }),
+      ).toThrow(/checkbox group/);
+    });
   });
 });

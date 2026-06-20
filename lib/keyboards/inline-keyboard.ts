@@ -81,6 +81,7 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
   private static readonly logger = new Logger(InlineKeyboard.name);
 
   private checkboxSection?: CheckboxSection;
+  private paginated = false;
 
   /**
    * A callback button. Two forms, one mechanism — a safe default and a terse
@@ -208,6 +209,19 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
         `paginate(route) needs a route with exactly one :param for the page (got "${route}")`,
       );
     }
+    if (this.checkboxSection !== undefined) {
+      throw new NestgramConfigError(
+        'paginate() cannot share a keyboard with a checkbox group — the group ' +
+          'rebuilds rows lazily, which a page slice would cut incorrectly.',
+      );
+    }
+    if (this.paginated) {
+      throw new NestgramConfigError(
+        'A keyboard paginates one region; call .paginate() once. Two independent ' +
+          'paginated lists in one message are not supported.',
+      );
+    }
+    this.paginated = true;
 
     if (this.pending.length > 0) {
       this.spread(); // commit any not-yet-laid-out buttons, one per row
@@ -313,6 +327,11 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
     if (this.checkboxSection !== undefined) {
       throw new NestgramConfigError(
         'A keyboard can hold one checkbox group; call .checkboxes() once per keyboard.',
+      );
+    }
+    if (this.paginated) {
+      throw new NestgramConfigError(
+        'A paginated keyboard cannot also hold a checkbox group.',
       );
     }
     if (this.pending.length > 0) {
