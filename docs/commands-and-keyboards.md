@@ -331,7 +331,8 @@ auto-wired, no import. It reuses your session store's backend when sessions are 
 
 That's the whole flow — `open` + a Done handler. A few knobs:
 
-- **Radio:** `{ multi: false }` makes it single-select (one of `🔘`/`⚪`).
+- **Radio:** `.radio(id, build, config?)` is single-select sugar (one of `🔘`/`⚪`)
+  — same as `.checkboxes(id, build, { multi: false })`, just without the flag.
 - **Seed defaults:** `{ default: ['news'] }` pre-ticks options on the first render,
   before any tap. Once a selection is saved it wins — an empty selection is a real
   choice, not "seed me again".
@@ -377,9 +378,7 @@ menu() {
   const [category] = selectedIds('category'); // the chosen category
   const tags = category ? this.tags.byCategory(category) : [];
   return new InlineKeyboard()
-    .checkboxes('category', (cb) => cb.map(CATS, (c) => cb.toggle(c.name, c.id)).split(2), {
-      multi: false,
-    })
+    .radio('category', (cb) => cb.map(CATS, (c) => cb.toggle(c.name, c.id)).split(2))
     .paginate('category', { size: 8 }) // categories scroll…
     .checkboxes('tags', (cb) => cb.map(tags, (t) => cb.toggle(t.name, t.id)).split(2), {
       scope: () => selectedIds('category')[0], // a separate tag set per category
@@ -388,16 +387,63 @@ menu() {
 }
 ```
 
-Tapping a category re-renders with that category's tags — the builder re-derives
-from the just-applied state. The `scope` keys the tags group's selection by the
-category (`checkbox:tags:<category>`), so each category remembers its own picks:
-switching never mixes them, and switching back restores them. `@CheckboxIds('tags')`
-on Done reads the current category's set.
+`.radio(id, …)` is the single-select group. Tapping a category re-renders with that
+category's tags — the builder re-derives from the just-applied state. `scope` keys
+the tags group's selection by the category (`checkbox:tags:<category>`), so each
+category remembers its own picks: switching never mixes them, and switching back
+restores them. `@CheckboxIds('tags')` on Done reads the current category's set.
+
+`scope` **re-reads** the rail (`() => selectedIds('category')[0]`), not the
+destructured `category` — it must, because the callback can run later against a
+keyboard built earlier (on Done, or a custom action), where a captured `category`
+would be stale.
 
 `.paginate(id)` after a group scrolls **that group's** buttons (`size` per page),
 and a checkbox tap keeps the page it's on — the cursor lives in the keyboard's
 callback-data, recovered each tap. This is the full picker: two scrollable,
 linked, scoped lists, with no nav or toggle handlers of your own.
+
+#### Actions — Reset and your own
+
+`cb.clear(label)` is a built-in **Reset** — it clears the group's selection (the
+current scope's, if scoped) and re-renders, no handler:
+
+```ts
+.row(cb.clear('♻ Reset'), cb.done('✓ Done'))
+```
+
+Anything else is just a normal `@Action`: mutate the selection through the rail
+(`setSelectedIds` / `clearSelectedIds`) and `return this.menu()` to re-render — the
+same "return a keyboard → edit in place". Select-all is yours (you have the dataset):
+
+```ts
+@KeyboardRender('category', 'tags')
+menu() {
+  const [category] = selectedIds('category');
+  const tags = category ? this.tags.byCategory(category) : [];
+  return new InlineKeyboard()
+    .radio('category', (cb) => cb.map(CATS, (c) => cb.toggle(c.name, c.id)))
+    .checkboxes('tags', (cb) =>
+      cb.map(tags, (t) => cb.toggle(t.name, t.id))
+        .split(2)
+        .row(Button.text('Select all', 'topics/all'), cb.clear('Reset'), cb.done('Done')),
+      { scope: () => selectedIds('category')[0] });
+}
+
+@Action('topics/all')
+selectAll() {
+  const [category] = selectedIds('category');
+  setSelectedIds('tags', this.tags.byCategory(category).map((t) => t.id)); // scope-aware
+  return this.menu(); // re-render
+}
+```
+
+`setSelectedIds`/`clearSelectedIds` are scope-aware (they go through the group's
+binding); `selectedIds` reads. The mutation runs on the tap, then `this.menu()`
+re-projects it — a custom action is a pure state change, never a parallel render
+path. `cb.toggle` / `cb.clear` / `cb.done` are the built-in button verbs; a custom
+action is a plain `@Action` + the rail writers. That's the whole model — a complex
+picker stays a single declarative builder.
 
 For full manual control — your own toggle `@Action`, custom routing — `Button.toggle`
 is the low-level primitive the group is built on.

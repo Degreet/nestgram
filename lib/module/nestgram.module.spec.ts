@@ -79,8 +79,8 @@ describe('NestgramModule (integration)', () => {
     });
 
     const table = app.get(RouteTable);
-    // 1 user route + built-ins: no-op, checkbox toggle, pagination nav (pagego + pageat).
-    expect(table.size).toBe(5);
+    // 1 user route + 5 built-ins: no-op, checkbox toggle + clear, pagination nav (pagego + pageat).
+    expect(table.size).toBe(6);
     expect(table.ofType('message')).toHaveLength(1);
 
     const dispatcher = app.get(UpdateDispatcher);
@@ -100,8 +100,8 @@ describe('NestgramModule (integration)', () => {
     });
 
     // The only place GreetRouter is named is the providers array; forRoot got
-    // no routers list, yet the route table still found it (1 user + 4 built-in).
-    expect(app.get(RouteTable).size).toBe(5);
+    // no routers list, yet the route table still found it (1 user + 5 built-in).
+    expect(app.get(RouteTable).size).toBe(6);
 
     await app.close();
   });
@@ -137,8 +137,8 @@ describe('NestgramModule.forRootAsync (integration)', () => {
 
     // Token resolved via the injected config factory reached the transport.
     expect(app.get(BotService).token).toBe('ASYNC_TOKEN');
-    // Engine still wired: discovery built the route table (1 user + 4 built-in).
-    expect(app.get(RouteTable).size).toBe(5);
+    // Engine still wired: discovery built the route table (1 user + 5 built-in).
+    expect(app.get(RouteTable).size).toBe(6);
 
     await app.close();
   });
@@ -213,9 +213,9 @@ describe('stacked listener decorators (integration)', () => {
     const router = app.get(MultiRouter);
 
     // The one method binds to message + callback_query; the callback_query side
-    // also carries the built-in no-op, checkbox, and pagination (pagego + pageat) routes.
+    // also carries the 5 built-in callback routes (no-op, checkbox toggle + clear, pagego + pageat).
     expect(table.ofType('message')).toHaveLength(1);
-    expect(table.ofType('callback_query')).toHaveLength(5);
+    expect(table.ofType('callback_query')).toHaveLength(6);
 
     await dispatcher.dispatch(messageUpdate(1, 'hi'));
     expect(router.hits).toEqual(['hit']);

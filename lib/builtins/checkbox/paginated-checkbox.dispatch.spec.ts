@@ -43,7 +43,7 @@ class ShopRouter {
         'tags',
         (cb) => cb.map(tags, (t) => cb.toggle(t, t)).split(1),
         {
-          scope: () => cat,
+          scope: () => selectedIds('cat')[0],
         },
       )
       .paginate('tags', { size: 2 });

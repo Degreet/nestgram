@@ -8,6 +8,9 @@ export const CHECKBOX_TOGGLE_ROUTE = 'checkbox/:cb/toggle/:item';
 /** The route a `cb.done()` button owns — matched by `@OnCheckboxDone(id)`. */
 export const CHECKBOX_DONE_ROUTE = 'checkbox/:cb/done';
 
+/** The route a `cb.clear()` (Reset) button owns — matched by the built-in router. */
+export const CHECKBOX_CLEAR_ROUTE = 'checkbox/:cb/clear';
+
 /** The `:param` names in the checkbox routes, so build and route can't desync. */
 export const CHECKBOX_PARAMS = { cb: 'cb', item: 'item' } as const;
 

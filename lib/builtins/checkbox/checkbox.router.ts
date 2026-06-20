@@ -5,6 +5,7 @@ import { Router } from '../../decorators/injectable/router.decorator';
 import { Action } from '../../decorators/listeners/action.decorator';
 import { Param } from '../../decorators/params/param.decorator';
 import {
+  CHECKBOX_CLEAR_ROUTE,
   CHECKBOX_PARAMS,
   CHECKBOX_TOGGLE_ROUTE,
   InlineKeyboard,
@@ -37,32 +38,40 @@ export class CheckboxRouter {
   ) {}
 
   @Action(CHECKBOX_TOGGLE_ROUTE)
-  async toggle(
+  toggle(
     @Param(CHECKBOX_PARAMS.cb) cb: string,
     @Param(CHECKBOX_PARAMS.item) item: string,
   ): Promise<InlineKeyboard | void> {
-    const renderer = this.renderers?.get(cb);
+    return this.applyAndRender(cb, (kb) => kb.applyCheckboxToggle(cb, item));
+  }
 
+  @Action(CHECKBOX_CLEAR_ROUTE)
+  clear(@Param(CHECKBOX_PARAMS.cb) cb: string): Promise<InlineKeyboard | void> {
+    return this.applyAndRender(cb, (kb) => kb.applyCheckboxClear(cb));
+  }
+
+  // Apply a state change to group `cb`, then re-render. With a @KeyboardRender
+  // builder: build to reach the binding (its config is static), apply — mutating
+  // the ambient state — then re-build so a dependent group re-derives from the new
+  // state (two builds, accepted: a builder reads ambient data, not I/O). Without a
+  // builder: mutate the live inline keyboard (its lazy toJSON re-renders; a
+  // dependent group can't re-derive — the surrounding layout is frozen).
+  private async applyAndRender(
+    cb: string,
+    mutate: (keyboard: InlineKeyboard) => void,
+  ): Promise<InlineKeyboard | void> {
+    const renderer = this.renderers?.get(cb);
     if (renderer === undefined) {
-      // No declared builder: apply the tap on the inline keyboard registered when
-      // it was last shown — its lazy toJSON re-renders the change. A dependent
-      // group can't re-derive here (the surrounding layout is frozen).
       const inline = InlineKeyboard.resolveCheckbox(cb);
       if (inline === undefined) {
         this.warnNoKeyboard(cb);
         return;
       }
-      inline.applyCheckboxToggle(cb, item);
+      mutate(inline);
       return inline;
     }
-
-    // Declared builder: build to reach the group's binding (its config is static),
-    // apply the tap — which mutates the ambient state — then re-build so a
-    // dependent group re-derives from the new state (tags follow the new category).
-    // Two builds per tap, accepted: a builder reads already-loaded ambient data
-    // (the documented contract), not I/O.
     const applied = await renderer();
-    applied.applyCheckboxToggle(cb, item);
+    mutate(applied);
     return renderer();
   }
 

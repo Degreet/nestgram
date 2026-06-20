@@ -103,6 +103,19 @@ describe('InlineKeyboard.checkboxes', () => {
     ]);
   });
 
+  it('.radio() is single-select sugar for checkboxes({ multi: false })', () => {
+    const kb = new InlineKeyboard().radio(
+      'cat',
+      (cb) => cb.map(TAGS, (t) => cb.toggle(t.name, t.id)).split(1),
+      { selected: () => new Set(['b']) },
+    );
+    expect(
+      rows(kb)
+        .flat()
+        .map((b) => b.text),
+    ).toEqual(['⚪ Alpha', '🔘 Beta', '⚪ Gamma']); // radio glyphs, one picked
+  });
+
   describe('resolveCheckbox + applyCheckboxToggle', () => {
     it('registers under its id and applies a multi-select toggle', () => {
       const set = new Set<string>(['a']);
@@ -389,6 +402,21 @@ describe('InlineKeyboard.checkboxes', () => {
     const layout = rows(kb);
     expect(layout[layout.length - 1]).toEqual([
       { text: '✓ Save', callback_data: 'checkbox/dn/done' },
+    ]);
+  });
+
+  it('cb.clear() routes to checkbox/<id>/clear', () => {
+    const kb = new InlineKeyboard().checkboxes(
+      'tags',
+      (cb) =>
+        cb
+          .map(TAGS, (t) => cb.toggle(t.name, t.id))
+          .split(1)
+          .row(cb.clear('Reset')),
+      { selected: () => new Set<string>() },
+    );
+    expect(rows(kb).at(-1)).toEqual([
+      { text: 'Reset', callback_data: 'checkbox/tags/clear' },
     ]);
   });
 

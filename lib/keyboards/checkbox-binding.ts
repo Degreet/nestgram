@@ -81,6 +81,18 @@ export class CheckboxBinding {
     this.write(current, next);
   }
 
+  /** Clear the whole selection — through the same write path as a tap (scope/
+   * onChange/onToggle all honoured: off-deltas, `[]`, or `[]` under the scoped key). */
+  clearAll(): void {
+    this.write(this.selected(), new Set());
+  }
+
+  /** Replace the selection with `next` (a radio group keeps at most one). Same write path. */
+  replace(next: Iterable<string>): void {
+    const norm = [...next].map(String);
+    this.write(this.selected(), new Set(this.multi ? norm : norm.slice(0, 1)));
+  }
+
   private write(prev: Set<string>, next: Set<string>): void {
     if (this.config.onToggle) {
       for (const id of next) {

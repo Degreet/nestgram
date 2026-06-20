@@ -15,6 +15,7 @@ import {
 } from './pagination.constants';
 import { CheckboxBinding } from './checkbox-binding';
 import {
+  CHECKBOX_CLEAR_ROUTE,
   CHECKBOX_DEFAULT_MARKERS,
   CHECKBOX_DONE_ROUTE,
   CHECKBOX_PARAMS,
@@ -385,6 +386,24 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
     return this;
   }
 
+  /**
+   * A single-select group — sugar for `.checkboxes(id, build, { multi: false })`.
+   * Exactly one option is picked (radio glyphs `🔘`/`⚪`); re-tapping the picked one
+   * clears it. Use it for a driver like a category. All the same config (`scope`,
+   * `default`, a custom store) applies, just not `multi`.
+   *
+   * ```ts
+   * .radio('category', (cb) => cb.map(CATS, (c) => cb.toggle(c.name, c.id)).split(2))
+   * ```
+   */
+  radio(
+    id: string,
+    build: CheckboxBuilder,
+    config: Omit<CheckboxConfig, 'multi'> = {},
+  ): this {
+    return this.checkboxes(id, build, { ...config, multi: false });
+  }
+
   /** The keyboard owning checkbox group `id` — used by the built-in checkbox router. */
   static resolveCheckbox(id: string): InlineKeyboard | undefined {
     return InlineKeyboard.checkboxRegistry.get(id);
@@ -392,10 +411,17 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
 
   /** Apply a tap on `item` to checkbox group `id` (toggle/radio + persist). */
   applyCheckboxToggle(id: string, item: string): void {
-    const section = this.checkboxSections.find((s) => s.id === id);
-    if (section !== undefined) {
-      section.binding.applyToggle(item);
-    }
+    this.checkboxSections.find((s) => s.id === id)?.binding.applyToggle(item);
+  }
+
+  /** Clear checkbox group `id`'s selection (the `cb.clear()` Reset). */
+  applyCheckboxClear(id: string): void {
+    this.checkboxSections.find((s) => s.id === id)?.binding.clearAll();
+  }
+
+  /** Replace checkbox group `id`'s selection — what `setSelectedIds` uses. */
+  applyCheckboxSet(id: string, ids: Iterable<string>): void {
+    this.checkboxSections.find((s) => s.id === id)?.binding.replace(ids);
   }
 
   /** Checkbox group `id`'s current selection — what `@CheckboxIds(id)` reads on Done. */
@@ -631,6 +657,20 @@ export class CheckboxScope extends InlineKeyboard {
     return Button.from({
       text: label,
       callback_data: CallbackRoutePattern.build(CHECKBOX_DONE_ROUTE, {
+        [CHECKBOX_PARAMS.cb]: this.checkboxId,
+      }),
+    });
+  }
+
+  /**
+   * A Reset button for the group — routes to `checkbox/<id>/clear`, handled by the
+   * built-in router: it clears the group's selection (the current scope's, if
+   * scoped) and re-renders. No handler to write.
+   */
+  clear(label: string): Button {
+    return Button.from({
+      text: label,
+      callback_data: CallbackRoutePattern.build(CHECKBOX_CLEAR_ROUTE, {
         [CHECKBOX_PARAMS.cb]: this.checkboxId,
       }),
     });
