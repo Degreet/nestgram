@@ -139,8 +139,9 @@ describe('Phase 1 acceptance (booted app)', () => {
 
   it('discovers @Router providers into the route table — no routers list', () => {
     // 4 listeners across one discovered router (start, hears, refresh, echo),
-    // plus the built-in no-op button route (Button.noop / .else).
-    expect(app.get(RouteTable).size).toBe(6);
+    // plus the built-in routes: no-op button (1), checkbox toggle (1), pagination
+    // nav (2: pagego + pageat).
+    expect(app.get(RouteTable).size).toBe(8);
   });
 
   it('@Command matches a bare /start (exact arity) and injects @Sender', async () => {

@@ -41,6 +41,7 @@ import { ReplyExceptionFilter } from '../builtins/reply-exception';
 import { DeadButtonWarner } from '../builtins/unhandled';
 import { NoopButtonHandler } from '../builtins/noop';
 import { CheckboxRouter } from '../builtins/checkbox';
+import { PaginationRouter } from '../builtins/pagination';
 import { KeyboardStateService, KeyboardStateStage } from '../keyboards/state';
 import { NestgramBootstrap } from './nestgram.bootstrap';
 import {
@@ -179,6 +180,10 @@ export class NestgramModule {
     // by id, applies the tapped selection change, re-renders in place. A plain
     // public `@Router`/`@Action`, dormant until a `checkbox/...` callback arrives.
     CheckboxRouter,
+    // Drives every `InlineKeyboard.paginate(id, …)` section — recovers each
+    // section's page from the callback + incoming markup and re-renders through the
+    // `@KeyboardRender` builder. Dormant until a `pagego/...` callback arrives.
+    PaginationRouter,
     // Per-message keyboard state (checkbox selection, later page cursors), loaded
     // and saved per update by its stage. Always on (no import) so live keyboards
     // work out of the box; the store is resolved from config/sessions/memory.

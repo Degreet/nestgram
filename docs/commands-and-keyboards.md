@@ -218,9 +218,10 @@ Use `Button.if()` for the per-item filter inside `.map()`, and the builder's
 
 ### Pagination
 
-A long list doesn't fit one screen. `.paginate(route, { size })` keeps only the
-current page and appends a `‹ 2/5 ›` navigation row whose arrows route to `route`
-with the target page number:
+A long list doesn't fit one screen. `.paginate(id, { size })` keeps only the
+current page and appends a `‹ 2/5 ›` nav row — and **you write no nav handler**.
+Put the keyboard in a `@KeyboardRender(id)` method; the framework owns the nav
+route, re-invokes that method on a tap, and edits the message in place:
 
 :::code[shop.router.ts]
 
@@ -228,43 +229,54 @@ with the target page number:
 import {
   Router,
   Command,
-  Action,
-  Param,
+  KeyboardRender,
   Message,
   InlineKeyboard,
   Button,
 } from 'nestgram';
-import { ParseIntPipe } from '@nestjs/common';
 
 @Router()
 export class ShopRouter {
   @Command('shop')
   open(message: Message) {
-    return message.answer('Our products:', { reply_markup: this.page(0) });
+    return message.answer('Our products:', { reply_markup: this.menu() });
   }
 
-  @Action('shop/page/:n')
-  turn(@Param('n', ParseIntPipe) n: number) {
-    return this.page(n); // returning a keyboard edits the message in place
-  }
-
-  private page(page: number) {
+  @KeyboardRender('shop')
+  menu() {
     return new InlineKeyboard()
-      .map(products, (p) => Button.text(p.name, 'buy/:id', { id: p.id }))
+      .map(this.products.all(), (p) => Button.text(p.name, `buy/${p.id}`))
       .split(2)
-      .paginate('shop/page/:n', { size: 8, page });
+      .paginate('shop', { size: 8 });
   }
 }
 ```
 
 :::
 
-`route` is a template with exactly one `:param` for the page — handle it with
-`@Action('shop/page/:n')` + `@Param('n')`, returning the keyboard at that page
-(the bare-keyboard return edits the message in place). `size` is the max buttons
-per page; rows stay whole, so a `.split(2)` grid paginates by pairs. One page
-(everything fits) renders no controls. `.paginate(route, { size, page, prev, next })`
-— `prev`/`next` override the `‹`/`›` labels.
+`id` names the section; the framework owns its `pagego/<id>/…` route and reads the
+current page back from the keyboard's own callback-data — so the cursor lives in
+the message, surviving a restart with no store. `size` is the max buttons per page;
+rows stay whole, so a `.split(2)` grid paginates by pairs. One page renders no
+controls. `prev`/`next` override the `‹`/`›` labels.
+
+**Two lists, independently:** call `.paginate()` once per section — each scrolls
+on its own, and navigating one keeps the other's page. Rows added _after_ a call
+form the next section, so a trailing Done/Back button stays off the paged region:
+
+```ts
+@KeyboardRender('cats', 'tags')
+menu() {
+  return new InlineKeyboard()
+    .map(this.cats.all(), (c) => Button.text(c.name, `cat/${c.id}`)).split(2)
+    .paginate('cats', { size: 8 })
+    .map(this.tags.all(), (t) => Button.text(t.name, `tag/${t.id}`)).split(2)
+    .paginate('tags', { size: 8 });
+}
+```
+
+A paginated keyboard needs `@KeyboardRender` to be navigable (a tap re-renders by
+rebuilding the page); an inline keyboard thrown from a handler can't change page.
 
 ### Checkboxes and radio groups
 
