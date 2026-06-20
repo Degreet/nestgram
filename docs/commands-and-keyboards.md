@@ -356,7 +356,9 @@ That's the whole flow — `open` + a Done handler. A few knobs:
 
   ```ts
   @Command('topics')
-  open() { return this.menu(); }
+  open(message: Message) {
+    return message.answer('Pick topics:', { reply_markup: this.menu() });
+  }
 
   @KeyboardRender('topics')
   menu() {
