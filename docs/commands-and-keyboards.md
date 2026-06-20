@@ -380,14 +380,17 @@ menu() {
     .checkboxes('category', (cb) => cb.map(CATS, (c) => cb.toggle(c.name, c.id)), {
       multi: false,
     })
-    .checkboxes('tags', (cb) => cb.map(tags, (t) => cb.toggle(t.name, t.id)));
+    .checkboxes('tags', (cb) => cb.map(tags, (t) => cb.toggle(t.name, t.id)), {
+      scope: () => selectedIds('category')[0], // a separate tag set per category
+    });
 }
 ```
 
 Tapping a category re-renders with that category's tags — the builder re-derives
-from the just-applied state. Each group keeps its own selection in the per-message
-state. (Switching category keeps the previous category's tag picks in state for
-now; a per-category reset is coming.)
+from the just-applied state. The `scope` keys the tags group's selection by the
+category (`checkbox:tags:<category>`), so each category remembers its own picks:
+switching never mixes them, and switching back restores them. `@CheckboxIds('tags')`
+on Done reads the current category's set.
 
 For full manual control — your own toggle `@Action`, custom routing — `Button.toggle`
 is the low-level primitive the group is built on.

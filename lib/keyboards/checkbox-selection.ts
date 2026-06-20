@@ -18,9 +18,11 @@ import { KEYBOARD_STATE } from './state/keyboard-state.constants';
  * }
  * ```
  *
- * Reads the persisted keyboard-state selection only. A `default`-seeded group
- * isn't reflected until its first tap (the seed is config, not yet in state), and
- * a custom-store group (`onChange`/`onToggle` + `selected`) is read through its own
+ * Reads the persisted keyboard-state selection at the group's UNSCOPED key, so use
+ * it for the unscoped driver (the category), not a `scope`d group — read those via
+ * `@CheckboxIds(id)`, which honours the scope. A `default`-seeded group isn't
+ * reflected until its first tap (the seed is config, not yet in state), and a
+ * custom-store group (`onChange`/`onToggle` + `selected`) is read through its own
  * `selected` reader — so for those, drive the dependency from a real interaction.
  */
 export function selectedIds(id: string): string[] {

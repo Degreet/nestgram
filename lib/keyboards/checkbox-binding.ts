@@ -38,6 +38,16 @@ export class CheckboxBinding {
           'default per-message keyboard state.',
       );
     }
+    if (
+      config.scope &&
+      (config.selected || config.onChange || config.onToggle)
+    ) {
+      throw new NestgramConfigError(
+        `Checkbox "${id}": scope partitions the per-message keyboard-state key, so ` +
+          'it has no effect with a custom selected/onChange/onToggle store (which ' +
+          'owns its own keys). Drop scope, or partition inside your store.',
+      );
+    }
   }
 
   /** Whether this group is multi-select (default) rather than single-select (radio). */
@@ -89,8 +99,12 @@ export class CheckboxBinding {
   // The prefix is also a safety boundary: a group id reaches this from user-facing
   // code, and prefixing keeps a hostile id like `__proto__` out of a bare state
   // key (`checkbox:__proto__`, never `__proto__`). Don't drop it in a refactor.
+  // A `scope` partitions the selection per dependency (`checkbox:tags:<category>`),
+  // so a linked group keeps a separate set per value it depends on.
   private get stateField(): string {
-    return `${CHECKBOX_STATE_PREFIX}${this.id}`;
+    const base = `${CHECKBOX_STATE_PREFIX}${this.id}`;
+    const scope = this.config.scope?.();
+    return scope === undefined || scope === '' ? base : `${base}:${scope}`;
   }
 
   // Reading the selection (every render) is silent — no state simply means an

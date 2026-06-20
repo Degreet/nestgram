@@ -4,7 +4,8 @@ import type { KeyValueStore } from '../../store/key-value-store';
  * The per-message keyboard state — a small bag of interaction state (checkbox
  * selections; page cursors and linking keys later). The dataset itself is NOT
  * stored: the keyboard re-derives it from your source each render, so this stays
- * tiny. Keyed per message, namespaced inside the bag (`checkbox:<id>`, …).
+ * tiny. Keyed per message, namespaced inside the bag (`checkbox:<id>`, or
+ * `checkbox:<id>:<scope>` for a scoped group).
  */
 export type KeyboardState = Record<string, unknown>;
 

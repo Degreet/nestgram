@@ -27,6 +27,16 @@ export interface CheckboxConfig {
   onChange?: (ids: string[]) => void;
   /** WRITE a per-item delta (`id` is now `on`), once per changed item. */
   onToggle?: (id: string, on: boolean) => void;
+  /**
+   * Partition this group's selection by a dependency, so a linked group keeps a
+   * separate selection per value of what it depends on. The flagship: tags scoped
+   * by the chosen category — `scope: () => selectedIds('category')[0]` — so each
+   * category remembers its own tag picks and switching never mixes them. The state
+   * key becomes `checkbox:<id>:<scope>`; `undefined` or `''` means the unscoped key. Read
+   * fresh on every render/tap, so keep it cheap and pure (a rail read, no I/O).
+   * Session-backed only — a custom store keys its own writes.
+   */
+  scope?: () => string | number | undefined;
 }
 
 /** Composes the checkbox buttons with the full keyboard sugar (`cb.toggle`/`.map`/`.split`/…). */

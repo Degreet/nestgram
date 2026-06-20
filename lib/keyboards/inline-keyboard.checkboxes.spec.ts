@@ -227,6 +227,32 @@ describe('InlineKeyboard.checkboxes', () => {
     });
   });
 
+  it('scope partitions the selection per dependency value', () => {
+    runAmbient(() => {
+      setAmbient(KEYBOARD_STATE, {
+        'checkbox:tags:fruit': ['a'],
+        'checkbox:tags:veg': ['c'],
+      });
+      let category = 'fruit';
+      const kb = tagsKeyboard('tags', { scope: () => category });
+
+      // Reads `checkbox:tags:fruit` → Alpha marked…
+      expect(
+        rows(kb)
+          .flat()
+          .map((b) => b.text),
+      ).toEqual(['✅ Alpha', 'Beta', 'Gamma']);
+
+      // …switch the dependency → reads `checkbox:tags:veg` → Gamma marked.
+      category = 'veg';
+      expect(
+        rows(kb)
+          .flat()
+          .map((b) => b.text),
+      ).toEqual(['Alpha', 'Beta', '✅ Gamma']);
+    });
+  });
+
   it('allows several groups but rejects two with the same id', () => {
     const kb = tagsKeyboard('first', {});
     // A second group with a different id is fine (e.g. category + tags).
@@ -297,6 +323,15 @@ describe('InlineKeyboard.checkboxes', () => {
           onToggle: () => undefined,
         }),
       ).toThrow(/mutually exclusive/);
+    });
+
+    it('rejects scope alongside a custom store (it would be ignored)', () => {
+      expect(
+        build('scoped-custom', {
+          selected: () => new Set<string>(),
+          scope: () => 'x',
+        }),
+      ).toThrow(/scope partitions/);
     });
   });
 
