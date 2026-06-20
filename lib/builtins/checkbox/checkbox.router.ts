@@ -41,26 +41,37 @@ export class CheckboxRouter {
     @Param(CHECKBOX_PARAMS.cb) cb: string,
     @Param(CHECKBOX_PARAMS.item) item: string,
   ): Promise<InlineKeyboard | void> {
-    const keyboard = await this.resolveKeyboard(cb);
-    if (keyboard === undefined) {
-      this.logger.warn(
-        `Checkbox "${cb}" has no @KeyboardRender builder and no live inline ` +
-          'keyboard — it was likely declared inline and lost on restart, so the ' +
-          'tap is a no-op. Re-open the keyboard, or declare a @KeyboardRender ' +
-          'builder so re-render survives restarts.',
-      );
-      return;
+    const renderer = this.renderers?.get(cb);
+
+    if (renderer === undefined) {
+      // No declared builder: apply the tap on the inline keyboard registered when
+      // it was last shown — its lazy toJSON re-renders the change. A dependent
+      // group can't re-derive here (the surrounding layout is frozen).
+      const inline = InlineKeyboard.resolveCheckbox(cb);
+      if (inline === undefined) {
+        this.warnNoKeyboard(cb);
+        return;
+      }
+      inline.applyCheckboxToggle(cb, item);
+      return inline;
     }
-    keyboard.applyCheckboxToggle(cb, item);
-    return keyboard; // a bare keyboard return edits the message markup in place
+
+    // Declared builder: build to reach the group's binding (its config is static),
+    // apply the tap — which mutates the ambient state — then re-build so a
+    // dependent group re-derives from the new state (tags follow the new category).
+    // Two builds per tap, accepted: a builder reads already-loaded ambient data
+    // (the documented contract), not I/O.
+    const applied = await renderer();
+    applied.applyCheckboxToggle(cb, item);
+    return renderer();
   }
 
-  // Prefer a declared @KeyboardRender builder (re-derives fresh, survives restart);
-  // fall back to the inline keyboard registered when it was last shown.
-  private async resolveKeyboard(
-    cb: string,
-  ): Promise<InlineKeyboard | undefined> {
-    const renderer = this.renderers?.get(cb);
-    return renderer ? renderer() : InlineKeyboard.resolveCheckbox(cb);
+  private warnNoKeyboard(cb: string): void {
+    this.logger.warn(
+      `Checkbox "${cb}" has no @KeyboardRender builder and no live inline ` +
+        'keyboard — it was likely declared inline and lost on restart, so the ' +
+        'tap is a no-op. Re-open the keyboard, or declare a @KeyboardRender ' +
+        'builder so re-render survives restarts.',
+    );
   }
 }

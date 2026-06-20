@@ -68,8 +68,9 @@ describe('@KeyboardRender flow (booted app)', () => {
       updates.callbackQuery('checkbox/dyn/toggle/a', { messageId: 500 }),
     );
 
-    // The builder ran again for the re-render (not a frozen instance)…
-    expect(DynRouter.rendered).toBe(2);
+    // The builder ran again for the re-render, not a frozen instance (a tap
+    // rebuilds twice: once to apply the change, once to re-render the new state).
+    expect(DynRouter.rendered).toBe(3);
     // …and the in-place edit carries the rebuilt banner, B.
     const edit = bot.calls(EditMessageReplyMarkup).at(-1);
     expect(markup(edit?.payload.reply_markup)[0][0].text).toBe('B');

@@ -1,5 +1,3 @@
-import { Logger } from '@nestjs/common';
-
 import { getAmbient } from '../ambient';
 import type {
   RawInlineKeyboardButton,
@@ -81,9 +79,8 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
   /** Default `paginate()` navigation labels, overridable per call. */
   /** Checkbox groups by id, so the built-in router can re-render one on a tap. */
   private static readonly checkboxRegistry = new Map<string, InlineKeyboard>();
-  private static readonly logger = new Logger(InlineKeyboard.name);
 
-  private checkboxSection?: CheckboxSection;
+  private readonly checkboxSections: CheckboxSection[] = [];
   private paginated = false;
   /** Index where the current (not-yet-paginated) section begins — each `paginate()`
    * consumes the rows from here to the end, so several sections paginate apart. */
@@ -218,7 +215,7 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
         'paginate(id) requires a positive integer size',
       );
     }
-    if (this.checkboxSection !== undefined) {
+    if (this.checkboxSections.length > 0) {
       throw new NestgramConfigError(
         'paginate() cannot share a keyboard with a checkbox group — the group ' +
           'rebuilds rows lazily, which a page slice would cut incorrectly.',
@@ -332,7 +329,9 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
    *   effects, and must read state fresh from the ambient/service inside, never
    *   capture a request-scoped local.
    *
-   * One checkbox group per keyboard (a second `.checkboxes()` throws).
+   * Several groups can share a keyboard (a category radio + its tags checkboxes),
+   * each with its own id — a builder reads one group's picks with `selectedIds(id)`
+   * to drive another. A keyboard can't mix a checkbox group with `paginate()` yet.
    *
    * ```ts
    * new InlineKeyboard()
@@ -346,31 +345,28 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
     build: CheckboxBuilder,
     config: CheckboxConfig = {},
   ): this {
-    if (this.checkboxSection !== undefined) {
-      throw new NestgramConfigError(
-        'A keyboard can hold one checkbox group; call .checkboxes() once per keyboard.',
-      );
-    }
     if (this.paginated) {
       throw new NestgramConfigError(
         'A paginated keyboard cannot also hold a checkbox group.',
       );
     }
+    if (this.checkboxSections.some((section) => section.id === id)) {
+      throw new NestgramConfigError(
+        `A keyboard already has a checkbox group "${id}"; give each group a unique id.`,
+      );
+    }
     if (this.pending.length > 0) {
       this.row(); // commit any loose buttons before the section starts
     }
-    if (InlineKeyboard.checkboxRegistry.has(id)) {
-      InlineKeyboard.logger.warn(
-        `A checkbox group with id "${id}" is already registered — the newer one ` +
-          "wins and the older one's buttons will route to it. Give each a unique id.",
-      );
-    }
-    this.checkboxSection = {
+    // Re-registering the same id every render is normal (a @KeyboardRender rebuild),
+    // so no collision warning here — last-wins is the intended re-render behaviour.
+    // A genuinely distinct keyboard reusing an id is rare and caught downstream.
+    this.checkboxSections.push({
       id,
       build,
       binding: new CheckboxBinding(id, config),
       at: this.rows.length,
-    };
+    });
     InlineKeyboard.checkboxRegistry.set(id, this);
     return this;
   }
@@ -382,17 +378,16 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
 
   /** Apply a tap on `item` to checkbox group `id` (toggle/radio + persist). */
   applyCheckboxToggle(id: string, item: string): void {
-    const section = this.checkboxSection;
-    if (section?.id === id) {
+    const section = this.checkboxSections.find((s) => s.id === id);
+    if (section !== undefined) {
       section.binding.applyToggle(item);
     }
   }
 
-  /** This keyboard's checkbox selection — what `@CheckboxIds(id)` reads on Done. */
-  checkboxSelection(): string[] {
-    return this.checkboxSection
-      ? [...this.checkboxSection.binding.selected()]
-      : [];
+  /** Checkbox group `id`'s current selection — what `@CheckboxIds(id)` reads on Done. */
+  checkboxSelection(id: string): string[] {
+    const section = this.checkboxSections.find((s) => s.id === id);
+    return section ? [...section.binding.selected()] : [];
   }
 
   /**
@@ -478,23 +473,37 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
 
   toJSON(): RawInlineKeyboardMarkup {
     const own = this.filledRows;
-    const section = this.checkboxSection;
-    if (section === undefined) {
+    if (this.checkboxSections.length === 0) {
       return { inline_keyboard: own };
     }
-    // Re-render the checkbox section fresh: read the current selection once and
-    // hand it to the scope, so `cb.toggle` auto-marks each item.
+    // Splice each section's freshly-rendered rows in at the position it was
+    // declared, in declaration order (a stable sort by `at`). Several groups thus
+    // interleave with the eager rows around them.
+    const sections = [...this.checkboxSections].sort((a, b) => a.at - b.at);
+    const result: RawInlineKeyboardButton[][] = [];
+    let row = 0;
+    for (const section of sections) {
+      const at = Math.min(section.at, own.length);
+      while (row < at) {
+        result.push(own[row++]);
+      }
+      result.push(...this.renderSection(section));
+    }
+    while (row < own.length) {
+      result.push(own[row++]);
+    }
+    return { inline_keyboard: result };
+  }
+
+  /** Re-render one checkbox section: read its current selection, build, serialize. */
+  private renderSection(section: CheckboxSection): RawInlineKeyboardButton[][] {
     const scope = new CheckboxScope(
       section.id,
       section.binding.multi,
       section.binding.selected(),
     );
     section.build(scope);
-    const rendered = scope.toJSON().inline_keyboard;
-    const at = Math.min(section.at, own.length);
-    return {
-      inline_keyboard: [...own.slice(0, at), ...rendered, ...own.slice(at)],
-    };
+    return scope.toJSON().inline_keyboard;
   }
 
   /** Resolve each button's `.if()`/`.else()` into the raw buttons to render. */

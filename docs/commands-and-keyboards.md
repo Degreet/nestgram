@@ -365,6 +365,30 @@ That's the whole flow — `open` + a Done handler. A few knobs:
   }
   ```
 
+#### Linked groups — a category drives its tags
+
+Several groups can share one keyboard, each with its own id, and a `@KeyboardRender`
+builder can read one group's pick to drive another with `selectedIds(id)`. The
+classic: a category radio decides which tags to show.
+
+```ts
+@KeyboardRender('category', 'tags')
+menu() {
+  const [category] = selectedIds('category'); // the chosen category
+  const tags = category ? this.tags.byCategory(category) : [];
+  return new InlineKeyboard()
+    .checkboxes('category', (cb) => cb.map(CATS, (c) => cb.toggle(c.name, c.id)), {
+      multi: false,
+    })
+    .checkboxes('tags', (cb) => cb.map(tags, (t) => cb.toggle(t.name, t.id)));
+}
+```
+
+Tapping a category re-renders with that category's tags — the builder re-derives
+from the just-applied state. Each group keeps its own selection in the per-message
+state. (Switching category keeps the previous category's tag picks in state for
+now; a per-category reset is coming.)
+
 For full manual control — your own toggle `@Action`, custom routing — `Button.toggle`
 is the low-level primitive the group is built on.
 

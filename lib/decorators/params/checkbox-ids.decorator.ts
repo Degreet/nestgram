@@ -16,5 +16,5 @@ import { InlineKeyboard } from '../../keyboards';
  */
 export const CheckboxIds = createParamDecorator(
   (id: string): string[] =>
-    InlineKeyboard.resolveCheckbox(id)?.checkboxSelection() ?? [],
+    InlineKeyboard.resolveCheckbox(id)?.checkboxSelection(id) ?? [],
 );

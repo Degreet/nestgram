@@ -227,13 +227,51 @@ describe('InlineKeyboard.checkboxes', () => {
     });
   });
 
-  it('rejects a second checkbox group on one keyboard', () => {
+  it('allows several groups but rejects two with the same id', () => {
     const kb = tagsKeyboard('first', {});
+    // A second group with a different id is fine (e.g. category + tags).
     expect(() =>
       kb.checkboxes('second', (cb) =>
         cb.map(TAGS, (t) => cb.toggle(t.name, t.id)).split(1),
       ),
-    ).toThrow(/one checkbox group/);
+    ).not.toThrow();
+    // …but reusing an id is rejected.
+    expect(() =>
+      kb.checkboxes('first', (cb) =>
+        cb.map(TAGS, (t) => cb.toggle(t.name, t.id)).split(1),
+      ),
+    ).toThrow(/unique id/);
+  });
+
+  it('renders two groups, each marked from its own selection', () => {
+    const kb = new InlineKeyboard()
+      .checkboxes(
+        'a',
+        (cb) => cb.map(TAGS, (t) => cb.toggle(t.name, t.id)).split(1),
+        { selected: () => new Set(['a']) },
+      )
+      .checkboxes(
+        'b',
+        (cb) => cb.map(TAGS, (t) => cb.toggle(t.name, t.id)).split(1),
+        { selected: () => new Set(['c']) },
+      );
+    const flat = rows(kb).flat();
+    expect(flat.map((c) => c.text)).toEqual([
+      '✅ Alpha', // group a: a selected
+      'Beta',
+      'Gamma',
+      'Alpha', // group b: c selected
+      'Beta',
+      '✅ Gamma',
+    ]);
+    expect(flat.map((c) => c.callback_data)).toEqual([
+      'checkbox/a/toggle/a',
+      'checkbox/a/toggle/b',
+      'checkbox/a/toggle/c',
+      'checkbox/b/toggle/a',
+      'checkbox/b/toggle/b',
+      'checkbox/b/toggle/c',
+    ]);
   });
 
   describe('config contract', () => {
@@ -278,11 +316,11 @@ describe('InlineKeyboard.checkboxes', () => {
     ]);
   });
 
-  it('checkboxSelection() exposes the current picks (for @CheckboxIds)', () => {
+  it('checkboxSelection(id) exposes a group’s current picks (for @CheckboxIds)', () => {
     const kb = tagsKeyboard('sel', { selected: () => new Set(['a', 'c']) });
-    expect(kb.checkboxSelection().sort()).toEqual(['a', 'c']);
+    expect(kb.checkboxSelection('sel').sort()).toEqual(['a', 'c']);
     expect(
-      InlineKeyboard.resolveCheckbox('sel')?.checkboxSelection().sort(),
+      InlineKeyboard.resolveCheckbox('sel')?.checkboxSelection('sel').sort(),
     ).toEqual(['a', 'c']);
   });
 });
