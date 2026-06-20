@@ -279,33 +279,29 @@ place.
 import {
   Router,
   Command,
-  Action,
-  Session,
+  OnCheckboxDone,
+  CheckboxIds,
   Message,
   InlineKeyboard,
-  Button,
 } from 'nestgram';
-
-interface Prefs {
-  topics: Set<string>;
-}
 
 @Router()
 export class NotifyRouter {
   @Command('notify')
   open(message: Message) {
     return message.answer('Pick what to hear about:', {
-      reply_markup: new InlineKeyboard()
-        .checkboxes('topics', (cb) =>
-          cb.map(TOPICS, (t) => cb.toggle(t.name, t.id)).split(1),
-        )
-        .row(Button.text('✓ Done', 'topics/done')),
+      reply_markup: new InlineKeyboard().checkboxes('topics', (cb) =>
+        cb
+          .map(TOPICS, (t) => cb.toggle(t.name, t.id))
+          .split(1)
+          .row(cb.done('✓ Done')),
+      ),
     });
   }
 
-  @Action('topics/done')
-  done(@Session() prefs: Prefs) {
-    return `Saved ${[...prefs.topics].join(', ')} ✅`;
+  @OnCheckboxDone('topics')
+  save(@CheckboxIds('topics') topics: string[]) {
+    return `Saved ${topics.join(', ')} ✅`;
   }
 }
 ```
@@ -314,12 +310,12 @@ export class NotifyRouter {
 
 `.checkboxes(id, build, config?)` carves out a group: inside `build` you have the
 full keyboard sugar plus `cb.toggle(label, item)` — a checkbox button **auto-marked**
-(✅/☐) from whether it's selected, so you never compute the marker. Your own
-buttons (a Done) compose around the group with `.row(...)`. The selection lives in
-the session under `checkbox:<id>` by default; the `Done` handler reads it with a
-normal `@Session()`.
+(✅/☐) from whether it's selected, so you never compute the marker. `cb.done(label)`
+adds a Done button for the group, and `@OnCheckboxDone(id)` handles it with the
+picks delivered straight to `@CheckboxIds(id)` — no route string, no toggle handler.
+The selection lives in the session under `checkbox:<id>` by default.
 
-That's the whole flow — `open` + `done`, no toggle handler. A few knobs:
+That's the whole flow — `open` + a Done handler. A few knobs:
 
 - **Radio:** `{ multi: false }` makes it single-select (one of `🔘`/`⚪`).
 - **Custom store:** pass `{ onChange: (ids) => … }` (the whole set) or
