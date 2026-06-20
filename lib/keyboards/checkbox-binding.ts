@@ -81,7 +81,25 @@ export class CheckboxBinding {
   private sessionGet(): string[] {
     const session = getAmbient<Record<string, unknown>>(SESSION);
     const value = session?.[this.sessionField];
-    return Array.isArray(value) ? value.map(String) : [];
+    if (Array.isArray(value)) {
+      return value.map(String);
+    }
+    return this.seed(); // nothing persisted yet → the configured default
+  }
+
+  /**
+   * The pre-tap selection from `default`, normalized. Empty unless the session
+   * genuinely backs this group: a custom `onChange`/`onToggle` store owns its own
+   * initial state, and reseeding on every render would diverge from it. A radio
+   * group seeds at most one id, never two ticks.
+   */
+  private seed(): string[] {
+    const sessionBacked = !this.config.onChange && !this.config.onToggle;
+    if (!sessionBacked || !this.config.default) {
+      return [];
+    }
+    const ids = [...this.config.default].map(String);
+    return this.multi ? ids : ids.slice(0, 1);
   }
 
   private sessionSet(ids: string[]): void {

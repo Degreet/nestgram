@@ -169,6 +169,79 @@ describe('InlineKeyboard.checkboxes', () => {
     });
   });
 
+  describe('default seed', () => {
+    it('seeds the selection while the session key is absent', () => {
+      runAmbient(() => {
+        setAmbient(SESSION, {});
+        const kb = tagsKeyboard('seed', { default: ['a', 'c'] });
+        expect(
+          rows(kb)
+            .flat()
+            .map((b) => b.text),
+        ).toEqual(['✅ Alpha', 'Beta', '✅ Gamma']);
+      });
+    });
+
+    it('yields to a persisted selection — an empty pick sticks', () => {
+      runAmbient(() => {
+        const session: Record<string, unknown> = {};
+        setAmbient(SESSION, session);
+        const kb = tagsKeyboard('seed-off', { default: ['a'] });
+
+        kb.applyCheckboxToggle('seed-off', 'a'); // turn the seeded one off
+        expect(session['checkbox:seed-off']).toEqual([]);
+        expect(
+          rows(kb)
+            .flat()
+            .map((b) => b.text),
+        ).toEqual(['Alpha', 'Beta', 'Gamma']); // default no longer reseeds
+      });
+    });
+
+    it('is ignored when an explicit selected reader is supplied', () => {
+      const kb = tagsKeyboard('seed-explicit', {
+        default: ['a', 'b', 'c'],
+        selected: () => new Set(['b']),
+      });
+      expect(
+        rows(kb)
+          .flat()
+          .map((b) => b.text),
+      ).toEqual(['Alpha', '✅ Beta', 'Gamma']);
+    });
+
+    it('is ignored for a custom store — onChange seeds its own state', () => {
+      runAmbient(() => {
+        setAmbient(SESSION, {});
+        const kb = tagsKeyboard('seed-custom', {
+          default: ['a'],
+          onChange: () => undefined,
+        });
+        expect(
+          rows(kb)
+            .flat()
+            .map((b) => b.text),
+        ).toEqual(['Alpha', 'Beta', 'Gamma']); // not reseeded on the onChange path
+      });
+    });
+
+    it('seeds at most one id for a radio group', () => {
+      runAmbient(() => {
+        setAmbient(SESSION, {});
+        const kb = new InlineKeyboard().checkboxes(
+          'seed-radio',
+          (cb) => cb.map(TAGS, (t) => cb.toggle(t.name, t.id)).split(1),
+          { multi: false, default: ['a', 'b'] },
+        );
+        expect(
+          rows(kb)
+            .flat()
+            .map((b) => b.text),
+        ).toEqual(['🔘 Alpha', '⚪ Beta', '⚪ Gamma']); // only the first seeds
+      });
+    });
+  });
+
   it('rejects a second checkbox group on one keyboard', () => {
     const kb = tagsKeyboard('first', {});
     expect(() =>

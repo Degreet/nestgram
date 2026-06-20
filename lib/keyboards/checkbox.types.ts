@@ -14,6 +14,15 @@ export interface CheckboxConfig {
    * on every render (and once per tap) — keep it cheap and pure, no I/O.
    */
   selected?: () => Iterable<string | number>;
+  /**
+   * Pre-selected ids that seed the session-backed default before the first tap.
+   * Once a selection has been persisted it wins — an empty selection is a real
+   * state, not "seed me again". Applies only to the session-backed store: a
+   * custom `onChange`/`onToggle` store seeds its own initial state, and an
+   * explicit `selected` reader owns the read entirely (both ignore `default`).
+   * For a radio group only the first id seeds.
+   */
+  default?: Iterable<string | number>;
   /** WRITE the new full set, once. Mutually exclusive with `onToggle`. */
   onChange?: (ids: string[]) => void;
   /** WRITE a per-item delta (`id` is now `on`), once per changed item. */

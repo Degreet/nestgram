@@ -318,6 +318,9 @@ The selection lives in the session under `checkbox:<id>` by default.
 That's the whole flow — `open` + a Done handler. A few knobs:
 
 - **Radio:** `{ multi: false }` makes it single-select (one of `🔘`/`⚪`).
+- **Seed defaults:** `{ default: ['news'] }` pre-ticks options on the first render,
+  before any tap. Once a selection is saved it wins — an empty selection is a real
+  choice, not "seed me again".
 - **Custom store:** pass `{ onChange: (ids) => … }` (the whole set) or
   `{ onToggle: (id, on) => … }` (a per-item delta) to persist somewhere other than
   the session — a DB row, FSM data.
