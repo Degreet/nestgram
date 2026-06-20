@@ -43,6 +43,7 @@ import { NoopButtonHandler } from '../builtins/noop';
 import { CheckboxRouter } from '../builtins/checkbox';
 import { PaginationRouter } from '../builtins/pagination';
 import { KeyboardStateService, KeyboardStateStage } from '../keyboards/state';
+import { PaginationCursorStage } from '../keyboards/pagination-cursor.stage';
 import { NestgramBootstrap } from './nestgram.bootstrap';
 import {
   NestgramModuleAsyncOptions,
@@ -189,6 +190,9 @@ export class NestgramModule {
     // work out of the box; the store is resolved from config/sessions/memory.
     KeyboardStateService,
     KeyboardStateStage,
+    // Recovers paginated sections' page cursors from the incoming markup each tap,
+    // so a re-render (toggle or page tap) keeps every section on its page.
+    PaginationCursorStage,
   ];
 
   /**

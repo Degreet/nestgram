@@ -377,12 +377,14 @@ menu() {
   const [category] = selectedIds('category'); // the chosen category
   const tags = category ? this.tags.byCategory(category) : [];
   return new InlineKeyboard()
-    .checkboxes('category', (cb) => cb.map(CATS, (c) => cb.toggle(c.name, c.id)), {
+    .checkboxes('category', (cb) => cb.map(CATS, (c) => cb.toggle(c.name, c.id)).split(2), {
       multi: false,
     })
-    .checkboxes('tags', (cb) => cb.map(tags, (t) => cb.toggle(t.name, t.id)), {
+    .paginate('category', { size: 8 }) // categories scroll…
+    .checkboxes('tags', (cb) => cb.map(tags, (t) => cb.toggle(t.name, t.id)).split(2), {
       scope: () => selectedIds('category')[0], // a separate tag set per category
-    });
+    })
+    .paginate('tags', { size: 8 }); // …and so do the tags
 }
 ```
 
@@ -391,6 +393,11 @@ from the just-applied state. The `scope` keys the tags group's selection by the
 category (`checkbox:tags:<category>`), so each category remembers its own picks:
 switching never mixes them, and switching back restores them. `@CheckboxIds('tags')`
 on Done reads the current category's set.
+
+`.paginate(id)` after a group scrolls **that group's** buttons (`size` per page),
+and a checkbox tap keeps the page it's on — the cursor lives in the keyboard's
+callback-data, recovered each tap. This is the full picker: two scrollable,
+linked, scoped lists, with no nav or toggle handlers of your own.
 
 For full manual control — your own toggle `@Action`, custom routing — `Button.toggle`
 is the low-level primitive the group is built on.

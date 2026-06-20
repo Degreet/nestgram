@@ -1,5 +1,6 @@
 import { runAmbient, setAmbient } from '../ambient';
 import { KEYBOARD_STATE } from './state/keyboard-state.constants';
+import { PAGINATION_CURSORS } from './pagination.constants';
 import { Button } from './button';
 import { InlineKeyboard } from './inline-keyboard';
 import type { CheckboxConfig } from './checkbox.types';
@@ -251,6 +252,46 @@ describe('InlineKeyboard.checkboxes', () => {
           .map((b) => b.text),
       ).toEqual(['Alpha', 'Beta', '✅ Gamma']);
     });
+  });
+
+  it('paginates a checkbox group, keeping the current page + nav', () => {
+    const ITEMS = Array.from({ length: 6 }, (_, i) => ({
+      id: `t${i}`,
+      name: `T${i}`,
+    }));
+    runAmbient(() => {
+      setAmbient(KEYBOARD_STATE, { 'checkbox:big': ['t2'] });
+      setAmbient(PAGINATION_CURSORS, { big: 1 }); // current page 1
+      const kb = new InlineKeyboard()
+        .checkboxes('big', (cb) =>
+          cb.map(ITEMS, (x) => cb.toggle(x.name, x.id)).split(1),
+        )
+        .paginate('big', { size: 2 });
+
+      const layout = rows(kb);
+      // page 1 (size 2) → T2, T3; T2 is selected, then the nav row.
+      expect(
+        layout
+          .slice(0, 2)
+          .flat()
+          .map((b) => b.text),
+      ).toEqual(['✅ T2', 'T3']);
+      expect(layout.at(-1)).toEqual([
+        { text: '‹', callback_data: 'pagego/big/0' },
+        { text: '2/3', callback_data: 'pageat/big/1' },
+        { text: '›', callback_data: 'pagego/big/2' },
+      ]);
+    });
+  });
+
+  it('rejects plain pagination sharing a keyboard with a checkbox group', () => {
+    expect(() =>
+      new InlineKeyboard()
+        .checkboxes('g', (cb) => cb.map(TAGS, (t) => cb.toggle(t.name, t.id)))
+        .map(TAGS, (t) => Button.text(t.name, `o/${t.id}`))
+        .split(1)
+        .paginate('plain', { size: 2 }),
+    ).toThrow(/cannot[\s\S]*share/);
   });
 
   it('allows several groups but rejects two with the same id', () => {

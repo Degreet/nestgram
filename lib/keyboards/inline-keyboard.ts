@@ -32,6 +32,8 @@ interface CheckboxSection {
   readonly binding: CheckboxBinding;
   /** Index among the eager rows where the rendered section is spliced in. */
   readonly at: number;
+  /** When set (via `paginate(id)`), the group's buttons paginate at render. */
+  paginate?: PaginateOptions;
 }
 
 /**
@@ -76,7 +78,6 @@ export interface PaginateOptions {
  * ```
  */
 export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
-  /** Default `paginate()` navigation labels, overridable per call. */
   /** Checkbox groups by id, so the built-in router can re-render one on a tap. */
   private static readonly checkboxRegistry = new Map<string, InlineKeyboard>();
 
@@ -215,10 +216,23 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
         'paginate(id) requires a positive integer size',
       );
     }
+    // `paginate('tags')` after `checkboxes('tags', …)` paginates that group's
+    // buttons (they render lazily, so the slice happens in renderSection).
+    const group = this.checkboxSections.find((s) => s.id === id);
+    if (group !== undefined) {
+      if (group.paginate !== undefined) {
+        throw new NestgramConfigError(
+          `paginate("${id}") twice on the same checkbox group.`,
+        );
+      }
+      group.paginate = options;
+      return this;
+    }
+    // Otherwise paginate plain (eager) rows — which can't mix with a checkbox group.
     if (this.checkboxSections.length > 0) {
       throw new NestgramConfigError(
-        'paginate() cannot share a keyboard with a checkbox group — the group ' +
-          'rebuilds rows lazily, which a page slice would cut incorrectly.',
+        `paginate("${id}") matches no checkbox group, and plain pagination cannot ` +
+          'share a keyboard with one. Paginate a group by its id, or drop the group.',
       );
     }
     if (this.paginatedIds.has(id)) {
@@ -331,7 +345,7 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
    *
    * Several groups can share a keyboard (a category radio + its tags checkboxes),
    * each with its own id — a builder reads one group's picks with `selectedIds(id)`
-   * to drive another. A keyboard can't mix a checkbox group with `paginate()` yet.
+   * to drive another. A group's buttons scroll with `.paginate(id, …)` after it.
    *
    * ```ts
    * new InlineKeyboard()
@@ -495,7 +509,7 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
     return { inline_keyboard: result };
   }
 
-  /** Re-render one checkbox section: read its current selection, build, serialize. */
+  /** Re-render one checkbox section: read its selection, build, then paginate if asked. */
   private renderSection(section: CheckboxSection): RawInlineKeyboardButton[][] {
     const scope = new CheckboxScope(
       section.id,
@@ -503,7 +517,22 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
       section.binding.selected(),
     );
     section.build(scope);
-    return scope.toJSON().inline_keyboard;
+    const rendered = scope.toJSON().inline_keyboard;
+    if (section.paginate === undefined) {
+      return rendered;
+    }
+    // Paginate the group's own buttons: keep the current page (cursor recovered
+    // from the markup onto the rail) and append the nav row, on the group's id.
+    const pages = this.pageRows(rendered, section.paginate.size);
+    const total = pages.length;
+    const current =
+      total > 0 ? Math.min(this.cursorFor(section.id), total - 1) : 0;
+    const content = total > 0 ? pages[current] : [];
+    const nav =
+      total > 1
+        ? [this.navRow(section.id, current, total, section.paginate)]
+        : [];
+    return [...content, ...nav];
   }
 
   /** Resolve each button's `.if()`/`.else()` into the raw buttons to render. */

@@ -44,6 +44,9 @@ export enum BuiltinStageOrder {
   // session config is already resolvable. Independent keyspace, so order is not
   // correctness-critical — just tidy.
   KeyboardState = 25,
+  // Recovers paginated sections' page cursors from the incoming markup onto the
+  // ambient rail, so any re-render (a toggle or a page tap) keeps each its page.
+  PaginationCursors = 26,
   Fsm = 30,
   Scenes = 40,
 }
