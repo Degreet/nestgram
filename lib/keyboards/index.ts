@@ -6,3 +6,7 @@ export * from './reply-keyboard';
 export * from './remove-keyboard';
 export * from './checkbox.constants';
 export * from './checkbox.types';
+export type {
+  KeyboardState,
+  KeyboardStateOptions,
+} from './state/keyboard-state.types';

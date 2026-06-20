@@ -39,6 +39,7 @@ import { ReplyExceptionFilter } from '../builtins/reply-exception';
 import { DeadButtonWarner } from '../builtins/unhandled';
 import { NoopButtonHandler } from '../builtins/noop';
 import { CheckboxRouter } from '../builtins/checkbox';
+import { KeyboardStateService, KeyboardStateStage } from '../keyboards/state';
 import { NestgramBootstrap } from './nestgram.bootstrap';
 import {
   NestgramModuleAsyncOptions,
@@ -172,6 +173,11 @@ export class NestgramModule {
     // by id, applies the tapped selection change, re-renders in place. A plain
     // public `@Router`/`@Action`, dormant until a `checkbox/...` callback arrives.
     CheckboxRouter,
+    // Per-message keyboard state (checkbox selection, later page cursors), loaded
+    // and saved per update by its stage. Always on (no import) so live keyboards
+    // work out of the box; the store is resolved from config/sessions/memory.
+    KeyboardStateService,
+    KeyboardStateStage,
   ];
 
   /**

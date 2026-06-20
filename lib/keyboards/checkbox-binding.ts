@@ -2,19 +2,20 @@ import { Logger } from '@nestjs/common';
 
 import { getAmbient } from '../ambient';
 import { NestgramConfigError } from '../exceptions/config.exception';
-import { SESSION } from '../sessions/session.constants';
-import { CHECKBOX_SESSION_PREFIX } from './checkbox.constants';
+import { CHECKBOX_STATE_PREFIX } from './checkbox.constants';
+import { KEYBOARD_STATE } from './state/keyboard-state.constants';
 import type { CheckboxConfig } from './checkbox.types';
 
 /**
  * The state half of a checkbox group: reads the current selection and applies a
  * tap (toggle when multi, replace when radio), persisting through the config's
- * `onChange`/`onToggle` — or the session default under `checkbox:<id>` when
- * neither is given. Separated from the keyboard's rendering so each has one job.
+ * `onChange`/`onToggle` — or the per-message keyboard state under `checkbox:<id>`
+ * when neither is given. Separated from rendering so each has one job.
  *
  * No `ctx`: selection lives on the ambient rail, read fresh on every call (the
  * built-in router runs inside the request `AsyncLocalStorage`), so re-rendering
- * always reflects the latest state.
+ * always reflects the latest state. The keyboard-state stage loads that rail per
+ * tap and persists it after — the default store needs no import.
  */
 export class CheckboxBinding {
   private readonly logger = new Logger(CheckboxBinding.name);
@@ -34,7 +35,7 @@ export class CheckboxBinding {
         `Checkbox "${id}": a custom store (onChange/onToggle) needs a matching ` +
           'selected reader — the binding has nowhere to read the current set from ' +
           'otherwise, so toggling breaks. Add selected, or drop both for the ' +
-          'session-backed default.',
+          'default per-message keyboard state.',
       );
     }
   }
@@ -46,9 +47,7 @@ export class CheckboxBinding {
 
   /** The currently-selected ids, normalized to strings. */
   selected(): Set<string> {
-    const raw = this.config.selected
-      ? this.config.selected()
-      : this.sessionGet();
+    const raw = this.config.selected ? this.config.selected() : this.stateGet();
     return new Set([...raw].map(String));
   }
 
@@ -83,23 +82,24 @@ export class CheckboxBinding {
     } else if (this.config.onChange) {
       this.config.onChange([...next]);
     } else {
-      this.sessionSet([...next]);
+      this.stateSet([...next]);
     }
   }
 
   // The prefix is also a safety boundary: a group id reaches this from user-facing
-  // code, and prefixing keeps a hostile id like `__proto__` out of a bare session
+  // code, and prefixing keeps a hostile id like `__proto__` out of a bare state
   // key (`checkbox:__proto__`, never `__proto__`). Don't drop it in a refactor.
-  private get sessionField(): string {
-    return `${CHECKBOX_SESSION_PREFIX}${this.id}`;
+  private get stateField(): string {
+    return `${CHECKBOX_STATE_PREFIX}${this.id}`;
   }
 
-  // Reading the selection (every render) is silent — no session simply means an
-  // empty selection. The warning belongs on the write path: a tap that can't
-  // persist is the real problem.
-  private sessionGet(): string[] {
-    const session = getAmbient<Record<string, unknown>>(SESSION);
-    const value = session?.[this.sessionField];
+  // Reading the selection (every render) is silent — no state simply means an
+  // empty selection (the initial render, before any tap, seeds from `default`).
+  // The warning belongs on the write path: a tap that can't persist is the real
+  // problem.
+  private stateGet(): string[] {
+    const state = getAmbient<Record<string, unknown>>(KEYBOARD_STATE);
+    const value = state?.[this.stateField];
     if (Array.isArray(value)) {
       return value.map(String);
     }
@@ -108,7 +108,7 @@ export class CheckboxBinding {
 
   /**
    * The pre-tap selection from `default`, normalized. A radio group seeds at most
-   * one id, never two ticks. Only ever reached on the session-backed path — a
+   * one id, never two ticks. Only ever reached on the keyboard-state path — a
    * custom store carries its own `selected` reader (enforced in the constructor),
    * so `default` never applies there and can't diverge from it.
    */
@@ -120,15 +120,17 @@ export class CheckboxBinding {
     return this.multi ? ids : ids.slice(0, 1);
   }
 
-  private sessionSet(ids: string[]): void {
-    const session = getAmbient<Record<string, unknown>>(SESSION);
-    if (!session) {
+  private stateSet(ids: string[]): void {
+    const state = getAmbient<Record<string, unknown>>(KEYBOARD_STATE);
+    if (!state) {
+      // The keyboard-state stage loads the rail on every callback, so this only
+      // fires off the dispatch path (a tap applied with no ambient context).
       this.logger.warn(
-        `Checkbox "${this.id}" has no selected/onChange and no active session — ` +
-          'the tap cannot persist. Import SessionModule, or pass selected/onChange.',
+        `Checkbox "${this.id}" tapped with no active keyboard state — the change ` +
+          'cannot persist. This should not happen inside the dispatch pipeline.',
       );
       return;
     }
-    session[this.sessionField] = ids;
+    state[this.stateField] = ids;
   }
 }

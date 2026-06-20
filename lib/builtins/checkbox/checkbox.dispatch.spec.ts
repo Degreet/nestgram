@@ -7,13 +7,13 @@
  *   1. A bare `InlineKeyboard().checkboxes(id, …)` returned from a handler shows
  *      the picker; `default` seeds the first render before any tap.
  *   2. A tap (a `checkbox/<id>/toggle/<item>` callback) is handled by the BUILT-IN
- *      router — it persists to the per-user session and edits the markup in place
- *      (an `EditMessageReplyMarkup`), with no code from the author.
+ *      router — it persists to the per-MESSAGE keyboard state and edits the markup
+ *      in place (an `EditMessageReplyMarkup`), with no code from the author.
  *   3. `cb.done()` → `@OnCheckboxDone(id)` runs through the full pipeline with the
  *      picks delivered straight to `@CheckboxIds(id)`.
  *
- * No network: the testbed captures every outgoing call; the session is the real
- * `MemorySessionStore`.
+ * No network: the testbed captures every outgoing call; the keyboard-state store
+ * is an inspectable in-memory store, keyed per message (`kbd:…:m<id>`).
  */
 import {
   CheckboxIds,
@@ -24,7 +24,7 @@ import {
   Router,
 } from '../..';
 import { AnswerCallbackQuery, EditMessageReplyMarkup } from '../../api/methods';
-import { MemorySessionStore, SessionModule } from '../../sessions';
+import { MemoryStore } from '../../store/key-value-store';
 import { NestgramTestbed, updates } from '../../testing';
 
 const CHECKBOX_GROUP = 'topics';
@@ -50,8 +50,9 @@ class TopicsRouter {
     return `Saved ${ids.length}`;
   }
 
-  // Built once per render; `default` seeds the very first view, then the session
-  // takes over. Private — one class, one job (layout), the binding does state.
+  // Built once per render; `default` seeds the very first view, then the
+  // per-message keyboard state takes over. Private — one class, one job (layout),
+  // the binding does state.
   private menu(): InlineKeyboard {
     return new InlineKeyboard().checkboxes(
       CHECKBOX_GROUP,
@@ -73,12 +74,12 @@ const markupTexts = (kb: unknown): string[] =>
 
 describe('checkbox flow (booted app)', () => {
   let bot: NestgramTestbed;
-  const store = new MemorySessionStore();
+  const store = new MemoryStore();
 
   beforeAll(async () => {
     bot = await NestgramTestbed.create({
       routers: [TopicsRouter],
-      imports: [SessionModule.forRoot({ store, defaults: (): object => ({}) })],
+      keyboardState: { store }, // inspectable, so we can assert what a tap persisted
     });
   });
 
@@ -89,15 +90,18 @@ describe('checkbox flow (booted app)', () => {
     TopicsRouter.finished.length = 0;
   });
 
-  // The shared MemoryStore has no reset, so each test uses its own user id — the
-  // session key is per-user, keeping the cases independent without a clear().
-  const sessionKey = (userId: number): string => `ndefault:c1000:u${userId}`;
-  const asUser = (id: number) => ({
-    from: { id, is_bot: false, first_name: 'U' },
+  // Keyboard state is keyed per message, so each scenario pins its own picker
+  // message id — the shared MemoryStore has no reset, and distinct messages keep
+  // the cases independent. The tapping user is irrelevant to the key (Telegram
+  // renders one shared markup per message).
+  const stateKey = (msg: number): string => `kbd:ndefault:c1000:m${msg}`;
+  const onPicker = (msg: number) => ({
+    from: { id: 7, is_bot: false, first_name: 'U' },
+    messageId: msg,
   });
 
   it('seeds the first render from `default` before any tap', async () => {
-    await bot.dispatch(updates.message('hi', asUser(1)));
+    await bot.dispatch(updates.message('hi'));
 
     expect(markupTexts(bot.lastMessage?.reply_markup)).toEqual([
       '✅ News', // default seed
@@ -107,56 +111,59 @@ describe('checkbox flow (booted app)', () => {
     ]);
   });
 
-  it('taps persist to the session and edit the markup in place, then done delivers the picks', async () => {
-    const user = asUser(2); // same user/chat across the updates → one session
-    await bot.dispatch(updates.message('hi', user)); // show the menu (registers the group)
+  it('taps persist to keyboard state and edit the markup in place, then done delivers the picks', async () => {
+    const PICKER = 100; // all taps below sit on this one message
+    await bot.dispatch(updates.message('hi')); // show the menu (registers the group)
     bot.reset();
 
     await bot.dispatch(
-      updates.callbackQuery('checkbox/topics/toggle/tech', user),
+      updates.callbackQuery('checkbox/topics/toggle/tech', onPicker(PICKER)),
     );
 
     // The built-in router persisted the tap onto the default-seeded selection…
-    expect(store.get(sessionKey(2))).toEqual({
+    expect(store.get(stateKey(PICKER))).toEqual({
       'checkbox:topics': ['news', 'tech'],
     });
     // …and edited the group's markup in place (a bare-keyboard return → ng-71).
-    // The wire markup is serialized inside the request, so the session state above
-    // is what proves the tick; re-rendering here (outside the request) would read
-    // the default, not the session — rendering-reflects-selection is a unit spec.
+    // The wire markup is serialized inside the request, so the state above is what
+    // proves the tick; re-rendering here (outside the request) would read the
+    // default, not the state — rendering-reflects-selection is a unit spec.
     const edit = bot.calls(EditMessageReplyMarkup).at(-1);
     expect(edit?.payload.reply_markup).toBeInstanceOf(InlineKeyboard);
 
     // Untick the seeded one — an empty selection is a real state, not a reseed.
     await bot.dispatch(
-      updates.callbackQuery('checkbox/topics/toggle/news', user),
+      updates.callbackQuery('checkbox/topics/toggle/news', onPicker(PICKER)),
     );
-    expect(store.get(sessionKey(2))).toEqual({ 'checkbox:topics': ['tech'] });
+    expect(store.get(stateKey(PICKER))).toEqual({
+      'checkbox:topics': ['tech'],
+    });
 
     // Finish: @OnCheckboxDone runs through the full pipeline with the picks.
-    await bot.dispatch(updates.callbackQuery('checkbox/topics/done', user));
+    await bot.dispatch(
+      updates.callbackQuery('checkbox/topics/done', onPicker(PICKER)),
+    );
     expect(TopicsRouter.finished).toEqual([['tech']]);
     // The string return answers the callback (a toast), carrying the live count.
     expect(bot.calls(AnswerCallbackQuery).at(-1)?.payload.text).toBe('Saved 1');
   });
 
-  it('keeps two users apart in the same chat', async () => {
-    const alice = asUser(11);
-    const bob = asUser(22);
+  it('keeps two picker messages apart', async () => {
+    await bot.dispatch(updates.message('hi')); // register the group
 
-    await bot.dispatch(updates.message('hi', alice)); // register the group
+    // Two open pickers (e.g. one per user, each its own message) stay independent.
     await bot.dispatch(
-      updates.callbackQuery('checkbox/topics/toggle/sport', alice),
+      updates.callbackQuery('checkbox/topics/toggle/sport', onPicker(201)),
     );
     await bot.dispatch(
-      updates.callbackQuery('checkbox/topics/toggle/tech', bob),
+      updates.callbackQuery('checkbox/topics/toggle/tech', onPicker(202)),
     );
 
-    expect(store.get(sessionKey(11))).toEqual({
-      'checkbox:topics': ['news', 'sport'], // Alice: seed + her tap
+    expect(store.get(stateKey(201))).toEqual({
+      'checkbox:topics': ['news', 'sport'], // picker 201: seed + its tap
     });
-    expect(store.get(sessionKey(22))).toEqual({
-      'checkbox:topics': ['news', 'tech'], // Bob: seed + his tap, untouched by Alice
+    expect(store.get(stateKey(202))).toEqual({
+      'checkbox:topics': ['news', 'tech'], // picker 202: seed + its tap, untouched
     });
   });
 });

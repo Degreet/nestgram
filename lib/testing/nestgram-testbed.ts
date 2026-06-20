@@ -13,6 +13,7 @@ import type { RawUpdate } from '../events/raw-update.types';
 import { SendMessage } from '../api/methods';
 import type { ApiInterceptor } from '../api/request';
 import type { ParseModeValue } from '../api/parse-mode';
+import type { KeyboardStateOptions } from '../keyboards/state';
 import { UpdateDispatcher } from '../engine/dispatcher';
 import { NestgramModule } from '../module';
 import { ApiCaptureStore } from './api-capture.store';
@@ -67,6 +68,12 @@ export interface TestbedOptions extends Pick<ModuleMetadata, 'imports'> {
    * before the capture, so their request mutations show up in `sent`.
    */
   apiInterceptors?: Type<ApiInterceptor>[];
+  /**
+   * Override the per-message keyboard-state store (e.g. an inspectable in-memory
+   * store) — auto-wired to in-memory otherwise. Pass `{ store }` to assert what a
+   * checkbox/keyboard interaction persisted.
+   */
+  keyboardState?: KeyboardStateOptions;
 }
 
 /** The token the testbed uses when none is given — never sent anywhere. */
@@ -145,6 +152,7 @@ export class NestgramTestbed {
           autoAnswerCallbackQueries: options.autoAnswerCallbackQueries,
           replyExceptions: options.replyExceptions,
           parseMode: options.parseMode,
+          keyboardState: options.keyboardState,
           // Capture is the last interceptor: after the built-in mutators, just
           // above the throttler/wire — so it records the final request and never
           // lets the call go out.

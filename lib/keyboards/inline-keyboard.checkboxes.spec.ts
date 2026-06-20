@@ -1,5 +1,5 @@
 import { runAmbient, setAmbient } from '../ambient';
-import { SESSION } from '../sessions/session.constants';
+import { KEYBOARD_STATE } from './state/keyboard-state.constants';
 import { Button } from './button';
 import { InlineKeyboard } from './inline-keyboard';
 import type { CheckboxConfig } from './checkbox.types';
@@ -151,16 +151,16 @@ describe('InlineKeyboard.checkboxes', () => {
     });
   });
 
-  it('persists to and reads from the ambient session by default', () => {
+  it('persists to and reads from the ambient keyboard state by default', () => {
     runAmbient(() => {
-      const session: Record<string, unknown> = {};
-      setAmbient(SESSION, session);
+      const state: Record<string, unknown> = {};
+      setAmbient(KEYBOARD_STATE, state);
 
       const kb = tagsKeyboard('sess', {});
 
       kb.applyCheckboxToggle('sess', 'a');
       kb.applyCheckboxToggle('sess', 'c');
-      expect(session['checkbox:sess']).toEqual(['a', 'c']);
+      expect(state['checkbox:sess']).toEqual(['a', 'c']);
       expect(
         rows(kb)
           .flat()
@@ -170,9 +170,9 @@ describe('InlineKeyboard.checkboxes', () => {
   });
 
   describe('default seed', () => {
-    it('seeds the selection while the session key is absent', () => {
+    it('seeds the selection while the state key is absent', () => {
       runAmbient(() => {
-        setAmbient(SESSION, {});
+        setAmbient(KEYBOARD_STATE, {});
         const kb = tagsKeyboard('seed', { default: ['a', 'c'] });
         expect(
           rows(kb)
@@ -184,12 +184,12 @@ describe('InlineKeyboard.checkboxes', () => {
 
     it('yields to a persisted selection — an empty pick sticks', () => {
       runAmbient(() => {
-        const session: Record<string, unknown> = {};
-        setAmbient(SESSION, session);
+        const state: Record<string, unknown> = {};
+        setAmbient(KEYBOARD_STATE, state);
         const kb = tagsKeyboard('seed-off', { default: ['a'] });
 
         kb.applyCheckboxToggle('seed-off', 'a'); // turn the seeded one off
-        expect(session['checkbox:seed-off']).toEqual([]);
+        expect(state['checkbox:seed-off']).toEqual([]);
         expect(
           rows(kb)
             .flat()
@@ -212,7 +212,7 @@ describe('InlineKeyboard.checkboxes', () => {
 
     it('seeds at most one id for a radio group', () => {
       runAmbient(() => {
-        setAmbient(SESSION, {});
+        setAmbient(KEYBOARD_STATE, {});
         const kb = new InlineKeyboard().checkboxes(
           'seed-radio',
           (cb) => cb.map(TAGS, (t) => cb.toggle(t.name, t.id)).split(1),

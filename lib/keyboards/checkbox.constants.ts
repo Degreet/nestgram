@@ -11,8 +11,8 @@ export const CHECKBOX_DONE_ROUTE = 'checkbox/:cb/done';
 /** The `:param` names in the checkbox routes, so build and route can't desync. */
 export const CHECKBOX_PARAMS = { cb: 'cb', item: 'item' } as const;
 
-/** Prefix under which the zero-config default persists a selection in the session. */
-export const CHECKBOX_SESSION_PREFIX = 'checkbox:';
+/** Prefix under which the zero-config default persists a selection in the per-message keyboard state. */
+export const CHECKBOX_STATE_PREFIX = 'checkbox:';
 
 /**
  * Default checkbox glyphs: a ✅ on the selected item and nothing on the rest —

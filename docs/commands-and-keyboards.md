@@ -313,7 +313,9 @@ full keyboard sugar plus `cb.toggle(label, item)` — a checkbox button **auto-m
 (✅/☐) from whether it's selected, so you never compute the marker. `cb.done(label)`
 adds a Done button for the group, and `@OnCheckboxDone(id)` handles it with the
 picks delivered straight to `@CheckboxIds(id)` — no route string, no toggle handler.
-The selection lives in the session under `checkbox:<id>` by default.
+The selection lives in **per-message keyboard state** under `checkbox:<id>` —
+auto-wired, no import. It reuses your session store's backend when sessions are on
+(so it is highload-safe across servers), else an in-process store.
 
 That's the whole flow — `open` + a Done handler. A few knobs:
 
@@ -321,17 +323,18 @@ That's the whole flow — `open` + a Done handler. A few knobs:
 - **Seed defaults:** `{ default: ['news'] }` pre-ticks options on the first render,
   before any tap. Once a selection is saved it wins — an empty selection is a real
   choice, not "seed me again".
-- **Custom store:** to keep the selection somewhere other than the session, pass a
-  `selected` reader **together with** a writer — `onChange: (ids) => …` (the whole
+- **Custom store:** to keep the selection somewhere other than the default keyboard
+  state, pass a `selected` reader **together with** a writer — `onChange: (ids) => …` (the whole
   set) or `onToggle: (id, on) => …` (a per-item delta). The pair is required:
   `selected` reads the current set on every render, so keep it sync and cheap (FSM
   data on the ambient rail, an already-loaded object — not a live DB call); the
   writer persists each change. A writer with no `selected` throws — the group would
   have nowhere to read the set back from, so toggling would break.
 - **Static `id`, declare once:** the group registers by `id`, so use one stable id
-  per checkbox _type_ (not per user — per-user state is the session's job). Throw it
-  inline from a handler and it works for the life of the process; declare it once in
-  a provider and it survives restarts (state in the session survives either way).
+  per checkbox _type_ (not per user — the per-message state keeps users apart for
+  you). Throw it inline from a handler and it works for the life of the process;
+  declare it once in a provider and re-renders survive a restart (the selection
+  itself survives when its store is durable — a shared/Redis-backed one).
 
 For full manual control — your own toggle `@Action`, custom routing — `Button.toggle`
 is the low-level primitive the group is built on.
