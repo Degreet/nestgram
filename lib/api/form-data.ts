@@ -10,8 +10,9 @@ import { InputFile } from './input-file';
 /**
  * True if an `InputFile` is reachable anywhere in the payload. Mirrors the
  * recursive walk the serializers do, so a method's `hasMedia` is an exact "does
- * this call carry a file" check — no matter how deeply the file is nested, and
- * regardless of which field name holds it (`media`, `thumbnail`, `photo`, …).
+ * this call carry a file" check — no matter how deeply the file is nested, or
+ * which field name holds it (`media`, `thumbnail`, `photo`, …). Remote refs are
+ * bare strings, not `InputFile`s, so they never count.
  */
 export function hasInputFile(value: unknown): boolean {
   if (value instanceof InputFile) {
@@ -52,7 +53,7 @@ export async function createInlineData(
       continue;
     }
     if (value instanceof InputFile) {
-      formData.append(key, await value.toRaw());
+      formData.append(key, await value.toRaw(), value.filename);
     } else if (typeof value === 'object') {
       formData.append(key, JSON.stringify(value));
     } else {
