@@ -1,23 +1,26 @@
 import { TelegramObject } from './telegram-object';
-import { BotService, MethodOptions } from '../api';
+import { AlbumItem, BotService, MediaGroup, MethodOptions } from '../api';
 import {
   CopyMessageOptions,
   DeleteMessageOptions,
+  EditMessageMediaOptions,
   EditMessageReplyMarkupOptions,
   EditMessageTextOptions,
   ForwardMessageOptions,
+  SendAnimationOptions,
+  SendAudioOptions,
+  SendDocumentOptions,
   SendMediaGroupOptions,
   SendMessageOptions,
   SendPhotoOptions,
+  SendStickerOptions,
+  SendVideoNoteOptions,
+  SendVideoOptions,
+  SendVoiceOptions,
+  SetMessageReactionOptions,
 } from '../api/methods';
 import { UpdateType } from '../decorators';
 import { InputFile } from '../api/input-file';
-import {
-  InputMediaAudio,
-  InputMediaDocument,
-  InputMediaPhoto,
-  InputMediaVideo,
-} from '../api/input-media';
 import type { RawInputRichMessage, RawMessage } from './raw-update.types';
 import {
   Animation,
@@ -56,6 +59,14 @@ export interface Message extends Omit<RawMessage, WrappedMedia> {}
   'edited_business_message',
 )
 export class Message extends TelegramObject {
+  /** The `ReactionType` discriminant for a standard emoji reaction. */
+  private static readonly EMOJI_REACTION_TYPE = 'emoji' as const;
+
+  /** Unwrap a `MediaGroup` builder to its raw item array; pass an array through. */
+  private static albumItems(media: AlbumItem[] | MediaGroup): AlbumItem[] {
+    return media instanceof MediaGroup ? media.toJSON() : media;
+  }
+
   // Content (one is present per message). Downloadable media is wrapped into a
   // rich object with `.save(path)` / `.stream()`; non-file content stays raw.
   photo?: Photo;
@@ -101,12 +112,63 @@ export class Message extends TelegramObject {
   }
 
   answerMediaGroup(
-    media: Array<
-      InputMediaAudio | InputMediaDocument | InputMediaPhoto | InputMediaVideo
-    >,
+    media: AlbumItem[] | MediaGroup,
     options?: MethodOptions<SendMediaGroupOptions>,
   ) {
-    return this.botService.sendMediaGroup(this.chat.id, media, options);
+    return this.botService.sendMediaGroup(
+      this.chat.id,
+      Message.albumItems(media),
+      options,
+    );
+  }
+
+  answerVideo(
+    video: string | InputFile,
+    options?: MethodOptions<SendVideoOptions>,
+  ) {
+    return this.botService.sendVideo(this.chat.id, video, options);
+  }
+
+  answerAudio(
+    audio: string | InputFile,
+    options?: MethodOptions<SendAudioOptions>,
+  ) {
+    return this.botService.sendAudio(this.chat.id, audio, options);
+  }
+
+  answerDocument(
+    document: string | InputFile,
+    options?: MethodOptions<SendDocumentOptions>,
+  ) {
+    return this.botService.sendDocument(this.chat.id, document, options);
+  }
+
+  answerAnimation(
+    animation: string | InputFile,
+    options?: MethodOptions<SendAnimationOptions>,
+  ) {
+    return this.botService.sendAnimation(this.chat.id, animation, options);
+  }
+
+  answerVoice(
+    voice: string | InputFile,
+    options?: MethodOptions<SendVoiceOptions>,
+  ) {
+    return this.botService.sendVoice(this.chat.id, voice, options);
+  }
+
+  answerVideoNote(
+    video_note: string | InputFile,
+    options?: MethodOptions<SendVideoNoteOptions>,
+  ) {
+    return this.botService.sendVideoNote(this.chat.id, video_note, options);
+  }
+
+  answerSticker(
+    sticker: string | InputFile,
+    options?: MethodOptions<SendStickerOptions>,
+  ) {
+    return this.botService.sendSticker(this.chat.id, sticker, options);
   }
 
   reply(text: string, options?: MethodOptions<SendMessageOptions>) {
@@ -146,6 +208,20 @@ export class Message extends TelegramObject {
     );
   }
 
+  // Options omit `media`: the content slot already carries it; a second copy via
+  // options would send two media objects.
+  editMedia(
+    media: EditMessageMediaOptions['media'],
+    options?: MethodOptions<Omit<EditMessageMediaOptions, 'media'>>,
+  ) {
+    return this.botService.editMessageMedia(
+      this.chat.id,
+      this.message_id,
+      media,
+      options,
+    );
+  }
+
   replyPhoto(
     photo: string | InputFile,
     options?: MethodOptions<SendPhotoOptions>,
@@ -157,12 +233,84 @@ export class Message extends TelegramObject {
   }
 
   replyMediaGroup(
-    media: Array<
-      InputMediaAudio | InputMediaDocument | InputMediaPhoto | InputMediaVideo
-    >,
+    media: AlbumItem[] | MediaGroup,
     options?: MethodOptions<SendMediaGroupOptions>,
   ) {
-    return this.botService.sendMediaGroup(this.chat.id, media, {
+    return this.botService.sendMediaGroup(
+      this.chat.id,
+      Message.albumItems(media),
+      {
+        reply_parameters: { message_id: this.message_id },
+        ...options,
+      },
+    );
+  }
+
+  replyVideo(
+    video: string | InputFile,
+    options?: MethodOptions<SendVideoOptions>,
+  ) {
+    return this.botService.sendVideo(this.chat.id, video, {
+      reply_parameters: { message_id: this.message_id },
+      ...options,
+    });
+  }
+
+  replyAudio(
+    audio: string | InputFile,
+    options?: MethodOptions<SendAudioOptions>,
+  ) {
+    return this.botService.sendAudio(this.chat.id, audio, {
+      reply_parameters: { message_id: this.message_id },
+      ...options,
+    });
+  }
+
+  replyDocument(
+    document: string | InputFile,
+    options?: MethodOptions<SendDocumentOptions>,
+  ) {
+    return this.botService.sendDocument(this.chat.id, document, {
+      reply_parameters: { message_id: this.message_id },
+      ...options,
+    });
+  }
+
+  replyAnimation(
+    animation: string | InputFile,
+    options?: MethodOptions<SendAnimationOptions>,
+  ) {
+    return this.botService.sendAnimation(this.chat.id, animation, {
+      reply_parameters: { message_id: this.message_id },
+      ...options,
+    });
+  }
+
+  replyVoice(
+    voice: string | InputFile,
+    options?: MethodOptions<SendVoiceOptions>,
+  ) {
+    return this.botService.sendVoice(this.chat.id, voice, {
+      reply_parameters: { message_id: this.message_id },
+      ...options,
+    });
+  }
+
+  replyVideoNote(
+    video_note: string | InputFile,
+    options?: MethodOptions<SendVideoNoteOptions>,
+  ) {
+    return this.botService.sendVideoNote(this.chat.id, video_note, {
+      reply_parameters: { message_id: this.message_id },
+      ...options,
+    });
+  }
+
+  replySticker(
+    sticker: string | InputFile,
+    options?: MethodOptions<SendStickerOptions>,
+  ) {
+    return this.botService.sendSticker(this.chat.id, sticker, {
       reply_parameters: { message_id: this.message_id },
       ...options,
     });
@@ -175,6 +323,14 @@ export class Message extends TelegramObject {
       this.message_id,
       options,
     );
+  }
+
+  /** React to this message with a single emoji (replaces any existing reaction). */
+  react(emoji: string, options?: MethodOptions<SetMessageReactionOptions>) {
+    return this.botService.setMessageReaction(this.chat.id, this.message_id, {
+      reaction: [{ type: Message.EMOJI_REACTION_TYPE, emoji }],
+      ...options,
+    });
   }
 
   /** Forward this message to another chat (returns the forwarded `Message`). */
