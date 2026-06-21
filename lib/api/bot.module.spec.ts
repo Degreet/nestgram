@@ -9,6 +9,7 @@ import { IgnoreNotModifiedInterceptor } from '../builtins/ignore-not-modified';
 import { RichMessagesInterceptor } from '../builtins/rich-messages';
 import { ThrottleInterceptor } from '../builtins/throttle';
 import { TokenValidationInterceptor } from '../builtins/token-validation';
+import { FileIdCacheInterceptor } from '../builtins/file-id-cache';
 
 @Module({ imports: [BotModule.forBot('default', { token: '1:T' })] })
 class DefaultApp {}
@@ -47,6 +48,9 @@ describe('BotModule interceptor wiring', () => {
     // parse_mode must not read as explicit formatting intent.
     expect(chain[2]).toBeInstanceOf(RichMessagesInterceptor);
     expect(chain[3]).toBeInstanceOf(DefaultParseModeInterceptor);
+    // The file-id cache sits last among the mutators — just before the throttler,
+    // so a hit that turns an upload into a file_id send still throttles.
+    expect(chain[chain.length - 2]).toBeInstanceOf(FileIdCacheInterceptor);
     expect(chain[chain.length - 1]).toBeInstanceOf(ThrottleInterceptor);
     await app.close();
   });

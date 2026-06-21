@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 
 import { Message } from './message';
 import { CallbackQuery } from './callback-query';
-import { BotService } from '../api';
+import { BotService, MediaGroup } from '../api';
 
 interface Call {
   method: string;
@@ -24,9 +24,19 @@ function fakeBot(): { bot: BotService; calls: Call[] } {
     answerCallbackQuery: record('answerCallbackQuery'),
     editMessageText: record('editMessageText'),
     editMessageReplyMarkup: record('editMessageReplyMarkup'),
+    editMessageMedia: record('editMessageMedia'),
     deleteMessage: record('deleteMessage'),
     forwardMessage: record('forwardMessage'),
     copyMessage: record('copyMessage'),
+    sendVideo: record('sendVideo'),
+    sendAudio: record('sendAudio'),
+    sendDocument: record('sendDocument'),
+    sendAnimation: record('sendAnimation'),
+    sendVoice: record('sendVoice'),
+    sendVideoNote: record('sendVideoNote'),
+    sendSticker: record('sendSticker'),
+    setMessageReaction: record('setMessageReaction'),
+    sendMediaGroup: record('sendMediaGroup'),
   } as unknown as BotService;
 
   return { bot, calls };
@@ -87,6 +97,16 @@ describe('Message actions', () => {
     });
   });
 
+  it('editMedia() edits this message media in place', () => {
+    const { bot, calls } = fakeBot();
+    const media = { type: 'photo' as const, media: 'file_id' };
+    message(bot).editMedia(media);
+    expect(calls[0]).toEqual({
+      method: 'editMessageMedia',
+      args: [1, 5, media, undefined],
+    });
+  });
+
   it('delete() removes this message', () => {
     const { bot, calls } = fakeBot();
     message(bot).delete();
@@ -111,6 +131,68 @@ describe('Message actions', () => {
     expect(calls[0]).toEqual({
       method: 'copyMessage',
       args: [99, 1, 5, undefined],
+    });
+  });
+
+  it('answerVideo() sends a video to the same chat', () => {
+    const { bot, calls } = fakeBot();
+    message(bot).answerVideo('file_id', { caption: 'hi' });
+    expect(calls[0]).toEqual({
+      method: 'sendVideo',
+      args: [1, 'file_id', { caption: 'hi' }],
+    });
+  });
+
+  it('answerSticker() sends a sticker to the same chat', () => {
+    const { bot, calls } = fakeBot();
+    message(bot).answerSticker('sticker_id');
+    expect(calls[0]).toEqual({
+      method: 'sendSticker',
+      args: [1, 'sticker_id', undefined],
+    });
+  });
+
+  it('replyDocument() quotes the original message', () => {
+    const { bot, calls } = fakeBot();
+    message(bot).replyDocument('doc_id');
+    expect(calls[0]).toEqual({
+      method: 'sendDocument',
+      args: [1, 'doc_id', { reply_parameters: { message_id: 5 } }],
+    });
+  });
+
+  it('react() sets a single emoji reaction on this message', () => {
+    const { bot, calls } = fakeBot();
+    message(bot).react('🔥');
+    expect(calls[0]).toEqual({
+      method: 'setMessageReaction',
+      args: [1, 5, { reaction: [{ type: 'emoji', emoji: '🔥' }] }],
+    });
+  });
+
+  it('answerMediaGroup() accepts a raw item array', () => {
+    const { bot, calls } = fakeBot();
+    const media = [{ type: 'photo' as const, media: 'p1' }];
+    message(bot).answerMediaGroup(media);
+    expect(calls[0]).toEqual({
+      method: 'sendMediaGroup',
+      args: [1, media, undefined],
+    });
+  });
+
+  it('answerMediaGroup() unwraps a MediaGroup builder to its items', () => {
+    const { bot, calls } = fakeBot();
+    message(bot).answerMediaGroup(new MediaGroup().photo('p1').video('v1'));
+    expect(calls[0]).toEqual({
+      method: 'sendMediaGroup',
+      args: [
+        1,
+        [
+          { type: 'photo', media: 'p1' },
+          { type: 'video', media: 'v1' },
+        ],
+        undefined,
+      ],
     });
   });
 });

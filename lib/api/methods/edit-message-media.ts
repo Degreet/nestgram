@@ -1,4 +1,6 @@
 import { ApiMethod } from './api-method';
+import { Message } from '../../events';
+import type { BotService } from '../bot.service';
 import { hasInputFile } from '../form-data';
 import type {
   RawInlineKeyboardMarkup,
@@ -21,7 +23,7 @@ export interface EditMessageMediaOptions {
  */
 export class EditMessageMedia extends ApiMethod<
   EditMessageMediaOptions,
-  RawMessage | boolean
+  Message | true
 > {
   readonly method = 'editMessageMedia';
 
@@ -33,5 +35,11 @@ export class EditMessageMedia extends ApiMethod<
 
   get hasMedia(): boolean {
     return hasInputFile(this.payload);
+  }
+
+  wrap(raw: unknown, bot: BotService): Message | true {
+    return typeof raw === 'object' && raw !== null
+      ? new Message(bot, raw as Partial<RawMessage>)
+      : true;
   }
 }

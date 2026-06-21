@@ -4,6 +4,7 @@ import type { ApiInterceptor } from './request';
 import type { ParseModeValue } from './parse-mode';
 import type { RichMessagesOptions } from '../builtins/rich-messages/rich-messages.types';
 import type { ThrottleOptions } from '../builtins/throttle/throttle.types';
+import type { FileIdCacheOptions } from '../builtins/file-id-cache/file-id-cache.types';
 
 export interface BotOptions {
   token: string;
@@ -26,6 +27,12 @@ export interface BotOptions {
   throttle?: boolean | ThrottleOptions;
   /** Replace the default throttler entirely (e.g. a distributed one). */
   throttler?: Type<ApiInterceptor>;
+  /**
+   * Configure the `file_id` cache — its store, TTL, or key strategy. Caching is
+   * opt-in per file (use `new CachedFile(path)`), so this option is only needed
+   * to swap the default in-memory store. See {@link FileIdCacheOptions}.
+   */
+  fileIdCache?: FileIdCacheOptions;
 }
 
 export interface BotAsyncOptions extends Pick<ModuleMetadata, 'imports'> {

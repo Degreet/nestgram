@@ -2,6 +2,7 @@ export * from './throttle';
 export * from './parse-mode';
 export * from './rich-messages';
 export * from './ignore-not-modified';
+export * from './file-id-cache';
 export * from './token-validation';
 export * from './auto-answer';
 export * from './reply-exception';

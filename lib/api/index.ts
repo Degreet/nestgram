@@ -5,4 +5,6 @@ export * from './api-response';
 export * from './bot-options';
 export * from './parse-mode';
 export * from './input-file';
+export * from './cached-file';
 export * from './input-media';
+export * from './media-group';
