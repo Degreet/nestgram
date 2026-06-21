@@ -19,6 +19,12 @@ import {
 } from '../builtins/rich-messages';
 import { ThrottleInterceptor, throttleProviders } from '../builtins/throttle';
 import { TokenValidationInterceptor } from '../builtins/token-validation';
+import {
+  FILE_ID_CACHE_SETTINGS,
+  FileIdCacheInterceptor,
+  FileIdCacheSettings,
+  resolveFileIdCacheSettings,
+} from '../builtins/file-id-cache';
 
 /**
  * Builds ONE bot — its own `BotService` reachable under `getBotToken(name)`, on
@@ -45,17 +51,22 @@ export class BotModule {
    * `throttler` replaces them.
    */
   private static pipelineProviders(
+    name: string,
     userInterceptors: Type<ApiInterceptor>[],
     throttler: Type<ApiInterceptor> | undefined,
   ): Provider[] {
     // One source of truth for the leading interceptors, reused for both the
-    // provider list and the factory's inject list so they can't drift.
+    // provider list and the factory's inject list so they can't drift. The
+    // file-id cache runs after the mutators (it reads the final payload) but
+    // before the throttler (a hit that turns an upload into a file_id still
+    // throttles).
     const leading: Type<ApiInterceptor>[] = [
       TokenValidationInterceptor,
       IgnoreNotModifiedInterceptor,
       RichMessagesInterceptor,
       DefaultParseModeInterceptor,
       ...userInterceptors,
+      FileIdCacheInterceptor,
     ];
     const throttleSlot = throttler ?? ThrottleInterceptor;
     return [
@@ -66,6 +77,16 @@ export class BotModule {
         provide: RICH_MESSAGES_SETTINGS,
         useFactory: (options: BotOptions): RichMessagesSettings | null =>
           resolveRichMessagesSettings(options.richMessages),
+        inject: [Providers.BOT_OPTIONS],
+      },
+      // Resolved from the `fileIdCache` option (defaults filled when omitted).
+      // Caching is gated per file by `CachedFile`, so the interceptor is always
+      // present but only acts on those sources. The bot name is baked in so a
+      // shared store stays scoped per bot.
+      {
+        provide: FILE_ID_CACHE_SETTINGS,
+        useFactory: (options: BotOptions): FileIdCacheSettings =>
+          resolveFileIdCacheSettings(options.fileIdCache, name),
         inject: [Providers.BOT_OPTIONS],
       },
       // The default throttler's providers are spliced (not imported) so they
@@ -100,6 +121,7 @@ export class BotModule {
       providers: [
         { provide: Providers.BOT_OPTIONS, useValue: options },
         ...this.pipelineProviders(
+          name,
           options.apiInterceptors ?? [],
           options.throttler,
         ),
@@ -124,6 +146,7 @@ export class BotModule {
       providers: [
         ...this.createAsyncProviders(options),
         ...this.pipelineProviders(
+          name,
           options.apiInterceptors ?? [],
           options.throttler,
         ),
