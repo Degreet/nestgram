@@ -84,6 +84,53 @@ refresh(query: CallbackQuery) {
 
 :::
 
+## Reading regex captures
+
+A regex `@Hears` or `@Action` can **capture** — read the groups instead of
+re-parsing the text yourself. `@Matches()` injects the whole `RegExpMatchArray`,
+so positional groups come back by index (`match[1]`, `match[2]`):
+
+:::code[calc.router.ts]
+
+```ts
+@Hears(/^add (\d+) (.+)$/)
+add(message: Message, @Matches() match: RegExpMatchArray) {
+  return `Added ${match[1]}: ${match[2]}`;
+}
+```
+
+:::
+
+Prefer a **named group** for a single value with a pipe — it flows into
+`@Param()` exactly like a `@Command('add :amount')` segment:
+
+:::code[calc.router.ts]
+
+```ts
+@Hears(/^add (?<amount>\d+)$/)
+add(message: Message, @Param('amount', ParseIntPipe) amount: number) {
+  return `Added ${amount}`;
+}
+```
+
+:::
+
+Because the `@Command` template and a regex named group feed the **same**
+`@Param`, one handler accepts either spelling — `/add 5` or `add 5` — through a
+single parameter:
+
+:::code[calc.router.ts]
+
+```ts
+@Command('add :amount')
+@Hears(/^add (?<amount>\d+)$/)
+add(message: Message, @Param('amount', ParseIntPipe) amount: number) {
+  return `Added ${amount}`;
+}
+```
+
+:::
+
 ## First match wins
 
 Within a router, Nestgram tries handlers in **declaration order** and runs the

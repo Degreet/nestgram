@@ -31,4 +31,32 @@ describe('HearsPredicate', () => {
   it('does not match when there is no text', () => {
     expect(new HearsPredicate('hi').matches(messageCtx(undefined))).toBe(false);
   });
+
+  describe('captures', () => {
+    it('exposes the RegExpMatchArray of a regex pattern (for @Matches)', () => {
+      const add = new HearsPredicate(/^add (\d+) (.+)$/);
+      const match = add.extractMatch(messageCtx('add 5 milk'));
+
+      expect(match?.[1]).toBe('5');
+      expect(match?.[2]).toBe('milk');
+    });
+
+    it('exposes named groups to @Param via extractParams', () => {
+      const add = new HearsPredicate(/^add (?<amount>\d+)$/);
+
+      expect(add.extractParams(messageCtx('add 5'))).toEqual({ amount: '5' });
+    });
+
+    it('has no captures for a string pattern, a non-match, or missing text', () => {
+      expect(
+        new HearsPredicate('hi').extractMatch(messageCtx('hi')),
+      ).toBeNull();
+
+      const add = new HearsPredicate(/^add (\d+)$/);
+      expect(add.extractMatch(messageCtx('nope'))).toBeNull();
+      expect(add.extractMatch(messageCtx(undefined))).toBeNull();
+      // A positional-only match has no named groups, so @Param sees nothing.
+      expect(add.extractParams(messageCtx('add 5'))).toBeNull();
+    });
+  });
 });

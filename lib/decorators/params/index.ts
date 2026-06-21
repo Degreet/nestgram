@@ -7,6 +7,7 @@ export * from './caption.decorator';
 export * from './payload.decorator';
 export * from './callback-data.decorator';
 export * from './param.decorator';
+export * from './matches.decorator';
 export * from './entity.decorator';
 export * from './session.decorator';
 export * from './locale.decorator';
