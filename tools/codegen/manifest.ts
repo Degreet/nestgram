@@ -230,6 +230,7 @@ const METHOD_OVERRIDES: Readonly<Record<string, MethodOverride>> = {
   sendMediaGroup: { returnType: 'Message[]', wrap: WRAP_ARRAY },
   editMessageText: { returnType: 'Message | true', wrap: WRAP_EDITABLE },
   editMessageReplyMarkup: { returnType: 'Message | true', wrap: WRAP_EDITABLE },
+  editMessageMedia: { returnType: 'Message | true', wrap: WRAP_EDITABLE },
 };
 
 export function getMethodOverride(

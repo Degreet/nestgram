@@ -4,6 +4,7 @@ import { TelegramExecutionContext } from '../context/telegram-execution-context'
 import { TelegramEvent } from '../context/event-factory';
 import {
   ApiMethod,
+  EditMessageMedia,
   EditMessageReplyMarkup,
   EditMessageText,
 } from '../../api/methods';
@@ -18,7 +19,10 @@ interface Answerable {
 }
 
 /** The edit-in-place commands that auto-target the current callback message. */
-type EditInPlaceMethod = EditMessageText | EditMessageReplyMarkup;
+type EditInPlaceMethod =
+  | EditMessageText
+  | EditMessageReplyMarkup
+  | EditMessageMedia;
 
 /**
  * Applies the return-value contract for handlers, after the invoker returns:
@@ -129,7 +133,8 @@ export class ResultHandler {
   ): method is EditInPlaceMethod {
     return (
       method instanceof EditMessageText ||
-      method instanceof EditMessageReplyMarkup
+      method instanceof EditMessageReplyMarkup ||
+      method instanceof EditMessageMedia
     );
   }
 

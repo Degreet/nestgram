@@ -5,6 +5,7 @@ import { TelegramExecutionContext } from '../context';
 import { BotService } from '../../api';
 import {
   ApiMethod,
+  EditMessageMedia,
   EditMessageReplyMarkup,
   EditMessageText,
   GetMe,
@@ -128,6 +129,22 @@ describe('ResultHandler', () => {
         chat_id: 99,
         message_id: 555,
         text: 'updated',
+      });
+    });
+
+    it('fills chat_id/message_id on an untargeted editMessageMedia from the callback', async () => {
+      await handler.handle(
+        new EditMessageMedia({ media: { type: 'photo', media: 'file_id' } }),
+        callbackCtx(bot),
+      );
+
+      expect(called).toHaveLength(1);
+      const command = called[0] as EditMessageMedia;
+      expect(command).toBeInstanceOf(EditMessageMedia);
+      expect(command.payload).toMatchObject({
+        chat_id: 99,
+        message_id: 555,
+        media: { type: 'photo', media: 'file_id' },
       });
     });
 
