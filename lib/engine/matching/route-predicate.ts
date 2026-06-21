@@ -56,3 +56,21 @@ export const isRouteParamSource = (
   predicate: RoutePredicate,
 ): predicate is RoutePredicate & RouteParamSource =>
   typeof (predicate as Partial<RouteParamSource>).extractParams === 'function';
+
+/**
+ * A predicate that captured a `RegExpMatchArray` from the update it matched — a
+ * regex `@Hears(/add (\d+)/)` or `@Action(/buy:(\d+)/)`. `@Matches()` asks the
+ * matched handler's predicates for it and injects the whole array, so a handler
+ * reads positional groups by index (`m[1]`). Named groups `(?<id>…)`
+ * additionally surface through `@Param('id')` via {@link RouteParamSource}, just
+ * like a `@Command('add :amount')` segment.
+ */
+export interface RegexMatchSource {
+  extractMatch(ctx: TelegramExecutionContext): RegExpMatchArray | null;
+}
+
+/** Whether a predicate captured a regex match (see {@link RegexMatchSource}). */
+export const isRegexMatchSource = (
+  predicate: RoutePredicate,
+): predicate is RoutePredicate & RegexMatchSource =>
+  typeof (predicate as Partial<RegexMatchSource>).extractMatch === 'function';

@@ -38,4 +38,29 @@ describe('ActionPredicate', () => {
       false,
     );
   });
+
+  describe('captures', () => {
+    it('exposes the RegExpMatchArray of a regex pattern (for @Matches)', () => {
+      const buyId = new ActionPredicate(/^buy:(\d+)$/);
+
+      expect(buyId.extractMatch(callbackCtx('buy:42'))?.[1]).toBe('42');
+    });
+
+    it('exposes named groups to @Param via extractParams', () => {
+      const buyId = new ActionPredicate(/^buy:(?<id>\d+)$/);
+
+      expect(buyId.extractParams(callbackCtx('buy:42'))).toEqual({ id: '42' });
+    });
+
+    it('has no captures for any/string data, a non-match, or missing data', () => {
+      expect(new ActionPredicate().extractMatch(callbackCtx('x'))).toBeNull();
+      expect(
+        new ActionPredicate('buy').extractMatch(callbackCtx('buy')),
+      ).toBeNull();
+
+      const buyId = new ActionPredicate(/^buy:(\d+)$/);
+      expect(buyId.extractMatch(callbackCtx('sell'))).toBeNull();
+      expect(buyId.extractMatch(callbackCtx(undefined))).toBeNull();
+    });
+  });
 });
