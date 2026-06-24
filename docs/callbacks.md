@@ -1,29 +1,31 @@
 ---
 title: Callbacks
-description: Handle inline button presses as callback routes — @Action, @Param, edit, and answer.
+description: Route inline-button taps as callback routes — @Action + @Param, answer the query, and edit the message in place.
 sidebar:
   group: Events & replies
   order: 33
 ---
 
 When a user taps an inline button, Telegram sends a **callback query** carrying
-the `callback_data` you set on the button. In Nestgram that data is a **route**:
-you handle it with `@Action()`, the same way a controller handles a URL.
+the `callback_data` you set on the button. Nestgram treats that data as a
+**route**: `@Action()` matches it the way `@Get()` matches a URL, and `@Param()`
+reads its segments through a pipe. A handler then does two things — answers the
+query and, usually, edits the message the button lives on.
 
 :::mental
 button tap -> callback query -> @Action route -> @Param + answer + edit
 :::
 
-## Callback routes
+## Routing the tap
 
-Callback data is where magic strings breed: a `'buy:42'` literal when you build
-the button, a regex to match it, a `split(':')` to read the id back — three
-places to drift apart. So treat it like a URL. `@Action('buy/:id')` names a
-route: `/` divides segments and a leading `:` marks a parameter. `@Param('id')`
-hands you that segment, and a pipe decodes and validates it — exactly like
-`@Get('users/:id')` with `ParseIntPipe` in an HTTP controller.
+`@Action(template)` is a match predicate: `/` divides the `callback_data` into
+segments and a leading `:` marks a parameter. It mirrors `@Get('users/:id')` —
+`@Param('id', ParseIntPipe)` hands you the matched segment, decoded and
+validated by any Nest pipe you name. The keyboard's `.text(label, route, params)`
+builds the same template from the other side, and the template-literal types
+require every `:param`, so the button and its route can't drift apart.
 
-:::code[shop.router.ts]{mark="22"}
+:::code[shop.router.ts]
 
 ```ts
 import {
@@ -64,140 +66,170 @@ export class ShopRouter {
 
 :::
 
-The handler receives a typed `CallbackQuery` — positional, no decorator. The
-keyboard builds the wire value for you: `.text(label, 'buy/:id', { id: 42 })`
-fills the template, and the types require every `:param`, so a button can't
-drift from its route. `@Param('id', ParseIntPipe)` reads the `id` segment and
-the pipe turns it into a `number` — any Nest pipe, built-in or your own, with no
-regex capture or `split` of your own. The keyboard builder itself is covered in
-[Commands & keyboards](/docs/commands-and-keyboards).
+The handler's first parameter is a typed `CallbackQuery` — positional, no
+decorator, like every rich event. Under the hood `@Action`'s predicate
+(`ActionPredicate`) reads the raw `callback_query.data`, matches the compiled
+pattern, and exposes its named groups to `@Param`. No regex capture, no
+`split(':')`, no magic string repeated across three files.
+
+| `@Action(...)`         | Matches                                  |
+| ---------------------- | ---------------------------------------- |
+| `@Action('refresh')`   | `callback_data === 'refresh'` (exact)    |
+| `@Action('buy/:id')`   | a route template; `@Param('id')` reads it |
+| `@Action(/^legacy:/)`  | a regex; groups go to `@Param`, the array to `@Matches` |
+| `@Action()`            | any callback query                        |
 
 For a one-off button you can interpolate the value yourself —
 `` .text('Buy', `buy/${id}`) `` — terser, but it skips the parameter check and
-the separator escaping, so keep it to plain numeric ids.
+separator escaping, so keep it to plain numeric ids. When the data carries no
+values at all, `@CallbackData()` injects the raw `query.data` string. The
+keyboard builder lives in [Keyboards](/docs/keyboards);
+the predicate forms above are part of [Match predicates](/docs/match-predicates).
+
+## Answering the query
+
+Every callback query must be answered, or the user stares at a spinning button
+for up to a minute. `query.answer()` does it — backed by `answerCallbackQuery`,
+which Telegram allows exactly once per query.
+
+| Call                                     | Effect                              |
+| ---------------------------------------- | ----------------------------------- |
+| `query.answer()`                         | stop the spinner, no toast          |
+| `query.answer('Saved!')`                 | a toast above the chat              |
+| `query.answer('Saved!', { show_alert: true })` | a modal alert                |
+| `query.alert('Saved!')`                  | shortcut for the `show_alert` form  |
+
+You rarely have to remember this. The **auto-answer built-in**
+(`AutoAnswerCallbackInterceptor`) is a global Nest interceptor that fires after
+a callback handler returns successfully: if the handler never called
+`query.answer()`, it answers with an empty `answerCallbackQuery` so the button
+stops spinning. It only runs on success — a thrown error skips it and is left to
+your exception filter.
 
 :::note
-Plain matching is there for the simple cases: `@Action('refresh')` for an exact
-string, `@Action()` for any callback query, `@Action(/^legacy:/)` for a regex,
-and `@CallbackData()` to inject the raw `query.data` string when that's all you
-need. The moment the data carries values, prefer a route over parsing the
-string yourself.
+It's a plain interceptor a bot author could have written, not privileged core —
+proof of Nestgram's no-privileged-core principle. Opt one handler out with
+`@NoAutoAnswer()` (you'll answer it yourself), or disable it globally with
+`autoAnswerCallbackQueries: false` in `NestgramModule.forRoot`.
 :::
 
-### Namespacing and sharing a route
+## Editing the message in place
 
-`@Router('shop')` prefixes every route in the router, so `@Action('buy/:id')`
-matches `shop/buy/:id` on the wire. When the button is built somewhere else — a
-keyboard service, another router — keep the template in one place so the two
-ends can't drift. A plain `const` is enough:
+A callback usually mutates the message its button sits on. Nestgram makes this
+symmetric to replying: just as a returned string replies to the same chat, a
+returned keyboard or untargeted edit command acts on the **callback message** —
+the `ResultHandler` fills in `chat_id`/`message_id` from the update, so you never
+plumb them by hand. Three return shapes, increasing in how much they change:
 
-:::code[shop.routes.ts]
+| Return value                          | Edits                                   |
+| ------------------------------------- | --------------------------------------- |
+| `new InlineKeyboard()...`             | the message's reply markup only         |
+| `new EditMessageText(...)` (untargeted) | the text (and markup, if set)         |
+| `new EditMessageMedia(...)` (untargeted) | the media                            |
 
-```ts
-export const BUY_ROUTE = 'buy/:id';
-```
+Return a keyboard to swap the buttons and leave the text alone:
 
-:::
-
-Use `BUY_ROUTE` in both `@Action(BUY_ROUTE)` and
-`.text('Buy', BUY_ROUTE, { id })` — one source of truth. A button whose route
-matches no handler logs a **dead-button** warning when it's pressed, so a typo
-surfaces in development.
-
-## Unhandled updates
-
-That dead-button warning is itself an `@OnUnhandled` handler — a public hook the
-framework runs when an update matches **no** route. Add your own to log a miss,
-record a metric, or reply with a fallback:
-
-:::code[fallback.router.ts]
+:::code[toggle.router.ts]
 
 ```ts
-import { Router, OnUnhandled, Sender, RawUpdate, User } from 'nestgram';
+import { Router, Action, Param, CallbackQuery, InlineKeyboard } from 'nestgram';
+import { ParseIntPipe } from '@nestjs/common';
 
 @Router()
-export class FallbackRouter {
-  @OnUnhandled()
-  unhandled(update: RawUpdate, @Sender() user?: User) {
-    console.warn(`No route for update ${update.update_id} from ${user?.id}`);
-    return "Sorry, I didn't understand that.";
+export class ToggleRouter {
+  @Action('pin/:id')
+  pin(query: CallbackQuery, @Param('id', ParseIntPipe) id: number) {
+    // Returned keyboard edits this message's markup in place — no chat_id/message_id.
+    return new InlineKeyboard().text('📌 Pinned', 'unpin/:id', { id });
   }
 }
 ```
 
 :::
 
-The first parameter is the raw update — an unmatched update can be any kind, so
-it isn't a single rich event. Reach for `@Sender()`/`@Chat()` for the common
-derived values (they work for every kind), and `return` a string to reply. The
-handler runs through the full pipeline, so an unmatched `callback_query` is
-auto-answered unless you add `@NoAutoAnswer()`.
-
-Every `@OnUnhandled` handler runs (they observe, not compete), so reply from at
-most one. The built-in dead-button warning is one of them — silence it with
-`warnUnhandledCallbacks: false` in `NestgramModule.forRoot`.
-
-## Answering the callback query
-
-Every callback query should be answered, even if you have nothing to say —
-otherwise the user sees a spinner on the button. `query.answer()` does this.
-
-:::code[noop.router.ts]
-
-```ts
-@Action('noop')
-noop(query: CallbackQuery) {
-  return query.answer(); // stops the loading spinner, no toast
-}
-
-@Action('saved')
-saved(query: CallbackQuery) {
-  return query.answer('Saved!', { show_alert: true }); // modal alert
-}
-```
-
-:::
-
-`query.alert('Saved!')` is a shortcut for the modal form.
-
-:::warn[Answer every callback]
-If you never answer a callback query, the button keeps spinning for up to a
-minute.
-
-> when in doubt, call `query.answer()`
-
-:::
-
-## Editing the message
-
-A callback usually updates the message the button lives on. `query.message`
-is the `Message` the keyboard is attached to, so the same actions you already
-know apply — but it's optional (`message?: Message`): a button can live on an
-inline-mode message, where there's no chat message to edit (only
-`inline_message_id`). Guard it before editing.
+To change the text too, return an **untargeted** `EditMessageText` — leave
+`chat_id`/`message_id` off and the framework aims it at the callback message. Set
+either field yourself and your target wins; the auto-targeting only fills the
+gap.
 
 :::code[paginate.router.ts]
 
 ```ts
-import { Action, Param, CallbackQuery, InlineKeyboard } from 'nestgram';
+import {
+  Router,
+  Action,
+  Param,
+  CallbackQuery,
+  InlineKeyboard,
+  EditMessageText,
+} from 'nestgram';
 import { ParseIntPipe } from '@nestjs/common';
 
-@Action('page/:n')
-paginate(query: CallbackQuery, @Param('n', ParseIntPipe) page: number) {
-  if (!query.message) {
-    return query.answer();
+@Router()
+export class PaginateRouter {
+  @Action('page/:n')
+  paginate(query: CallbackQuery, @Param('n', ParseIntPipe) page: number) {
+    const keyboard = new InlineKeyboard()
+      .text('◀', 'page/:n', { n: page - 1 })
+      .text(`${page}`, 'noop')
+      .text('▶', 'page/:n', { n: page + 1 });
+
+    // No chat_id/message_id — auto-targets the callback message.
+    return new EditMessageText({ text: `Page ${page}`, reply_markup: keyboard });
   }
-
-  const keyboard = new InlineKeyboard()
-    .text('◀', 'page/:n', { n: page - 1 })
-    .text(`${page}`, 'noop')
-    .text('▶', 'page/:n', { n: page + 1 });
-
-  return query.message.editText(`Page ${page}`, { reply_markup: keyboard });
 }
 ```
 
 :::
 
-`editText` edits the text (and optionally the markup); there's also
-`editReplyMarkup` when you only want to change the buttons.
+When you need the message object directly — to edit conditionally, or call more
+than once — reach for `query.message`. It's the `Message` the keyboard is
+attached to, so the methods you already know apply: `editText`,
+`editReplyMarkup`, `editMedia`. It's optional (`message?: Message`), though: a
+button on an inline-mode message has no chat message to edit (only
+`inline_message_id`), so guard it.
+
+:::code[refresh.router.ts]
+
+```ts
+import { Router, Action, Param, CallbackQuery, InlineKeyboard } from 'nestgram';
+import { ParseIntPipe } from '@nestjs/common';
+
+@Router()
+export class RefreshRouter {
+  @Action('refresh/:n')
+  async refresh(query: CallbackQuery, @Param('n', ParseIntPipe) page: number) {
+    if (!query.message) {
+      return query.answer(); // inline-mode message — nothing local to edit
+    }
+
+    await query.message.editText(`Page ${page}`, {
+      reply_markup: new InlineKeyboard().text('Reload', 'refresh/:n', { n: page }),
+    });
+    return query.answer('Reloaded');
+  }
+}
+```
+
+:::
+
+:::caution
+If the bot's own message has aged out or been deleted, a framework-targeted edit
+warns rather than throws — the auto-targeting was ours, not your explicit
+request. An edit you target yourself (`query.message.editText`) raises the API
+error as usual.
+:::
+
+## The reserved no-op segment
+
+A dummy button — a page counter, a section header — should stop its own spinner
+and nothing more. `Button.noop()` (and `.else('label')` in the keyboard builder)
+emits the reserved `callback_data` `__nestgram_noop__`, and a built-in handler
+matches it, answers the query, and returns. That reserved value is off-limits as
+your own route; everything else is yours.
+
+A button whose `callback_data` matches **no** `@Action` route logs a
+**dead-button** warning when pressed, so a typo in a route surfaces in
+development. That warning is itself an `@OnUnhandled` handler — see
+[Match predicates](/docs/match-predicates) for `@OnUnhandled` and the
+`warnUnhandledCallbacks` toggle.

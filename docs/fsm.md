@@ -1,9 +1,9 @@
 ---
 title: 'Conversations: the FSM'
-description: Build multi-step dialogues with an aiogram-style finite state machine — state groups, state-routed handlers, and write-through transitions.
+description: Multi-step dialogues with an aiogram-style finite state machine — a state group, a state that doubles as a route predicate, and write-through transitions.
 sidebar:
   label: Conversations (FSM)
-  group: State & sessions
+  group: State, sessions & i18n
   order: 71
 ---
 
@@ -14,12 +14,17 @@ this user answering?" is state you have to keep yourself.
 
 Nestgram ships a finite state machine for exactly this (if you know
 aiogram's FSM, you'll feel at home). A conversation is **in a state**; the
-state narrows which handlers are allowed to fire; the handler stores the
-answer and moves the conversation on.
+state narrows which handlers may fire; the handler stores the answer and
+moves the conversation on.
 
 :::mental
-message -> state loaded -> @OnMessage(Reg.name)\* -> fsm.set(Reg.age)
+message -> snapshot loaded -> @OnMessage(Reg.name)\* -> fsm.set(Reg.age)
 :::
+
+The mover behind the `*` is the **`FsmStage`**: a built-in dispatcher stage
+that, before matching runs, loads the conversation's snapshot from the store
+onto the ambient `AsyncLocalStorage` rail. A state predicate and `@Fsm()`
+both read that one snapshot — routing and transitions share it.
 
 ## Turn it on
 
@@ -47,10 +52,11 @@ export class AppModule {}
 
 :::
 
-With no options it keeps state in process memory — fine for development and
-single-instance bots; [Where the state lives](#where-the-state-lives) covers
-Redis. If you don't import `FsmModule` at all, FSM is off: state predicates
-never match, and a transition throws instead of silently dropping a write.
+With no options it keeps state in a process-local `MemoryStore` — fine for
+development and single-instance bots; [Where the state lives](#where-the-state-lives)
+covers Redis. If you don't import `FsmModule` at all, FSM is off: the
+`FsmStage` never runs, state predicates never match, and a transition throws
+instead of silently dropping a write.
 
 ## Define the states
 
@@ -73,10 +79,18 @@ export interface RegData {
 
 :::
 
-Each member (`Reg.name`) is an `FsmState` doing double duty. It is an
-**identity** — `fsm.set(Reg.name)` enters it — and a **route predicate** —
-`@OnMessage(Reg.name)` matches only while it's active. One definition, and
-no `'reg:name'` strings anywhere in your handlers.
+Each member (`Reg.name`) is an `FsmState`, and it does double duty —
+`FsmState implements RoutePredicate`:
+
+| As…               | You write…             | What it does                                          |
+| ----------------- | ---------------------- | ----------------------------------------------------- |
+| an identity       | `fsm.set(Reg.name)`    | stores `state: 'reg:name'` on the snapshot            |
+| a route predicate | `@OnMessage(Reg.name)` | `matches()` returns `currentStateId() === 'reg:name'` |
+
+One definition drives both, so no `'reg:name'` string lives in your handlers.
+Because the predicate reads the snapshot the `FsmStage` already loaded, it
+**ANDs** with the listener's update type — `@OnMessage(Reg.name)` is "a
+`message`, _and_ this user is in `reg:name`."
 
 :::note
 The stored id is `group:name`, so the group key (`'reg'`) is the namespace —
@@ -149,7 +163,7 @@ export class RegistrationRouter {
 :::anno
 
 1. `@OnMessage(Reg.name)` fires only while **that user's** conversation is in `reg:name`. The state ANDs with the update type — and with any other predicates you pass alongside it.
-2. `@Fsm()` injects the `FsmContext`. Type the collected data via the annotation — `FsmContext<RegData>` — since a decorator argument can't set a parameter's type.
+2. `@Fsm()` injects the `FsmContext` it builds from the ambient snapshot. Type the collected data via the annotation — `FsmContext<RegData>` — since a decorator argument can't set a parameter's type.
 3. `fsm.update({ name })` merges an answer into the flow's data; `fsm.set(Reg.age)` moves on. `fsm.data()` is `Partial<RegData>`, because a flow fills its fields step by step.
 4. `fsm.clear()` finishes: state and data are dropped and the record is deleted from the store — an idle conversation stores nothing.
 5. `/cancel` is declared first. First match wins, and the `reg:name` step matches _any_ message — declared later, `/cancel` would be saved as somebody's name.
@@ -162,18 +176,40 @@ And notice what failed validation does in `age()`: it replies and _doesn't_
 transition, so the user stays on the same step and tries again. That's the
 whole retry mechanism — no special API.
 
+## The FsmContext surface
+
+`@Fsm()` (and the `fsm()` free function) hand you the same stateless
+`FsmContext` — it reads the ambient snapshot on every call, so one shared
+instance serves every handler. Reads, then transitions:
+
+| Method              | Returns / does                                           |
+| ------------------- | -------------------------------------------------------- |
+| `fsm.current()`     | the current state id (`'reg:name'`), or `null` when idle |
+| `fsm.data()`        | `Partial<TData>` gathered so far (`{}` when none)        |
+| `fsm.set(state)`    | enter a state — writes `state` through to the store      |
+| `fsm.update(patch)` | merge a patch into the flow data, write through          |
+| `fsm.setData(data)` | replace the flow data wholesale, write through           |
+| `fsm.clear()`       | drop state + data and **delete** the record              |
+
+The two reads (`current`/`data`) degrade gracefully when FSM is
+unavailable; the four transitions throw. ["Unavailable" and write-through](#transitions-are-write-through)
+spells out why.
+
 ## Transitions are write-through
 
 `set`, `update`, `setData` and `clear` persist the moment their `await`
-resolves — not at the end of the handler. If sending the reply afterwards
-fails, the transition has still happened (aiogram behaves the same way). The
-flip side of the same coin: there is no rollback-on-throw. A flow stuck by a
-crash is exactly what the `@AnyState()` `/cancel` is for.
+resolves — not at the end of the handler. There's no deferred commit: each
+call writes the snapshot straight through to the store via the binding the
+`FsmStage` resolved (`store.set(key, snapshot)`, or `store.delete(key)` for
+`clear`). So if sending the reply afterwards fails, the transition has still
+happened (aiogram behaves the same way). The flip side of the same coin:
+there is no rollback-on-throw. A flow stuck by a crash is exactly what the
+`@AnyState()` `/cancel` is for.
 
 The context is also reachable outside handlers, as the `fsm()` free function
-— the same ambient bargain as `t()` in [i18n](/docs/i18n), so a service deep in the call
-chain can transition the current conversation without you threading a
-context through every signature:
+— the same ambient bargain as `t()` in [i18n](/docs/i18n), so a service deep
+in the call chain can transition the current conversation without you
+threading a context through every signature:
 
 :::code[onboarding.service.ts]
 
@@ -207,9 +243,9 @@ isn't imported, or the update has no chat to scope a conversation to.
 ## Idle or busy: @AnyState() and @NoState()
 
 Two method-level modifiers cover the meta-conditions: `@AnyState()` fires
-only while _some_ flow is active — the `/cancel` above works from any step
-of any flow — and `@NoState()` only while idle. The classic use for
-`@NoState()` is a catch-all that must not steal a wizard step's input:
+only while _some_ flow is active — the `/cancel` above works from any step of
+any flow — and `@NoState()` only while idle. The classic use for `@NoState()`
+is a catch-all that must not steal a wizard step's input:
 
 ```ts
 @OnMessage()
@@ -219,17 +255,17 @@ echo(message: Message) {
 }
 ```
 
-:::guardrail[only in Nestgram]
 Both are one-liners over the public `@Match()` primitive, which ANDs a
-predicate into every route a method declares. Nothing privileged: the same
-`@Match` is yours for [custom predicates](/docs/custom-predicates), and you
-could rebuild `@AnyState()` yourself in three lines.
-:::
+predicate into every route a method declares — nothing privileged. `@AnyState()`
+is `@Match(anyState)`, where `anyState.matches()` is `currentStateId() !== null`;
+`@NoState()` is its negation. The same `@Match` is yours for
+[custom predicates](/docs/custom-predicates), and you could rebuild
+`@AnyState()` yourself in three lines.
 
 ## Where the state lives
 
 Persistence is a `KeyValueStore` — three methods (`get`/`set`/`delete`),
-shared with [sessions](/docs/sessions). The default is an in-process
+shared with [sessions](/docs/sessions). The default is the in-process
 `MemoryStore`: state evaporates on restart and isn't shared between
 instances, which is fine in development and honest about what it is. For
 production, hand `FsmModule` the Redis-backed store (named for sessions,
@@ -253,14 +289,14 @@ FsmModule.forRoot({
 FSM records are namespaced `fsm:` inside the store, so pointing sessions and
 FSM at **one store instance** is safe — the two never collide. They stay
 separate facilities on purpose: a session is long-lived per-user data, FSM
-state is a position in a short dialogue plus its scratch answers. Finishing
-a flow shouldn't wipe a user's settings.
+state is a position in a short dialogue plus its scratch answers. Finishing a
+flow shouldn't wipe a user's settings.
 
 By default a "conversation" is scoped per **chat + user** (plus the forum
-topic and business connection when present): in a 1:1 chat that collapses to
-per-user, and in a group every member walks their own wizard independently.
-Override the `key` option to change that — return `undefined` to skip FSM
-for an update entirely:
+topic and business connection when present, and the receiving bot in a
+multi-bot app): in a 1:1 chat that collapses to per-user, and in a group
+every member walks their own wizard independently. Override the `key` option
+to change that — return `undefined` to skip FSM for an update entirely:
 
 ```ts
 FsmModule.forRoot({
@@ -275,16 +311,14 @@ Need the store built from DI — say, a Redis client out of `ConfigService`?
 Nest dynamic modules.
 :::
 
-## Honest limits
+## Want the steps wired for you?
 
-Two things this layer does not do yet, so you can plan around them:
-
-:::caution
-**No scenes layer yet.** Wiring steps by hand — explicit `set` calls, one
-handler per state — is the whole API today. It's transparent, but verbose
-for long flows; a higher-level scenes/wizard layer on top of this core is
-the next item on the roadmap.
-:::
+This core is deliberately low-level: explicit `set` calls, one handler per
+state. It's transparent, but verbose for long flows. The
+[Scenes](/docs/scenes) layer sits on top of this same machinery and gives you
+ordered steps with `@Scene` / `@Step` / `@OnEnter` and a scene context that
+moves itself (`next`/`back`/`goto`) — reach for it when a flow grows past a
+couple of steps.
 
 :::note
 **Per-chat serialization is on by default.** The built-in

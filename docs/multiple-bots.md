@@ -1,20 +1,20 @@
 ---
 title: Multiple bots
-description: Run several bots from one app — declare them in bots[], inject one by name with @InjectBot, reach the current one with @Bot, and scope a router with @ForBot.
+description: Run several bots from one Nest app — declare them in bots[], inject one by name with @InjectBot, reach the current update's bot with @Bot, and scope a router with @ForBot.
 sidebar:
-  group: Multiple bots
+  group: Deployment
   order: 90
 ---
 
 One app, several bots — a support bot and a sales bot, a bot per brand, a fleet
-of white-label bots. Each has its own token and its own pipeline, but they share
-your routers, services, and the one engine. A single bot stays exactly as it was
-(`forRoot({ token })`); multiplicity is just a list.
+of white-label tenants. Each carries its own token, transport, and pipeline, yet
+they share your routers, your services, and the one discovery engine. A single
+bot stays exactly as it was (`forRoot({ token })`); multiplicity is just a list.
 
 ## Declaring the bots
 
-Pass a `bots: []` instead of a top-level `token`. Each entry is an independent
-bot with its own token, transport, and pipeline flags:
+Swap the top-level `token` for `bots: []`. Each entry is a `BotDefinition` — an
+independent bot with its own token, transport, and pipeline flags:
 
 :::code[app.module.ts]{mark="12,18"}
 
@@ -47,15 +47,34 @@ export class AppModule {}
 
 :::
 
-`parseMode` on `sales` is that bot's alone — every flag (`parseMode`, `throttle`,
-`richMessages`, …) is per-bot, because each bot gets its **own interceptor
-pipeline**.
+`parseMode` on `sales` belongs to that bot alone. Every flag — `parseMode`,
+`throttle`, `richMessages`, `ignoreNotModified`, `apiInterceptors`, … — is
+per-bot, because each bot gets its **own** `ApiInterceptor` pipeline built from
+its definition. The send-time onion (token validation → default parse mode →
+your interceptors → throttler) is assembled once per bot, so two bots never
+share a rate limiter or a parse mode by accident.
 
-The `default: true` bot is the one a bare `BotService` injection (and
-`@InjectBot()` with no name) resolves to. With a single bot it's implicit; with
-several, mark exactly one — or none, and then a bare `BotService` is ambiguous
-and unavailable (reach each bot by name instead). Co-equal bots with no primary
-(white-label tenants) are a valid setup.
+`token` and `bots` are mutually exclusive, and `BotConfigResolver` enforces the
+rest at boot, before DI exists: names must be distinct, tokens must be distinct,
+and webhook secrets must be distinct. An inconsistent config throws a
+`NestgramConfigError` at module-definition time rather than half-working.
+
+### Picking the default bot
+
+The **default** bot is the one a bare `BotService` injection — and `@InjectBot()`
+with no name — resolves to. The rules are deliberate, never order-dependent:
+
+| Bots configured        | Default                                                |
+| ---------------------- | ------------------------------------------------------ |
+| one                    | that bot, implicitly                                   |
+| several, one `default` | the flagged bot                                        |
+| several, no `default`  | none — a bare `BotService` is ambiguous and unavailable |
+| several, two `default` | rejected at boot                                       |
+
+With no default, co-equal bots (white-label tenants with no primary) are a valid
+setup — you just reach each one by name with `@InjectBot(name)`. `BotConfigResolver`
+will not silently pick the first bot, because that would make the default depend
+on array order.
 
 ## Name them once
 
@@ -76,13 +95,24 @@ export enum Bots {
 :::tip
 Then use `Bots.Support` everywhere — `{ name: Bots.Support }`,
 `@InjectBot(Bots.Sales)`, `@ForBot(Bots.Support)`. One source of truth, no magic
-strings. The framework imposes no naming — any string works.
+strings. The framework imposes no naming scheme — any string works.
 :::
 
-## Reach a specific bot — `@InjectBot`
+## Three ways to reach a bot
 
-To send through a particular bot from a service (a proactive notification, a
-cross-bot message), inject it by name:
+| You want…                              | Use                  | Resolved                          |
+| -------------------------------------- | -------------------- | --------------------------------- |
+| a specific bot, from anywhere          | `@InjectBot(name)`   | at DI time, by static name        |
+| the default bot                        | `@InjectBot()` / bare `BotService` | at DI time          |
+| the bot that received THIS update      | `@Bot()`             | per update, from `ctx.bot`        |
+| only-this-bot routing                  | `@ForBot(name)`      | per update, as a match predicate  |
+
+### Reach a specific bot — `@InjectBot`
+
+To send through a particular bot from a service — a proactive notification, a
+cross-bot message — inject it by name. `@InjectBot(name)` is sugar over
+`@Inject(getBotToken(name))`, so it resolves the bot declared under that name at
+DI time and the name must be statically known:
 
 :::code[alerts.service.ts]{mark="7"}
 
@@ -103,16 +133,16 @@ export class Alerts {
 
 :::
 
-`@InjectBot(name)` resolves the bot declared under that name at compile time, so
-the name must be statically known. `@InjectBot()` with no name gives the default
-bot — the same instance a bare `BotService` injects.
+`@InjectBot()` with no name gives the default bot — the same instance a bare
+`BotService` injects.
 
-## The current update's bot — `@Bot`
+### The current update's bot — `@Bot`
 
-In a shared handler, `message.answer(...)` already replies through whichever bot
+Inside a handler, `message.answer(...)` already replies through whichever bot
 received the update — you rarely need anything else. When a handler genuinely
 needs the bot object — its identity, a deep link, handing it to a service — take
-it with `@Bot()`:
+it with `@Bot()`. The decorator reads `ctx.bot`, the per-update `BotService` the
+dispatcher threaded in:
 
 :::code[whoami.router.ts]{mark="6"}
 
@@ -130,8 +160,8 @@ export class WhoAmIRouter {
 
 :::
 
-`@Bot()` is the bot that delivered THIS update, carried per-update; `bot.name`
-identifies it.
+`bot.name` identifies which bot it is; `bot.username` is its `@username`, cached
+from `getMe` at startup.
 
 :::note
 For behaviour that **differs** per bot, reach for `@ForBot` (below) to split it
@@ -141,11 +171,14 @@ several bots with a small variation; routing is the cleaner tool when the logic
 itself diverges.
 :::
 
-## Scope a router to a bot — `@ForBot`
+### Scope a router to a bot — `@ForBot`
 
 By default a router serves every bot. `@ForBot('name')` narrows it — on the class
-for the whole router, or on a single handler. An update for another bot falls
-through to the next matching route, just like any predicate:
+for the whole router, or on a single handler. It is not a guard: it ANDs a
+`ctx.bot.name === name` predicate into the route, on the same `@Match` mechanism
+as `@AnyState()`. An update from another bot doesn't get rejected — it falls
+through to the next matching route, exactly like any predicate that returns
+`false`:
 
 :::code[support.router.ts]{mark="5"}
 
@@ -191,7 +224,7 @@ controllers cover that; both are opt-in (you add them to a module's
 
 Each bot gets its own route, `…/telegram/webhook/:botName`. Build the matching
 `setWebhook` URL with `webhookUrl(origin, name)` so the registered URL can't
-drift from the served route, and add the controller:
+drift from the served route, then register the controller:
 
 :::code[app.module.ts]{mark="19,35"}
 
@@ -237,28 +270,31 @@ export class AppModule {}
 
 :::
 
-The `:botName` path is public, so give each webhook bot its own `secretToken` —
-the controller verifies the incoming secret against that bot before delivering.
+The controller injects the `WEBHOOK_SOURCES` array, indexes it by `source.name`,
+and routes each POST by the `:botName` segment. That segment is public, so each
+bot should set its own `secretToken` — the controller calls `source.verifySecret`
+against THAT bot before delivering. An unknown name is a 404; a bad secret a 403.
 
 ### One URL for all bots — `SharedWebhookController`
 
 Point every bot at the same `webhookUrl(origin)` (no name) and register
-`SharedWebhookController` instead. With no `:botName` to go on, it routes by the
-secret token: the bot whose `secretToken` matches the incoming header gets the
-update, falling back to the default bot.
+`SharedWebhookController` instead. With no `:botName` to go on, it routes by
+secret: it finds the bot whose `source.ownsSecret` matches the incoming header,
+falling back to the default bot, and drops the update (still answering 200) when
+there's neither a match nor a default.
 
-:::warn[Distinct secrets required]
+:::caution
 A shared endpoint can only tell the bots apart by their secret, so give each a
-**distinct** `secretToken` (the config is rejected at boot if two collide).
-Without distinct secrets every update lands on the default bot.
+**distinct** `secretToken`. `BotConfigResolver` rejects the config at boot if two
+collide — without distinct secrets every update would land on the default bot.
 :::
 
 ### Write your own
 
 When neither shape fits — a bespoke route, extra receipt-time logic, your own
-auth — inject the `WEBHOOK_SOURCES` array and route however you like. Each entry
-carries the bot's `source` (with `name`, `verifySecret`/`ownsSecret`, and
-`deliver`) and whether it is the default:
+auth — inject the `WEBHOOK_SOURCES` array and route however you like. Each
+`WebhookSourceEntry` carries the bot's `source` (with `name`, `verifySecret` /
+`ownsSecret`, and `deliver`) and whether it `isDefault`:
 
 :::code[my-webhook.controller.ts]{mark="21"}
 
@@ -305,6 +341,6 @@ export class MyWebhookController {
 :::
 
 `NestgramModule` is global, so `WEBHOOK_SOURCES` resolves wherever you register
-the controller. Single-bot webhook is unchanged — there it's one bot, so the
+the controller. The single-bot webhook is unchanged — there it's one bot, so the
 ready-made `WebhookController` (or `createWebhookController(path)`) is all you
 need.

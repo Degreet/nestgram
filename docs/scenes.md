@@ -3,20 +3,20 @@ title: Scenes (wizards)
 description: Multi-step dialogues as ordered steps — @Scene / @Step / @OnEnter, a scene context with next/back/goto, ephemeral data, and a sub-dialog stack.
 sidebar:
   label: Scenes (wizards)
-  group: State & sessions
+  group: State, sessions & i18n
   order: 72
 ---
 
 The [FSM](/docs/fsm) gives you the machinery for a multi-step dialogue: a
 conversation is in a state, the state narrows which handler fires, and you
 `set` the next state by hand. That's transparent — and verbose. A long flow
-becomes a wall of `stateGroup` members, one `@OnMessage(State)` per step, and
-an explicit `fsm.set(...)` at the end of every handler.
+becomes a wall of `stateGroup` members, one `@OnMessage(State)` per step, and an
+explicit `fsm.set(...)` at the end of every handler.
 
 A **scene** is that same machine with structure on top. You declare an ordered
-list of steps; the engine numbers them and routes each update to the current
-one; you move with `next`, `back` or `goto` instead of naming a state. It
-**compiles down to the FSM core** — no new engine, no parallel pipeline — and
+list of steps; the scene stage numbers them and routes each update to the
+current one; you move with `next`, `back` or `goto` instead of naming a state.
+It **compiles down to the FSM core** — no new engine, no parallel pipeline — and
 adds four things the bare FSM makes you build yourself:
 
 - **Ordered steps.** Declaration order is the order; `scene.next()` advances by
@@ -33,8 +33,8 @@ update -> scene loaded -> @Step()\* -> scene.next('…')
 :::
 
 If you've used aiogram's scenes (or telegraf's `WizardScene`), this is the same
-shape, expressed in Nest's vocabulary: a scene **is a router**, a step **is a
-handler**, the step's gate **is a `@Match` predicate**.
+shape in Nest's vocabulary: a scene **is a router**, a step **is a handler**,
+the step's gate **is a `@Match` predicate** — the same one `FsmState` uses.
 
 ## Turn it on
 
@@ -66,7 +66,7 @@ export class AppModule {}
 With no options it keeps scene state in process memory — fine for development
 and single-instance bots; [Setup](#setup-and-the-gates) covers Redis and the
 store it shares with sessions and the FSM. If you don't import `ScenesModule`,
-scenes are off: step predicates never match, and a `scene.enter(...)` throws
+scenes are off: step predicates never match, and `scene.enter(...)` throws
 rather than silently dropping.
 
 ## A registration wizard
@@ -170,6 +170,22 @@ last step leaves. Notice what's **not** there — no `if` deciding which questio
 this is, no state strings, no manual `set`. The step you're on decides which
 method runs.
 
+## When a scene, when raw FSM
+
+A scene is a thin layer over the FSM, so the choice is about shape, not power.
+
+|                         | Reach for a **scene**                           | Reach for the raw **[FSM](/docs/fsm)**                     |
+| ----------------------- | ----------------------------------------------- | ---------------------------------------------------------- |
+| Shape of the flow       | A linear questionnaire — ask, ask, ask, finish. | A branching graph — state A can jump to C, D or back to A. |
+| How you move            | `next`/`back`/`goto` over ordered steps.        | `fsm.set(SomeState)` by name, transitions you wire.        |
+| Sub-dialogs             | Built in — `enter` pushes, `leave` pops.        | You model the return path yourself.                        |
+| Cleanup on finish       | `@OnLeave` + automatic data wipe.               | `fsm.clear()` where you decide.                            |
+| The mental cost you pay | Steps are positional — inserting one renumbers. | Every state is named and explicit; nothing is implicit.    |
+
+Rule of thumb: a wizard with a clear front-to-back order is a scene; a state
+machine where transitions fan out by name is the FSM. You can always drop to the
+FSM under a scene — they share the same store and conversation key.
+
 ## Steps and lifecycle
 
 A `@Step()` composes with the [`@On*` filter family](/docs/update-types):
@@ -179,17 +195,18 @@ sits on it, `@Step() @OnPhoto()` only on a photo, `@Step() @OnCallbackQuery()`
 the scene+ordinal gate ANDs onto it. Put `@Step()` **above** its filter.
 
 :::note
-Order matters here: `@Step()` must sit **above** the `@On*` it guards. Decorators
-evaluate bottom-up — the filter records what kinds it listens to first, then
-`@Step()` reads that to wire the gate (and the reprompt). Reverse them and
-`@Step({ invalid })` has nothing to reprompt against, and throws at boot.
+Order matters here: `@Step()` must sit **above** the `@On*` it guards.
+Decorators evaluate bottom-up — the filter records what kinds it listens to
+first, then `@Step()` reads that to wire the gate (and the reprompt). Reverse
+them and `@Step({ invalid })` has nothing to reprompt against, and throws at
+boot.
 :::
 
 When the filter **rejects** an update — the user sent a photo where the step
 wanted text — the default is to do nothing: the user stays on the step and can
 try again. Pass `invalid` to reply a reprompt instead, gated to the same step
-but kind-aware, so a text step reprompts on a non-text message and a
-callback step reprompts on a non-matching tap:
+but kind-aware, so a text step reprompts on a non-text message and a callback
+step reprompts on a non-matching tap:
 
 :::code[registration.scene.ts]
 
@@ -209,38 +226,38 @@ export class RegistrationScene {
 
 :::tip
 This mirrors the FSM's retry mechanism — validation that fails just doesn't
-transition, so the user stays put — but you don't write the `if` yourself.
-The filter **is** the validation, and `invalid` is the retry message.
+transition, so the user stays put — but you don't write the `if` yourself. The
+filter **is** the validation, and `invalid` is the retry message.
 :::
 
 ## The SceneContext API
 
 `@SceneCtx()` injects a `SceneContext<TData>` — the one and only way to drive a
-scene. Navigation and data writes are **write-through**: they
-persist the moment their `await` resolves — the same bargain as `FsmContext`, so
-a move survives a later send failure in the same handler. The navigation methods
-resolve to their `reply` argument, so a handler ends with
-`return scene.next('…')` and the [return-value contract](/docs/routers) replies it.
+scene. Navigation and data writes are **write-through**: they persist the moment
+their `await` resolves — the same bargain as `FsmContext`, so a move survives a
+later send failure in the same handler. The navigation methods resolve to their
+`reply` argument, so a handler ends with `return scene.next('…')` and the
+[return-value contract](/docs/routers) replies it.
 
-| Method                       | Returns                | What it does                                                                                                       |
-| ---------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `current()`                  | `{ scene, step }`/`null` | The active scene id + step ordinal, or `null` when no scene is running.                                            |
-| `data()`                     | `Partial<TData>`       | The data gathered so far — partial, since a scene fills it step by step.                                           |
-| `update(patch)`              | `Promise<void>`        | Merge a patch into the active scene's data.                                                                        |
-| `setData(data)`              | `Promise<void>`        | Replace the active scene's data wholesale.                                                                         |
-| `next(reply?)`               | `Promise<string\|void>` | Advance one step (clamped to the last); resolves to `reply`.                                                      |
-| `back(reply?)`               | `Promise<string\|void>` | Go back one step (never before the first); resolves to `reply`.                                                  |
-| `goto(step, reply?)`         | `Promise<string\|void>` | Jump to a step by **ordinal** or **step-method name**; resolves to `reply`.                                       |
-| `enter(scene, data?)`        | `Promise<string\|void>` | Enter a (sub-)scene — push the current one, run the new scene's `@OnEnter`, resolve to its prompt.               |
-| `leave(reply?)`              | `Promise<string\|void>` | Leave the active scene — run `@OnLeave`, wipe its data, pop a parent if one is stacked; resolves to `reply`.     |
+| Method                | Returns                  | What it does                                                                                                 |
+| --------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `current()`           | `{ scene, step }`/`null` | The active scene id + step ordinal, or `null` when no scene is running.                                      |
+| `data()`              | `Partial<TData>`         | The data gathered so far — partial, since a scene fills it step by step.                                     |
+| `update(patch)`       | `Promise<void>`          | Merge a patch into the active scene's data.                                                                  |
+| `setData(data)`       | `Promise<void>`          | Replace the active scene's data wholesale.                                                                   |
+| `next(reply?)`        | `Promise<string\|void>`  | Advance one step (clamped to the last); resolves to `reply`.                                                 |
+| `back(reply?)`        | `Promise<string\|void>`  | Go back one step (never before the first); resolves to `reply`.                                              |
+| `goto(step, reply?)`  | `Promise<string\|void>`  | Jump to a step by **ordinal** or **step-method name**; resolves to `reply`.                                  |
+| `enter(scene, data?)` | `Promise<string\|void>`  | Enter a (sub-)scene — push the current one, run the new scene's `@OnEnter`, resolve to its prompt.           |
+| `leave(reply?)`       | `Promise<string\|void>`  | Leave the active scene — run `@OnLeave`, wipe its data, pop a parent if one is stacked; resolves to `reply`. |
 
 A few precise notes:
 
-- **`goto` takes a name or an ordinal.** `scene.goto('email')` jumps to the
-  step method named `email`; `scene.goto(2)` to ordinal 2. An out-of-range
-  ordinal **throws** — it isn't silently clamped, because a typo'd jump is a bug,
-  not a no-op. `next`/`back` _are_ clamped: `back` on the first step stays put,
-  `next` on the last step stays put.
+- **`goto` takes a name or an ordinal.** `scene.goto('email')` jumps to the step
+  method named `email`; `scene.goto(2)` to ordinal 2. An out-of-range ordinal
+  **throws** — it isn't silently clamped, because a typo'd jump is a bug, not a
+  no-op. `next`/`back` _are_ clamped: `back` on the first step stays put, `next`
+  on the last step stays put.
 - **`enter` seeds data.** `scene.enter(SubScene, { from: 'menu' })` starts the
   sub-scene with that ephemeral data already in place.
 - **The data is yours.** `TData` is whatever the scene collects; the framework
@@ -266,6 +283,17 @@ your place:
 :::code[order.scene.ts]
 
 ```ts
+import {
+  Scene,
+  Step,
+  OnEnter,
+  SceneCtx,
+  SceneContext,
+  OnText,
+  Message,
+} from 'nestgram';
+import { AddressScene } from './address.scene';
+
 @Scene('order')
 export class OrderScene {
   @OnEnter()
@@ -295,11 +323,11 @@ The sub-dialog's own data is independent and **wiped when it leaves** — only t
 parent's data survives the pop. That's the heart of the three-tier model: a
 scene's data is the shortest-lived state in the bot.
 
-| State           | Scope                         | Lifetime                                                  |
-| --------------- | ----------------------------- | --------------------------------------------------------- |
-| **Session**     | per conversation              | Persists indefinitely (until you delete it).              |
-| **FSM data**    | per conversation              | Lives while a flow runs; dropped on `fsm.clear()`.        |
-| **Scene data**  | per active scene on the stack | Lives while that scene is active; **wiped on `leave`**.   |
+| State          | Scope                         | Lifetime                                                |
+| -------------- | ----------------------------- | ------------------------------------------------------- |
+| **Session**    | per conversation              | Persists indefinitely (until you delete it).            |
+| **FSM data**   | per conversation              | Lives while a flow runs; dropped on `fsm.clear()`.      |
+| **Scene data** | per active scene on the stack | Lives while that scene is active; **wiped on `leave`**. |
 
 A session is a user's long-lived memory (their cart, their settings); scene data
 is the scratch pad for the dialogue happening right now. Finishing a wizard
@@ -343,7 +371,8 @@ ScenesModule.forRoot({
 :::note
 Need the store built from DI — a Redis client out of `ConfigService`?
 `ScenesModule.forRootAsync({ imports, inject, useFactory })` works exactly like
-the other dynamic modules; the factory returns the same `{ store, key }` options.
+the other dynamic modules; the factory returns the same `{ store, key }`
+options.
 :::
 
 ### Capturing input: an active scene and @InScene()
@@ -360,6 +389,16 @@ So a catch-all needs **no guard** to stay out of a wizard's way:
 :::code[entry.router.ts]
 
 ```ts
+import {
+  Router,
+  Command,
+  OnMessage,
+  Message,
+  SceneCtx,
+  SceneContext,
+} from 'nestgram';
+import { RegistrationScene } from './registration.scene';
+
 @Router()
 export class EntryRouter {
   @Command('register')
@@ -379,12 +418,21 @@ export class EntryRouter {
 
 To run a handler **mid-scene** — a global `/cancel` that bails out of any
 wizard, say — opt it in with `@InScene()`. It marks the handler as exempt from
-the capture, so it fires **both** while idle and while a scene is active (its
-own `@Command`/`@OnMessage`/… filters still apply):
+the capture, so it fires **both** while idle and while a scene is active (its own
+`@Command`/`@OnMessage`/… filters still apply):
 
 :::code[cancel.router.ts]
 
 ```ts
+import {
+  Router,
+  Command,
+  InScene,
+  Message,
+  SceneCtx,
+  SceneContext,
+} from 'nestgram';
+
 @Router()
 export class EntryRouter {
   // Exempt from capture: fires mid-scene (and idle). Order doesn't matter —
@@ -402,8 +450,8 @@ export class EntryRouter {
 :::warn
 An active scene captures **all** input, not just text — an unrelated inline
 **button callback** is suppressed mid-scene too, unless its handler is marked
-`@InScene()`. If a button outside the wizard must keep working while a scene
-runs (a persistent menu, a cancel button), add `@InScene()` to its handler.
+`@InScene()`. If a button outside the wizard must keep working while a scene runs
+(a persistent menu, a cancel button), add `@InScene()` to its handler.
 :::
 
 :::note
@@ -414,10 +462,10 @@ update, scene or no scene. Suppression simply means a non-exempt route does not
 **match** while a scene is active.
 :::
 
-`@InScene()` is determinism-friendly: because capture is decided by the scene
-gate (an idle predicate ANDed onto every non-step, non-exempt route at boot),
-not by declaration order, a step always wins over a would-be catch-all
-regardless of which router declares what first.
+`@InScene()` is determinism-friendly: because capture is decided by the
+`SceneRouteGate` (a `@RouteTransform` that ANDs an idle predicate onto every
+non-step, non-exempt route at boot), not by declaration order, a step always
+wins over a would-be catch-all regardless of which router declares what first.
 
 :::guardrail[only in Nestgram]
 `@InScene()` is a one-liner over the public [`@Match()`](/docs/custom-predicates)
@@ -426,8 +474,26 @@ marker is a no-op predicate the boot-time scene gate recognises; nothing
 privileged, you could rebuild it in three lines.
 :::
 
-:::caution
-There's no per-conversation locking yet: under the webhook source two
-rapid-fire updates for one conversation can interleave, last write wins. Keep
-step handlers fast.
+## Two fast steps in one chat
+
+A wizard reads the previous answer to decide the next prompt, so overlapping
+updates would race on the scene record. They don't. The on-by-default in-process
+update queue (`QueuedUpdateSource`) serialises each chat's updates **per-chat
+FIFO** before dispatch — under **both** polling and webhook, since it wraps
+whichever source the transport seam produced. Two messages fired off in quick
+succession run one at a time in arrival order; different chats still run in
+parallel.
+
+So within a single instance, two fast steps in one conversation cannot
+interleave: the second update waits for the first's dispatch to start before it
+is admitted, and the first has already written its transition through (writes
+are write-through) by then.
+
+:::note
+The guarantee is **per single instance**. The queue is in-process, so two
+**separate** instances behind the same webhook each serialise their own traffic
+but not each other's. To serialise a chat across instances, point the scene
+store at Redis and coordinate there — the in-process queue is rung one of the
+ladder, not a distributed lock. For a single-instance bot (the common case)
+there's nothing to do: the queue is already on.
 :::
