@@ -179,6 +179,45 @@ body {
   color: var(--a1);
   margin: 0 0.5em;
 }
+.dx-pagebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.9rem;
+}
+.dx-pagebar .dx-breadcrumb {
+  margin-bottom: 0;
+}
+.dx-ai-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.dx-ai-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.dx-ai-btn:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text);
+}
+.dx-ai-btn__ico {
+  flex: none;
+}
 .dx-content {
   max-width: var(--content-w);
   line-height: 1.72;
