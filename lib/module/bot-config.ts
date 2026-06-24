@@ -77,6 +77,7 @@ export class BotConfigResolver {
       apiInterceptors: options.apiInterceptors,
       throttle: options.throttle,
       throttler: options.throttler,
+      fileIdCache: options.fileIdCache,
     };
   }
 
@@ -104,6 +105,7 @@ export class BotConfigResolver {
         apiInterceptors: definition.apiInterceptors,
         throttle: definition.throttle,
         throttler: definition.throttler,
+        fileIdCache: definition.fileIdCache,
       },
     };
   }

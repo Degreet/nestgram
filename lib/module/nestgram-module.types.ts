@@ -8,6 +8,7 @@ import type { ApiInterceptor } from '../api/request';
 import type { ParseModeValue } from '../api/parse-mode';
 import type { RichMessagesOptions } from '../builtins/rich-messages/rich-messages.types';
 import type { ThrottleOptions } from '../builtins/throttle/throttle.types';
+import type { FileIdCacheOptions } from '../builtins/file-id-cache/file-id-cache.types';
 import type { KeyboardStateOptions } from '../keyboards/state/keyboard-state.types';
 
 /**
@@ -72,6 +73,8 @@ export interface BotDefinition {
   throttle?: boolean | ThrottleOptions;
   /** Replace this bot's throttler entirely. */
   throttler?: Type<ApiInterceptor>;
+  /** Configure this bot's `file_id` cache (store/TTL/key). See {@link FileIdCacheOptions}. */
+  fileIdCache?: FileIdCacheOptions;
 }
 
 export interface NestgramModuleOptions {
@@ -180,6 +183,12 @@ export interface NestgramModuleOptions {
   throttle?: boolean | ThrottleOptions;
   /** Replace the default throttler entirely (e.g. a Redis-backed distributed one). */
   throttler?: Type<ApiInterceptor>;
+  /**
+   * Configure the `file_id` cache — its store, TTL, or key strategy. Caching is
+   * opt-in per file (use `new CachedFile(path)`), so this option is only needed
+   * to swap the default in-memory store. See {@link FileIdCacheOptions}.
+   */
+  fileIdCache?: FileIdCacheOptions;
   /**
    * Per-message keyboard state (checkbox selections, page cursors) — auto-wired,
    * configure only to override the store. Defaults to the session store's backend
