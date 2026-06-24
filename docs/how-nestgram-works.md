@@ -103,6 +103,44 @@ Nestgram is organised by layer, not by feature — each part has a distinct job:
 | `events`     | rich typed events (`Message`, `CallbackQuery`) — data plus the actions on them       |
 | `decorators` | the public surface: `@Router`, the listeners, the param decorators                   |
 
+The `engine` itself is the folders of the pipeline above — one per step:
+
+| Folder       | Job                                                                  |
+| ------------ | ------------------------------------------------------------------- |
+| `source`     | bring updates in (polling / webhook)                                |
+| `queue`      | per-chat FIFO + bounded concurrency over the source (see above)     |
+| `context`    | wrap each raw update in a `TelegramExecutionContext` (never mutated) |
+| `discovery`  | walk the provider graph at boot into the route table                |
+| `matching`   | the predicates that decide which handler applies                    |
+| `execution`  | build the Nest-pipeline invoker for a matched route                 |
+| `dispatcher` | run a context through match → execute → result, isolating failures  |
+
+## Under the hood
+
+A few mechanisms are worth knowing when you reach past the guides.
+
+**The route table is built once, at boot.** On `OnApplicationBootstrap` a route
+explorer walks Nest's own `DiscoveryService` and `MetadataScanner` over every
+`@Router()` provider and flattens their handlers into one list, in
+method-declaration order. Per update there's no reflection — just a lookup,
+pre-indexed by update kind. Order _within_ a router is your declaration order
+and is contractual; order _across_ routers is discovery order — don't rely on it.
+
+**Update kinds come from a closed whitelist.** `resolveKind` maps a raw update to
+exactly one `UpdateKind` from an explicit list; an unknown or future field is
+ignored, never guessed. The rich event for a kind comes from a registry keyed by
+that kind — adding one is decorating a class with `@UpdateType`, not editing a
+`switch`.
+
+**Why your handler's first argument is bare and typed.** Handlers run through
+Nest's `ExternalContextCreator`, whose parameter resolution is all-or-nothing:
+with a `ParamsFactory` in play, an _undecorated_ parameter comes back
+`undefined`. So every handler parameter is decorator-backed — and the framework
+auto-applies `@Event()` to parameter 0 for you. You write `handle(message:
+Message)` and the framework makes that the event; it's the one place the
+reflection shows through, and the reason param decorators are only ever for the
+_other_ arguments.
+
 ## Why real Nest primitives
 
 The point of building on Nest's pipeline is that **guards, interceptors, pipes

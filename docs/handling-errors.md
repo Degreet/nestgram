@@ -1,34 +1,35 @@
 ---
 title: Handling errors
-description: Reply by throwing a ReplyException, react to Telegram API failures with typed ApiException predicates, and silence the edit no-op with ignoreNotModified.
+description: Reply by throwing a ReplyException, branch on Telegram API failures with typed ApiException predicates, and silence the edit no-op with ignoreNotModified.
 sidebar:
   label: Handling errors
   group: The Nest pipeline
   order: 61
 ---
 
-When Telegram **rejects an outbound call** (`ok: false`), Nestgram throws an
-`ApiException` carrying the `error_code`, the `description`, any `parameters`
-(like `retry_after`), and the request `body`. This is the send side — distinct
-from an error thrown _inside_ a handler, which a standard
-[exception filter](/docs/guards-and-pipeline) catches.
+Errors arrive from two directions, and Nestgram keeps them apart.
+
+One is the **handler side** — you want to bail out of a request and tell the user
+why. Nest's idiom is `throw new HttpException(...)`; Nestgram's is `throw new
+ReplyException(...)`, caught by a global `@Catch` filter and turned into a reply.
+
+The other is the **send side** — Telegram rejects an _outbound_ call (`ok:
+false`), and Nestgram throws an `ApiException` carrying the `error_code`,
+`description`, any `parameters` (like `retry_after`), and the request `body`.
+That one you catch where you made the call, and branch on with typed predicates.
 
 :::mental
-Telegram rejects the call -> ApiException -> predicate -> react
+throw ReplyException -> filter -> reply | Telegram rejects -> ApiException -> predicate
 :::
 
 ## Replying by throwing: `ReplyException`
 
-The other side of error handling is the **handler side** — bailing out of a
-request and telling the user why. Nest's idiom for this is `throw new
-HttpException(...)`; Nestgram's is `throw new ReplyException(...)`. Throw it
-anywhere in the pipeline — a guard, a pipe, an interceptor, or the handler — and
-a built-in global exception filter sends the reply and stops the request. No
-`return`, no threading a "denied" flag back to the handler.
-
-:::mental
-throw ReplyException -> filter catches -> reply sent -> request stops
-:::
+Throw a `ReplyException` anywhere in the pipeline — a guard, a pipe, an
+interceptor, or the handler — and the request stops there with a reply. No
+`return`, no threading a "denied" flag back to the handler. The mover is
+`ReplyExceptionFilter`, a global `@Catch(ReplyExceptionBase)` filter
+`NestgramModule` registers as an `APP_FILTER`. It consumes the exception, so the
+dispatcher sees a clean completion — no error log.
 
 A guard is the natural home: deny **and** explain in one `throw`, instead of
 returning `false` (which is silent) and explaining somewhere else.
@@ -58,11 +59,10 @@ export class AdminGuard implements CanActivate {
 The handler never runs; the user gets the message. The same `throw` works for
 handler-level validation — guard clauses read top-to-bottom instead of nesting:
 
-:::code[rename.router.ts]{mark="9"}
+:::code[rename.router.ts]{mark="11"}
 
 ```ts
-import { Command } from 'nestgram';
-import { Message, ReplyException } from 'nestgram';
+import { Router, Command, Message, ReplyException } from 'nestgram';
 
 @Router()
 export class RenameRouter {
@@ -77,11 +77,17 @@ export class RenameRouter {
 }
 ```
 
-The reply mirrors a handler's [return value](/docs/replying) exactly: a string
-replies to the same chat, and a command object goes out as-is. Pass reply
-options after the text, or hand it a ready-made command:
+:::
+
+Internally the filter hands `ReplyException.content` straight to `ResultHandler`
+— the same component that runs a handler's return value — so the reply mirrors a
+[returned value](/docs/rich-messages) exactly: a string replies to the same
+chat, and a command object goes out as-is. Pass reply options after the text, or
+hand it a ready-made command:
 
 ```ts
+import { ReplyException, SendMessage } from 'nestgram';
+
 // Text with reply options (a keyboard, a reply target…):
 throw new ReplyException('Pick one:', { reply_markup: keyboard });
 
@@ -92,10 +98,12 @@ throw new ReplyException(new SendMessage({ chat_id, text: 'Done.' }));
 ### Answering a callback query
 
 For a button tap, the right reaction is a toast or modal alert, not a chat
-message. `AnswerException` answers the originating callback query — it shares the
-same base as `ReplyException`, so the same filter catches it:
+message. `AnswerException` answers the originating callback query — it extends
+the same `ReplyExceptionBase`, so the one filter catches it too:
 
 ```ts
+import { AnswerException } from 'nestgram';
+
 // A toast on the button:
 throw new AnswerException('Too fast — slow down.');
 
@@ -103,14 +111,14 @@ throw new AnswerException('Too fast — slow down.');
 throw new AnswerException('Not allowed', { show_alert: true });
 ```
 
-Thrown on a non-callback update, it has no callback to answer, so the filter logs
-a warning and does nothing.
+The filter reads `ctx.kind` to find the callback. Thrown on a non-callback
+update there's nothing to answer, so it logs a warning and does nothing.
 
 :::note[It's a plain `@Catch` filter — no privileged core]
-`ReplyException` handling is just a global `@Catch(ReplyExceptionBase)` filter
-`NestgramModule` registers — exactly the kind you could write yourself. Define
-your own domain exceptions and `@Catch(MyError)` filters the same way; they run
-in the same Nest pipeline, ahead of the framework's own error logging.
+`ReplyExceptionFilter` is an ordinary global `@Catch(ReplyExceptionBase)` filter
+— exactly the kind you could write yourself. Define your own domain exceptions
+and `@Catch(MyError)` filters the same way; they run in the same Nest pipeline,
+ahead of the framework's own error logging.
 :::
 
 ### Sharing a service with HTTP
@@ -245,6 +253,9 @@ export class TelegramHttpExceptionFilter implements ExceptionFilter {
 Apply it to the **Telegram side only** — on your routers, via `@UseFilters`:
 
 ```ts
+import { Router } from 'nestgram';
+import { UseFilters } from '@nestjs/common';
+
 @Router()
 @UseFilters(TelegramHttpExceptionFilter)
 export class SupportRouter {
@@ -252,7 +263,7 @@ export class SupportRouter {
 }
 ```
 
-:::warn[Don't register this one globally]
+:::caution[Don't register this one globally]
 A global `@Catch(HttpException)` filter (`APP_FILTER` / `useGlobalFilters`) runs
 for HTTP requests too and would hijack your existing JSON error responses. Scope
 it with `@UseFilters` on the routers (or a shared base router) so Nest's built-in
@@ -270,7 +281,9 @@ callback can `throw new ReplyException('Slow down.')` to warn the flooder instea
 of dropping their update silently.
 
 To turn the built-in off — and let `ReplyException`/`AnswerException` propagate
-like any other error — set `replyExceptions: false` on `NestgramModule.forRoot`:
+like any other error — set `replyExceptions: false` on `NestgramModule.forRoot`.
+The filter self-disables by re-throwing, so the exception flows to the
+dispatcher's normal logging path, exactly as if the feature didn't exist:
 
 :::code[app.module.ts]{mark="8"}
 
@@ -293,27 +306,29 @@ export class AppModule {}
 
 ## The problem with `description`
 
-Telegram has no structured error catalog. Many distinct failures share one
-`error_code` — `400` alone covers dozens — and the only thing that tells them
-apart is the human-readable `description`, whose exact wording Telegram controls
-and the API spec doesn't model. Matching it by hand is brittle:
+That's the handler side handled. The send side — `ApiException` — needs its own
+treatment, because Telegram ships no structured error catalog. Many distinct
+failures share one `error_code` (`400` alone covers dozens), and the only thing
+that tells them apart is the human-readable `description`, whose exact wording
+Telegram controls and the API spec doesn't model. Matching it by hand is brittle:
 
 ```ts
+import { ApiException } from 'nestgram';
+
 // Don't: the phrase is Telegram's to change, and this repeats in every bot.
-if (
-  error instanceof ApiException &&
-  error.description.includes('not modified')
-) {
+if (error instanceof ApiException && error.description.includes('not modified')) {
 }
 ```
 
 ## Typed predicates
 
 `ApiException` carries static type-guards for the failures every bot meets. Each
-narrows `unknown` to `ApiException`, so the caught error stays typed — and the
-phrasing lives once, in the framework, not in your code:
+calls `ApiException.matches` against a `KnownApiError` catalog entry — a
+`(code, description-pattern)` pair — and narrows `unknown` to `ApiException`, so
+the caught error stays typed and the phrasing lives once, in the framework, not
+in your code:
 
-:::code[broadcast.service.ts]{mark="7"}
+:::code[broadcast.service.ts]{mark="8"}
 
 ```ts
 import { ApiException, BotService } from 'nestgram';
@@ -336,11 +351,12 @@ async function notify(bot: BotService, chatId: number, text: string) {
 
 The built-in predicates:
 
-| Predicate                         | Matches                                |
-| --------------------------------- | -------------------------------------- |
-| `ApiException.isBlockedByUser(e)` | `403` · the user blocked the bot       |
-| `ApiException.isNotModified(e)`   | `400` · an edit with identical content |
-| `ApiException.isChatNotFound(e)`  | `400` · the target chat doesn't exist  |
+| Predicate                         | Matches                                                          |
+| --------------------------------- | --------------------------------------------------------------- |
+| `ApiException.isNotModified(e)`   | `400` · an edit with identical content (a no-op)                |
+| `ApiException.isNotEditable(e)`   | `400` · the message can't be edited — too old, deleted, or not the bot's own |
+| `ApiException.isChatNotFound(e)`  | `400` · the target chat doesn't exist                           |
+| `ApiException.isBlockedByUser(e)` | `403` · the user blocked the bot                                |
 
 ### The generic escape hatch
 
@@ -348,6 +364,8 @@ For a code or phrasing not in the table, `is(error, code, pattern?)` matches an
 `error_code`, optionally narrowed by a `description` pattern you supply:
 
 ```ts
+import { ApiException } from 'nestgram';
+
 if (ApiException.is(error, 403)) {
   // any forbidden — blocked, kicked, deactivated…
 }
@@ -394,12 +412,12 @@ methods already return `Message | true`, and you get `true`). It's an ordinary
 opt-in API interceptor — off by default, because silently eating errors is
 otherwise a footgun.
 
-:::warn[Only the no-op is swallowed]
+:::caution[Only the no-op is swallowed]
 A genuinely **stale** edit — `message can't be edited` (older than 48h) or
-`message to edit not found` (deleted) — still throws. Swallowing those would
-hide a real bug: a UI editing dead messages.
+`message to edit not found` (deleted), what `isNotEditable` matches — still
+throws. Swallowing those would hide a real bug: a UI editing dead messages.
 
-> `ignoreNotModified` silences identical re-edits, never a failed edit
+`ignoreNotModified` silences identical re-edits, never a failed edit.
 
 :::
 
@@ -407,6 +425,8 @@ If you'd rather handle it inline for one call, the predicate is the same hook
 the interceptor uses:
 
 ```ts
+import { ApiException } from 'nestgram';
+
 try {
   await message.editText(next);
 } catch (error) {

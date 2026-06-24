@@ -33,11 +33,11 @@ types. Whatever a handler returns is sent back to the chat.
 :::code[greet.router.ts]{mark="6"}
 
 ```ts
-import { Router, Command, OnMessage, Message } from 'nestgram';
+import { Router, OnStart, OnMessage, Message } from 'nestgram';
 
 @Router()
 export class GreetRouter {
-  @Command('start')
+  @OnStart()
   start(message: Message) {
     return `Hello, ${message.from?.first_name ?? 'there'}!`;
   }
@@ -54,7 +54,7 @@ export class GreetRouter {
 :::anno
 
 1. The handler receives a **typed `Message`** as its first argument — no decorator, no guessing what's on it. You named the type, so you know exactly what arrived.
-2. `@Command('start')` matches the `/start` command; `@OnMessage()` matches any message. Nestgram tries handlers in order and runs the first match.
+2. `@OnStart()` matches the `/start` command; `@OnMessage()` matches any message. Nestgram tries handlers in order and runs the first match.
 3. Returning a `string` sends it as a reply — sugar over `message.answer(text)`, which you can call directly when you need options.
 
 :::
