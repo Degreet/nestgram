@@ -4,6 +4,7 @@
 // Generated from the same frontmatter the site renders, so it never drifts.
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
+import { AGENT_RULES } from '../lib/agent-rules';
 
 const SITE = 'https://nestgram.vercel.app';
 
@@ -21,6 +22,16 @@ const INTRO = `# Nestgram
 
 Status: v2 pre-release (alpha). Docs are authored as Markdown and rendered by a
 custom Astro site.`;
+
+const START_HERE = `## Start here
+
+Read these in order to learn the model before reaching for the reference:
+
+1. [What is Nestgram](${SITE}/docs/what-is-nestgram)
+2. [Mental model](${SITE}/docs/mental-model)
+3. [How Nestgram works](${SITE}/docs/how-nestgram-works)
+4. [Guards & the Nest pipeline](${SITE}/docs/guards-and-pipeline)
+5. [Extending Nestgram](${SITE}/docs/extending)`;
 
 const cleanSlug = (id: string): string => id.replace(/^\d+[-_]/, '');
 
@@ -52,7 +63,7 @@ export const GET: APIRoute = async () => {
     return `## ${group.label}\n\n${lines.join('\n')}`;
   });
 
-  const body = `${INTRO}\n\n${sections.join('\n\n')}\n`;
+  const body = `${INTRO}\n\n${AGENT_RULES}\n\n${START_HERE}\n\n${sections.join('\n\n')}\n`;
   return new Response(body, {
     headers: { 'Content-Type': 'text/plain; charset=utf-8' },
   });

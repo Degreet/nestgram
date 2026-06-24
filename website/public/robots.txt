@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# Documentation for AI agents:
+#   https://nestgram.vercel.app/llms.txt       — curated map of the docs
+#   https://nestgram.vercel.app/llms-full.txt  — the full docs corpus in one file
