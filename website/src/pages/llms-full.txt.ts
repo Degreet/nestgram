@@ -4,6 +4,7 @@
 // directives stripped to their inner content so the prose reads cleanly.
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
+import { AGENT_RULES } from '../lib/agent-rules';
 
 const SITE = 'https://nestgram.vercel.app';
 
@@ -22,13 +23,18 @@ const cleanSlug = (id: string): string => id.replace(/^\d+[-_]/, '');
 const stripDirectives = (md: string): string =>
   md
     .split('\n')
-    .filter((line) => {
+    .map((line) => {
       const t = line.trim();
-      if (/^:::+[a-z]/i.test(t)) return false; // opening directive
-      if (/^:::+\s*$/.test(t)) return false; // closing directive
-      if (/^::[a-z]/i.test(t)) return false; // leaf directive (::tab[...])
-      return true;
+      // Keep a :::code[file.ts] island's filename as a comment — which file a
+      // snippet belongs in is real signal for an agent reading the flat text.
+      const codeLabel = t.match(/^:::code\[([^\]]+)\]/);
+      if (codeLabel) return `// ${codeLabel[1]}`;
+      if (/^:::+[a-z]/i.test(t)) return null; // other opening directives
+      if (/^:::+\s*$/.test(t)) return null; // closing directive
+      if (/^::[a-z]/i.test(t)) return null; // leaf directive (::tab[...])
+      return line;
     })
+    .filter((line): line is string => line !== null)
     .join('\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
@@ -46,7 +52,7 @@ export const GET: APIRoute = async () => {
     return `# ${entry.data.title}\n\nSource: ${href}\n${desc}\n${body}`;
   });
 
-  const body = `${HEADER}\n${pages.join('\n\n---\n\n')}\n`;
+  const body = `${HEADER}\n${AGENT_RULES}\n\n---\n\n${pages.join('\n\n---\n\n')}\n`;
   return new Response(body, {
     headers: { 'Content-Type': 'text/plain; charset=utf-8' },
   });
