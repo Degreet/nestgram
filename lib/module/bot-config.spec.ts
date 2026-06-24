@@ -48,6 +48,19 @@ describe('BotConfigResolver', () => {
     expect(bots.every((b) => !b.isDefault)).toBe(true);
   });
 
+  it('carries the fileIdCache option through (single-bot and per-bot)', () => {
+    const [single] = BotConfigResolver.resolve({
+      token: 'T',
+      fileIdCache: { ttl: 1000 },
+    });
+    expect(single.options.fileIdCache).toEqual({ ttl: 1000 });
+
+    const [multi] = BotConfigResolver.resolve({
+      bots: [{ token: 'A', fileIdCache: { ttl: 2000 } }],
+    });
+    expect(multi.options.fileIdCache).toEqual({ ttl: 2000 });
+  });
+
   it('honours an explicit default among several bots', () => {
     const bots = BotConfigResolver.resolve({
       bots: [
