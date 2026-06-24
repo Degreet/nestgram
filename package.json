@@ -1,6 +1,6 @@
 {
   "name": "nestgram",
-  "version": "2.0.0-alpha.2",
+  "version": "2.0.0-alpha.3",
   "description": "Telegram bots, the NestJS way — typed events, the real Nest pipeline (guards, interceptors, pipes, filters), and a generated Bot API layer",
   "author": "Mykyta Voitsekhovskyi <mykyta@kodo.do>",
   "main": "dist/index.js",
