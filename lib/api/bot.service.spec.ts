@@ -238,9 +238,26 @@ describe('BotService identity & deepLink', () => {
     expect(b.username).toBe('mybot');
   });
 
+  it('exposes the bot id and full identity from the cached getMe', async () => {
+    const b = bot({ token: '1:T' });
+    await b.getMe(); // the launch health check warms the identity
+
+    expect(b.id).toBe(1);
+    expect(b.me).toEqual({
+      id: 1,
+      is_bot: true,
+      first_name: 'Bot',
+      username: 'mybot',
+    });
+    expect(getMeCalls).toBe(1); // the sync accessors read the cache, no new request
+  });
+
   it('throws a clear error if the identity is not loaded yet', () => {
     const b = bot({ token: '1:T' });
     expect(() => b.deepLink({ start: 'x' })).toThrow(NestgramError);
+    expect(() => b.id).toThrow(NestgramError);
+    expect(() => b.me).toThrow(NestgramError);
+    expect(() => b.username).toThrow(NestgramError);
   });
 });
 
