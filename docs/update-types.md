@@ -101,7 +101,8 @@ without dedicated sugar (membership, polls, reactions, business, boosts).
 `guest_message` arrives as a `Message` like any other, but a guest exchange is
 answered **once** with `bot.answerGuestQuery(message.guest_query_id, result)` (an
 `InlineQueryResult`) — not `message.answer(...)`. There is no follow-up, typing,
-or reaction on it.
+or reaction on it. The `return string` reply sugar is skipped with a warning for
+this kind, for the same reason.
 :::
 
 Every `@On*` takes optional predicates as arguments — extra match conditions,

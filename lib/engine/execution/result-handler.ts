@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { TelegramExecutionContext } from '../context/telegram-execution-context';
 import { TelegramEvent } from '../context/event-factory';
+import { UpdateKind } from '../context/update-kind';
 import {
   ApiMethod,
   EditMessageMedia,
@@ -56,6 +57,15 @@ export class ResultHandler {
     options?: ReplyOptions,
   ): Promise<void> {
     if (typeof result === 'string') {
+      // A guest chat id may collide with a DIFFERENT real chat (per the spec),
+      // so the same-chat reply sugar cannot be trusted for this kind.
+      if (ctx.kind === UpdateKind.GuestMessage) {
+        this.logger.warn(
+          `Handler for "${ctx.kind}" returned a string — a guest exchange is ` +
+            'answered with bot.answerGuestQuery(...), not a chat reply; skipped',
+        );
+        return;
+      }
       const event = ctx.event;
       if (this.isAnswerable(event)) {
         await event.answer(result, options);
