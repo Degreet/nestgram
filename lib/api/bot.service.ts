@@ -137,8 +137,9 @@ export class BotService extends GeneratedBotMethods {
 
   /**
    * The bot account. Its own identity (called without a custom token) is cached
-   * after the first call — it is effectively static and backs {@link username}
-   * and {@link deepLink}. Pass a `token` to query a different bot, always live.
+   * after the first call — it is effectively static and backs {@link me},
+   * {@link id}, {@link username} and {@link deepLink}. Pass a `token` to query a
+   * different bot, always live.
    */
   async getMe(options?: MethodOptions): Promise<User> {
     const { token, signal } = options ?? {};
@@ -154,16 +155,36 @@ export class BotService extends GeneratedBotMethods {
   }
 
   /**
-   * The bot's own `@username`, cached from `getMe`. Available once the bot has
-   * started (the launch health check loads it) or after any `getMe()` call.
+   * The bot's own identity — the full {@link User} from `getMe`, cached at
+   * startup. Synchronous, unlike {@link getMe}: it never makes a request, and
+   * throws if the identity has not loaded yet. Backs {@link id},
+   * {@link username} and {@link deepLink}; reach for it when you need a field
+   * those don't expose (e.g. `first_name`, `can_join_groups`).
    */
-  get username(): string {
-    const username = this.cachedMe?.username;
-    if (!username) {
+  get me(): Readonly<User> {
+    if (!this.cachedMe) {
       throw new NestgramError(
-        "The bot's username is not loaded yet — it is available after startup " +
+        "The bot's identity is not loaded yet — it is available after startup " +
           '(the getMe health check) or once getMe() has been called.',
       );
+    }
+    return this.cachedMe;
+  }
+
+  /** The bot's own numeric id, cached from `getMe` (see {@link me}). */
+  get id(): number {
+    return this.me.id;
+  }
+
+  /**
+   * The bot's own `@username`, cached from `getMe` (see {@link me}). A bot always
+   * has one in practice; the guard only satisfies the optional `User.username`
+   * type and shouldn't fire.
+   */
+  get username(): string {
+    const { username } = this.me;
+    if (username === undefined) {
+      throw new NestgramError('The bot account has no username.');
     }
     return username;
   }
