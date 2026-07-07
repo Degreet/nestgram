@@ -12,6 +12,7 @@ import { OnChatJoinRequest } from '../decorators/listeners/on-chat-join-request.
 import { OnChatMember } from '../decorators/listeners/on-chat-member.decorator';
 import { OnEditedChannelPost } from '../decorators/listeners/on-edited-channel-post.decorator';
 import { OnEditedMessage } from '../decorators/listeners/on-edited-message.decorator';
+import { OnGuestMessage } from '../decorators/listeners/on-guest-message.decorator';
 import { OnMyChatMember } from '../decorators/listeners/on-my-chat-member.decorator';
 import { OnPhoto } from '../decorators/listeners/content.decorators';
 import { OnPoll } from '../decorators/listeners/on-poll.decorator';
@@ -62,6 +63,11 @@ class KindsRouter {
 
   @OnPhoto()
   photo(message: Message): void {
+    this.sink.record(message);
+  }
+
+  @OnGuestMessage()
+  guestMessage(message: Message): void {
     this.sink.record(message);
   }
 
@@ -128,6 +134,14 @@ describe('UpdateFactory — routable-kind builders', () => {
     expect(sink.events).toHaveLength(1);
     expect(sink.events[0]).toBeInstanceOf(Message);
     expect((sink.events[0] as Message).text).toBe('fixed typo');
+  });
+
+  it('guestMessage() routes to @OnGuestMessage as a Message', async () => {
+    await bot.dispatch(updates.guestMessage('need a table for two'));
+
+    expect(sink.events).toHaveLength(1);
+    expect(sink.events[0]).toBeInstanceOf(Message);
+    expect((sink.events[0] as Message).text).toBe('need a table for two');
   });
 
   it('channelPost() routes to @OnChannelPost in a channel chat', async () => {

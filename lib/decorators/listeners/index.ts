@@ -26,6 +26,7 @@ export * from './on-deleted-business-message.decorator';
 export * from './on-edited-business-message.decorator';
 export * from './on-edited-channel-post.decorator';
 export * from './on-edited-message.decorator';
+export * from './on-guest-message.decorator';
 export * from './on-inline-query.decorator';
 export * from './on-message.decorator';
 export * from './on-message-reaction.decorator';

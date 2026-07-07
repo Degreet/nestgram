@@ -57,6 +57,7 @@ export interface Message extends Omit<RawMessage, WrappedMedia> {}
   'edited_channel_post',
   'business_message',
   'edited_business_message',
+  'guest_message',
 )
 export class Message extends TelegramObject {
   /** The `ReactionType` discriminant for a standard emoji reaction. */

@@ -67,6 +67,7 @@ function scopeSource(
     update.edited_channel_post ??
     update.business_message ??
     update.edited_business_message ??
+    update.guest_message ??
     update.callback_query?.message
   );
 }

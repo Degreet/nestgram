@@ -72,6 +72,7 @@ parameter is the event class in the **Event** column.
 | `@OnBusinessMessage()`        | `Message`                     | `business_message`          |
 | `@OnEditedBusinessMessage()`  | `Message`                     | `edited_business_message`   |
 | `@OnDeletedBusinessMessage()` | `BusinessMessagesDeleted`     | `deleted_business_messages` |
+| `@OnGuestMessage()`           | `Message`                     | `guest_message`             |
 | `@OnMessageReaction()`        | `MessageReactionUpdated`      | `message_reaction`          |
 | `@OnMessageReactionCount()`   | `MessageReactionCountUpdated` | `message_reaction_count`    |
 | `@OnInlineQuery()`            | `InlineQuery`                 | `inline_query`              |
@@ -94,6 +95,13 @@ top — `@OnStart()` and `@Command(...)` for slash commands, `@Action('done/:id'
 for callback buttons, `@Hears(...)` for text — each adds a predicate over the
 right kind. Use those when they fit; reach for the bare `@On*` for the kinds
 without dedicated sugar (membership, polls, reactions, business, boosts).
+:::
+
+:::caution
+`guest_message` arrives as a `Message` like any other, but a guest exchange is
+answered **once** with `bot.answerGuestQuery(message.guest_query_id, result)` (an
+`InlineQueryResult`) — not `message.answer(...)`. There is no follow-up, typing,
+or reaction on it.
 :::
 
 Every `@On*` takes optional predicates as arguments — extra match conditions,
