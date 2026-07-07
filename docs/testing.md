@@ -92,16 +92,16 @@ Pass `routers` (plus any `providers` they depend on) for a focused router test, 
 mirrors `NestgramModule.forRoot`, since that's exactly what the testbed configures
 under the hood.
 
-| Option                      | Type                        | What it does                                                                                              |
-| --------------------------- | --------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `routers`                   | `Type[]`                    | Router classes (and other providers) to register.                                                         |
-| `providers`                 | `Provider[]`                | Extra providers the routers depend on — services, mocks, …                                                |
-| `imports`                   | `ModuleMetadata['imports']` | Whole modules to bring in (e.g. `AppModule`, `SessionsModule`).                                           |
-| `token`                     | `string`                    | The bot token. Any non-empty string — it's never sent anywhere (defaults to `'TEST:token'`).             |
-| `parseMode`                 | `ParseModeValue`            | Default `parse_mode` for sends, mirroring `NestgramModule.forRoot`.                                       |
-| `autoAnswerCallbackQueries` | `boolean`                   | Auto-answer unanswered callback queries (on by default, as in production).                                |
-| `replyExceptions`           | `boolean`                   | Map a thrown `ReplyException` / `AnswerException` to a reply via the built-in filter (on by default).     |
-| `apiInterceptors`           | `Type<ApiInterceptor>[]`    | Outbound interceptors to test; they run **before** capture, so their request mutations show up in `sent`. |
+| Option                      | Type                        | What it does                                                                                                |
+| --------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `routers`                   | `Type[]`                    | Router classes (and other providers) to register.                                                           |
+| `providers`                 | `Provider[]`                | Extra providers the routers depend on — services, mocks, …                                                  |
+| `imports`                   | `ModuleMetadata['imports']` | Whole modules to bring in (e.g. `AppModule`, `SessionsModule`).                                             |
+| `token`                     | `string`                    | The bot token. Any non-empty string — it's never sent anywhere (defaults to `'TEST:token'`).                |
+| `parseMode`                 | `ParseModeValue`            | Default `parse_mode` for sends, mirroring `NestgramModule.forRoot`.                                         |
+| `autoAnswerCallbackQueries` | `boolean`                   | Auto-answer unanswered callback queries (on by default, as in production).                                  |
+| `replyExceptions`           | `boolean`                   | Map a thrown `ReplyException` / `AnswerException` to a reply via the built-in filter (on by default).       |
+| `apiInterceptors`           | `Type<ApiInterceptor>[]`    | Outbound interceptors to test; they run **before** capture, so their request mutations show up in `sent`.   |
 | `keyboardState`             | `KeyboardStateOptions`      | Override the per-message keyboard-state store — pass `{ store }` to assert what a checkbox group persisted. |
 
 The capture seam sits in that same outbound onion: your `apiInterceptors` run
@@ -132,6 +132,7 @@ The builder set covers every routable update kind:
 | `updates.message(text, o?)`             | `message`             | a plain text message                                      |
 | `updates.command(name, args?, o?)`      | `message`             | `command('start')` → `/start`; the slash is added for you |
 | `updates.editedMessage(text, o?)`       | `edited_message`      | an edited message                                         |
+| `updates.guestMessage(text, o?)`        | `guest_message`       | a guest-mode message, carrying a `guest_query_id`         |
 | `updates.channelPost(text, o?)`         | `channel_post`        | a post in a `channel` chat, no `from`                     |
 | `updates.editedChannelPost(text, o?)`   | `edited_channel_post` | an edited channel post                                    |
 | `updates.photo(caption?, o?)`           | `message`             | a message carrying a `photo` (+ optional caption)         |
@@ -159,13 +160,13 @@ await bot.dispatch(
 );
 ```
 
-| Override    | Overrides                                                  |
-| ----------- | ---------------------------------------------------------- |
-| `updateId`  | the synthetic `update_id` (defaults to auto-incrementing)  |
-| `from`      | the sender — merged over the default test user             |
-| `chat`      | the chat — merged over the default private chat            |
-| `messageId` | the `message_id` of the synthetic message                  |
-| `date`      | the Unix `date` of the synthetic message                   |
+| Override    | Overrides                                                 |
+| ----------- | --------------------------------------------------------- |
+| `updateId`  | the synthetic `update_id` (defaults to auto-incrementing) |
+| `from`      | the sender — merged over the default test user            |
+| `chat`      | the chat — merged over the default private chat           |
+| `messageId` | the `message_id` of the synthetic message                 |
+| `date`      | the Unix `date` of the synthetic message                  |
 
 ### The `raw` escape hatch
 

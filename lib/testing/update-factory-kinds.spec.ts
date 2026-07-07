@@ -142,6 +142,8 @@ describe('UpdateFactory — routable-kind builders', () => {
     expect(sink.events).toHaveLength(1);
     expect(sink.events[0]).toBeInstanceOf(Message);
     expect((sink.events[0] as Message).text).toBe('need a table for two');
+    // The field the guest flow hinges on (bot.answerGuestQuery target).
+    expect((sink.events[0] as Message).guest_query_id).toBeDefined();
   });
 
   it('channelPost() routes to @OnChannelPost in a channel chat', async () => {

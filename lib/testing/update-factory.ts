@@ -86,12 +86,10 @@ export class UpdateFactory {
     const id = this.resolveId(overrides);
     return {
       update_id: id,
-      guest_message: this.textMessage(
-        text,
-        id,
-        this.chat(overrides),
-        overrides,
-      ),
+      guest_message: {
+        ...this.textMessage(text, id, this.chat(overrides), overrides),
+        guest_query_id: `gq_${id}`,
+      },
     };
   }
 
