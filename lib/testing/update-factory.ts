@@ -81,6 +81,18 @@ export class UpdateFactory {
     };
   }
 
+  /** A message from a guest (`guest_message`), when guest mode is enabled. */
+  guestMessage(text: string, overrides?: UpdateOverrides): RawUpdate {
+    const id = this.resolveId(overrides);
+    return {
+      update_id: id,
+      guest_message: {
+        ...this.textMessage(text, id, this.chat(overrides), overrides),
+        guest_query_id: `gq_${id}`,
+      },
+    };
+  }
+
   /**
    * A channel post — a message in a `channel` chat with no `from` sender (the
    * default chat type is overridden to `channel`; pass `overrides.chat` to widen).

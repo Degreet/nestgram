@@ -3,6 +3,8 @@ import { Logger } from '@nestjs/common';
 import { Message } from './message';
 import { CallbackQuery } from './callback-query';
 import { BotService, MediaGroup } from '../api';
+import { NestgramError } from '../exceptions';
+import type { RawInlineQueryResult } from './raw-update.types';
 
 interface Call {
   method: string;
@@ -21,6 +23,7 @@ function fakeBot(): { bot: BotService; calls: Call[] } {
   const bot = {
     token: 'TEST',
     sendMessage: record('sendMessage'),
+    answerGuestQuery: record('answerGuestQuery'),
     answerCallbackQuery: record('answerCallbackQuery'),
     editMessageText: record('editMessageText'),
     editMessageReplyMarkup: record('editMessageReplyMarkup'),
@@ -58,6 +61,46 @@ describe('Message actions', () => {
       method: 'sendMessage',
       args: [1, 'hello', undefined],
     });
+  });
+
+  function guestMessage(bot: BotService): Message {
+    return new Message(bot, {
+      message_id: 5,
+      chat: { id: 1, type: 'private' },
+      text: 'table for two?',
+      guest_query_id: 'gq_1',
+    });
+  }
+
+  it('answer() refuses a guest message (its chat id may not be reachable)', () => {
+    const { bot, calls } = fakeBot();
+    expect(() => guestMessage(bot).answer('hi')).toThrow(NestgramError);
+    expect(calls).toHaveLength(0);
+  });
+
+  it('answerGuest() replies via answerGuestQuery with the guest_query_id', () => {
+    const { bot, calls } = fakeBot();
+    const result = {
+      type: 'article',
+      id: '1',
+      title: 'Booked',
+      input_message_content: { message_text: 'Table for two, confirmed.' },
+    } as RawInlineQueryResult;
+
+    guestMessage(bot).answerGuest(result);
+
+    expect(calls[0]).toEqual({
+      method: 'answerGuestQuery',
+      args: ['gq_1', result, undefined],
+    });
+  });
+
+  it('answerGuest() throws on a non-guest message', () => {
+    const { bot, calls } = fakeBot();
+    expect(() => message(bot).answerGuest({} as RawInlineQueryResult)).toThrow(
+      NestgramError,
+    );
+    expect(calls).toHaveLength(0);
   });
 
   it('reply() quotes the original message', () => {

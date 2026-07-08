@@ -53,6 +53,18 @@ describe('resolveKind', () => {
     }
   });
 
+  it('resolves a guest_message update', () => {
+    const update: RawUpdate = {
+      update_id: 1,
+      guest_message: {
+        message_id: 1,
+        date: 1,
+        chat: { id: 1, type: 'private' },
+      },
+    };
+    expect(resolveKind(update)).toBe('guest_message');
+  });
+
   it('returns null for an update with no recognised field', () => {
     const update = { update_id: 1 } as RawUpdate;
     expect(resolveKind(update)).toBeNull();
@@ -70,6 +82,11 @@ describe('unmodelledKind', () => {
 
   it('returns null when the update is a known kind', () => {
     const update = { update_id: 1, poll: {} } as RawUpdate;
+    expect(unmodelledKind(update)).toBeNull();
+  });
+
+  it('does not flag guest_message as unmodelled (it is now routed)', () => {
+    const update = { update_id: 1, guest_message: {} } as RawUpdate;
     expect(unmodelledKind(update)).toBeNull();
   });
 

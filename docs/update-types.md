@@ -72,6 +72,7 @@ parameter is the event class in the **Event** column.
 | `@OnBusinessMessage()`        | `Message`                     | `business_message`          |
 | `@OnEditedBusinessMessage()`  | `Message`                     | `edited_business_message`   |
 | `@OnDeletedBusinessMessage()` | `BusinessMessagesDeleted`     | `deleted_business_messages` |
+| `@OnGuestMessage()`           | `Message`                     | `guest_message`             |
 | `@OnMessageReaction()`        | `MessageReactionUpdated`      | `message_reaction`          |
 | `@OnMessageReactionCount()`   | `MessageReactionCountUpdated` | `message_reaction_count`    |
 | `@OnInlineQuery()`            | `InlineQuery`                 | `inline_query`              |
@@ -94,6 +95,16 @@ top — `@OnStart()` and `@Command(...)` for slash commands, `@Action('done/:id'
 for callback buttons, `@Hears(...)` for text — each adds a predicate over the
 right kind. Use those when they fit; reach for the bare `@On*` for the kinds
 without dedicated sugar (membership, polls, reactions, business, boosts).
+:::
+
+:::caution
+A `guest_message`'s `chat.id` can resolve to a _different_ real chat (per the
+spec), so a normal reply may misdeliver. Answer with
+**`message.answerGuest(result)`** — a single `InlineQueryResult`, no follow-up,
+typing, or reaction — the guest-safe counterpart to `answer()`. `message.answer()`
+(and a returned `string`, which routes through it) **throws** for a guest message.
+Other direct sends to `message.chat.id` (e.g. `answerPhoto`, an explicit
+`new SendMessage(...)`) aren't guarded — those stay your responsibility.
 :::
 
 Every `@On*` takes optional predicates as arguments — extra match conditions,

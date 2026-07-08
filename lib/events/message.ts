@@ -1,6 +1,7 @@
 import { TelegramObject } from './telegram-object';
 import { AlbumItem, BotService, MediaGroup, MethodOptions } from '../api';
 import {
+  AnswerGuestQueryOptions,
   CopyMessageOptions,
   DeleteMessageOptions,
   EditMessageMediaOptions,
@@ -21,7 +22,12 @@ import {
 } from '../api/methods';
 import { UpdateType } from '../decorators';
 import { InputFile } from '../api/input-file';
-import type { RawInputRichMessage, RawMessage } from './raw-update.types';
+import { NestgramError } from '../exceptions';
+import type {
+  RawInlineQueryResult,
+  RawInputRichMessage,
+  RawMessage,
+} from './raw-update.types';
 import {
   Animation,
   Audio,
@@ -57,6 +63,7 @@ export interface Message extends Omit<RawMessage, WrappedMedia> {}
   'edited_channel_post',
   'business_message',
   'edited_business_message',
+  'guest_message',
 )
 export class Message extends TelegramObject {
   /** The `ReactionType` discriminant for a standard emoji reaction. */
@@ -101,7 +108,43 @@ export class Message extends TelegramObject {
   }
 
   answer(text: string, options?: MethodOptions<SendMessageOptions>) {
+    // A guest message's chat id can, per the spec, resolve to a DIFFERENT real
+    // chat (the `guest_query_id`-scoped identifier only coincides with the guest
+    // exchange). Replying to `this.chat.id` here risks delivering to the wrong
+    // user, so refuse — a guest exchange is answered via `answerGuest`.
+    if (this.guest_query_id) {
+      throw new NestgramError(
+        "message.answer() can't reply to a guest message — its chat id may " +
+          'resolve to a different real chat (per the spec). Use ' +
+          'message.answerGuest(result) (or bot.answerGuestQuery).',
+      );
+    }
     return this.botService.sendMessage(this.chat.id, text, options);
+  }
+
+  /**
+   * Answer THIS guest message via `answerGuestQuery` — the one valid reply for a
+   * guest exchange: a single `InlineQueryResult`, no follow-up, typing, or
+   * reaction. Throws if the message is not guest-origin (no `guest_query_id`).
+   * The guest counterpart to {@link answer}, whose same-chat reply is unsafe here.
+   */
+  answerGuest(
+    result: RawInlineQueryResult,
+    options?: MethodOptions<
+      Omit<AnswerGuestQueryOptions, 'guest_query_id' | 'result'>
+    >,
+  ) {
+    if (!this.guest_query_id) {
+      throw new NestgramError(
+        'message.answerGuest() is only valid on a guest message (this message ' +
+          'carries no guest_query_id).',
+      );
+    }
+    return this.botService.answerGuestQuery(
+      this.guest_query_id,
+      result,
+      options,
+    );
   }
 
   answerPhoto(
