@@ -98,11 +98,13 @@ without dedicated sugar (membership, polls, reactions, business, boosts).
 :::
 
 :::caution
-`guest_message` arrives as a `Message` like any other, but a guest exchange is
-answered **once** with `bot.answerGuestQuery(message.guest_query_id, result)` (an
-`InlineQueryResult`) — not `message.answer(...)`. There is no follow-up, typing,
-or reaction on it. The `return string` reply sugar is skipped with a warning for
-this kind, for the same reason.
+A `guest_message`'s `chat.id` can resolve to a _different_ real chat (per the
+spec), so a normal reply may misdeliver. Answer with
+**`message.answerGuest(result)`** — a single `InlineQueryResult`, no follow-up,
+typing, or reaction — the guest-safe counterpart to `answer()`. `message.answer()`
+(and a returned `string`, which routes through it) **throws** for a guest message.
+Other direct sends to `message.chat.id` (e.g. `answerPhoto`, an explicit
+`new SendMessage(...)`) aren't guarded — those stay your responsibility.
 :::
 
 Every `@On*` takes optional predicates as arguments — extra match conditions,

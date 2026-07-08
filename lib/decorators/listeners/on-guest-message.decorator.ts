@@ -9,9 +9,9 @@ const UPDATE_TYPE = 'guest_message';
  * the rich {@link Message}. Optional predicates narrow which updates match (all
  * must pass); stacks with other listeners on one method.
  *
- * A guest exchange is answered once with `bot.answerGuestQuery(...)` (an
- * `InlineQueryResult`), not the usual `message.answer(...)` reply — there is no
- * follow-up, typing, or reaction on it.
+ * A guest exchange is answered once with `message.answerGuest(result)` (an
+ * `InlineQueryResult`) — not the usual `message.answer(...)`, which throws for a
+ * guest message. There is no follow-up, typing, or reaction on it.
  */
 export const OnGuestMessage = (
   ...predicates: RoutePredicate[]

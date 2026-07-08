@@ -57,24 +57,6 @@ describe('ResultHandler', () => {
     expect(answered).toEqual(['hello']);
   });
 
-  it('warns and skips a returned string for a guest message', async () => {
-    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
-    const answered: string[] = [];
-    const event = { answer: (text: string) => answered.push(text) };
-
-    await handler.handle('hello', {
-      kind: 'guest_message',
-      event,
-      bot,
-    } as unknown as TelegramExecutionContext);
-
-    expect(answered).toEqual([]);
-    expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('answerGuestQuery'),
-    );
-    warn.mockRestore();
-  });
-
   it("executes a returned command object via the context's bot", async () => {
     const command = new GetMe();
 
