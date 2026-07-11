@@ -276,29 +276,12 @@ export class BotService extends GeneratedBotMethods {
    * `sendMessage`. `message.answerStream(...)` / `replyStream(...)` and a bare
    * `return <async-iterable>` from a handler are the sugar over this.
    */
-  async streamMessage(
+  streamMessage(
     chat_id: number,
     source: StreamSource,
     options?: StreamOptions,
   ): Promise<Message | undefined> {
-    if (!BotService.isPrivateChatId(chat_id)) {
-      throw new NestgramError(
-        `streamMessage needs a private chat, but chat_id ${chat_id} is not one ` +
-          '(the native sendRichMessageDraft animation is private-chat-only). ' +
-          'Catch this to fall back to a plain sendMessage.',
-      );
-    }
     return new MessageStream(this, chat_id, source, options).run();
-  }
-
-  /**
-   * Whether a chat id addresses a private (one-to-one) chat. Telegram gives
-   * users and private chats positive ids; groups, supergroups and channels are
-   * negative. Streaming's native draft is private-only, so this gates
-   * {@link streamMessage}.
-   */
-  private static isPrivateChatId(id: number): boolean {
-    return id > 0;
   }
 
   private async fetchFile(

@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common';
 
+import { NestgramError } from '../exceptions';
 import type { BotService, CallOptions } from '../api';
 import type { SendRichMessageOptions } from '../api/methods';
 import type { Message } from '../events';
@@ -23,8 +24,8 @@ type FinalizeOptions = Partial<
  * never a DI singleton (which couldn't hold per-stream state). Same shape as the
  * rich events, which hold a `BotService` and are `new`ed per update.
  *
- * Private-chat only: `bot.streamMessage` guards that before constructing this —
- * `sendRichMessageDraft` has no group equivalent.
+ * Private-chat only — `run()` refuses a non-private chat (Telegram gives private
+ * chats positive ids); `sendRichMessageDraft` has no group equivalent.
  */
 export class MessageStream {
   private static readonly logger = new Logger(MessageStream.name);
@@ -73,6 +74,13 @@ export class MessageStream {
    * error propagates, so nothing is persisted.
    */
   async run(): Promise<Message | undefined> {
+    if (!MessageStream.isPrivateChatId(this.chatId)) {
+      throw new NestgramError(
+        `streamMessage needs a private chat, but chat_id ${this.chatId} is not ` +
+          'one — the native sendRichMessageDraft animation is private-chat-only. ' +
+          'Catch this to fall back to a plain send.',
+      );
+    }
     let lastPushAt = 0;
     for await (const delta of this.source) {
       this.text += delta;
@@ -120,5 +128,14 @@ export class MessageStream {
   /** Wrap the accumulated text as the dialect's `InputRichMessage` field. */
   private fmt(text: string): RawInputRichMessage {
     return this.format === 'html' ? { html: text } : { markdown: text };
+  }
+
+  /**
+   * Whether a chat id addresses a private (one-to-one) chat. Telegram gives
+   * users and private chats positive ids; groups, supergroups and channels are
+   * negative. The native draft is private-only, so `run()` gates on this.
+   */
+  private static isPrivateChatId(id: number): boolean {
+    return id > 0;
   }
 }

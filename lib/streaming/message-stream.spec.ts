@@ -1,4 +1,5 @@
 import { MessageStream } from './message-stream';
+import { NestgramError } from '../exceptions';
 import type { BotService } from '../api';
 import type { Message } from '../events';
 
@@ -151,6 +152,17 @@ describe('MessageStream', () => {
       }).run(),
     ).rejects.toThrow('boom');
 
+    expect(finals).toHaveLength(0);
+  });
+
+  it('refuses a non-private chat (self-enforced, not just at the hub)', async () => {
+    const { bot, drafts, finals } = fakeBot();
+
+    await expect(
+      new MessageStream(bot, -100, gen(['hi']), { throttleMs: 0 }).run(),
+    ).rejects.toBeInstanceOf(NestgramError);
+
+    expect(drafts).toHaveLength(0);
     expect(finals).toHaveLength(0);
   });
 
