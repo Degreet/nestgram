@@ -32,6 +32,7 @@ type EditInPlaceMethod =
  *                        are filled from the callback message when omitted
  *   - command object  -> execute it (the pure-data `new SendMessage(...)` layer
  *                        beneath `message.answer(...)` sugar)
+ *   - async-iterable  -> stream it to the same chat (private only; else warn+drop)
  *   - anything else   -> noop
  *
  * Editing in place is symmetric to `answer()`: just as a returned string replies
@@ -80,6 +81,12 @@ export class ResultHandler {
       // The bot that received this update — not a global default — so a returned
       // command object (new SendMessage(...)) goes out through the right bot.
       await ctx.bot.call(result);
+      return;
+    }
+
+    if (ResultHandler.isStream(result)) {
+      await this.streamInPlace(result, ctx);
+      return;
     }
   }
 
@@ -181,6 +188,55 @@ export class ResultHandler {
       }
       throw error;
     }
+  }
+
+  /**
+   * A returned async-iterable streams to the same chat — the return-value mirror
+   * of `message.answerStream(...)`. Streaming's native draft is private-chat
+   * only, so a group (or an update with no chat) warns and drops, exactly as a
+   * bare string return to a non-answerable event does — the method doors throw
+   * for a caller that wants to catch and fall back.
+   */
+  private async streamInPlace(
+    source: AsyncIterable<string>,
+    ctx: TelegramExecutionContext,
+  ): Promise<void> {
+    // A guest message's chat id can misdeliver (see Message.answer) and a guest
+    // exchange has no streaming reply, so a returned stream can't be honored —
+    // drop it, mirroring the throw `answerStream` gives an imperative caller.
+    if (ctx.update.guest_message) {
+      this.logger.warn(
+        `Handler for "${ctx.kind}" returned a stream for a guest message, which ` +
+          "can't be answered by streaming (its chat id may misdeliver). Reply " +
+          'with message.answerGuest(result) instead.',
+      );
+      return;
+    }
+    const chat = ctx.chat;
+    if (chat?.type !== 'private') {
+      this.logger.warn(
+        `Handler for "${ctx.kind}" returned a stream, but streaming needs a ` +
+          'private chat (the native draft is private-chat-only). Use ' +
+          'message.answerStream(...) to handle non-private chats explicitly.',
+      );
+      return;
+    }
+    await ctx.bot.streamMessage(chat.id, source);
+  }
+
+  /**
+   * Whether a handler return value is an async-iterable to stream (an LLM token
+   * stream, an `async function*`). Structural, like the `typeof === 'string'`
+   * check: strings carry `Symbol.iterator`, not `Symbol.asyncIterator`, so they
+   * never match here (and are handled by the earlier branch regardless).
+   */
+  private static isStream(result: unknown): result is AsyncIterable<string> {
+    return (
+      typeof result === 'object' &&
+      result !== null &&
+      typeof (result as AsyncIterable<string>)[Symbol.asyncIterator] ===
+        'function'
+    );
   }
 
   private isAnswerable(

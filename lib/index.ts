@@ -18,6 +18,7 @@ export * from './i18n';
 export * from './fsm';
 export * from './scenes';
 export * from './rate-limit';
+export * from './streaming';
 
 // Engine public surface (the update -> dispatch pipeline).
 export * from './engine/matching';

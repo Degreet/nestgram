@@ -11,6 +11,9 @@ import { DEFAULT_BOT_NAME, Providers } from '../providers';
 import { ApiException, NestgramError } from '../exceptions';
 import { deepLink as createDeepLink, DeepLinkParams } from '../deep-links';
 import type { User } from '../events/user';
+import type { Message } from '../events';
+import { MessageStream } from '../streaming/message-stream';
+import type { StreamOptions, StreamSource } from '../streaming';
 
 import { ApiError, ApiResponse } from './api-response';
 import { createAttachedData, createInlineData } from './form-data';
@@ -260,6 +263,25 @@ export class BotService extends GeneratedBotMethods {
       await rm(destinationPath, { force: true });
       throw error;
     }
+  }
+
+  /**
+   * Stream a message live into a private chat: consume an async iterable of text
+   * deltas, animate a native `sendRichMessageDraft` preview, then persist the
+   * final text with `sendRichMessage`. Resolves the sent {@link Message}, or
+   * `undefined` when the stream produced no text.
+   *
+   * Private-chat only — the native animated draft has no group equivalent. Any
+   * other chat throws a {@link NestgramError}; catch it to fall back to a plain
+   * `sendMessage`. `message.answerStream(...)` / `replyStream(...)` and a bare
+   * `return <async-iterable>` from a handler are the sugar over this.
+   */
+  streamMessage(
+    chat_id: number,
+    source: StreamSource,
+    options?: StreamOptions,
+  ): Promise<Message | undefined> {
+    return new MessageStream(this, chat_id, source, options).run();
   }
 
   private async fetchFile(

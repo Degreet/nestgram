@@ -422,3 +422,50 @@ describe('BotService message actions (delete/forward/copy + chaining)', () => {
     expect(typeof sent.delete).toBe('function');
   });
 });
+
+describe('BotService streaming', () => {
+  let calls: FetchCall[];
+
+  beforeEach(() => {
+    calls = mockFetch();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  async function* gen(deltas: string[]): AsyncGenerator<string> {
+    for (const delta of deltas) {
+      yield delta;
+    }
+  }
+
+  it('animates rich drafts then persists the final message in a private chat', async () => {
+    const sent = await bot({ token: '1:T' }).streamMessage(
+      7,
+      gen(['Hel', 'lo']),
+      { throttleMs: 0 },
+    );
+
+    const methods = calls.map((c) =>
+      c.url.replace('https://api.telegram.org/bot1:T/', ''),
+    );
+    expect(methods).toEqual([
+      'sendRichMessageDraft',
+      'sendRichMessageDraft',
+      'sendRichMessage',
+    ]);
+    expect(calls[calls.length - 1].body).toMatchObject({
+      chat_id: 7,
+      rich_message: { markdown: 'Hello' },
+    });
+    expect(sent).toBeInstanceOf(Message);
+  });
+
+  it('rejects for a non-private chat before sending anything', async () => {
+    await expect(
+      bot({ token: '1:T' }).streamMessage(-100, gen(['hi'])),
+    ).rejects.toBeInstanceOf(NestgramError);
+    expect(calls).toHaveLength(0);
+  });
+});

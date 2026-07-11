@@ -34,15 +34,21 @@ function callbackCtx(bot: BotService): TelegramExecutionContext {
 
 describe('ResultHandler', () => {
   let called: ApiMethod<unknown, unknown>[];
+  let streamed: { chatId: number; source: unknown }[];
   let handler: ResultHandler;
   let bot: BotService;
 
   beforeEach(() => {
     called = [];
+    streamed = [];
     bot = {
       call: (method: ApiMethod<unknown, unknown>) => {
         called.push(method);
         return Promise.resolve();
+      },
+      streamMessage: (chatId: number, source: unknown) => {
+        streamed.push({ chatId, source });
+        return Promise.resolve(undefined);
       },
     } as unknown as BotService;
     handler = new ResultHandler();
@@ -194,6 +200,71 @@ describe('ResultHandler', () => {
       await expect(
         handler.handle(new InlineKeyboard().text('x', 'x'), callbackCtx(bot)),
       ).rejects.toThrow('network down');
+    });
+  });
+
+  describe('streaming (returned async-iterable)', () => {
+    async function* gen(): AsyncGenerator<string> {
+      yield 'hi';
+    }
+
+    function chatCtx(
+      chat: { id: number; type: string } | undefined,
+    ): TelegramExecutionContext {
+      return {
+        kind: 'message',
+        event: {},
+        bot,
+        chat,
+        update: {},
+      } as unknown as TelegramExecutionContext;
+    }
+
+    it('streams a returned async-iterable to a private chat', async () => {
+      const source = gen();
+
+      await handler.handle(source, chatCtx({ id: 7, type: 'private' }));
+
+      expect(streamed).toEqual([{ chatId: 7, source }]);
+    });
+
+    it('warns and drops a stream returned in a non-private chat', async () => {
+      const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+
+      await handler.handle(gen(), chatCtx({ id: -100, type: 'supergroup' }));
+
+      expect(streamed).toEqual([]);
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('private chat'),
+      );
+      warn.mockRestore();
+    });
+
+    it('warns and drops a stream when the update has no chat', async () => {
+      const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+
+      await handler.handle(gen(), chatCtx(undefined));
+
+      expect(streamed).toEqual([]);
+      expect(warn).toHaveBeenCalled();
+      warn.mockRestore();
+    });
+
+    it('warns and drops a stream returned for a guest message', async () => {
+      const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+
+      // A guest message's chat looks private, so the guest guard must fire first.
+      await handler.handle(gen(), {
+        kind: 'guest_message',
+        event: {},
+        bot,
+        chat: { id: 7, type: 'private' },
+        update: { guest_message: { guest_query_id: 'gq_1' } },
+      } as unknown as TelegramExecutionContext);
+
+      expect(streamed).toEqual([]);
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('guest'));
+      warn.mockRestore();
     });
   });
 });
