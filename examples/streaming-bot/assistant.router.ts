@@ -1,4 +1,4 @@
-import { Router, Command, OnMessage, Message } from 'nestgram';
+import { Router, Command, OnText, Message } from 'nestgram';
 
 /**
  * Stands in for an LLM's streaming response: yields the reply a few tokens at a
@@ -19,8 +19,8 @@ async function* fakeCompletion(prompt: string): AsyncIterable<string> {
 
 /**
  * A tiny streaming assistant. `/ask <text>` returns the stream directly (the
- * framework detects the async iterable and streams it); any other message is
- * answered imperatively with `message.answerStream(...)`.
+ * framework detects the async iterable and streams it); any other text message
+ * is answered imperatively with `message.answerStream(...)`.
  *
  * Streaming is private-chat only — DM the bot. In a group `answerStream` throws
  * (catch it to fall back to `answer`), and a bare `return <stream>` is dropped.
@@ -32,7 +32,7 @@ export class AssistantRouter {
     return fakeCompletion(message.text ?? '');
   }
 
-  @OnMessage()
+  @OnText()
   chat(message: Message) {
     return message.answerStream(fakeCompletion(message.text ?? ''));
   }
