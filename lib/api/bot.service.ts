@@ -11,6 +11,9 @@ import { DEFAULT_BOT_NAME, Providers } from '../providers';
 import { ApiException, NestgramError } from '../exceptions';
 import { deepLink as createDeepLink, DeepLinkParams } from '../deep-links';
 import type { User } from '../events/user';
+import type { Message } from '../events';
+import { MessageStream } from '../streaming/message-stream';
+import type { StreamOptions, StreamSource } from '../streaming';
 
 import { ApiError, ApiResponse } from './api-response';
 import { createAttachedData, createInlineData } from './form-data';
@@ -260,6 +263,42 @@ export class BotService extends GeneratedBotMethods {
       await rm(destinationPath, { force: true });
       throw error;
     }
+  }
+
+  /**
+   * Stream a message live into a private chat: consume an async iterable of text
+   * deltas, animate a native `sendRichMessageDraft` preview, then persist the
+   * final text with `sendRichMessage`. Resolves the sent {@link Message}, or
+   * `undefined` when the stream produced no text.
+   *
+   * Private-chat only — the native animated draft has no group equivalent. Any
+   * other chat throws a {@link NestgramError}; catch it to fall back to a plain
+   * `sendMessage`. `message.answerStream(...)` / `replyStream(...)` and a bare
+   * `return <async-iterable>` from a handler are the sugar over this.
+   */
+  async streamMessage(
+    chat_id: number,
+    source: StreamSource,
+    options?: StreamOptions,
+  ): Promise<Message | undefined> {
+    if (!BotService.isPrivateChatId(chat_id)) {
+      throw new NestgramError(
+        `streamMessage needs a private chat, but chat_id ${chat_id} is not one ` +
+          '(the native sendRichMessageDraft animation is private-chat-only). ' +
+          'Catch this to fall back to a plain sendMessage.',
+      );
+    }
+    return new MessageStream(this, chat_id, source, options).run();
+  }
+
+  /**
+   * Whether a chat id addresses a private (one-to-one) chat. Telegram gives
+   * users and private chats positive ids; groups, supergroups and channels are
+   * negative. Streaming's native draft is private-only, so this gates
+   * {@link streamMessage}.
+   */
+  private static isPrivateChatId(id: number): boolean {
+    return id > 0;
   }
 
   private async fetchFile(

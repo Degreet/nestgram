@@ -40,6 +40,7 @@ function fakeBot(): { bot: BotService; calls: Call[] } {
     sendSticker: record('sendSticker'),
     setMessageReaction: record('setMessageReaction'),
     sendMediaGroup: record('sendMediaGroup'),
+    streamMessage: record('streamMessage'),
   } as unknown as BotService;
 
   return { bot, calls };
@@ -110,6 +111,39 @@ describe('Message actions', () => {
       method: 'sendMessage',
       args: [1, 'hello', { reply_parameters: { message_id: 5 } }],
     });
+  });
+
+  it('answerStream() streams to the same chat', () => {
+    const { bot, calls } = fakeBot();
+    const source = (async function* () {
+      yield 'x';
+    })();
+    message(bot).answerStream(source, { format: 'html' });
+    expect(calls[0]).toEqual({
+      method: 'streamMessage',
+      args: [1, source, { format: 'html' }],
+    });
+  });
+
+  it('replyStream() quotes the original message', () => {
+    const { bot, calls } = fakeBot();
+    const source = (async function* () {
+      yield 'x';
+    })();
+    message(bot).replyStream(source);
+    expect(calls[0]).toEqual({
+      method: 'streamMessage',
+      args: [1, source, { reply_parameters: { message_id: 5 } }],
+    });
+  });
+
+  it('answerStream() refuses a guest message', () => {
+    const { bot, calls } = fakeBot();
+    const source = (async function* () {
+      yield 'x';
+    })();
+    expect(() => guestMessage(bot).answerStream(source)).toThrow(NestgramError);
+    expect(calls).toHaveLength(0);
   });
 
   it('editText() edits this message', () => {

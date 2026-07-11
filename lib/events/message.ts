@@ -23,6 +23,7 @@ import {
 import { UpdateType } from '../decorators';
 import { InputFile } from '../api/input-file';
 import { NestgramError } from '../exceptions';
+import type { StreamOptions, StreamSource } from '../streaming';
 import type {
   RawInlineQueryResult,
   RawInputRichMessage,
@@ -107,19 +108,37 @@ export class Message extends TelegramObject {
     if (raw.sticker) this.sticker = new Sticker(botService, raw.sticker);
   }
 
-  answer(text: string, options?: MethodOptions<SendMessageOptions>) {
-    // A guest message's chat id can, per the spec, resolve to a DIFFERENT real
-    // chat (the `guest_query_id`-scoped identifier only coincides with the guest
-    // exchange). Replying to `this.chat.id` here risks delivering to the wrong
-    // user, so refuse — a guest exchange is answered via `answerGuest`.
+  /**
+   * Refuse an action that would reply to `this.chat.id` when this is a guest
+   * message: a guest message's chat id can resolve to a DIFFERENT real chat (per
+   * the spec), so a same-chat reply risks misdelivery. A guest exchange is
+   * answered via {@link answerGuest} instead.
+   */
+  private assertNotGuest(action: string): void {
     if (this.guest_query_id) {
       throw new NestgramError(
-        "message.answer() can't reply to a guest message — its chat id may " +
+        `message.${action}() can't reply to a guest message — its chat id may ` +
           'resolve to a different real chat (per the spec). Use ' +
           'message.answerGuest(result) (or bot.answerGuestQuery).',
       );
     }
+  }
+
+  answer(text: string, options?: MethodOptions<SendMessageOptions>) {
+    this.assertNotGuest('answer');
     return this.botService.sendMessage(this.chat.id, text, options);
+  }
+
+  /**
+   * Stream a reply into this chat live — consume an async iterable of text
+   * deltas (an LLM token stream, an `async function*`) and animate it via the
+   * native rich-message draft, persisting the final text when the stream ends.
+   * Resolves the sent {@link Message}, or `undefined` for an empty stream.
+   * Private-chat only — throws in a group (see {@link BotService.streamMessage}).
+   */
+  answerStream(source: StreamSource, options?: StreamOptions) {
+    this.assertNotGuest('answerStream');
+    return this.botService.streamMessage(this.chat.id, source, options);
   }
 
   /**
@@ -216,6 +235,15 @@ export class Message extends TelegramObject {
 
   reply(text: string, options?: MethodOptions<SendMessageOptions>) {
     return this.botService.sendMessage(this.chat.id, text, {
+      reply_parameters: { message_id: this.message_id },
+      ...options,
+    });
+  }
+
+  /** {@link answerStream} that quotes this message on the persisted reply. */
+  replyStream(source: StreamSource, options?: StreamOptions) {
+    this.assertNotGuest('replyStream');
+    return this.botService.streamMessage(this.chat.id, source, {
       reply_parameters: { message_id: this.message_id },
       ...options,
     });
