@@ -349,3 +349,42 @@ describe('CallbackQuery actions', () => {
     warn.mockRestore();
   });
 });
+
+describe('Message entities', () => {
+  function mentioning(bot: BotService): Message {
+    return new Message(bot, {
+      message_id: 5,
+      chat: { id: 1, type: 'supergroup' },
+      text: 'hey @my_bot and @someone_else',
+      entities: [
+        { type: 'mention', offset: 4, length: 7 },
+        { type: 'mention', offset: 16, length: 13 },
+      ],
+    });
+  }
+
+  it('entitiesOf() returns the entities of a type with their text sliced', () => {
+    const { bot } = fakeBot();
+    expect(
+      mentioning(bot)
+        .entitiesOf('mention')
+        .map((e) => e.text),
+    ).toEqual(['@my_bot', '@someone_else']);
+  });
+
+  it('hasEntity(type) is true when any entity of the type is present', () => {
+    const { bot } = fakeBot();
+    expect(mentioning(bot).hasEntity('mention')).toBe(true);
+    expect(mentioning(bot).hasEntity('hashtag')).toBe(false);
+  });
+
+  it('hasEntity({ type, text }) matches the exact entity text', () => {
+    const { bot } = fakeBot();
+    expect(
+      mentioning(bot).hasEntity({ type: 'mention', text: '@my_bot' }),
+    ).toBe(true);
+    expect(
+      mentioning(bot).hasEntity({ type: 'mention', text: '@nobody' }),
+    ).toBe(false);
+  });
+});

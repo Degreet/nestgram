@@ -2,6 +2,7 @@ import { ArgumentsHost } from '@nestjs/common';
 
 import { BotService } from '../../api';
 import { User } from '../../events/user';
+import { Message } from '../../events/message';
 import { RawChat, RawUpdate } from '../../events/raw-update.types';
 import { extractChat, extractSender } from '../execution/extractors';
 import { EventFactory, TelegramEvent } from './event-factory';
@@ -50,6 +51,19 @@ export class TelegramExecutionContext {
   /** The user who triggered the update, when one is present. */
   get from(): User | undefined {
     return extractSender(this);
+  }
+
+  /**
+   * The rich {@link Message} when this update is a message-family update
+   * (message / edited / channel post / business / guest); `undefined` otherwise.
+   *
+   * The rich counterpart to reaching into `update.message` raw — a custom route
+   * predicate gets the same typed event a handler would, entity sugar
+   * (`message.hasEntity(...)`) and reply helpers included. Reuses the cached
+   * `event`, so touching it here doesn't build a second one.
+   */
+  get message(): Message | undefined {
+    return this.event instanceof Message ? this.event : undefined;
   }
 
   /** The chat the update happened in, when one is present. */
