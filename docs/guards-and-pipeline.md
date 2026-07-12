@@ -289,5 +289,6 @@ Cross-cutting concerns — auth, rate limits, logging, i18n, error mapping — l
 in guards, interceptors, pipes and filters, never copied into every handler.
 That is the whole payoff of running on `ExternalContextCreator`: the pipeline
 you reason about for an HTTP route is the pipeline that runs here. From this
-base, [Handling errors](/docs/handling-errors) goes deep on the filter side and
-[Rate limiting](/docs/rate-limiting) on the throttle interceptor.
+base, [Handling errors](/docs/handling-errors) goes deep on the filter side,
+[Send throttling](/docs/throttling) on the outbound throttle interceptor, and
+[Rate limiting](/docs/rate-limiting) on capping inbound updates.
