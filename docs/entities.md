@@ -85,8 +85,8 @@ for another reason and now want to check it — read it off the rich
 // Does this message carry a mention at all?
 message.hasEntity('mention'); // boolean
 
-// Does it mention THIS bot specifically? (exact entity-text match)
-message.hasEntity({ type: 'mention', text: '@my_bot' }); // boolean
+// Does it @mention this bot? (case-insensitive, @ optional — see below)
+message.mentions('my_bot'); // boolean
 
 // Every URL in the message, each with its text sliced out.
 message.entitiesOf('url'); // MessageEntity[]  → [{ type: 'url', offset, length, text }]
@@ -100,6 +100,34 @@ message.entitiesOf();
 `user` (`text_mention`) field, not just the span. Both methods draw from the
 message text and a media caption, so `message.hasEntity('hashtag')` is `true`
 whether the `#tag` sat in the text or under a photo.
+
+Prefer `message.mentions(username)` over `hasEntity({ type: 'mention', text })`
+for mentions: Telegram usernames are **case-insensitive**, so `@My_Bot` and
+`@my_bot` are the same handle — but `hasEntity` matches the entity text exactly.
+`mentions()` normalizes case and makes the leading `@` optional, so it's the
+correct test. (It matches `@handle` mentions only, not the `text_mention` of a
+user without a username.)
+
+## Reconstruct the formatting
+
+An incoming message arrives as plain `text` plus an `entities` array — the
+**bold**, _italic_, `code`, links and spoilers are described positionally, not in
+the string. `message.html` and `message.markdown` render that back into formatted
+source, the inverse of sending with a `parse_mode`. A bot that quotes, echoes or
+logs a user's message keeps its formatting instead of flattening it.
+
+```ts
+// message.text = 'hello world', one bold entity over 'world'
+message.html; // 'hello <b>world</b>'
+message.markdown; // 'hello *world*'  (MarkdownV2)
+
+// Quote it straight back, formatting intact:
+message.reply(message.html, { parse_mode: 'HTML' });
+```
+
+Both read from the caption for a media message, and are `''` when there's no
+text or caption. Overlapping entities that can't be expressed as nested markup
+are dropped to plain text rather than producing broken output.
 
 :::note
 Entity `offset`/`length` are **UTF-16 code units** — which is exactly how

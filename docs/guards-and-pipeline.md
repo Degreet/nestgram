@@ -33,15 +33,16 @@ event. `TelegramExecutionContext.of(context)` unwraps it — the engine invokes
 handlers as `invoker(event, ctx)`, so the wrapper sits at argument index 1, and
 `.of()` reads it back.
 
-| Accessor      | Is                                                     |
-| ------------- | ------------------------------------------------------ |
-| `ctx.event`   | the rich typed event (`Message`, `CallbackQuery`, …)   |
-| `ctx.message` | the rich `Message` on a message update, or `undefined` |
-| `ctx.from`    | the `User` who triggered the update, or `undefined`    |
-| `ctx.chat`    | the chat the update happened in, or `undefined`        |
-| `ctx.kind`    | the resolved `UpdateKind`                              |
-| `ctx.update`  | the raw, read-only update payload                      |
-| `ctx.state`   | a per-update `Map` you can read and write              |
+| Accessor            | Is                                                     |
+| ------------------- | ------------------------------------------------------ |
+| `ctx.event`         | the rich typed event (`Message`, `CallbackQuery`, …)   |
+| `ctx.message`       | the rich `Message` on a message update, or `undefined` |
+| `ctx.callbackQuery` | the rich `CallbackQuery` on a callback, or `undefined` |
+| `ctx.from`          | the `User` who triggered the update, or `undefined`    |
+| `ctx.chat`          | the chat the update happened in, or `undefined`        |
+| `ctx.kind`          | the resolved `UpdateKind`                              |
+| `ctx.update`        | the raw, read-only update payload                      |
+| `ctx.state`         | a per-update `Map` you can read and write              |
 
 ## An admin-only guard
 
