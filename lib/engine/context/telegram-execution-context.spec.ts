@@ -1,5 +1,6 @@
 import { BotService } from '../../api';
 import { Message } from '../../events/message';
+import { CallbackQuery } from '../../events/callback-query';
 import { RawUpdate } from '../../events/raw-update.types';
 import { ContextFactory } from './context-factory';
 import { EventFactory } from './event-factory';
@@ -54,5 +55,54 @@ describe('TelegramExecutionContext.message', () => {
       },
     });
     expect(ctx.message).toBeUndefined();
+  });
+});
+
+describe('TelegramExecutionContext.callbackQuery', () => {
+  const callbackUpdate: RawUpdate = {
+    update_id: 1,
+    callback_query: {
+      id: 'q',
+      from: { id: 42, is_bot: false, first_name: 'Bob' },
+      chat_instance: 'c',
+      data: 'done/7',
+    },
+  };
+
+  it('exposes the rich CallbackQuery for a callback update', () => {
+    const ctx = wrap(callbackUpdate);
+    expect(ctx.callbackQuery).toBeInstanceOf(CallbackQuery);
+    expect(ctx.callbackQuery?.data).toBe('done/7');
+  });
+
+  it('is undefined for a message update', () => {
+    const ctx = wrap({
+      update_id: 1,
+      message: { message_id: 1, date: 1, chat: { id: 1, type: 'private' } },
+    });
+    expect(ctx.callbackQuery).toBeUndefined();
+  });
+});
+
+describe('TelegramExecutionContext.eventOf', () => {
+  it('narrows the event to the requested type, else undefined', () => {
+    const messageCtx = wrap({
+      update_id: 1,
+      message: { message_id: 1, date: 1, chat: { id: 1, type: 'private' } },
+    });
+    expect(messageCtx.eventOf(Message)).toBeInstanceOf(Message);
+    expect(messageCtx.eventOf(CallbackQuery)).toBeUndefined();
+
+    const callbackCtx = wrap({
+      update_id: 1,
+      callback_query: {
+        id: 'q',
+        from: { id: 42, is_bot: false, first_name: 'Bob' },
+        chat_instance: 'c',
+        data: 'x',
+      },
+    });
+    expect(callbackCtx.eventOf(CallbackQuery)).toBeInstanceOf(CallbackQuery);
+    expect(callbackCtx.eventOf(Message)).toBeUndefined();
   });
 });

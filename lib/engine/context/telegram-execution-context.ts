@@ -3,6 +3,8 @@ import { ArgumentsHost } from '@nestjs/common';
 import { BotService } from '../../api';
 import { User } from '../../events/user';
 import { Message } from '../../events/message';
+import { CallbackQuery } from '../../events/callback-query';
+import { TelegramObject } from '../../events/telegram-object';
 import { RawChat, RawUpdate } from '../../events/raw-update.types';
 import { extractChat, extractSender } from '../execution/extractors';
 import { EventFactory, TelegramEvent } from './event-factory';
@@ -63,7 +65,29 @@ export class TelegramExecutionContext {
    * `event`, so touching it here doesn't build a second one.
    */
   get message(): Message | undefined {
-    return this.event instanceof Message ? this.event : undefined;
+    return this.eventOf(Message);
+  }
+
+  /**
+   * The rich {@link CallbackQuery} when this update is a callback query;
+   * `undefined` otherwise. The callback counterpart to {@link message} — reach
+   * for it in a custom predicate that routes on callback `data` or the attached
+   * `message`. (`@Action` already routes callbacks declaratively.)
+   */
+  get callbackQuery(): CallbackQuery | undefined {
+    return this.eventOf(CallbackQuery);
+  }
+
+  /**
+   * The rich event narrowed to `type`, or `undefined` if this update isn't one.
+   * The general form behind {@link message} / {@link callbackQuery}: for the
+   * less common kinds (`ctx.eventOf(InlineQuery)`, `ctx.eventOf(Poll)`) it hands
+   * back the concrete type the loosely-typed `event` union can't.
+   */
+  eventOf<T extends TelegramObject>(
+    type: new (...args: never[]) => T,
+  ): T | undefined {
+    return this.event instanceof type ? this.event : undefined;
   }
 
   /** The chat the update happened in, when one is present. */
