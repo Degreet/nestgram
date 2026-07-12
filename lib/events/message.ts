@@ -23,11 +23,14 @@ import {
 import { UpdateType } from '../decorators';
 import { InputFile } from '../api/input-file';
 import { NestgramError } from '../exceptions';
+import { entitiesToHtml, entitiesToMarkdown } from '../formatting';
+import { EntityQuery, MessageEntity, messageEntities } from './message-entity';
 import type { StreamOptions, StreamSource } from '../streaming';
 import type {
   RawInlineQueryResult,
   RawInputRichMessage,
   RawMessage,
+  RawMessageEntity,
 } from './raw-update.types';
 import {
   Animation,
@@ -106,6 +109,68 @@ export class Message extends TelegramObject {
     if (raw.video_note)
       this.video_note = new VideoNote(botService, raw.video_note);
     if (raw.sticker) this.sticker = new Sticker(botService, raw.sticker);
+  }
+
+  /**
+   * The entities in this message — from its text and its media caption both —
+   * each with the `text` it spans resolved. Pass a `type` to keep only that
+   * kind (`message.entitiesOf('url')`). The object form of `@Entities()`.
+   */
+  entitiesOf(type?: string): MessageEntity[] {
+    return messageEntities(this, type);
+  }
+
+  /**
+   * Whether this message carries a matching entity: a bare `type`
+   * (`message.hasEntity('mention')`), or a `{ type, text }` also requiring the
+   * entity's text to match exactly (`{ type: 'mention', text: '@my_bot' }`).
+   * Checks the text and the caption.
+   */
+  hasEntity(query: EntityQuery): boolean {
+    if (typeof query === 'string') {
+      return messageEntities(this, query).length > 0;
+    }
+    return messageEntities(this, query.type).some(
+      (entity) => entity.text === query.text,
+    );
+  }
+
+  /**
+   * Whether this message `@mentions` the given username — case-insensitive, with
+   * the leading `@` optional. The correct test for a mention: Telegram usernames
+   * ignore case, where {@link hasEntity} matches the entity text exactly. Matches
+   * only `mention` entities (an `@handle`), not the `text_mention` of a user who
+   * has no username.
+   */
+  mentions(username: string): boolean {
+    const handle = `@${username.replace(/^@/, '').toLowerCase()}`;
+    return this.entitiesOf('mention').some(
+      (entity) => entity.text.toLowerCase() === handle,
+    );
+  }
+
+  /**
+   * This message's text (or media caption) rendered back to HTML from its
+   * entities — the inverse of sending with `parse_mode: 'HTML'`. Bold, links,
+   * spoilers and the rest survive, so a bot can quote or forward a message
+   * without dropping its formatting. Empty string when there is no text/caption.
+   */
+  get html(): string {
+    const [text, entities] = this.formattedSource();
+    return entitiesToHtml(text, entities);
+  }
+
+  /** Like {@link html}, rendered back to MarkdownV2. */
+  get markdown(): string {
+    const [text, entities] = this.formattedSource();
+    return entitiesToMarkdown(text, entities);
+  }
+
+  /** This message's text + entities, or — for media — its caption + caption_entities. */
+  private formattedSource(): [string, RawMessageEntity[] | undefined] {
+    return this.text !== undefined
+      ? [this.text, this.entities]
+      : [this.caption ?? '', this.caption_entities];
   }
 
   /**

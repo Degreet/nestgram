@@ -349,3 +349,87 @@ describe('CallbackQuery actions', () => {
     warn.mockRestore();
   });
 });
+
+describe('Message entities', () => {
+  function mentioning(bot: BotService): Message {
+    return new Message(bot, {
+      message_id: 5,
+      chat: { id: 1, type: 'supergroup' },
+      text: 'hey @my_bot and @someone_else',
+      entities: [
+        { type: 'mention', offset: 4, length: 7 },
+        { type: 'mention', offset: 16, length: 13 },
+      ],
+    });
+  }
+
+  it('entitiesOf() returns the entities of a type with their text sliced', () => {
+    const { bot } = fakeBot();
+    expect(
+      mentioning(bot)
+        .entitiesOf('mention')
+        .map((e) => e.text),
+    ).toEqual(['@my_bot', '@someone_else']);
+  });
+
+  it('hasEntity(type) is true when any entity of the type is present', () => {
+    const { bot } = fakeBot();
+    expect(mentioning(bot).hasEntity('mention')).toBe(true);
+    expect(mentioning(bot).hasEntity('hashtag')).toBe(false);
+  });
+
+  it('hasEntity({ type, text }) matches the exact entity text', () => {
+    const { bot } = fakeBot();
+    expect(
+      mentioning(bot).hasEntity({ type: 'mention', text: '@my_bot' }),
+    ).toBe(true);
+    expect(
+      mentioning(bot).hasEntity({ type: 'mention', text: '@nobody' }),
+    ).toBe(false);
+  });
+
+  it('mentions() matches case-insensitively, with @ optional', () => {
+    const { bot } = fakeBot();
+    const message = new Message(bot, {
+      message_id: 5,
+      chat: { id: 1, type: 'supergroup' },
+      text: 'ping @My_Bot',
+      entities: [{ type: 'mention', offset: 5, length: 7 }],
+    });
+    expect(message.mentions('my_bot')).toBe(true); // no @, different case
+    expect(message.mentions('@MY_BOT')).toBe(true); // leading @, upper case
+    expect(message.mentions('someone_else')).toBe(false);
+  });
+
+  it('html/markdown render the message back from its entities', () => {
+    const { bot } = fakeBot();
+    const message = new Message(bot, {
+      message_id: 5,
+      chat: { id: 1, type: 'private' },
+      text: 'hello world',
+      entities: [{ type: 'bold', offset: 6, length: 5 }],
+    });
+    expect(message.html).toBe('hello <b>world</b>');
+    expect(message.markdown).toBe('hello *world*');
+  });
+
+  it('html renders from the caption for a media message', () => {
+    const { bot } = fakeBot();
+    const message = new Message(bot, {
+      message_id: 5,
+      chat: { id: 1, type: 'private' },
+      caption: 'nice pic',
+      caption_entities: [{ type: 'italic', offset: 5, length: 3 }],
+    });
+    expect(message.html).toBe('nice <i>pic</i>');
+  });
+
+  it('html is empty when there is no text or caption', () => {
+    const { bot } = fakeBot();
+    const message = new Message(bot, {
+      message_id: 5,
+      chat: { id: 1, type: 'private' },
+    });
+    expect(message.html).toBe('');
+  });
+});

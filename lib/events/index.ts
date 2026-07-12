@@ -7,6 +7,7 @@ export * from './media';
 // Rich event classes (one per update kind), built by the EventFactory and
 // handed to handlers as the typed positional event.
 export * from './message';
+export * from './message-entity';
 export * from './callback-query';
 export * from './inline-query';
 export * from './chosen-inline-result';

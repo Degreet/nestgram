@@ -1,203 +1,189 @@
 ---
-title: Send throttling (flood control)
-description: The built-in send throttler — a global token bucket, a per-chat minimum interval, and a scope-aware 429 handler that honors retry_after. On by default; tune it with throttle, or replace it with throttler.
+title: Rate limiting
+description: Cap how often a user or chat can trigger your handlers — an inbound flood guard via RateLimitModule, @RateLimit and @SkipRateLimit, with a silent drop or an onLimit reply.
 sidebar:
   label: Rate limiting
   group: The Nest pipeline
-  order: 62
+  order: 61
 ---
 
-Telegram rate-limits what your bot _sends_, not just what it receives. Exceed
-roughly 30 messages a second globally, or send to the same chat faster than
-about once a second, and you start collecting `429 Too Many Requests` with a
-`retry_after`. The **send throttler** paces your outbound calls so you stay
-under those limits, and absorbs the 429s you do hit — on by default, no wiring.
+[Send throttling](/docs/throttling) paces what your bot **sends**. Rate limiting
+is the opposite end of the pipe: it caps what your bot **accepts** — how often a
+single user or chat can trigger a handler. Someone hammering a command, a script
+spamming a group: rate limiting drops the excess updates before they reach your
+code, so an expensive handler (an LLM call, a DB write) runs at most `limit`
+times per rolling window.
 
 :::mental
-your send -> per-chat gate -> global bucket -> Telegram (429? back off, retry)
+update in → rate-limit gate (per user/chat) → within limit? handler runs : dropped
 :::
 
-This is the **outbound** side: it shapes the bot's calls to the Bot API. Don't
-conflate it with the **inbound** [update queue](/docs/how-nestgram-works), which
-serializes _incoming_ updates per chat. They sit at opposite ends of the request
-— one paces what you send, the other paces what you process — and both run by
-default.
+It's off unless you import it — one module alongside `NestgramModule`.
 
-## How it gates a send
+## Turning it on
 
-The throttler is the innermost interceptor in the [outbound API
-pipeline](/docs/guards-and-pipeline) — `ThrottleInterceptor`, the last onion
-layer before the call leaves for Telegram. Every send passes through two gates,
-in order:
-
-1. **The per-chat gate.** A `chat_id` send first acquires a per-chat slot — a
-   minimum-interval limiter (default 1s between sends to one chat). Groups and
-   channels additionally pass a `20 / 60s` token bucket. Acquired _before_ the
-   global token, so a chat that's still cooling down doesn't burn a global token
-   it can't yet use.
-2. **The global token bucket.** One bucket shared across the whole bot
-   (`30 / 1s` by default), refilling continuously so short bursts are allowed
-   while the average rate holds.
-
-Only then does the call go out. Both gates serialize their waiters in FIFO
-order, so a chat's messages keep their send order even when several are queued
-behind the limiter.
-
-:::note
-The throttler reads `chat_id` from the final payload, _after_ the mutating
-interceptors (parse-mode, rich-messages, the file-id cache) have run. A send
-without a `chat_id` skips the per-chat gate and only takes a global token.
-:::
-
-## Read calls pass through
-
-Reads don't count against Telegram's send limits, so the throttler waves them
-past untouched — they neither spend a global token nor stall behind a send-side
-backoff. The pass-through is decided by the method name:
-
-| Method group                                    | Throttled? |
-| ----------------------------------------------- | ---------- |
-| Anything starting with `get*` (incl. `getUpdates`, `getMe`, `getFile`) | no — passes through |
-| `setWebhook`, `deleteWebhook`, `logOut`, `close` | no — webhook/session admin |
-| Everything else (`sendMessage`, `sendPhoto`, `editMessageText`, `answerCallbackQuery`, …) | yes |
-
-This matters most for long polling: `getUpdates` runs through the same outbound
-pipeline, and routing it through the throttler would burn your send budget and
-couple the poll loop to a send-side 429 backoff. The policy lives on the
-throttler itself — not as a flag on every method class — so it travels with the
-component you can swap out.
-
-## On a 429: scope-aware backoff
-
-When a send comes back `429`, the throttler doesn't just bubble the error — it
-reads the `retry_after` Telegram returned and waits it out, then retries the
-same call, up to `maxRetries` times. The wait is `retry_after` plus a small
-`retryBufferMs` cushion; a 429 that omits `retry_after` falls back to
-`fallbackRetrySeconds`.
-
-The clever part is _what_ it pauses, keyed on the 429's `scope`:
-
-| 429 `scope`        | What backs off                                              |
-| ------------------ | ---------------------------------------------------------- |
-| `global`           | the global bucket — the whole bot pauses for the window    |
-| per-chat / absent  | only that chat's limiter — other chats keep flowing        |
-
-So a global flood-wait stalls everything until it clears, while a per-chat
-flood-wait quarantines just the offending chat. Every send already queued behind
-the paused limiter inherits the backoff, instead of each rediscovering the 429
-on its own.
-
-If retries are exhausted — or you set `retry: false` — the `ApiException`
-surfaces unchanged, so a handler-side [`@Catch` filter](/docs/handling-errors)
-can react to it (`ApiException.is(error, 429)`, `error.parameters?.retry_after`)
-like any other API failure.
-
-## Tuning it
-
-Pass an object to `throttle` to override any default. Telegram's limits are
-unofficial and shift, so every knob is open:
+`RateLimitModule.forRoot` with a `default` rule applies to every route: at most
+`limit` updates per rolling `windowMs`, scoped per user-per-chat.
 
 :::code[app.module.ts]
 
 ```ts
 import { Module } from '@nestjs/common';
-import { NestgramModule } from 'nestgram';
-import { EchoRouter } from './echo.router';
+import { NestgramModule, RateLimitModule } from 'nestgram';
+import { ChatRouter } from './chat.router';
 
 @Module({
   imports: [
     NestgramModule.forRoot({
       token: process.env.BOT_TOKEN ?? '',
       polling: true,
-      throttle: {
-        globalRate: 30,
-        globalIntervalMs: 1000,
-        perChatIntervalMs: 1000,
-        maxRetries: 5,
-      },
+    }),
+    RateLimitModule.forRoot({
+      default: { limit: 5, windowMs: 10_000 }, // 5 updates / 10s per user
     }),
   ],
-  providers: [EchoRouter],
+  providers: [ChatRouter],
 })
 export class AppModule {}
 ```
 
 :::
 
-The full knob set, with defaults:
+Omit `default` to limit **only** the routes you decorate explicitly — the module
+then does nothing until a `@RateLimit` opts a route in.
 
-| Knob                   | Default | Effect                                                                    |
-| ---------------------- | ------- | ------------------------------------------------------------------------- |
-| `globalRate`           | `30`    | Global allowance: sends per `globalIntervalMs`.                           |
-| `globalIntervalMs`     | `1000`  | The window the global bucket refills over.                               |
-| `perChatIntervalMs`    | `1000`  | Minimum gap between two sends to the same chat.                          |
-| `groupRate`            | `20`    | Group/channel allowance: sends per `groupIntervalMs`.                    |
-| `groupIntervalMs`      | `60000` | The window the per-group bucket refills over.                           |
-| `maxRetries`           | `3`     | How many times a 429 is retried before the `ApiException` surfaces.      |
-| `retry`                | `true`  | Retry 429s at all; `false` surfaces them immediately.                   |
-| `retryBufferMs`        | `250`   | Extra wait added on top of `retry_after` before retrying.               |
-| `fallbackRetrySeconds` | `5`     | Wait used when a 429 omits `retry_after`.                               |
-| `idleTtlMs`            | `300000`| Evict a per-chat limiter idle at least this long.                       |
-| `maxKeys`              | `10000` | Hard cap on tracked chats; LRU-evict past it.                           |
-| `sweepIntervalMs`      | `60000` | How often the idle sweeper runs.                                        |
+## Per-route rules
 
-:::note
-The last three knobs bound memory, not rate. Per-chat limiters are created
-lazily and an unref'd sweeper evicts the idle ones, so the chat map can't grow
-without bound as new chats message a long-running bot.
+`@RateLimit(rule)` overrides the default for one handler, or for a whole
+`@Router()` class. `@SkipRateLimit()` exempts a route entirely — it always wins.
+
+:::code[chat.router.ts]
+
+```ts
+import { Router, Command, RateLimit, SkipRateLimit } from 'nestgram';
+import type { Message } from 'nestgram';
+
+@Router()
+export class ChatRouter {
+  // Expensive: tighten it well below the module default.
+  @Command('ask')
+  @RateLimit({ limit: 3, windowMs: 60_000 })
+  ask(message: Message) {
+    return 'thinking…';
+  }
+
+  // Cheap and always welcome — never limited.
+  @Command('help')
+  @SkipRateLimit()
+  help(message: Message) {
+    return 'here to help';
+  }
+}
+```
+
 :::
 
-## Turning it off
+Resolution is nearest-wins: `@SkipRateLimit` first, then a handler `@RateLimit`,
+then a class `@RateLimit`, then the module `default`. No rule anywhere → the
+update passes through uncounted.
 
-`throttle: false` makes the interceptor a pure passthrough — it stays in the
-pipeline but every call goes straight through. Reach for this only when
-something upstream already paces your sends (your own queue, a gateway), since
-without it nothing stands between your bot and a 429 storm.
+## What happens at the limit
+
+Over the limit, the handler **never runs**. By default the update is dropped
+silently — the flooder simply gets no response. Pass `onLimit` to answer instead:
+whatever it returns flows through the normal [reply path](/docs/handling-errors),
+so a `string` (or a `SendMessage`) becomes a "slow down" message. Return nothing
+to stay silent for that call.
 
 :::code[app.module.ts]
 
 ```ts
-import { NestgramModule } from 'nestgram';
-
-NestgramModule.forRoot({
-  token: process.env.BOT_TOKEN ?? '',
-  polling: true,
-  throttle: false, // no pacing — you own send rate
+RateLimitModule.forRoot({
+  default: {
+    limit: 5,
+    windowMs: 10_000,
+    onLimit: () => '⏳ Too fast — give it a few seconds.',
+  },
 });
 ```
 
 :::
+
+:::note
+Rate limiting is an **interceptor**, not a guard, on purpose. A guard returning
+`false` makes Nest throw `ForbiddenException`, which hits your exception filters —
+not a silent drop. The interceptor short-circuits cleanly: within limit it calls
+the handler, over limit it emits the `onLimit` value or nothing at all.
+:::
+
+## What the counter is keyed on
+
+Each rule counts against a **key**. The default is the conversation scope — bot ·
+chat · user · forum topic · business connection — so one user flooding a group
+doesn't limit everyone else, and the same user in two chats gets two budgets.
+
+Override `key` to change the scope. Return `undefined` to skip an update (nothing
+to scope it to):
+
+:::code[app.module.ts]
+
+```ts
+RateLimitModule.forRoot({
+  // One shared budget for the whole chat, regardless of who sends.
+  default: {
+    limit: 20,
+    windowMs: 60_000,
+    key: (ctx) => (ctx.chat ? `chat:${ctx.chat.id}` : undefined),
+  },
+});
+```
+
+:::
+
+## Scaling out
+
+The counters live in a process-local store by default. That's correct for a
+single instance; bound its memory with `idleTtlMs` (evict a key idle at least
+that long — set it **≥ your largest window**). Run more than one instance and the
+per-process counters diverge, so give it a shared store — the same
+[`KeyValueStore`](/docs/sessions) seam sessions use, backed by Redis. Resolve it
+from config with `forRootAsync`:
+
+:::code[app.module.ts]
+
+```ts
+import { RateLimitModule } from 'nestgram';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
+RateLimitModule.forRootAsync({
+  imports: [ConfigModule],
+  inject: [ConfigService],
+  useFactory: (config: ConfigService) => ({
+    default: { limit: 5, windowMs: 10_000 },
+    store: new RedisRateLimitStore(config.get('REDIS_URL')),
+  }),
+});
+```
+
+:::
+
+## Options
+
+| Option      | Applies to    | Effect                                                                     |
+| ----------- | ------------- | -------------------------------------------------------------------------- |
+| `default`   | module        | Fallback `{ limit, windowMs, key?, onLimit? }` for undecorated routes.     |
+| `store`     | module        | Counter persistence. Default: in-memory; supply Redis to scale out.        |
+| `idleTtlMs` | module        | Evict an idle in-memory key after this long. Must be ≥ the largest window. |
+| `key`       | module / rule | Scope function. Default: the conversation key; `undefined` skips.          |
+| `onLimit`   | module / rule | Called when an update is dropped; a returned value becomes the reply.      |
+| `limit`     | rule          | Max updates allowed within the window.                                     |
+| `windowMs`  | rule          | Rolling window length, in milliseconds.                                    |
+
+`key` and `onLimit` set on a `@RateLimit` rule beat the module-level ones, which
+beat the built-in defaults.
 
 ## Not a privileged core
 
-The throttler is one public `ApiInterceptor`, the same contract your own
-outbound interceptors implement — nothing the framework reserves for itself. Set
-`throttler` to a class of your own and it takes the innermost slot instead of
-the built-in:
-
-:::code[app.module.ts]
-
-```ts
-import { NestgramModule } from 'nestgram';
-import { DistributedThrottleInterceptor } from './distributed-throttle.interceptor';
-
-NestgramModule.forRoot({
-  token: process.env.BOT_TOKEN ?? '',
-  polling: true,
-  throttler: DistributedThrottleInterceptor, // your interceptor, innermost slot
-});
-```
-
-:::
-
-This is the seam for the throttler's one real limitation: its buckets live **in
-process**, so each replica paces against its own budget and `N` replicas can
-collectively still exceed Telegram's limits. A Redis-backed `throttler` sharing
-state across the fleet swaps in through exactly this interface — same `intercept`
-contract, replacing the default rather than wrapping it.
-
-:::tip
-`throttle` tunes the built-in throttler; `throttler` _replaces_ it. Set
-`throttler` and the `throttle` knobs no longer apply — your interceptor owns the
-policy end to end.
-:::
+`RateLimitModule` registers one public `APP_INTERCEPTOR` — the same kind of
+interceptor you could write by hand, holding no reserved framework powers. Leave
+the module out and rate limiting is simply absent; there is nothing to turn off.

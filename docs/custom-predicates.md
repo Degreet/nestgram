@@ -40,18 +40,24 @@ predicates are instantiated once when `DiscoveryService` builds the boot-time
 route table, then reused for every update — so a predicate instance is shared,
 keep it stateless.
 
-The context hands you three views of the same update:
+The context hands you several views of the same update:
 
-| Accessor     | What you get                                         |
-| ------------ | ---------------------------------------------------- |
-| `ctx.update` | the raw `Update` Telegram sent, `Readonly`           |
-| `ctx.kind`   | the resolved `UpdateKind` (`resolveKind`'s whitelist)|
-| `ctx.event`  | the rich typed event (`Message`, `CallbackQuery`, …) |
-| `ctx.chat`   | the `Chat` the update happened in, if any            |
-| `ctx.from`   | the `User` who triggered it, if any                  |
+| Accessor            | What you get                                                    |
+| ------------------- | --------------------------------------------------------------- |
+| `ctx.update`        | the raw `Update` Telegram sent, `Readonly`                      |
+| `ctx.kind`          | the resolved `UpdateKind` (`resolveKind`'s whitelist)           |
+| `ctx.event`         | the rich typed event (`Message`, `CallbackQuery`, …)            |
+| `ctx.message`       | the rich `Message` on a message update, else `undefined`        |
+| `ctx.callbackQuery` | the rich `CallbackQuery` on a callback update, else `undefined` |
+| `ctx.chat`          | the `Chat` the update happened in, if any                       |
+| `ctx.from`          | the `User` who triggered it, if any                             |
 
 `ctx.event` is built lazily and cached; reach for `ctx.update` when you only need
-a raw field and want to skip building the rich event.
+a raw field and want to skip building the rich event. `ctx.message` and
+`ctx.callbackQuery` are that cached event narrowed to a concrete type — the rich
+way to read content in a predicate (`ctx.message?.hasEntity('mention')`), no raw
+`update.message` needed. For a less common kind, `ctx.eventOf(InlineQuery)` gives
+the same narrowing for any event class.
 
 ## Writing one
 
@@ -126,9 +132,7 @@ import {
 } from 'nestgram';
 
 // Matches a message like `en:reset` and exposes the `lang` segment to @Param.
-export class LocalePrefixPredicate
-  implements RoutePredicate, RouteParamSource
-{
+export class LocalePrefixPredicate implements RoutePredicate, RouteParamSource {
   private static readonly PATTERN = /^(?<lang>[a-z]{2}):reset$/;
 
   matches(ctx: TelegramExecutionContext): boolean {
