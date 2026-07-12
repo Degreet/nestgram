@@ -12,12 +12,12 @@ handler is invoked through Nest's own `ExternalContextCreator` — the same
 machinery behind your HTTP controllers — so the primitives you already
 know wrap a router method exactly as they wrap a route:
 
-| Primitive            | Apply with               | Runs                          |
-| -------------------- | ------------------------ | ----------------------------- |
-| Guard                | `@UseGuards()`           | before the handler; `false` blocks it |
-| Interceptor          | `@UseInterceptors()`     | around the handler, both sides |
-| Pipe                 | `@UsePipes()`            | on params, before the handler |
-| Exception filter     | `@Catch()` + `@UseFilters()` | when the handler (or pipeline) throws |
+| Primitive        | Apply with                   | Runs                                  |
+| ---------------- | ---------------------------- | ------------------------------------- |
+| Guard            | `@UseGuards()`               | before the handler; `false` blocks it |
+| Interceptor      | `@UseInterceptors()`         | around the handler, both sides        |
+| Pipe             | `@UsePipes()`                | on params, before the handler         |
+| Exception filter | `@Catch()` + `@UseFilters()` | when the handler (or pipeline) throws |
 
 There is no Nestgram middleware system to learn. The `bot.use(...)` chain you'd
 reach for in telegraf maps onto whichever of these four does the job.
@@ -33,14 +33,15 @@ event. `TelegramExecutionContext.of(context)` unwraps it — the engine invokes
 handlers as `invoker(event, ctx)`, so the wrapper sits at argument index 1, and
 `.of()` reads it back.
 
-| Accessor       | Is                                                  |
-| -------------- | --------------------------------------------------- |
-| `ctx.event`    | the rich typed event (`Message`, `CallbackQuery`, …) |
-| `ctx.from`     | the `User` who triggered the update, or `undefined`  |
-| `ctx.chat`     | the chat the update happened in, or `undefined`      |
-| `ctx.kind`     | the resolved `UpdateKind`                             |
-| `ctx.update`   | the raw, read-only update payload                    |
-| `ctx.state`    | a per-update `Map` you can read and write            |
+| Accessor      | Is                                                     |
+| ------------- | ------------------------------------------------------ |
+| `ctx.event`   | the rich typed event (`Message`, `CallbackQuery`, …)   |
+| `ctx.message` | the rich `Message` on a message update, or `undefined` |
+| `ctx.from`    | the `User` who triggered the update, or `undefined`    |
+| `ctx.chat`    | the chat the update happened in, or `undefined`        |
+| `ctx.kind`    | the resolved `UpdateKind`                              |
+| `ctx.update`  | the raw, read-only update payload                      |
+| `ctx.state`   | a per-update `Map` you can read and write              |
 
 ## An admin-only guard
 
@@ -122,7 +123,8 @@ export class AdminGuard implements CanActivate {
     const userId =
       context.getType<'http' | 'telegram'>() === 'telegram'
         ? TelegramExecutionContext.of(context).from?.id
-        : context.switchToHttp().getRequest<{ user?: { id: number } }>().user?.id;
+        : context.switchToHttp().getRequest<{ user?: { id: number } }>().user
+            ?.id;
 
     return userId !== undefined && ADMIN_IDS.has(userId);
   }
@@ -166,7 +168,9 @@ export class LoggingInterceptor implements NestInterceptor {
     this.logger.log(`${ctx.kind} from ${who}`);
     return next
       .handle()
-      .pipe(tap(() => this.logger.log(`handled in ${Date.now() - startedAt}ms`)));
+      .pipe(
+        tap(() => this.logger.log(`handled in ${Date.now() - startedAt}ms`)),
+      );
   }
 }
 ```
