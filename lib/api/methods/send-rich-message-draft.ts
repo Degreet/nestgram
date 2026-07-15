@@ -1,4 +1,5 @@
 import { ApiMethod } from './api-method';
+import { hasInputFile } from '../form-data';
 import type { RawInputRichMessage } from '../../events/raw-update.types';
 
 export interface SendRichMessageDraftOptions {
@@ -18,7 +19,13 @@ export class SendRichMessageDraft extends ApiMethod<
 > {
   readonly method = 'sendRichMessageDraft';
 
+  readonly isAttachMedia = true;
+
   constructor(payload: SendRichMessageDraftOptions) {
     super(payload);
+  }
+
+  get hasMedia(): boolean {
+    return hasInputFile(this.payload);
   }
 }

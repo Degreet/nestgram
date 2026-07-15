@@ -1,4 +1,5 @@
 import { ApiMethod } from './api-method';
+import { hasInputFile } from '../form-data';
 import type {
   RawInlineQueryResult,
   RawInlineQueryResultsButton,
@@ -24,7 +25,13 @@ export class AnswerInlineQuery extends ApiMethod<
 > {
   readonly method = 'answerInlineQuery';
 
+  readonly isAttachMedia = true;
+
   constructor(payload: AnswerInlineQueryOptions) {
     super(payload);
+  }
+
+  get hasMedia(): boolean {
+    return hasInputFile(this.payload);
   }
 }

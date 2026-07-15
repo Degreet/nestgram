@@ -1,6 +1,7 @@
 import { ApiMethod } from './api-method';
 import { Message } from '../../events';
 import type { BotService } from '../bot.service';
+import { hasInputFile } from '../form-data';
 import type {
   RawInlineKeyboardMarkup,
   RawInputRichMessage,
@@ -33,8 +34,14 @@ export class EditMessageText extends ApiMethod<
 > {
   readonly method = 'editMessageText';
 
+  readonly isAttachMedia = true;
+
   constructor(payload?: EditMessageTextOptions) {
     super(payload);
+  }
+
+  get hasMedia(): boolean {
+    return hasInputFile(this.payload);
   }
 
   wrap(raw: unknown, bot: BotService): Message | true {

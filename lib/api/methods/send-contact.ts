@@ -14,6 +14,8 @@ export interface SendContactOptions {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
+  receiver_user_id?: number;
+  callback_query_id?: string;
   phone_number: string;
   first_name: string;
   last_name?: string;

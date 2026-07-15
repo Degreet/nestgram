@@ -1,4 +1,5 @@
 import { ApiMethod } from './api-method';
+import { hasInputFile } from '../form-data';
 import type {
   RawInlineQueryResult,
   RawPreparedInlineMessage,
@@ -23,7 +24,13 @@ export class SavePreparedInlineMessage extends ApiMethod<
 > {
   readonly method = 'savePreparedInlineMessage';
 
+  readonly isAttachMedia = true;
+
   constructor(payload: SavePreparedInlineMessageOptions) {
     super(payload);
+  }
+
+  get hasMedia(): boolean {
+    return hasInputFile(this.payload);
   }
 }

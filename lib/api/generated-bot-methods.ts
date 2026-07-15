@@ -60,6 +60,8 @@ import {
   DeleteChatPhotoOptions,
   DeleteChatStickerSet,
   DeleteChatStickerSetOptions,
+  DeleteEphemeralMessage,
+  DeleteEphemeralMessageOptions,
   DeleteForumTopic,
   DeleteForumTopicOptions,
   DeleteMessage,
@@ -82,6 +84,14 @@ import {
   EditChatInviteLinkOptions,
   EditChatSubscriptionInviteLink,
   EditChatSubscriptionInviteLinkOptions,
+  EditEphemeralMessageCaption,
+  EditEphemeralMessageCaptionOptions,
+  EditEphemeralMessageMedia,
+  EditEphemeralMessageMediaOptions,
+  EditEphemeralMessageReplyMarkup,
+  EditEphemeralMessageReplyMarkupOptions,
+  EditEphemeralMessageText,
+  EditEphemeralMessageTextOptions,
   EditForumTopic,
   EditForumTopicOptions,
   EditGeneralForumTopic,
@@ -448,7 +458,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to send answers to an inline query. On success, True is returned.
    * No more than 50 results per query are allowed.
    * @param inline_query_id Unique identifier for the answered query
-   * @param results A JSON-serialized array of results for the inline query
+   * @param results A JSON-serialized Array of results for the inline query
    * @see https://core.telegram.org/bots/api#answerinlinequery
    */
   answerInlineQuery(
@@ -686,7 +696,7 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of MessageId of the sent messages is returned.
+   * Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an Array of MessageId of the sent messages is returned.
    * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
    * @param from_chat_id Unique identifier for the chat where the original messages were sent (or username of the target bot, supergroup or channel in the format @username)
    * @param message_ids A JSON-serialized list of 1-100 identifiers of messages in the chat from_chat_id to copy. The identifiers must be specified in a strictly increasing order.
@@ -947,6 +957,31 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
+   * Use this method to delete an ephemeral message. Note that it is not guaranteed that the user will receive the message deletion event, especially if they are offline. Returns True on success.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @param receiver_user_id Identifier of the user who received the message
+   * @param ephemeral_message_id Identifier of the ephemeral message to delete
+   * @see https://core.telegram.org/bots/api#deleteephemeralmessage
+   */
+  deleteEphemeralMessage(
+    chat_id: DeleteEphemeralMessageOptions['chat_id'],
+    receiver_user_id: DeleteEphemeralMessageOptions['receiver_user_id'],
+    ephemeral_message_id: DeleteEphemeralMessageOptions['ephemeral_message_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new DeleteEphemeralMessage({
+        chat_id,
+        receiver_user_id,
+        ephemeral_message_id,
+        ...rest,
+      }),
+      { token, signal },
+    );
+  }
+
+  /**
    * Use this method to delete a forum topic along with all its messages in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_delete_messages administrator rights. Returns True on success.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
    * @param message_thread_id Unique identifier for the target message thread of the forum topic
@@ -1134,6 +1169,132 @@ export abstract class GeneratedBotMethods {
     const { token, signal, ...rest } = callOptions ?? {};
     return this.call(
       new EditChatSubscriptionInviteLink({ chat_id, invite_link, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to edit the caption of an ephemeral message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @param receiver_user_id Identifier of the user who received the message
+   * @param ephemeral_message_id Identifier of the ephemeral message to edit
+   * @see https://core.telegram.org/bots/api#editephemeralmessagecaption
+   */
+  editEphemeralMessageCaption(
+    chat_id: EditEphemeralMessageCaptionOptions['chat_id'],
+    receiver_user_id: EditEphemeralMessageCaptionOptions['receiver_user_id'],
+    ephemeral_message_id: EditEphemeralMessageCaptionOptions['ephemeral_message_id'],
+    callOptions?: MethodOptions<
+      Omit<
+        EditEphemeralMessageCaptionOptions,
+        'chat_id' | 'receiver_user_id' | 'ephemeral_message_id'
+      >
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new EditEphemeralMessageCaption({
+        chat_id,
+        receiver_user_id,
+        ephemeral_message_id,
+        ...rest,
+      }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to edit the media of an ephemeral message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @param receiver_user_id Identifier of the user who received the message
+   * @param ephemeral_message_id Identifier of the ephemeral message to edit
+   * @param media A JSON-serialized object for the new media content of the message. A new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL.
+   * @see https://core.telegram.org/bots/api#editephemeralmessagemedia
+   */
+  editEphemeralMessageMedia(
+    chat_id: EditEphemeralMessageMediaOptions['chat_id'],
+    receiver_user_id: EditEphemeralMessageMediaOptions['receiver_user_id'],
+    ephemeral_message_id: EditEphemeralMessageMediaOptions['ephemeral_message_id'],
+    media: EditEphemeralMessageMediaOptions['media'],
+    callOptions?: MethodOptions<
+      Omit<
+        EditEphemeralMessageMediaOptions,
+        'chat_id' | 'receiver_user_id' | 'ephemeral_message_id' | 'media'
+      >
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new EditEphemeralMessageMedia({
+        chat_id,
+        receiver_user_id,
+        ephemeral_message_id,
+        media,
+        ...rest,
+      }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to edit only the reply markup of an ephemeral message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @param receiver_user_id Identifier of the user who received the message
+   * @param ephemeral_message_id Identifier of the ephemeral message to edit
+   * @see https://core.telegram.org/bots/api#editephemeralmessagereplymarkup
+   */
+  editEphemeralMessageReplyMarkup(
+    chat_id: EditEphemeralMessageReplyMarkupOptions['chat_id'],
+    receiver_user_id: EditEphemeralMessageReplyMarkupOptions['receiver_user_id'],
+    ephemeral_message_id: EditEphemeralMessageReplyMarkupOptions['ephemeral_message_id'],
+    callOptions?: MethodOptions<
+      Omit<
+        EditEphemeralMessageReplyMarkupOptions,
+        'chat_id' | 'receiver_user_id' | 'ephemeral_message_id'
+      >
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new EditEphemeralMessageReplyMarkup({
+        chat_id,
+        receiver_user_id,
+        ephemeral_message_id,
+        ...rest,
+      }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to edit an ephemeral text message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @param receiver_user_id Identifier of the user who received the message
+   * @param ephemeral_message_id Identifier of the ephemeral message to edit
+   * @param text New text of the message, 1-4096 characters after entity parsing
+   * @see https://core.telegram.org/bots/api#editephemeralmessagetext
+   */
+  editEphemeralMessageText(
+    chat_id: EditEphemeralMessageTextOptions['chat_id'],
+    receiver_user_id: EditEphemeralMessageTextOptions['receiver_user_id'],
+    ephemeral_message_id: EditEphemeralMessageTextOptions['ephemeral_message_id'],
+    text: EditEphemeralMessageTextOptions['text'],
+    callOptions?: MethodOptions<
+      Omit<
+        EditEphemeralMessageTextOptions,
+        'chat_id' | 'receiver_user_id' | 'ephemeral_message_id' | 'text'
+      >
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new EditEphemeralMessageText({
+        chat_id,
+        receiver_user_id,
+        ephemeral_message_id,
+        text,
+        ...rest,
+      }),
       { token, signal },
     );
   }
@@ -1649,7 +1810,7 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to forward multiple messages of any kind. If some of the specified messages can't be found or forwarded, they are skipped. Service messages and messages with protected content can't be forwarded. Album grouping is kept for forwarded messages. On success, an array of MessageId of the sent messages is returned.
+   * Use this method to forward multiple messages of any kind. If some of the specified messages can't be found or forwarded, they are skipped. Service messages and messages with protected content can't be forwarded. Album grouping is kept for forwarded messages. On success, an Array of MessageId of the sent messages is returned.
    * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
    * @param from_chat_id Unique identifier for the chat where the original messages were sent (or username of the target bot, supergroup or channel in the format @username)
    * @param message_ids A JSON-serialized list of 1-100 identifiers of messages in the chat from_chat_id to forward. The identifiers must be specified in a strictly increasing order.
@@ -1786,7 +1947,7 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to get the number of members in a chat. Returns Int on success.
+   * Use this method to get the number of members in a chat. Returns Integer on success.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup or channel in the format @username
    * @see https://core.telegram.org/bots/api#getchatmembercount
    */
@@ -2002,7 +2163,7 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to get the last messages from the personal chat (i.e., the chat currently added to their profile) of a given user. On success, an array of Message objects is returned.
+   * Use this method to get the last messages from the personal chat (i.e., the chat currently added to their profile) of a given user. On success, an Array of Message objects is returned.
    * @param user_id Unique identifier for the target user
    * @param limit The maximum number of messages to return; 1-20
    * @see https://core.telegram.org/bots/api#getuserpersonalchatmessages
@@ -2544,9 +2705,9 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to process a received chat join request query by showing a Mini App to the user before deciding the outcome. Returns True on success.
+   * Use this method to process a received chat join request query by showing a Mini App to the user before deciding the outcome. Call answerChatJoinRequestQuery to resolve the join request query based on the user interaction with the Mini App. Returns True on success.
    * @param chat_join_request_query_id Unique identifier of the join request query
-   * @param web_app_url The URL of the Mini App to be opened
+   * @param web_app_url An HTTPS URL of a Web App to be opened with additional data as specified in Initializing Web Apps
    * @see https://core.telegram.org/bots/api#sendchatjoinrequestwebapp
    */
   sendChatJoinRequestWebApp(
@@ -2767,9 +2928,9 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to send a group of photos, live photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of Message objects that were sent is returned.
+   * Use this method to send a group of photos, live photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an Array of Message objects that were sent is returned.
    * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
-   * @param media A JSON-serialized array describing messages to be sent, must include 2-10 items
+   * @param media A JSON-serialized Array describing messages to be sent, must include 2-10 items
    * @see https://core.telegram.org/bots/api#sendmediagroup
    */
   sendMediaGroup(
@@ -2807,7 +2968,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to stream a partial message to a user while the message is being generated. Note that the streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is finalized, you must call sendMessage with the complete message to persist it in the user's chat. Returns True on success.
    * @param chat_id Unique identifier for the target private chat
-   * @param draft_id Unique identifier of the message draft; must be non-zero. Changes of drafts with the same identifier are animated.
+   * @param draft_id Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are animated.
    * @see https://core.telegram.org/bots/api#sendmessagedraft
    */
   sendMessageDraft(
@@ -2828,7 +2989,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to send paid media. On success, the sent Message is returned.
    * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username. If the chat is a channel, all Telegram Star proceeds from this media will be credited to the chat's balance. Otherwise, they will be credited to the bot's balance.
    * @param star_count The number of Telegram Stars that must be paid to buy access to the media; 1-25000
-   * @param media A JSON-serialized array describing the media to be sent; up to 10 items
+   * @param media A JSON-serialized Array describing the media to be sent; up to 10 items
    * @see https://core.telegram.org/bots/api#sendpaidmedia
    */
   sendPaidMedia(
@@ -2910,7 +3071,7 @@ export abstract class GeneratedBotMethods {
    * Use this method to stream a partial rich message to a user while the message is being generated. Note that the streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is finalized, you must call sendRichMessage with the complete message to persist it in the user's chat. Returns True on success.
    * @param chat_id Unique identifier for the target private chat
    * @param draft_id Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are animated.
-   * @param rich_message The partial message to be streamed
+   * @param rich_message The partial message to be streamed. Direct upload of new files isn't supported.
    * @see https://core.telegram.org/bots/api#sendrichmessagedraft
    */
   sendRichMessageDraft(
@@ -3054,7 +3215,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Changes the privacy settings pertaining to incoming gifts in a managed business account. Requires the can_change_gift_settings business bot right. Returns True on success.
    * @param business_connection_id Unique identifier of the business connection
-   * @param show_gift_button Pass True, if a button for sending a gift to the user or by the business account must always be shown in the input field
+   * @param show_gift_button Pass True if a button for sending a gift to the user or by the business account must always be shown in the input field
    * @param accepted_gift_types Types of gifts accepted by the business account
    * @see https://core.telegram.org/bots/api#setbusinessaccountgiftsettings
    */
@@ -3331,7 +3492,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to change the access settings of a managed bot. Returns True on success.
    * @param user_id User identifier of the managed bot whose access settings will be changed
-   * @param is_access_restricted Pass True, if only selected users can access the bot. The bot's owner can always access it.
+   * @param is_access_restricted Pass True if only selected users can access the bot. The bot's owner can always access it.
    * @see https://core.telegram.org/bots/api#setmanagedbotaccesssettings
    */
   setManagedBotAccessSettings(
@@ -3454,7 +3615,7 @@ export abstract class GeneratedBotMethods {
    * Informs a user that some of the Telegram Passport elements they provided contains errors. The user will not be able to re-submit their Passport to you until the errors are fixed (the contents of the field for which you returned the error must change). Returns True on success.
    * Use this if the data submitted by the user doesn't satisfy the standards your service requires for any reason. For example, if a birthday date seems invalid, a submitted document is blurry, a scan shows evidence of tampering, etc. Supply some details in the error message to make sure the user knows how to correct the issues.
    * @param user_id User identifier
-   * @param errors A JSON-serialized array describing the errors
+   * @param errors A JSON-serialized Array describing the errors
    * @see https://core.telegram.org/bots/api#setpassportdataerrors
    */
   setPassportDataErrors(
