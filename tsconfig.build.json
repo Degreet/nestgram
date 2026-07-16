@@ -1,5 +1,14 @@
 {
   "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Pins the published layout: `dist/` mirrors `lib/`, so `main`
+    // (`dist/index.js`) always resolves. Without it tsc INFERS the root from the
+    // common parent of everything it compiles, so a single stray `.ts` outside
+    // `lib/` silently moves the whole package under `dist/lib/`. With it, such a
+    // file is a loud build error instead of a broken publish.
+    "rootDir": "./lib"
+  },
+  "include": ["lib/**/*"],
   "exclude": [
     "node_modules",
     "src",
