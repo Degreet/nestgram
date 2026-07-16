@@ -1,6 +1,6 @@
 {
   "name": "nestgram",
-  "version": "2.0.0-alpha.4",
+  "version": "2.0.0-alpha.5",
   "description": "Telegram bots, the NestJS way — typed events, the real Nest pipeline (guards, interceptors, pipes, filters), and a generated Bot API layer",
   "author": "Mykyta Voitsekhovskyi <mykyta@kodo.do>",
   "main": "dist/index.js",
@@ -63,7 +63,8 @@
     "generate": "ts-node --project tools/codegen/tsconfig.json tools/codegen/index.ts",
     "spec:update": "ts-node --project tools/codegen/tsconfig.json tools/codegen/spec-update.ts",
     "prepare": "husky",
-    "prepublishOnly": "npm run lint && npm run build && npm run test && npm run generate -- --check"
+    "verify:package": "node -e \"const p=require('./package.json'),fs=require('fs');for(const f of [p.main,p.types])if(!fs.existsSync(f))throw new Error('package entry missing: '+f+' - built dist layout is wrong, see rootDir in tsconfig.build.json');require('./'+p.main);console.log('package entry ok:',p.main)\"",
+    "prepublishOnly": "npm run lint && npm run build && npm run test && npm run generate -- --check && npm run verify:package"
   },
   "devDependencies": {
     "@fluent/bundle": "^0.19.1",
