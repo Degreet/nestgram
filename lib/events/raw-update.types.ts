@@ -186,7 +186,7 @@ export interface RawBotShortDescription {
 export interface RawBotSubscriptionUpdated {
   user: User;
   invoice_payload: string;
-  state: string;
+  state: 'canceled' | 'active' | 'failed' | (string & Record<never, never>);
 }
 
 export interface RawBusinessBotRights {

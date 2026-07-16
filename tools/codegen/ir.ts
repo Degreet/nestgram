@@ -17,7 +17,7 @@ import { enumLiterals, namedTypeFor, overrideFieldType } from './manifest';
 /** A resolved type, independent of how it will be written to TS. */
 export type IrType =
   | { kind: 'primitive'; ts: string }
-  | { kind: 'literalUnion'; literals: string[] }
+  | { kind: 'literalUnion'; literals: string[]; open: boolean }
   | { kind: 'namedType'; name: string }
   | { kind: 'reference'; name: string }
   | { kind: 'array'; element: IrType }
@@ -167,9 +167,13 @@ function resolveFieldType(owner: string, field: SpecField): IrType {
   if (named) {
     return { kind: 'namedType', name: named };
   }
-  const literals = enumLiterals(owner, field.name);
-  if (literals) {
-    return { kind: 'literalUnion', literals: [...literals] };
+  const enumeration = enumLiterals(owner, field.name);
+  if (enumeration) {
+    return {
+      kind: 'literalUnion',
+      literals: [...enumeration.literals],
+      open: enumeration.open,
+    };
   }
   if (isFileUploadField(field)) {
     return STRING_OR_INPUT_FILE;
@@ -198,7 +202,11 @@ const DISCRIMINATOR = /\b(?:always|must be)\s+(?:one of\s+)?"?([a-z_0-9]+)"?/;
 function applyDiscriminator(fields: IrField[], spec: SpecField[]): void {
   const match = DISCRIMINATOR.exec(spec[0]?.description ?? '');
   if (match) {
-    fields[0].type = { kind: 'literalUnion', literals: [match[1]] };
+    fields[0].type = {
+      kind: 'literalUnion',
+      literals: [match[1]],
+      open: false,
+    };
   }
 }
 

@@ -98,16 +98,21 @@ export function overrideFieldType(
  * explicit table instead (the discriminator literals of subtype members ARE
  * recovered from prose in `ir.ts`, since their phrasing is uniform).
  *
- * This table is intentionally NON-exhaustive: a field absent here simply keeps
- * its base `string` type — a safe degradation, never a wrong type. Only list
- * enums Telegram is unlikely to extend, since a closed union would otherwise
- * REJECT a newly-added valid value. Keyed by `<methodName|OwnerType>.<field>`,
- * or `*.<field>` for an owner-agnostic field (e.g. `parse_mode` everywhere).
+ * Both tables are intentionally NON-exhaustive: a field absent from both simply
+ * keeps its base `string` type — a safe degradation, never a wrong type. Keyed by
+ * `<methodName|OwnerType>.<field>`, or `*.<field>` for an owner-agnostic field
+ * (e.g. `parse_mode` everywhere).
  */
 const CHAT_TYPES = ['private', 'group', 'supergroup', 'channel'];
 const STICKER_FORMATS = ['static', 'animated', 'video'];
 const THUMB_MIME_TYPES = ['image/jpeg', 'image/gif', 'video/mp4'];
 
+/**
+ * CLOSED enums — the value is exactly one of these literals. Only list a field
+ * here when Telegram is unlikely to extend the set, since a closed union REJECTS
+ * a newly-added valid value; a hedged/extensible enum belongs in
+ * {@link OPEN_ENUM_LITERALS} instead.
+ */
 const ENUM_LITERALS: Readonly<Record<string, readonly string[]>> = {
   'sendDice.emoji': ['🎲', '🎯', '🏀', '⚽', '🎳', '🎰'],
   'sendPoll.type': ['quiz', 'regular'],
@@ -121,12 +126,49 @@ const ENUM_LITERALS: Readonly<Record<string, readonly string[]>> = {
   'InlineQueryResultMpeg4Gif.thumbnail_mime_type': THUMB_MIME_TYPES,
 };
 
-/** The literal values for an enum field, or `undefined` to keep its base type. */
+/**
+ * OPEN enums — the known values PLUS `(string & Record<never, never>)`, so an
+ * unmodelled future value still type-checks as `string` while the known literals
+ * keep autocomplete. For INBOUND fields whose set Telegram hedges as "Currently,
+ * one of…" — the "non-exhaustive, never wrong" contract at the type level, where
+ * a closed union would falsely claim exhaustiveness over the wire.
+ */
+const OPEN_ENUM_LITERALS: Readonly<Record<string, readonly string[]>> = {
+  'BotSubscriptionUpdated.state': ['canceled', 'active', 'failed'],
+};
+
+// A field in both tables would silently resolve CLOSED (enumLiterals checks
+// ENUM_LITERALS first), masking the intended open union — fail loudly instead.
+for (const key of Object.keys(OPEN_ENUM_LITERALS)) {
+  if (key in ENUM_LITERALS) {
+    throw new Error(
+      `enum field '${key}' is in both ENUM_LITERALS and OPEN_ENUM_LITERALS`,
+    );
+  }
+}
+
+/** An enum field's literals, and whether the union stays open to other strings. */
+export interface EnumResolution {
+  literals: readonly string[];
+  open: boolean;
+}
+
+/** The enum resolution for a field, or `undefined` to keep its base type. */
 export function enumLiterals(
   owner: string,
   field: string,
-): readonly string[] | undefined {
-  return ENUM_LITERALS[`${owner}.${field}`] ?? ENUM_LITERALS[`*.${field}`];
+): EnumResolution | undefined {
+  const closed =
+    ENUM_LITERALS[`${owner}.${field}`] ?? ENUM_LITERALS[`*.${field}`];
+  if (closed) {
+    return { literals: closed, open: false };
+  }
+  const open =
+    OPEN_ENUM_LITERALS[`${owner}.${field}`] ?? OPEN_ENUM_LITERALS[`*.${field}`];
+  if (open) {
+    return { literals: open, open: true };
+  }
+  return undefined;
 }
 
 /**

@@ -47,9 +47,14 @@ function selfTest(): void {
   // Resolver: the load-bearing type spellings.
   assertTs({ kind: 'primitive', ts: 'number' }, 'number', 'primitive');
   assertTs(
-    { kind: 'literalUnion', literals: ['a', 'b'] },
+    { kind: 'literalUnion', literals: ['a', 'b'], open: false },
     "'a' | 'b'",
     'literal union',
+  );
+  assertTs(
+    { kind: 'literalUnion', literals: ['a', 'b'], open: true },
+    "'a' | 'b' | (string & Record<never, never>)",
+    'open literal union',
   );
   assertTs(
     { kind: 'reference', name: 'Chat' },
@@ -169,7 +174,7 @@ function selfTest(): void {
   );
   assert(mediaKind('sendMessage') === null, 'sendMessage is not multipart');
 
-  // Enum literal-union recovery (manifest table): sendDice.emoji.
+  // Enum literal-union recovery (manifest CLOSED table): sendDice.emoji.
   const sendDice = ir.methods.find((m) => m.name === 'sendDice');
   const emoji = sendDice?.args.find((a) => a.name === 'emoji');
   if (emoji) {
@@ -178,6 +183,20 @@ function selfTest(): void {
       "'🎲' | '🎯' | '🏀' | '⚽' | '🎳' | '🎰'",
       'sendDice.emoji enum union',
     );
+  }
+  // Open-enum recovery (manifest OPEN table): BotSubscriptionUpdated.state —
+  // reads the real IR so a miscategorisation into the CLOSED table is caught
+  // here, not only by the staleness guard.
+  const subscription = ir.objectsByName.get('BotSubscriptionUpdated');
+  if (subscription?.kind === 'interface') {
+    const state = subscription.fields.find((f) => f.name === 'state');
+    if (state) {
+      assertTs(
+        state.type,
+        "'canceled' | 'active' | 'failed' | (string & Record<never, never>)",
+        'BotSubscriptionUpdated.state open enum union',
+      );
+    }
   }
   // Named-type promotion (manifest table): parse_mode → the hand-owned enum type.
   const parseMode = sendMessage?.args.find((a) => a.name === 'parse_mode');
