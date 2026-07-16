@@ -63,9 +63,9 @@ export class CallbackQuery extends TelegramObject {
    * who tapped the button, in the group/supergroup it came from and bound to
    * this query. Unlike {@link answer} (a toast/alert), it takes a keyboard,
    * parse mode, etc. Group/supergroup only. Resolves the sent {@link Message};
-   * to edit or remove it use `bot.editEphemeralMessageText` /
-   * `deleteEphemeralMessage`, not the returned message's `.editText()` /
-   * `.delete()` (those target normal messages, not the ephemeral one).
+   * edit or remove it with its `editEphemeral()` / `deleteEphemeral()` (its
+   * normal `.editText()` / `.delete()` refuse — an ephemeral message has no
+   * real `message_id`).
    */
   answerEphemeral(
     text: string,

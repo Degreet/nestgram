@@ -41,6 +41,8 @@ function fakeBot(): { bot: BotService; calls: Call[] } {
     setMessageReaction: record('setMessageReaction'),
     sendMediaGroup: record('sendMediaGroup'),
     streamMessage: record('streamMessage'),
+    editEphemeralMessageText: record('editEphemeralMessageText'),
+    deleteEphemeralMessage: record('deleteEphemeralMessage'),
   } as unknown as BotService;
 
   return { bot, calls };
@@ -222,6 +224,62 @@ describe('Message actions', () => {
       method: 'deleteMessage',
       args: [1, 5, undefined],
     });
+  });
+
+  function ephemeralMessage(bot: BotService): Message {
+    return new Message(bot, {
+      message_id: 0,
+      chat: { id: -100, type: 'supergroup' },
+      ephemeral_message_id: 555,
+      receiver_user: { id: 42, is_bot: false, first_name: 'Ann' },
+      date: 1,
+    });
+  }
+
+  it('isEphemeral reflects ephemeral_message_id presence', () => {
+    const { bot } = fakeBot();
+    expect(ephemeralMessage(bot).isEphemeral).toBe(true);
+    expect(message(bot).isEphemeral).toBe(false);
+  });
+
+  it('editEphemeral() edits by the ephemeral coordinates', () => {
+    const { bot, calls } = fakeBot();
+    ephemeralMessage(bot).editEphemeral('edited', { parse_mode: 'HTML' });
+    expect(calls[0]).toEqual({
+      method: 'editEphemeralMessageText',
+      args: [-100, 42, 555, 'edited', { parse_mode: 'HTML' }],
+    });
+  });
+
+  it('deleteEphemeral() deletes by the ephemeral coordinates', () => {
+    const { bot, calls } = fakeBot();
+    ephemeralMessage(bot).deleteEphemeral();
+    expect(calls[0]).toEqual({
+      method: 'deleteEphemeralMessage',
+      args: [-100, 42, 555, undefined],
+    });
+  });
+
+  it('editEphemeral() throws on a normal message', () => {
+    const { bot } = fakeBot();
+    expect(() => message(bot).editEphemeral('x')).toThrow(NestgramError);
+  });
+
+  it('the message_id methods refuse an ephemeral message (message_id is 0)', () => {
+    const { bot, calls } = fakeBot();
+    const eph = () => ephemeralMessage(bot);
+    expect(() => eph().editText('x')).toThrow(NestgramError);
+    expect(() => eph().editReplyMarkup({ inline_keyboard: [] })).toThrow(
+      NestgramError,
+    );
+    expect(() => eph().editMedia({ type: 'photo', media: 'f' })).toThrow(
+      NestgramError,
+    );
+    expect(() => eph().delete()).toThrow(NestgramError);
+    expect(() => eph().react('👍')).toThrow(NestgramError);
+    expect(() => eph().forward(1)).toThrow(NestgramError);
+    expect(() => eph().copy(1)).toThrow(NestgramError);
+    expect(calls).toHaveLength(0);
   });
 
   it('forward() forwards this message to another chat', () => {

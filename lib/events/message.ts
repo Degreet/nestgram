@@ -1,9 +1,16 @@
 import { TelegramObject } from './telegram-object';
-import { AlbumItem, BotService, MediaGroup, MethodOptions } from '../api';
+import {
+  AlbumItem,
+  BotService,
+  CallOptions,
+  MediaGroup,
+  MethodOptions,
+} from '../api';
 import {
   AnswerGuestQueryOptions,
   CopyMessageOptions,
   DeleteMessageOptions,
+  EditEphemeralMessageTextOptions,
   EditMessageMediaOptions,
   EditMessageReplyMarkupOptions,
   EditMessageTextOptions,
@@ -197,9 +204,9 @@ export class Message extends TelegramObject {
   /**
    * Reply with an ephemeral message — visible ONLY to this message's sender, in
    * the same group/supergroup (ephemeral messages are a group-only feature).
-   * Resolves the sent {@link Message}; to edit or remove it use
-   * `bot.editEphemeralMessageText` / `deleteEphemeralMessage`, not the returned
-   * message's `.editText()` / `.delete()` (those target normal messages).
+   * Resolves the sent {@link Message}; edit or remove it with its
+   * {@link editEphemeral} / {@link deleteEphemeral} (its normal `.editText()` /
+   * `.delete()` refuse — an ephemeral message has no real `message_id`).
    */
   answerEphemeral(
     text: string,
@@ -348,6 +355,7 @@ export class Message extends TelegramObject {
       Omit<EditMessageTextOptions, 'text' | 'rich_message'>
     >,
   ) {
+    this.assertNotEphemeral('editText');
     return this.botService.editMessageText(
       this.chat.id,
       this.message_id,
@@ -360,6 +368,7 @@ export class Message extends TelegramObject {
     reply_markup: EditMessageReplyMarkupOptions['reply_markup'],
     options?: MethodOptions<EditMessageReplyMarkupOptions>,
   ) {
+    this.assertNotEphemeral('editReplyMarkup');
     return this.botService.editMessageReplyMarkup(
       this.chat.id,
       this.message_id,
@@ -376,6 +385,7 @@ export class Message extends TelegramObject {
     media: EditMessageMediaOptions['media'],
     options?: MethodOptions<Omit<EditMessageMediaOptions, 'media'>>,
   ) {
+    this.assertNotEphemeral('editMedia');
     return this.botService.editMessageMedia(
       this.chat.id,
       this.message_id,
@@ -480,6 +490,7 @@ export class Message extends TelegramObject {
 
   /** Delete this message. */
   delete(options?: MethodOptions<DeleteMessageOptions>) {
+    this.assertNotEphemeral('delete');
     return this.botService.deleteMessage(
       this.chat.id,
       this.message_id,
@@ -487,8 +498,97 @@ export class Message extends TelegramObject {
     );
   }
 
+  /**
+   * Whether this is an ephemeral message (one sent with `receiver_user_id`,
+   * visible to a single user in a group). Such a message has no real
+   * `message_id` — it's `0` — so the normal edit/delete methods don't apply;
+   * use {@link editEphemeral} / {@link deleteEphemeral}, which address it by
+   * `ephemeral_message_id`.
+   */
+  get isEphemeral(): boolean {
+    return this.ephemeral_message_id !== undefined;
+  }
+
+  /**
+   * Edit this ephemeral message's text — the ephemeral counterpart to
+   * {@link editText}. Valid only on a message returned by `answerEphemeral` /
+   * a `receiver_user_id` send (it self-derives the chat, receiver and
+   * `ephemeral_message_id`); throws otherwise.
+   */
+  editEphemeral(
+    text: string,
+    options?: MethodOptions<
+      Omit<
+        EditEphemeralMessageTextOptions,
+        'chat_id' | 'receiver_user_id' | 'ephemeral_message_id' | 'text'
+      >
+    >,
+  ) {
+    const target = this.ephemeralTarget('editEphemeral');
+    return this.botService.editEphemeralMessageText(
+      target.chatId,
+      target.receiverId,
+      target.ephemeralId,
+      text,
+      options,
+    );
+  }
+
+  /**
+   * Delete this ephemeral message — the ephemeral counterpart to
+   * {@link delete}. Valid only on an ephemeral message (see {@link isEphemeral});
+   * throws otherwise.
+   */
+  deleteEphemeral(options?: CallOptions) {
+    const target = this.ephemeralTarget('deleteEphemeral');
+    return this.botService.deleteEphemeralMessage(
+      target.chatId,
+      target.receiverId,
+      target.ephemeralId,
+      options,
+    );
+  }
+
+  /** The address an ephemeral edit/delete needs, or throws if not ephemeral. */
+  private ephemeralTarget(action: string): {
+    chatId: number | string;
+    receiverId: number;
+    ephemeralId: number;
+  } {
+    if (
+      this.ephemeral_message_id === undefined ||
+      this.receiver_user === undefined
+    ) {
+      throw new NestgramError(
+        `message.${action}() is only valid on an ephemeral message — one sent ` +
+          'with receiver_user_id (it carries ephemeral_message_id + receiver_user).',
+      );
+    }
+    return {
+      chatId: this.chat.id,
+      receiverId: this.receiver_user.id,
+      ephemeralId: this.ephemeral_message_id,
+    };
+  }
+
+  /**
+   * The `message_id`-addressing methods (edit/delete/react/forward/copy) can't
+   * act on an ephemeral message — its `message_id` is `0` — so refuse with a
+   * clear pointer to the ephemeral path rather than issue a doomed call.
+   */
+  private assertNotEphemeral(action: string): void {
+    if (this.isEphemeral) {
+      throw new NestgramError(
+        `message.${action}() can't act on an ephemeral message — its ` +
+          'message_id is 0. Use message.editEphemeral() / deleteEphemeral(), or ' +
+          'the bot.editEphemeralMessage* methods.',
+      );
+    }
+  }
+
   /** React to this message with a single emoji (replaces any existing reaction). */
   react(emoji: string, options?: MethodOptions<SetMessageReactionOptions>) {
+    this.assertNotEphemeral('react');
     return this.botService.setMessageReaction(this.chat.id, this.message_id, {
       reaction: [{ type: Message.EMOJI_REACTION_TYPE, emoji }],
       ...options,
@@ -500,6 +600,7 @@ export class Message extends TelegramObject {
     chat_id: number | string,
     options?: MethodOptions<ForwardMessageOptions>,
   ) {
+    this.assertNotEphemeral('forward');
     return this.botService.forwardMessage(
       chat_id,
       this.chat.id,
@@ -510,6 +611,7 @@ export class Message extends TelegramObject {
 
   /** Copy this message to another chat without a forward header. */
   copy(chat_id: number | string, options?: MethodOptions<CopyMessageOptions>) {
+    this.assertNotEphemeral('copy');
     return this.botService.copyMessage(
       chat_id,
       this.chat.id,
