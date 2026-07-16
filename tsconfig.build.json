@@ -6,7 +6,12 @@
     // common parent of everything it compiles, so a single stray `.ts` outside
     // `lib/` silently moves the whole package under `dist/lib/`. With it, such a
     // file is a loud build error instead of a broken publish.
-    "rootDir": "./lib"
+    "rootDir": "./lib",
+    // Must live INSIDE outDir: `nest-cli.json` sets `deleteOutDir`, so wiping
+    // `dist/` has to reset the incremental state too. Left outside (where
+    // `rootDir` would otherwise put it), a stale build-info survives the wipe and
+    // tsc emits nothing — leaving an empty `dist/`.
+    "tsBuildInfoFile": "./dist/tsconfig.build.tsbuildinfo"
   },
   "include": ["lib/**/*"],
   "exclude": [
