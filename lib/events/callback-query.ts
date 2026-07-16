@@ -2,7 +2,8 @@ import { Logger } from '@nestjs/common';
 
 import { Message } from './message';
 import { BotService, MethodOptions } from '../api';
-import { AnswerCallbackQueryOptions } from '../api/methods';
+import { AnswerCallbackQueryOptions, SendMessageOptions } from '../api/methods';
+import { NestgramError } from '../exceptions';
 import type { EventState } from '../engine/context/event-state';
 import type { RawCallbackQuery } from './raw-update.types';
 import { TelegramObject } from './telegram-object';
@@ -55,5 +56,33 @@ export class CallbackQuery extends TelegramObject {
   /** Answer with a modal alert — shortcut for `answer(text, { show_alert: true })`. */
   alert(text: string, options?: MethodOptions<AnswerCallbackQueryOptions>) {
     return this.answer(text, { ...options, show_alert: true });
+  }
+
+  /**
+   * Reply with an ephemeral message — a full message visible ONLY to the user
+   * who tapped the button, in the group/supergroup it came from and bound to
+   * this query. Unlike {@link answer} (a toast/alert), it takes a keyboard,
+   * parse mode, etc. Group/supergroup only. Resolves the sent {@link Message};
+   * edit or remove it with its `editEphemeral()` / `deleteEphemeral()` (its
+   * normal `.editText()` / `.delete()` refuse — an ephemeral message has no
+   * real `message_id`).
+   */
+  answerEphemeral(
+    text: string,
+    options?: MethodOptions<
+      Omit<SendMessageOptions, 'receiver_user_id' | 'callback_query_id'>
+    >,
+  ) {
+    if (!this.message) {
+      throw new NestgramError(
+        "callbackQuery.answerEphemeral() needs the query's originating chat, " +
+          'but this is an inline-mode query (no attached chat message).',
+      );
+    }
+    return this.botService.sendMessage(this.message.chat.id, text, {
+      ...options,
+      receiver_user_id: this.from.id,
+      callback_query_id: this.id,
+    });
   }
 }

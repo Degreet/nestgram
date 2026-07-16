@@ -16,11 +16,20 @@ function quoteLiteral(literal: string): string {
   return `'${literal}'`;
 }
 
+/**
+ * The tail member of an OPEN literal union: an object type intersected with
+ * `string` that preserves the known literals' autocomplete while still accepting
+ * any other string (type-fest's `LiteralUnion` idiom; `Record<never, never>`
+ * rather than `{}` to satisfy `@typescript-eslint/ban-types`).
+ */
+const OPEN_UNION_TAIL = '(string & Record<never, never>)';
+
 /** A union (multi-variant) must be parenthesised before a `[]` array suffix. */
 function needsArrayParens(element: IrType): boolean {
   return (
     element.kind === 'union' ||
-    (element.kind === 'literalUnion' && element.literals.length > 1)
+    (element.kind === 'literalUnion' &&
+      (element.literals.length > 1 || element.open))
   );
 }
 
@@ -28,8 +37,13 @@ export function irTypeToTs(type: IrType): string {
   switch (type.kind) {
     case 'primitive':
       return type.ts;
-    case 'literalUnion':
-      return type.literals.map(quoteLiteral).join(' | ');
+    case 'literalUnion': {
+      const members = type.literals.map(quoteLiteral);
+      if (type.open) {
+        members.push(OPEN_UNION_TAIL);
+      }
+      return members.join(' | ');
+    }
     case 'namedType':
       return type.name;
     case 'reference':

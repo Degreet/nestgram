@@ -1,4 +1,5 @@
 import { ApiMethod } from './api-method';
+import { hasInputFile } from '../form-data';
 import type {
   RawInlineQueryResult,
   RawSentGuestMessage,
@@ -19,7 +20,13 @@ export class AnswerGuestQuery extends ApiMethod<
 > {
   readonly method = 'answerGuestQuery';
 
+  readonly isAttachMedia = true;
+
   constructor(payload: AnswerGuestQueryOptions) {
     super(payload);
+  }
+
+  get hasMedia(): boolean {
+    return hasInputFile(this.payload);
   }
 }

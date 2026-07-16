@@ -23,7 +23,14 @@
 ---
 
 ```ts
-import { Router, Command, Action, Param, Message, InlineKeyboard } from 'nestgram';
+import {
+  Router,
+  Command,
+  Action,
+  Param,
+  Message,
+  InlineKeyboard,
+} from 'nestgram';
 import { ParseIntPipe } from '@nestjs/common';
 
 @Router()
@@ -31,14 +38,18 @@ export class LikeRouter {
   @Command('post')
   post(message: Message) {
     return message.answer('Like this post?', {
-      reply_markup: new InlineKeyboard().text('Like (0)', 'like/:count', { count: 0 }),
+      reply_markup: new InlineKeyboard().text('Like (0)', 'like/:count', {
+        count: 0,
+      }),
     });
   }
 
   // Returning a keyboard from a callback edits the message's buttons in place.
   @Action('like/:count')
   like(@Param('count', ParseIntPipe) count: number) {
-    return new InlineKeyboard().text(`Like (${count + 1})`, 'like/:count', { count: count + 1 });
+    return new InlineKeyboard().text(`Like (${count + 1})`, 'like/:count', {
+      count: count + 1,
+    });
   }
 }
 ```
@@ -93,7 +104,7 @@ most of them toggleable interceptors you could have written yourself.
   pagination, multi-select and edit-in-place, without hand-managing
   `callback_data`.
 - **Always current, generated.** The entire typed API tracks Telegram (Bot API
-  10.1), generated from a daily re-scrape of the official docs and CI-guarded
+  10.2), generated from a daily re-scrape of the official docs and CI-guarded
   against drift — so it never rots.
 - **Building blocks for real flows.** Sessions (memory/Redis), ambient
   `t()`/`locale()` i18n without threading a `ctx` through every service, and an

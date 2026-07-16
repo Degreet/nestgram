@@ -5,7 +5,7 @@ export interface GetChatMemberCountOptions {
 }
 
 /**
- * Use this method to get the number of members in a chat. Returns Int on success.
+ * Use this method to get the number of members in a chat. Returns Integer on success.
  * @see https://core.telegram.org/bots/api#getchatmembercount
  */
 export class GetChatMemberCount extends ApiMethod<

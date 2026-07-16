@@ -1,6 +1,7 @@
 import { ApiMethod } from './api-method';
 import { Message } from '../../events';
 import type { BotService } from '../bot.service';
+import { hasInputFile } from '../form-data';
 import type {
   RawForceReply,
   RawInlineKeyboardMarkup,
@@ -42,8 +43,14 @@ export class SendRichMessage extends ApiMethod<
 > {
   readonly method = 'sendRichMessage';
 
+  readonly isAttachMedia = true;
+
   constructor(payload: SendRichMessageOptions) {
     super(payload);
+  }
+
+  get hasMedia(): boolean {
+    return hasInputFile(this.payload);
   }
 
   wrap(raw: unknown, bot: BotService): Message {

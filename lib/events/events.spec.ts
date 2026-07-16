@@ -41,6 +41,8 @@ function fakeBot(): { bot: BotService; calls: Call[] } {
     setMessageReaction: record('setMessageReaction'),
     sendMediaGroup: record('sendMediaGroup'),
     streamMessage: record('streamMessage'),
+    editEphemeralMessageText: record('editEphemeralMessageText'),
+    deleteEphemeralMessage: record('deleteEphemeralMessage'),
   } as unknown as BotService;
 
   return { bot, calls };
@@ -64,6 +66,31 @@ describe('Message actions', () => {
     });
   });
 
+  it('answerEphemeral() sends visible only to the sender', () => {
+    const { bot, calls } = fakeBot();
+    new Message(bot, {
+      message_id: 5,
+      chat: { id: -100, type: 'supergroup' },
+      from: { id: 42, is_bot: false, first_name: 'Ann' },
+      text: 'hi',
+    }).answerEphemeral('only you');
+    expect(calls[0]).toEqual({
+      method: 'sendMessage',
+      args: [-100, 'only you', { receiver_user_id: 42 }],
+    });
+  });
+
+  it('answerEphemeral() throws when the message has no sender', () => {
+    const { bot } = fakeBot();
+    expect(() =>
+      new Message(bot, {
+        message_id: 5,
+        chat: { id: -100, type: 'supergroup' },
+        text: 'channel post',
+      }).answerEphemeral('x'),
+    ).toThrow(NestgramError);
+  });
+
   function guestMessage(bot: BotService): Message {
     return new Message(bot, {
       message_id: 5,
@@ -76,6 +103,12 @@ describe('Message actions', () => {
   it('answer() refuses a guest message (its chat id may not be reachable)', () => {
     const { bot, calls } = fakeBot();
     expect(() => guestMessage(bot).answer('hi')).toThrow(NestgramError);
+    expect(calls).toHaveLength(0);
+  });
+
+  it('answerEphemeral() refuses a guest message', () => {
+    const { bot, calls } = fakeBot();
+    expect(() => guestMessage(bot).answerEphemeral('x')).toThrow(NestgramError);
     expect(calls).toHaveLength(0);
   });
 
@@ -193,6 +226,62 @@ describe('Message actions', () => {
     });
   });
 
+  function ephemeralMessage(bot: BotService): Message {
+    return new Message(bot, {
+      message_id: 0,
+      chat: { id: -100, type: 'supergroup' },
+      ephemeral_message_id: 555,
+      receiver_user: { id: 42, is_bot: false, first_name: 'Ann' },
+      date: 1,
+    });
+  }
+
+  it('isEphemeral reflects ephemeral_message_id presence', () => {
+    const { bot } = fakeBot();
+    expect(ephemeralMessage(bot).isEphemeral).toBe(true);
+    expect(message(bot).isEphemeral).toBe(false);
+  });
+
+  it('editEphemeral() edits by the ephemeral coordinates', () => {
+    const { bot, calls } = fakeBot();
+    ephemeralMessage(bot).editEphemeral('edited', { parse_mode: 'HTML' });
+    expect(calls[0]).toEqual({
+      method: 'editEphemeralMessageText',
+      args: [-100, 42, 555, 'edited', { parse_mode: 'HTML' }],
+    });
+  });
+
+  it('deleteEphemeral() deletes by the ephemeral coordinates', () => {
+    const { bot, calls } = fakeBot();
+    ephemeralMessage(bot).deleteEphemeral();
+    expect(calls[0]).toEqual({
+      method: 'deleteEphemeralMessage',
+      args: [-100, 42, 555, undefined],
+    });
+  });
+
+  it('editEphemeral() throws on a normal message', () => {
+    const { bot } = fakeBot();
+    expect(() => message(bot).editEphemeral('x')).toThrow(NestgramError);
+  });
+
+  it('the message_id methods refuse an ephemeral message (message_id is 0)', () => {
+    const { bot, calls } = fakeBot();
+    const eph = () => ephemeralMessage(bot);
+    expect(() => eph().editText('x')).toThrow(NestgramError);
+    expect(() => eph().editReplyMarkup({ inline_keyboard: [] })).toThrow(
+      NestgramError,
+    );
+    expect(() => eph().editMedia({ type: 'photo', media: 'f' })).toThrow(
+      NestgramError,
+    );
+    expect(() => eph().delete()).toThrow(NestgramError);
+    expect(() => eph().react('👍')).toThrow(NestgramError);
+    expect(() => eph().forward(1)).toThrow(NestgramError);
+    expect(() => eph().copy(1)).toThrow(NestgramError);
+    expect(calls).toHaveLength(0);
+  });
+
   it('forward() forwards this message to another chat', () => {
     const { bot, calls } = fakeBot();
     message(bot).forward(99);
@@ -306,6 +395,62 @@ describe('CallbackQuery actions', () => {
     expect(calls[0]).toEqual({
       method: 'answerCallbackQuery',
       args: ['cb1', { show_alert: true, text: 'Heads up' }],
+    });
+  });
+
+  it('answerEphemeral() sends to the query chat, bound to the user + query', () => {
+    const { bot, calls } = fakeBot();
+    new CallbackQuery(bot, {
+      id: 'cb1',
+      chat_instance: 'x',
+      from: { id: 42, is_bot: false, first_name: 'Ann' },
+      message: {
+        message_id: 5,
+        chat: { id: -100, type: 'supergroup' },
+        date: 0,
+      },
+    }).answerEphemeral('only you see this');
+    expect(calls[0]).toEqual({
+      method: 'sendMessage',
+      args: [
+        -100,
+        'only you see this',
+        { receiver_user_id: 42, callback_query_id: 'cb1' },
+      ],
+    });
+  });
+
+  it('answerEphemeral() throws for an inline-mode query (no chat)', () => {
+    const { bot } = fakeBot();
+    expect(() =>
+      new CallbackQuery(bot, {
+        id: 'cb1',
+        chat_instance: 'x',
+        from: { id: 42, is_bot: false, first_name: 'Ann' },
+        inline_message_id: 'im1',
+      }).answerEphemeral('x'),
+    ).toThrow(NestgramError);
+  });
+
+  it('answerEphemeral() forwards options while keeping its own ids', () => {
+    const { bot, calls } = fakeBot();
+    new CallbackQuery(bot, {
+      id: 'cb1',
+      chat_instance: 'x',
+      from: { id: 42, is_bot: false, first_name: 'Ann' },
+      message: {
+        message_id: 5,
+        chat: { id: -100, type: 'supergroup' },
+        date: 0,
+      },
+    }).answerEphemeral('hi', { parse_mode: 'HTML' });
+    expect(calls[0]).toEqual({
+      method: 'sendMessage',
+      args: [
+        -100,
+        'hi',
+        { parse_mode: 'HTML', receiver_user_id: 42, callback_query_id: 'cb1' },
+      ],
     });
   });
 

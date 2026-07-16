@@ -4,6 +4,6 @@
  * hand-edit — run `npm run generate` after a spec bump and commit the delta.
  */
 export const GENERATED_SURFACE = {
-  methods: 180,
-  objects: 359,
+  methods: 185,
+  objects: 388,
 } as const;

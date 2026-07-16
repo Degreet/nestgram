@@ -35,6 +35,7 @@ export enum UpdateKind {
   ChatJoinRequest = 'chat_join_request',
   ChatBoost = 'chat_boost',
   RemovedChatBoost = 'removed_chat_boost',
+  Subscription = 'subscription',
 }
 
 /**
@@ -73,6 +74,7 @@ const KIND_ORDER: readonly UpdateKind[] = [
   UpdateKind.ChatJoinRequest,
   UpdateKind.ChatBoost,
   UpdateKind.RemovedChatBoost,
+  UpdateKind.Subscription,
 ];
 
 const KNOWN_KINDS: ReadonlySet<string> = new Set<string>(

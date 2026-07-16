@@ -17,7 +17,7 @@ import { enumLiterals, namedTypeFor, overrideFieldType } from './manifest';
 /** A resolved type, independent of how it will be written to TS. */
 export type IrType =
   | { kind: 'primitive'; ts: string }
-  | { kind: 'literalUnion'; literals: string[] }
+  | { kind: 'literalUnion'; literals: string[]; open: boolean }
   | { kind: 'namedType'; name: string }
   | { kind: 'reference'; name: string }
   | { kind: 'array'; element: IrType }
@@ -167,9 +167,13 @@ function resolveFieldType(owner: string, field: SpecField): IrType {
   if (named) {
     return { kind: 'namedType', name: named };
   }
-  const literals = enumLiterals(owner, field.name);
-  if (literals) {
-    return { kind: 'literalUnion', literals: [...literals] };
+  const enumeration = enumLiterals(owner, field.name);
+  if (enumeration) {
+    return {
+      kind: 'literalUnion',
+      literals: [...enumeration.literals],
+      open: enumeration.open,
+    };
   }
   if (isFileUploadField(field)) {
     return STRING_OR_INPUT_FILE;
@@ -198,24 +202,26 @@ const DISCRIMINATOR = /\b(?:always|must be)\s+(?:one of\s+)?"?([a-z_0-9]+)"?/;
 function applyDiscriminator(fields: IrField[], spec: SpecField[]): void {
   const match = DISCRIMINATOR.exec(spec[0]?.description ?? '');
   if (match) {
-    fields[0].type = { kind: 'literalUnion', literals: [match[1]] };
+    fields[0].type = {
+      kind: 'literalUnion',
+      literals: [match[1]],
+      open: false,
+    };
   }
 }
 
 function lowerObject(name: string, object: SpecType): IrObject {
   const description = object.description.join('\n');
   if (object.subtypes && object.subtypes.length > 0) {
+    // Subtypes are a type-token list exactly like `types`/`returns`: usually all
+    // object names, but `RichText` mixes in `'String'` and `'Array of RichText'`,
+    // so they must lower through `parseTypeString` (→ `string`, `RawRichText[]`),
+    // not a bare reference that would spell `RawArray of RichText`.
     return {
       name,
       kind: 'alias',
       description,
-      type: {
-        kind: 'union',
-        variants: object.subtypes.map((subtype) => ({
-          kind: 'reference',
-          name: subtype,
-        })),
-      },
+      type: lowerTypes(object.subtypes),
     };
   }
   if (object.fields && object.fields.length > 0) {
