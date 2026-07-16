@@ -64,6 +64,31 @@ describe('Message actions', () => {
     });
   });
 
+  it('answerEphemeral() sends visible only to the sender', () => {
+    const { bot, calls } = fakeBot();
+    new Message(bot, {
+      message_id: 5,
+      chat: { id: -100, type: 'supergroup' },
+      from: { id: 42, is_bot: false, first_name: 'Ann' },
+      text: 'hi',
+    }).answerEphemeral('only you');
+    expect(calls[0]).toEqual({
+      method: 'sendMessage',
+      args: [-100, 'only you', { receiver_user_id: 42 }],
+    });
+  });
+
+  it('answerEphemeral() throws when the message has no sender', () => {
+    const { bot } = fakeBot();
+    expect(() =>
+      new Message(bot, {
+        message_id: 5,
+        chat: { id: -100, type: 'supergroup' },
+        text: 'channel post',
+      }).answerEphemeral('x'),
+    ).toThrow(NestgramError);
+  });
+
   function guestMessage(bot: BotService): Message {
     return new Message(bot, {
       message_id: 5,
@@ -76,6 +101,12 @@ describe('Message actions', () => {
   it('answer() refuses a guest message (its chat id may not be reachable)', () => {
     const { bot, calls } = fakeBot();
     expect(() => guestMessage(bot).answer('hi')).toThrow(NestgramError);
+    expect(calls).toHaveLength(0);
+  });
+
+  it('answerEphemeral() refuses a guest message', () => {
+    const { bot, calls } = fakeBot();
+    expect(() => guestMessage(bot).answerEphemeral('x')).toThrow(NestgramError);
     expect(calls).toHaveLength(0);
   });
 
@@ -306,6 +337,62 @@ describe('CallbackQuery actions', () => {
     expect(calls[0]).toEqual({
       method: 'answerCallbackQuery',
       args: ['cb1', { show_alert: true, text: 'Heads up' }],
+    });
+  });
+
+  it('answerEphemeral() sends to the query chat, bound to the user + query', () => {
+    const { bot, calls } = fakeBot();
+    new CallbackQuery(bot, {
+      id: 'cb1',
+      chat_instance: 'x',
+      from: { id: 42, is_bot: false, first_name: 'Ann' },
+      message: {
+        message_id: 5,
+        chat: { id: -100, type: 'supergroup' },
+        date: 0,
+      },
+    }).answerEphemeral('only you see this');
+    expect(calls[0]).toEqual({
+      method: 'sendMessage',
+      args: [
+        -100,
+        'only you see this',
+        { receiver_user_id: 42, callback_query_id: 'cb1' },
+      ],
+    });
+  });
+
+  it('answerEphemeral() throws for an inline-mode query (no chat)', () => {
+    const { bot } = fakeBot();
+    expect(() =>
+      new CallbackQuery(bot, {
+        id: 'cb1',
+        chat_instance: 'x',
+        from: { id: 42, is_bot: false, first_name: 'Ann' },
+        inline_message_id: 'im1',
+      }).answerEphemeral('x'),
+    ).toThrow(NestgramError);
+  });
+
+  it('answerEphemeral() forwards options while keeping its own ids', () => {
+    const { bot, calls } = fakeBot();
+    new CallbackQuery(bot, {
+      id: 'cb1',
+      chat_instance: 'x',
+      from: { id: 42, is_bot: false, first_name: 'Ann' },
+      message: {
+        message_id: 5,
+        chat: { id: -100, type: 'supergroup' },
+        date: 0,
+      },
+    }).answerEphemeral('hi', { parse_mode: 'HTML' });
+    expect(calls[0]).toEqual({
+      method: 'sendMessage',
+      args: [
+        -100,
+        'hi',
+        { parse_mode: 'HTML', receiver_user_id: 42, callback_query_id: 'cb1' },
+      ],
     });
   });
 

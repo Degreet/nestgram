@@ -195,6 +195,32 @@ export class Message extends TelegramObject {
   }
 
   /**
+   * Reply with an ephemeral message — visible ONLY to this message's sender, in
+   * the same group/supergroup (ephemeral messages are a group-only feature).
+   * Resolves the sent {@link Message}; to edit or remove it use
+   * `bot.editEphemeralMessageText` / `deleteEphemeralMessage`, not the returned
+   * message's `.editText()` / `.delete()` (those target normal messages).
+   */
+  answerEphemeral(
+    text: string,
+    options?: MethodOptions<
+      Omit<SendMessageOptions, 'receiver_user_id' | 'callback_query_id'>
+    >,
+  ) {
+    this.assertNotGuest('answerEphemeral');
+    if (this.from === undefined) {
+      throw new NestgramError(
+        'message.answerEphemeral() needs a sender to target, but message.from ' +
+          'is absent (e.g. a channel post).',
+      );
+    }
+    return this.botService.sendMessage(this.chat.id, text, {
+      ...options,
+      receiver_user_id: this.from.id,
+    });
+  }
+
+  /**
    * Stream a reply into this chat live — consume an async iterable of text
    * deltas (an LLM token stream, an `async function*`) and animate it via the
    * native rich-message draft, persisting the final text when the stream ends.
