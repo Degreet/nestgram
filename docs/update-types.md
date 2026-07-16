@@ -88,6 +88,7 @@ parameter is the event class in the **Event** column.
 | `@OnChatJoinRequest()`        | `ChatJoinRequest`             | `chat_join_request`         |
 | `@OnChatBoost()`              | `ChatBoostUpdated`            | `chat_boost`                |
 | `@OnRemovedChatBoost()`       | `ChatBoostRemoved`            | `removed_chat_boost`        |
+| `@OnSubscription()`           | `BotSubscriptionUpdated`      | `subscription`              |
 
 :::note
 `@On*` is the raw kind binding. For the common cases there's sugar layered on

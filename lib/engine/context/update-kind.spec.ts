@@ -65,6 +65,18 @@ describe('resolveKind', () => {
     expect(resolveKind(update)).toBe('guest_message');
   });
 
+  it('resolves a subscription update', () => {
+    const update = {
+      update_id: 1,
+      subscription: {
+        user: { id: 1, is_bot: false, first_name: 'A' },
+        invoice_payload: 'sub_monthly',
+        state: 'active',
+      },
+    } as RawUpdate;
+    expect(resolveKind(update)).toBe('subscription');
+  });
+
   it('returns null for an update with no recognised field', () => {
     const update = { update_id: 1 } as RawUpdate;
     expect(resolveKind(update)).toBeNull();
@@ -87,6 +99,11 @@ describe('unmodelledKind', () => {
 
   it('does not flag guest_message as unmodelled (it is now routed)', () => {
     const update = { update_id: 1, guest_message: {} } as RawUpdate;
+    expect(unmodelledKind(update)).toBeNull();
+  });
+
+  it('does not flag subscription as unmodelled (it is now routed)', () => {
+    const update = { update_id: 1, subscription: {} } as RawUpdate;
     expect(unmodelledKind(update)).toBeNull();
   });
 

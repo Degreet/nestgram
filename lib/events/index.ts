@@ -24,3 +24,4 @@ export * from './message-reaction-count-updated';
 export * from './business-connection';
 export * from './business-messages-deleted';
 export * from './paid-media-purchased';
+export * from './bot-subscription-updated';

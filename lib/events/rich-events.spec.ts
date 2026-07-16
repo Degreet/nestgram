@@ -3,6 +3,7 @@ import { UpdateKind } from '../engine/context';
 import { EventFactory } from '../engine/context/event-factory';
 import { RawUpdate } from './raw-update.types';
 // Importing the classes runs their @UpdateType registration.
+import { BotSubscriptionUpdated } from './bot-subscription-updated';
 import { ChatJoinRequest } from './chat-join-request';
 import { ChatMemberUpdated } from './chat-member-updated';
 import { InlineQuery } from './inline-query';
@@ -54,6 +55,17 @@ describe('Rich events', () => {
     ) as Poll;
     expect(poll.id).toBe('p');
     expect(poll.question).toBe('Tea?');
+  });
+
+  it('builds BotSubscriptionUpdated for a subscription update', () => {
+    const event = build(
+      UpdateKind.Subscription,
+      { invoice_payload: 'sub_monthly', state: 'active' },
+      fakeBot([]),
+    ) as BotSubscriptionUpdated;
+    expect(event).toBeInstanceOf(BotSubscriptionUpdated);
+    expect(event.invoice_payload).toBe('sub_monthly');
+    expect(event.state).toBe('active');
   });
 
   it('InlineQuery.answer calls answerInlineQuery with the query id', async () => {
