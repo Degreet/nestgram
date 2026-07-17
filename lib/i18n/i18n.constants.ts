@@ -2,13 +2,15 @@
 export const LOCALE = Symbol('nestgram:locale');
 
 /**
- * Ambient-store key for the locale-bound translator function, so the free
- * {@link t} helper can translate without DI — `I18nService` seeds it per update.
+ * Ambient-store key for the translate implementation, seeded per update by
+ * `I18nService`. The free {@link t} helper reads it, so the helper is a door
+ * onto the service rather than a second implementation of translation.
  */
-export const TRANSLATOR = Symbol('nestgram:translator');
+export const TRANSLATE = Symbol('nestgram:translate');
 
 /**
- * Ambient-store key for the per-update translator factory (`locale -> translator`),
- * so `t(key, locale)` can translate into an explicit locale without DI.
+ * Extension of a Fluent catalog file. Shared because two modules must agree on
+ * it: `FluentTranslatorBackend` reads these files, and the directory source
+ * recognises them only to say they belong to that backend, not to it.
  */
-export const TRANSLATOR_FACTORY = Symbol('nestgram:translator-factory');
+export const FLUENT_EXTENSION = '.ftl';

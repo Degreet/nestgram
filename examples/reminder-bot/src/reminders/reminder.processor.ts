@@ -25,10 +25,14 @@ export class ReminderProcessor extends WorkerHost {
       return;
     }
 
-    const translate = this.i18n.translator(reminder.locale);
+    // No ambient context in a worker — translate against the carried locale.
     await this.bot.sendMessage(
       reminder.chatId,
-      translate('remind.delivered', { text: escapeHtml(reminder.text) }),
+      this.i18n.t(
+        'remind.delivered',
+        { text: escapeHtml(reminder.text) },
+        reminder.locale,
+      ),
     );
     await this.reminders.markDelivered(reminder.id);
     this.logger.log(`Delivered reminder #${reminder.id}`);

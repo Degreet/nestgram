@@ -2,10 +2,9 @@ import { promises as fs } from 'fs';
 import { basename, extname, join } from 'path';
 
 import { NestgramConfigError } from '../../exceptions';
+import { FLUENT_EXTENSION } from '../i18n.constants';
 import type { TranslateParams } from '../i18n.types';
 import type { TranslatorBackend } from './translator-backend';
-
-const FLUENT_EXTENSION = '.ftl';
 
 /** Options for the Fluent backend. */
 export interface FluentBackendOptions {
@@ -112,8 +111,9 @@ export async function fluentBackend(
 
 /**
  * Build a Fluent {@link TranslatorBackend} from a directory of `<locale>.ftl`
- * files — the Fluent counterpart of {@link directoryTranslations}. Async; reads
- * the files then delegates to {@link fluentBackend}.
+ * files — the Fluent counterpart of a path `source`, which loads flat JSON/YAML
+ * catalogs and cannot read `.ftl`. Async; reads the files then delegates to
+ * {@link fluentBackend}.
  */
 export async function fluentDirectory(
   directory: string,
@@ -143,6 +143,15 @@ export async function fluentDirectory(
       );
     }
     resources[locale] = await fs.readFile(join(directory, entry.name), 'utf8');
+  }
+
+  // A backend with no bundles renders every key as itself, silently — the same
+  // failure a path `source` refuses at boot, refused here for the same reason.
+  if (Object.keys(resources).length === 0) {
+    throw new NestgramConfigError(
+      `No ${FLUENT_EXTENSION} locale files in ${directory} — expected one ` +
+        `<locale>${FLUENT_EXTENSION} file per locale, e.g. en${FLUENT_EXTENSION}`,
+    );
   }
 
   return fluentBackend(resources, options);

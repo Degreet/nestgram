@@ -8,15 +8,11 @@ export type TranslateParams = Record<string, string | number>;
 /** A locale-bound translator: a key (+ params) into one fixed locale's text. */
 export type TranslateFn = (key: string, params?: TranslateParams) => string;
 
-/** Builds a {@link TranslateFn} for any locale. Seeded into the ambient store per update. */
-export type TranslatorFactory = (locale: string) => TranslateFn;
-
 /**
- * The free {@link t} helper. Translates a key into the current update's locale,
- * or into an explicit locale when one is passed (`t(key, 'uk')` /
- * `t(key, params, 'uk')`) — the explicit form still reads the per-update
- * translator factory from the ambient store, so it works anywhere in an update's
- * call chain without DI.
+ * The translate surface, as both the free {@link t} helper and `I18nService.t`
+ * spell it. Overloaded so the second argument reads as params when it's an
+ * object and as a locale when it's a string, and so `t(key, 'uk', 'en')` — two
+ * locales — cannot be written.
  */
 export interface Translate {
   (key: string): string;
@@ -24,6 +20,17 @@ export interface Translate {
   (key: string, locale: string): string;
   (key: string, params: TranslateParams, locale: string): string;
 }
+
+/**
+ * The un-overloaded shape of {@link Translate} — what an implementation actually
+ * receives, and what travels the ambient rail. Overloads describe the call site;
+ * a value passed between functions needs the single signature they collapse to.
+ */
+export type TranslateImpl = (
+  key: string,
+  paramsOrLocale?: TranslateParams | string,
+  locale?: string,
+) => string;
 
 /**
  * Per-locale message catalogs: `locale -> (key -> template)`. Keys are flat
@@ -57,19 +64,25 @@ interface I18nBaseOptions {
 
 /**
  * i18n configuration for `I18nModule.forRoot`. Provide catalogs in exactly one
- * way: inline (`translations`), loaded from a {@link TranslationSource}
- * (`source`, e.g. {@link directoryTranslations}), or a {@link TranslatorBackend}
+ * way: inline (`translations`), loaded from a `source` (a path to a locales
+ * directory, or your own {@link TranslationSource}), or a {@link TranslatorBackend}
  * for a different message format (`backend`, e.g. a Fluent backend).
  */
 export interface I18nOptions extends I18nBaseOptions {
   /** Inline per-locale catalogs. Provide this, {@link source}, or {@link backend}. */
   translations?: Translations;
   /**
-   * Load catalogs from a source (a directory of files, a DB, …) instead of
-   * inlining them. Loaded once at startup. Provide this, {@link translations},
-   * or {@link backend}.
+   * Where to load catalogs from instead of inlining them, loaded once at
+   * startup. Pass a **path** to a directory holding one `<locale>.json` / `.yaml`
+   * file per locale, or your own {@link TranslationSource} to load from anywhere
+   * else (a DB, a remote service). Provide this, {@link translations}, or
+   * {@link backend}.
+   *
+   * ```ts
+   * source: join(__dirname, 'locales')
+   * ```
    */
-  source?: TranslationSource;
+  source?: string | TranslationSource;
   /**
    * A translator backend for a non-flat message format (e.g. `fluentBackend`).
    * Provide this, {@link translations}, or {@link source}.

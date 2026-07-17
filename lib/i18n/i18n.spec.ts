@@ -4,7 +4,7 @@ import { runAmbient } from '../ambient';
 import { TelegramExecutionContext } from '../engine/context';
 import { FlatTranslatorBackend } from './backends';
 import { I18nService } from './i18n.service';
-import { interpolate, locale, t } from './translate';
+import { locale, t } from './translate';
 import type { ResolvedI18nOptions } from './i18n.types';
 
 const TRANSLATIONS = {
@@ -27,15 +27,30 @@ function ctxWithLanguage(language_code?: string): TelegramExecutionContext {
   return { from: { language_code } } as TelegramExecutionContext;
 }
 
-describe('interpolate', () => {
+describe('FlatTranslatorBackend interpolation', () => {
+  const backend = new FlatTranslatorBackend({
+    en: {
+      hi: 'Hello, {name}!',
+      pair: '{a}/{b}',
+      plain: 'plain',
+      inherited: '{toString}',
+    },
+  });
+
   it('splices params and leaves unmatched placeholders visible', () => {
-    expect(interpolate('Hello, {name}!', { name: 'Ann' })).toBe('Hello, Ann!');
-    expect(interpolate('{a}/{b}', { a: 1 })).toBe('1/{b}');
-    expect(interpolate('plain')).toBe('plain');
+    expect(backend.format('en', 'hi', { name: 'Ann' })).toBe('Hello, Ann!');
+    expect(backend.format('en', 'pair', { a: 1 })).toBe('1/{b}');
+    expect(backend.format('en', 'plain')).toBe('plain');
   });
 
   it('does not pull inherited Object.prototype keys for a placeholder', () => {
-    expect(interpolate('{toString}', { name: 'Ann' })).toBe('{toString}');
+    expect(backend.format('en', 'inherited', { name: 'Ann' })).toBe(
+      '{toString}',
+    );
+  });
+
+  it('does not pull an inherited Object.prototype key as a catalog key', () => {
+    expect(backend.format('en', 'toString')).toBeUndefined();
   });
 });
 
@@ -153,5 +168,52 @@ describe('I18nService.translator (explicit locale, no ambient)', () => {
 
   it('returns an identity translator when i18n is off', () => {
     expect(manager(undefined).translator('uk')('hi')).toBe('hi');
+  });
+});
+
+describe('I18nService.t outside an update', () => {
+  it('translates into an explicit locale where the free t() cannot', () => {
+    const i18n = manager({});
+    // The contrast that justifies the injected door: the free helper reads the
+    // ambient rail, and outside an update there is nothing on it.
+    expect(t('hi', { name: 'Ann' }, 'uk')).toBe('hi');
+    expect(i18n.t('hi', { name: 'Ann' }, 'uk')).toBe('Привіт, Ann!');
+    expect(i18n.t('hi', 'uk')).toBe('Привіт, {name}!');
+  });
+
+  it('falls back to the default locale when no locale is given', () => {
+    expect(manager({}).t('hi', { name: 'Ann' })).toBe('Hello, Ann!');
+  });
+
+  it('still falls back across locales for a missing key', () => {
+    expect(manager({}).t('bye', 'uk')).toBe('Bye'); // uk has no `bye` -> en
+  });
+
+  it('returns the key when i18n is off', () => {
+    expect(manager(undefined).t('hi', 'uk')).toBe('hi');
+  });
+});
+
+describe('I18nService.t inside an update', () => {
+  it('uses the ambient locale, and an explicit locale still wins', () => {
+    runAmbient(() => {
+      const i18n = manager({});
+      i18n.resolve(ctxWithLanguage('uk'));
+      expect(i18n.t('hi', { name: 'Ann' })).toBe('Привіт, Ann!');
+      expect(i18n.t('hi', { name: 'Ann' }, 'en')).toBe('Hello, Ann!');
+    });
+  });
+
+  it('agrees with the free t() — both are the same implementation', () => {
+    runAmbient(() => {
+      const i18n = manager({});
+      i18n.resolve(ctxWithLanguage('uk'));
+      // Anchored, not just cross-compared: a dead rail would make both sides
+      // return the key and agree vacuously.
+      expect(t('hi', { name: 'Ann' })).toBe('Привіт, Ann!');
+      expect(i18n.t('hi', { name: 'Ann' })).toBe('Привіт, Ann!');
+      expect(t('bye')).toBe('Bye');
+      expect(i18n.t('bye')).toBe('Bye');
+    });
   });
 });

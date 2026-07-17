@@ -1,32 +1,6 @@
 import { getAmbient } from '../ambient';
-import { LOCALE, TRANSLATOR, TRANSLATOR_FACTORY } from './i18n.constants';
-import type {
-  Translate,
-  TranslateFn,
-  TranslateParams,
-  TranslatorFactory,
-} from './i18n.types';
-
-const PLACEHOLDER = /\{(\w+)\}/g;
-
-/**
- * Interpolate `{name}` placeholders in a template. An unmatched placeholder is
- * left as-is, so a typo is visible rather than silently blanked. Pure — shared
- * by the locale-bound translators `I18nService` builds.
- */
-export function interpolate(
-  template: string,
-  params?: TranslateParams,
-): string {
-  if (!params) {
-    return template;
-  }
-  // `Object.hasOwn`, not `in`: a `{toString}` placeholder must stay visible, not
-  // pull an inherited Object.prototype method.
-  return template.replace(PLACEHOLDER, (whole, name: string) =>
-    Object.hasOwn(params, name) ? String(params[name]) : whole,
-  );
-}
+import { LOCALE, TRANSLATE } from './i18n.constants';
+import type { Translate, TranslateImpl, TranslateParams } from './i18n.types';
 
 /**
  * Translate a key into the current update's locale. A free function — reachable
@@ -38,6 +12,11 @@ export function interpolate(
  * renders text in more than one language. The second argument is read as params
  * when it's an object, as a locale when it's a string.
  *
+ * A door onto `I18nService.t`, which seeds itself here per update — not a second
+ * implementation. So outside an update there is nothing on the rail and this
+ * returns the key, even for an explicit locale; inject `I18nService` and call
+ * `i18n.t(key, 'uk')` when there is no update in flight.
+ *
  * Degrades gracefully: with i18n unconfigured, outside an update, or for an
  * unknown key, it returns the key itself — visible, never throwing.
  */
@@ -45,19 +24,9 @@ export const t: Translate = (
   key: string,
   paramsOrLocale?: TranslateParams | string,
   explicitLocale?: string,
-): string => {
-  const params =
-    typeof paramsOrLocale === 'object' ? paramsOrLocale : undefined;
-  const locale =
-    typeof paramsOrLocale === 'string' ? paramsOrLocale : explicitLocale;
-
-  const translator =
-    locale === undefined
-      ? getAmbient<TranslateFn>(TRANSLATOR)
-      : getAmbient<TranslatorFactory>(TRANSLATOR_FACTORY)?.(locale);
-
-  return translator ? translator(key, params) : key;
-};
+): string =>
+  getAmbient<TranslateImpl>(TRANSLATE)?.(key, paramsOrLocale, explicitLocale) ??
+  key;
 
 /** The current update's resolved locale, or `undefined` when i18n is off. */
 export function locale(): string | undefined {

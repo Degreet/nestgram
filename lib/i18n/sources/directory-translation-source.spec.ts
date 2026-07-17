@@ -6,9 +6,10 @@ import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { DynamicModule, INestApplicationContext } from '@nestjs/common';
 
+import { fluentDirectory } from '../backends/fluent-translator-backend';
 import { I18nService } from '../i18n.service';
 import { I18nModule } from '../i18n.module';
-import { directoryTranslations } from './directory-translation-source';
+import { DirectoryTranslationSource } from './directory-translation-source';
 
 async function makeLocaleDir(): Promise<string> {
   const dir = await fs.mkdtemp(join(tmpdir(), 'nestgram-i18n-'));
@@ -24,7 +25,23 @@ async function makeLocaleDir(): Promise<string> {
   return dir;
 }
 
-describe('directoryTranslations', () => {
+async function withTempDir(
+  prefix: string,
+  files: Record<string, string>,
+  assert: (dir: string) => Promise<void>,
+): Promise<void> {
+  const dir = await fs.mkdtemp(join(tmpdir(), prefix));
+  try {
+    for (const [name, content] of Object.entries(files)) {
+      await fs.writeFile(join(dir, name), content);
+    }
+    await assert(dir);
+  } finally {
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+}
+
+describe('DirectoryTranslationSource', () => {
   let dir: string;
 
   beforeAll(async () => {
@@ -36,7 +53,7 @@ describe('directoryTranslations', () => {
   });
 
   it('loads one locale per file, parses JSON + YAML, flattens, ignores other files', async () => {
-    const translations = await directoryTranslations(dir).load();
+    const translations = await new DirectoryTranslationSource(dir).load();
 
     expect(translations).toEqual({
       en: { hi: 'Hello, {name}!', 'cart.empty': 'Empty' },
@@ -46,38 +63,115 @@ describe('directoryTranslations', () => {
 
   it('throws a clear error when the directory does not exist', async () => {
     await expect(
-      directoryTranslations(join(dir, 'does-not-exist')).load(),
+      new DirectoryTranslationSource(join(dir, 'does-not-exist')).load(),
     ).rejects.toThrow(/locales directory/);
   });
 
   it('throws on a duplicate locale (en.json + en.yaml)', async () => {
-    const dup = await fs.mkdtemp(join(tmpdir(), 'nestgram-i18n-dup-'));
-    await fs.writeFile(join(dup, 'en.json'), '{"a":"1"}');
-    await fs.writeFile(join(dup, 'en.yaml'), 'a: "2"');
-    try {
-      await expect(directoryTranslations(dup).load()).rejects.toThrow(
-        /Duplicate locale "en"/,
+    await withTempDir(
+      'nestgram-i18n-dup-',
+      { 'en.json': '{"a":"1"}', 'en.yaml': 'a: "2"' },
+      async (dup) =>
+        expect(new DirectoryTranslationSource(dup).load()).rejects.toThrow(
+          /Duplicate locale "en"/,
+        ),
+    );
+  });
+
+  it('throws rather than yielding an empty catalog when no locale file matches', async () => {
+    await withTempDir(
+      'nestgram-i18n-empty-',
+      { 'README.md': '# nothing here' },
+      async (empty) =>
+        expect(new DirectoryTranslationSource(empty).load()).rejects.toThrow(
+          /No locale files/,
+        ),
+    );
+  });
+
+  it('points at the Fluent backend when the directory holds only .ftl files', async () => {
+    await withTempDir(
+      'nestgram-i18n-ftl-',
+      { 'en.ftl': 'hi = Hello' },
+      async (ftl) =>
+        // Matched against the real export: deleting it breaks the import, and
+        // renaming it fails here — either way the message can't quietly come to
+        // name an API that no longer exists.
+        expect(new DirectoryTranslationSource(ftl).load()).rejects.toThrow(
+          new RegExp(fluentDirectory.name),
+        ),
+    );
+  });
+
+  describe('flattening', () => {
+    it('dots nested keys and coerces non-string leaves', async () => {
+      await withTempDir(
+        'nestgram-i18n-flat-',
+        {
+          'en.json': JSON.stringify({
+            a: { b: { c: 'deep' } },
+            count: 7,
+            on: true,
+          }),
+        },
+        async (flat) => {
+          const { en } = await new DirectoryTranslationSource(flat).load();
+          expect(en).toEqual({ 'a.b.c': 'deep', count: '7', on: 'true' });
+        },
       );
+    });
+
+    it('treats an array as a leaf, joined by newlines', async () => {
+      await withTempDir(
+        'nestgram-i18n-arr-',
+        { 'en.json': JSON.stringify({ help: ['line 1', 'line 2'] }) },
+        async (arr) => {
+          const { en } = await new DirectoryTranslationSource(arr).load();
+          expect(en).toEqual({ help: 'line 1\nline 2' });
+        },
+      );
+    });
+
+    // A root that isn't an object flattens to no keys, so the locale would load
+    // "successfully" and then render every key as itself.
+    it.each([
+      ['an empty object', '{}'],
+      ['null', 'null'],
+      ['a bare scalar', '"nope"'],
+    ])('throws when a locale file holds %s', async (_label, content) => {
+      await withTempDir(
+        'nestgram-i18n-scalar-',
+        { 'en.json': content },
+        async (bad) =>
+          expect(new DirectoryTranslationSource(bad).load()).rejects.toThrow(
+            /holds no keys/,
+          ),
+      );
+    });
+  });
+
+  it('wires through I18nModule.forRoot({ source: <path> }) end to end', async () => {
+    const app = await bootstrap(
+      I18nModule.forRoot({ source: dir, defaultLocale: 'en' }),
+    );
+    try {
+      const i18n = app.get(I18nService);
+      expect(i18n.t('hi', { name: 'Ann' }, 'uk')).toBe('Привіт, Ann!');
+      expect(i18n.t('cart.empty', 'en')).toBe('Empty');
     } finally {
-      await fs.rm(dup, { recursive: true, force: true });
+      await app.close();
     }
   });
 
-  it('wires through I18nModule.forRoot({ source }) end to end', async () => {
-    const app: INestApplicationContext =
-      await NestFactory.createApplicationContext(
-        buildModule(
-          I18nModule.forRoot({
-            source: directoryTranslations(dir),
-            defaultLocale: 'en',
-          }),
-        ),
-        { logger: false },
-      );
+  it('accepts a custom TranslationSource object as the escape hatch', async () => {
+    const app = await bootstrap(
+      I18nModule.forRoot({
+        source: { load: () => ({ en: { hi: 'from a custom source' } }) },
+        defaultLocale: 'en',
+      }),
+    );
     try {
-      const i18n = app.get(I18nService);
-      expect(i18n.translator('uk')('hi', { name: 'Ann' })).toBe('Привіт, Ann!');
-      expect(i18n.translator('en')('cart.empty')).toBe('Empty');
+      expect(app.get(I18nService).t('hi')).toBe('from a custom source');
     } finally {
       await app.close();
     }
@@ -86,7 +180,7 @@ describe('directoryTranslations', () => {
   it('rejects when both translations and source are configured', async () => {
     const bad = I18nModule.forRoot({
       translations: { en: { hi: 'Hi' } },
-      source: directoryTranslations(dir),
+      source: dir,
       defaultLocale: 'en',
     });
     await expect(
@@ -97,6 +191,12 @@ describe('directoryTranslations', () => {
     ).rejects.toThrow(/exactly one/);
   });
 });
+
+function bootstrap(i18n: DynamicModule): Promise<INestApplicationContext> {
+  return NestFactory.createApplicationContext(buildModule(i18n), {
+    logger: false,
+  });
+}
 
 function buildModule(i18n: DynamicModule) {
   @Module({ imports: [i18n] })

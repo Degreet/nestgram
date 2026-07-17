@@ -12,25 +12,25 @@ webhook for prod). One file = one entity throughout.
 
 ## What it demonstrates
 
-| Nestgram feature                                                  | Where                                         |
-| ----------------------------------------------------------------- | --------------------------------------------- |
-| `@Router()` controllers across feature modules                    | `reminders/`, `admin/`                        |
-| `@OnStart` / `@OnHelp` · `@Command` · `@Hears` · `@Action`        | `reminder.router.ts`                          |
-| One handler, **stacked decorators** (`@Command` + `@Hears`)       | `reminder.router.ts` (`remind`)               |
-| Typed positional event + `@Sender` / `@Data`                      | `reminder.router.ts`                          |
-| Typed callback data (`pack`/`filter`/`@Data`) — no magic strings  | `reminder.callbacks.ts`                       |
-| Keyboards as an **injected provider** (locale-correct per update) | `reminder.keyboards.ts`                       |
-| **i18n**: free `t()` + per-user locale, localized catalogs        | `i18n/`, every router/provider                |
-| Localized reply-menu routed by **`@HearsKey`** (no custom code)   | `reminder.router.ts`                          |
-| i18n across the **queue boundary** (`i18n.translator(locale)`)    | `reminder.processor.ts`                       |
-| Pure logic as DI providers (parser, keyboards — SRP)              | `reminder.parser.ts`, `reminder.keyboards.ts` |
-| Returning a `string` → reply; `message.answer` only for markup    | `reminder.router.ts`                          |
-| A real Nest **guard** (`@UseGuards`) reading the update           | `admin/admin.guard.ts`                        |
-| A real Nest **interceptor** (`@UseInterceptors`)                  | `common/logging.interceptor.ts`               |
-| Default `parseMode: 'HTML'` + `i18n`, configured once             | `app.module.ts`                               |
-| `forRootAsync` — token/transport from `ConfigService`             | `app.module.ts`                               |
-| Sending **outside a handler** via `BotService` (queue worker)     | `reminder.processor.ts`                       |
-| Graceful shutdown of the update source                            | `main.ts` (`enableShutdownHooks`)             |
+| Nestgram feature                                                   | Where                                         |
+| ------------------------------------------------------------------ | --------------------------------------------- |
+| `@Router()` controllers across feature modules                     | `reminders/`, `admin/`                        |
+| `@OnStart` / `@OnHelp` · `@Command` · `@Hears` · `@Action`         | `reminder.router.ts`                          |
+| One handler, **stacked decorators** (`@Command` + `@Hears`)        | `reminder.router.ts` (`remind`)               |
+| Typed positional event + `@Sender` / `@Data`                       | `reminder.router.ts`                          |
+| Typed callback data (`pack`/`filter`/`@Data`) — no magic strings   | `reminder.callbacks.ts`                       |
+| Keyboards as an **injected provider** (locale-correct per update)  | `reminder.keyboards.ts`                       |
+| **i18n**: free `t()` + per-user locale, localized catalogs         | `i18n/`, every router/provider                |
+| Localized reply-menu routed by **`@HearsKey`** (no custom code)    | `reminder.router.ts`                          |
+| i18n across the **queue boundary** (`i18n.t(key, params, locale)`) | `reminder.processor.ts`                       |
+| Pure logic as DI providers (parser, keyboards — SRP)               | `reminder.parser.ts`, `reminder.keyboards.ts` |
+| Returning a `string` → reply; `message.answer` only for markup     | `reminder.router.ts`                          |
+| A real Nest **guard** (`@UseGuards`) reading the update            | `admin/admin.guard.ts`                        |
+| A real Nest **interceptor** (`@UseInterceptors`)                   | `common/logging.interceptor.ts`               |
+| Default `parseMode: 'HTML'` + `i18n`, configured once              | `app.module.ts`                               |
+| `forRootAsync` — token/transport from `ConfigService`              | `app.module.ts`                               |
+| Sending **outside a handler** via `BotService` (queue worker)      | `reminder.processor.ts`                       |
+| Graceful shutdown of the update source                             | `main.ts` (`enableShutdownHooks`)             |
 
 The reminder _delivery_ runs on a BullMQ worker — outside the per-update
 context — so it carries the chat id explicitly and talks to Telegram through the
