@@ -13,14 +13,27 @@ import type { TranslationSource } from './translation-source';
  * built in; YAML via the optional `yaml` package) and flattened to dotted keys,
  * so a file can nest keys naturally. Non-matching files are ignored.
  *
- * Bot authors never name this class — `I18nModule` builds it whenever `source`
- * is a path:
+ * You normally never name it — `I18nModule` builds it whenever `source` is a
+ * path:
  *
  * ```ts
  * I18nModule.forRoot({
  *   source: join(__dirname, 'locales'),
  *   defaultLocale: 'en',
  * });
+ * ```
+ *
+ * It's exported for composing on top of it, since a {@link TranslationSource} is
+ * just a `load()` — merging two directories, or falling back to a DB, shouldn't
+ * mean reimplementing the file walk:
+ *
+ * ```ts
+ * source: {
+ *   load: async () => ({
+ *     ...(await new DirectoryTranslationSource(base).load()),
+ *     ...(await new DirectoryTranslationSource(overrides).load()),
+ *   }),
+ * },
  * ```
  */
 export class DirectoryTranslationSource implements TranslationSource {
