@@ -27,6 +27,11 @@ import type {
  */
 @Injectable()
 export class I18nService {
+  // Mathematical angle brackets (U+27E8/U+27E9): visually distinct and
+  // near-absent from real message text, so a dev-mode missing key stands out.
+  private static readonly MISSING_OPEN = '⟨';
+  private static readonly MISSING_CLOSE = '⟩';
+
   private readonly logger = new Logger('I18n');
   private readonly translators = new Map<string, TranslateFn>();
   private readonly missingWarned = new Set<string>();
@@ -108,17 +113,38 @@ export class I18nService {
         config.backend.format(locale, key, params) ??
         config.backend.format(fallback, key, params);
       if (text === undefined) {
-        // Returning the key is a safe, visible fallback; warn only when asked,
-        // so a genuine catalog gap is catchable without noise in production.
         if (config.logMissingKeys) {
           this.warnMissingKey(locale, key);
         }
-        return key;
+        // In dev, surface the gap in the chat; in prod, the bare key is the
+        // deliberate, safe fallback (never throw, always answer).
+        return config.devMode ? I18nService.renderMissing(key, params) : key;
       }
       return text;
     };
     this.translators.set(locale, translator);
     return translator;
+  }
+
+  /**
+   * A missing key as a visible dev marker: `⟨key⟩`, or the key followed by one
+   * `name: value` line per param the call passed — readable when there are
+   * several, where a comma-joined line runs together. The angle brackets are
+   * near-absent from real message text, so a miss is obvious at a glance; `: `
+   * (unlike `=`/`|`) is not reserved in MarkdownV2, so params add nothing to the
+   * parse-mode footprint — only the key can.
+   */
+  private static renderMissing(key: string, params?: TranslateParams): string {
+    const open = I18nService.MISSING_OPEN;
+    const close = I18nService.MISSING_CLOSE;
+    const entries = params ? Object.entries(params) : [];
+    if (entries.length === 0) {
+      return `${open}${key}${close}`;
+    }
+    const lines = entries
+      .map(([name, value]) => `  ${name}: ${String(value)}`)
+      .join('\n');
+    return `${open}${key}\n${lines}${close}`;
   }
 
   private warnMissingKey(locale: string, key: string): void {

@@ -1,8 +1,10 @@
-import { Logger } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
 
 import { runAmbient } from '../ambient';
 import { TelegramExecutionContext } from '../engine/context';
 import { FlatTranslatorBackend } from './backends';
+import { I18nModule } from './i18n.module';
 import { I18nService } from './i18n.service';
 import { locale, t } from './translate';
 import type { ResolvedI18nOptions } from './i18n.types';
@@ -18,6 +20,7 @@ function manager(
   const config = extra && {
     backend: new FlatTranslatorBackend(TRANSLATIONS),
     defaultLocale: 'en',
+    devMode: false,
     ...extra,
   };
   return new I18nService(config);
@@ -191,6 +194,90 @@ describe('I18nService.t outside an update', () => {
 
   it('returns the key when i18n is off', () => {
     expect(manager(undefined).t('hi', 'uk')).toBe('hi');
+  });
+});
+
+describe('devMode missing-key rendering', () => {
+  it('renders a bare missing key as a visible marker', () => {
+    expect(manager({ devMode: true }).t('nope')).toBe('⟨nope⟩');
+  });
+
+  it('lists each param on its own line', () => {
+    expect(
+      manager({ devMode: true }).t('nope', { name: 'Ann', count: 3 }),
+    ).toBe('⟨nope\n  name: Ann\n  count: 3⟩');
+  });
+
+  it('renders a falsy param value rather than dropping it', () => {
+    expect(manager({ devMode: true }).t('nope', { count: 0 })).toBe(
+      '⟨nope\n  count: 0⟩',
+    );
+  });
+
+  it('renders through the free t() on the ambient rail too', () => {
+    runAmbient(() => {
+      manager({ devMode: true }).resolve(ctxWithLanguage('en'));
+      expect(t('nope', { id: 7 })).toBe('⟨nope\n  id: 7⟩');
+    });
+  });
+
+  it('returns the bare key when devMode is off', () => {
+    expect(manager({ devMode: false }).t('nope', { name: 'Ann' })).toBe('nope');
+  });
+
+  it('never touches a key that resolves — devMode changes only the miss path', () => {
+    expect(manager({ devMode: true }).t('hi', { name: 'Ann' })).toBe(
+      'Hello, Ann!',
+    );
+  });
+});
+
+describe('devMode default from NODE_ENV', () => {
+  const originalNodeEnv = process.env.NODE_ENV;
+  afterEach(() => {
+    if (originalNodeEnv === undefined) {
+      delete process.env.NODE_ENV;
+    } else {
+      process.env.NODE_ENV = originalNodeEnv;
+    }
+  });
+
+  async function missText(nodeEnv: string | undefined): Promise<string> {
+    if (nodeEnv === undefined) {
+      delete process.env.NODE_ENV;
+    } else {
+      process.env.NODE_ENV = nodeEnv;
+    }
+    @Module({
+      imports: [
+        I18nModule.forRoot({ translations: TRANSLATIONS, defaultLocale: 'en' }),
+      ],
+    })
+    class DevModeAppModule {}
+    const app = await NestFactory.createApplicationContext(DevModeAppModule, {
+      logger: false,
+    });
+    try {
+      return app.get(I18nService).t('nope');
+    } finally {
+      await app.close();
+    }
+  }
+
+  it('renders the debug marker only when NODE_ENV is development', async () => {
+    expect(await missText('development')).toBe('⟨nope⟩');
+  });
+
+  it('fails closed to the bare key when NODE_ENV is unset', async () => {
+    expect(await missText(undefined)).toBe('nope');
+  });
+
+  it('fails closed for a non-development env (e.g. staging)', async () => {
+    expect(await missText('staging')).toBe('nope');
+  });
+
+  it('returns the bare key when NODE_ENV is production', async () => {
+    expect(await missText('production')).toBe('nope');
   });
 });
 
