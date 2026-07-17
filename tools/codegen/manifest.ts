@@ -39,6 +39,36 @@ const BARE_REFERENCES: ReadonlySet<string> = new Set<string>([
 /** Objects the type emitter must NOT emit (a hand-written declaration owns them). */
 export const SKIP_OBJECTS: ReadonlySet<string> = BARE_REFERENCES;
 
+/**
+ * Where each skipped object's hand-written declaration lives — the prose above,
+ * made machine-readable so the generator can cross-check those files against the
+ * spec.
+ *
+ * Needed because `SKIP_OBJECTS` means the emitter never writes these, and the
+ * `--check` staleness guard only diffs *emitted* output: a field Telegram adds
+ * to `User` or `InputMediaVideo` would otherwise go missing silently, forever.
+ */
+export const HAND_OWNED_DECLARATIONS: ReadonlyMap<string, string> = new Map<
+  string,
+  string
+>([
+  ['User', 'lib/events/user.ts'],
+  ['InputFile', 'lib/api/input-file.ts'],
+  ...[...INPUT_MEDIA_NAMES].map((name): [string, string] => [
+    name,
+    'lib/api/input-media.ts',
+  ]),
+]);
+
+// A skip with nowhere to check it is exactly the blind spot this table closes.
+for (const name of SKIP_OBJECTS) {
+  if (!HAND_OWNED_DECLARATIONS.has(name)) {
+    throw new Error(
+      `skipped object '${name}' has no entry in HAND_OWNED_DECLARATIONS`,
+    );
+  }
+}
+
 /** Resolve a spec object reference to its TS type name (`Chat` → `RawChat`). */
 export function resolveReference(name: string): string {
   return BARE_REFERENCES.has(name) ? name : `${RAW_PREFIX}${name}`;

@@ -6,6 +6,7 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
+import * as ts from 'typescript';
 import { UpdateKind } from '../../lib/engine/context/update-kind';
 import { emitMethodsBarrel } from './emit-barrel';
 import { emitBotMethods } from './emit-bot-methods';
@@ -13,7 +14,8 @@ import { detectMedia, emitMethod } from './emit-methods';
 import { emitSurfaceFile } from './emit-surface';
 import { emitTypesFile } from './emit-types';
 import { formatTs } from './format';
-import { buildIr, IrType } from './ir';
+import { buildIr, Ir, IrType } from './ir';
+import { HAND_OWNED_DECLARATIONS } from './manifest';
 import { loadSpec } from './spec-loader';
 import { GENERATED_SURFACE } from './surface.generated';
 import { irTypeToTs } from './type-resolver';
@@ -314,6 +316,75 @@ function writeFiles(files: Map<string, string>): void {
   process.stdout.write(`Wrote ${files.size} file(s).\n`);
 }
 
+/** The property names declared by `interface <name>` in a hand-written file. */
+function declaredFieldNames(file: string, name: string): Set<string> | null {
+  const path = resolve(process.cwd(), file);
+  const source = ts.createSourceFile(
+    path,
+    readFileSync(path, 'utf8'),
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  for (const statement of source.statements) {
+    if (ts.isInterfaceDeclaration(statement) && statement.name.text === name) {
+      const names = statement.members
+        .filter(ts.isPropertySignature)
+        .map((member) =>
+          ts.isIdentifier(member.name) ? member.name.text : null,
+        )
+        .filter((field): field is string => field !== null);
+      return new Set(names);
+    }
+  }
+  return null;
+}
+
+/**
+ * Reports hand-owned declarations whose fields have drifted from the spec.
+ *
+ * `SKIP_OBJECTS` keeps these out of the emitter, so {@link checkFiles} — which
+ * only diffs emitted output — is blind to them: a field added to `User` or
+ * `InputMediaVideo` upstream just goes missing, and no guard fires. This reads
+ * each hand-written file and compares its field NAMES to the spec's.
+ *
+ * Names, not types, on purpose: these files exist precisely to widen types the
+ * generator can't (`media: string | InputFile`), so comparing types would fight
+ * the seam. A field that exists but is mistyped is a different, visible problem.
+ */
+function handOwnedDrift(ir: Ir): string[] {
+  const problems: string[] = [];
+  for (const [name, file] of HAND_OWNED_DECLARATIONS) {
+    const object = ir.objectsByName.get(name);
+    // Opaque sentinels (`InputFile`) have no spec fields to track.
+    if (object?.kind !== 'interface') {
+      continue;
+    }
+    const declared = declaredFieldNames(file, name);
+    if (!declared) {
+      problems.push(
+        `${file}: no \`interface ${name}\` found (it is hand-owned)`,
+      );
+      continue;
+    }
+    const spec = new Set(object.fields.map((field) => field.name));
+    const missing = [...spec].filter((field) => !declared.has(field));
+    const extra = [...declared].filter((field) => !spec.has(field));
+    if (missing.length > 0) {
+      problems.push(
+        `${file}: ${name} is missing spec field(s): ${missing.join(', ')}`,
+      );
+    }
+    if (extra.length > 0) {
+      problems.push(
+        `${file}: ${name} declares field(s) the spec doesn't have: ${extra.join(
+          ', ',
+        )}`,
+      );
+    }
+  }
+  return problems;
+}
+
 /** Fails (exit 1) if any committed file differs from a fresh generation. */
 function checkFiles(files: Map<string, string>): void {
   const stale: string[] = [];
@@ -376,11 +447,27 @@ function main(): void {
     ...buildBotMethodsFile(CANONICAL_BOT_METHODS_FILE),
     ...buildSurfaceFile(CANONICAL_SURFACE_FILE),
   ]);
+  const drift = handOwnedDrift(buildIr(loadSpec()));
   if (process.argv.includes('--check')) {
+    if (drift.length > 0) {
+      process.stderr.write(
+        `Hand-owned declarations have drifted from the spec — edit them by hand ` +
+          `(regenerating will not fix these):\n${drift
+            .map((problem) => `  ${problem}`)
+            .join('\n')}\n`,
+      );
+      process.exitCode = 1;
+      return;
+    }
     checkFiles(files);
-  } else {
-    writeFiles(files);
+    return;
   }
+  // A warning, not a throw: the fix lives in a hand-written file, so drift must
+  // never block re-emitting everything else.
+  for (const problem of drift) {
+    process.stderr.write(`warning: ${problem}\n`);
+  }
+  writeFiles(files);
 }
 
 try {
