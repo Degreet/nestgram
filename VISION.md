@@ -1,6 +1,6 @@
 # Nestgram — Vision
 
-This document is the source of truth for *what Nestgram is and why*. It
+This document is the source of truth for _what Nestgram is and why_. It
 describes the target design, not the current state of the code. For delivery
 phases see [ROADMAP.md](./ROADMAP.md).
 
@@ -53,7 +53,7 @@ From raw update to action, in order:
    collect every `@Router()` and its handlers once at startup into a route
    table. Per update we do a lookup, not reflection.
 4. **Match predicates.** `@Command('start')`, `@Action(/buy:(\d+)/)`,
-   `@Hears(...)`, `@OnMessage()` decide *whether a handler applies* to this
+   `@Hears(...)`, `@OnMessage()` decide _whether a handler applies_ to this
    update. This is routing — deliberately distinct from Nest exception
    filters.
 5. **The Nest pipeline, around the handler.** Guards → interceptors → pipes
@@ -196,19 +196,19 @@ behaviour on top of it is a plugin you own.
 
 Callback data is where magic strings breed: you write `buy:` when building a
 button, a `/^buy:(\d+)$/` regex to match it, and a `split(':')` to parse it —
-three places to drift. Nestgram provides a typed callback-data factory that
-collapses all three into one definition:
+three places to drift. Nestgram collapses all three into one route template —
+the same idea Nest already applies to URLs:
 
 ```ts
-const Buy = callbackData('buy', { productId: Number });
+new InlineKeyboard().text('Buy', 'buy/:id', { id: 42 });   // build
 
-new InlineKeyboard().text('Buy', Buy.pack({ productId: 42 })); // build
-@Action(Buy.filter())                                          // match
-buy(query: CallbackQuery, @Data() data: { productId: number }) {} // typed parse
+@Action('buy/:id')                                          // match
+buy(query: CallbackQuery, @Param('id', ParseIntPipe) id: number) {} // typed parse
 ```
 
-No literal separators, no hand-written regex, no positional `split` indexing.
-The same idea is encouraged everywhere user-facing strings carry structure.
+No literal separators, no hand-written regex, no positional `split` indexing —
+and `@Param` runs Nest's own pipes. The same idea is encouraged everywhere
+user-facing strings carry structure.
 
 ## Readable handlers over clever ones
 
