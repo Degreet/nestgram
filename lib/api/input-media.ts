@@ -1,5 +1,6 @@
 import { InputFile } from './input-file';
 import type { ParseModeValue } from './parse-mode';
+import type { RawMessageEntity } from '../events/raw-update.types';
 
 /**
  * Media items for albums and editable media (`sendMediaGroup`,
@@ -16,7 +17,7 @@ export interface InputMediaAudio {
   thumbnail?: string | InputFile;
   caption?: string;
   parse_mode?: ParseModeValue;
-  caption_entities?: any[];
+  caption_entities?: RawMessageEntity[];
   duration?: number;
   performer?: string;
   title?: string;
@@ -28,7 +29,7 @@ export interface InputMediaDocument {
   thumbnail?: string | InputFile;
   caption?: string;
   parse_mode?: ParseModeValue;
-  caption_entities?: any[];
+  caption_entities?: RawMessageEntity[];
   disable_content_type_detection?: boolean;
 }
 
@@ -37,7 +38,7 @@ export interface InputMediaPhoto {
   media: string | InputFile;
   caption?: string;
   parse_mode?: ParseModeValue;
-  caption_entities?: any[];
+  caption_entities?: RawMessageEntity[];
   show_caption_above_media?: boolean;
   has_spoiler?: boolean;
 }
@@ -50,7 +51,7 @@ export interface InputMediaVideo {
   start_timestamp?: number;
   caption?: string;
   parse_mode?: ParseModeValue;
-  caption_entities?: any[];
+  caption_entities?: RawMessageEntity[];
   show_caption_above_media?: boolean;
   width?: number;
   height?: number;
@@ -65,7 +66,7 @@ export interface InputMediaAnimation {
   thumbnail?: string | InputFile;
   caption?: string;
   parse_mode?: ParseModeValue;
-  caption_entities?: any[];
+  caption_entities?: RawMessageEntity[];
   show_caption_above_media?: boolean;
   width?: number;
   height?: number;
@@ -79,7 +80,7 @@ export interface InputMediaLivePhoto {
   photo: string | InputFile;
   caption?: string;
   parse_mode?: ParseModeValue;
-  caption_entities?: any[];
+  caption_entities?: RawMessageEntity[];
   show_caption_above_media?: boolean;
   has_spoiler?: boolean;
 }
