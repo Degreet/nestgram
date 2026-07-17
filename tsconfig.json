@@ -18,5 +18,11 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "downlevelIteration": true
-  }
+  },
+  // Without bounds, `tsc -p tsconfig.json` also compiles `website/` and
+  // `examples/` — separate workspaces with their own tsconfig, deps and build.
+  // `website/` alone makes `npm run typecheck` permanently fail on Astro's
+  // virtual `astro:content` module, which only Astro's own config can resolve,
+  // and a check that can never pass is a check nobody reads.
+  "exclude": ["node_modules", "dist", "website", "examples"]
 }
