@@ -50,10 +50,29 @@ jobs:
 
       - name: Update vendored spec & detect a new version
         id: check
+        shell: bash
         run: |
           before=$(node -p "require('./tools/codegen/spec/spec-version.json').botApiVersion")
           npm run spec:update
           after=$(node -p "require('./tools/codegen/spec/spec-version.json').botApiVersion")
+
+          # `node -p` prints `undefined` and exits 0 for a missing key, so a
+          # renamed or corrupted `botApiVersion` would leave before == after ==
+          # "undefined" — a green run, forever, that silently stops detecting
+          # drift at all. Refuse the value instead of comparing it. The shape
+          # check also keeps an upstream-controlled string out of $GITHUB_OUTPUT,
+          # where embedded newlines could forge additional step outputs.
+          case "$after" in
+            '' | undefined | null)
+              echo "::error::botApiVersion is '$after' — the vendored spec is missing or malformed."
+              exit 1
+              ;;
+            *[!A-Za-z0-9.\ _-]*)
+              echo "::error::botApiVersion has an unexpected shape: $after"
+              exit 1
+              ;;
+          esac
+
           echo "version=$after" >> "$GITHUB_OUTPUT"
           if [ "$before" = "$after" ]; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
@@ -63,14 +82,23 @@ jobs:
             echo "New Bot API release: $before -> $after"
           fi
 
-      - name: Regenerate API surface
-        if: steps.check.outputs.changed == 'true'
-        run: npm run generate
-
-      - name: Full gate (lint, build, test, staleness check)
+      # Regeneration and verification are ONE step on purpose. They used to be
+      # two, and the escalation below keyed off the second — so when `generate`
+      # itself crashed on a new IR shape (the likeliest failure, and what 10.2
+      # did), the job aborted, the gate never ran, and `gate.outcome` came back
+      # `skipped` rather than `failure`. The issue was never filed and the only
+      # signal was a bare red cron. One step, one outcome, no hole to fall through.
+      # `timeout-minutes` on the STEP, not the job: a step killed by its own
+      # timeout is marked failed, so `failure()` still fires and files an issue.
+      # A job-level timeout cancels instead, and a cancelled run escalates
+      # nothing — the same silent hole in a different shape.
+      - name: Regenerate and gate (lint, build, test, hand-owned drift)
         id: gate
         if: steps.check.outputs.changed == 'true'
+        timeout-minutes: 15
+        shell: bash
         run: |
+          npm run generate
           npm run lint
           npm run build
           npm test
@@ -96,25 +124,106 @@ jobs:
             spec
             automated
 
-      - name: Flag a manual seam when the gate fails
-        if: ${{ always() && steps.check.outputs.changed == 'true' && steps.gate.outcome == 'failure' }}
+      # Guarded on `failure()`, not on the gate's outcome: anything that fails
+      # earlier — `npm ci`, or `spec:update` hitting a network error on an
+      # unattended cron — used to escalate nothing at all, leaving the same bare
+      # red run this workflow exists to explain. `failure()` is true when ANY
+      # prior step failed, so a step added later is covered too.
+      - name: Report the failure
+        if: failure()
         uses: actions/github-script@v7
         env:
           SPEC_VERSION: ${{ steps.check.outputs.version }}
+          GATE_OUTCOME: ${{ steps.gate.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         with:
           script: |
+            const SEAM_LABEL = 'manual-seam';
             const version = process.env.SPEC_VERSION;
-            await github.rest.issues.create({
+            const runUrl = process.env.RUN_URL;
+
+            // Diagnose from the gate's own outcome, never from "a version is
+            // known". `failure()` deliberately catches steps on either side of
+            // the gate, so inferring gate-failure from a non-empty version would
+            // confidently blame the codegen manifest for, say, a PR-open error.
+            const diagnosis =
+              process.env.GATE_OUTCOME === 'failure'
+                ? {
+                    title: `${version}: codegen gate failed — manual seam needed`,
+                    summary:
+                      `The vendored spec bumped to **${version}**, but the codegen gate ` +
+                      '(generate / lint / build / test / hand-owned drift) failed — likely ' +
+                      'a new IR shape or a rich-event method that needs a manifest entry.',
+                    next: 'Run `npm run spec:update && npm run generate` locally, add the seam in `tools/codegen/manifest.ts`, and open the bump PR by hand.',
+                  }
+                : version
+                  ? {
+                      title: `${version}: spec bump verified, but the run failed`,
+                      summary:
+                        `The spec bumped to **${version}** and the codegen gate PASSED — the ` +
+                        'regenerated surface is sound. The run failed elsewhere, most likely ' +
+                        'opening the PR. This is not a codegen seam.',
+                      next: 'Check the run log, then re-run the workflow or open the bump PR by hand.',
+                    }
+                  : {
+                      title: 'spec-drift: the daily run failed before version detection',
+                      summary:
+                        'The daily spec-drift run failed before it could determine the Bot API ' +
+                        'version — usually a network or install failure, not a codegen seam.',
+                      next: 'Check the run log. If this was a one-off flake, close this issue.',
+                    };
+
+            // The cron re-detects the same bump every day until the fix lands on
+            // main (each run starts from a fresh checkout, so the committed spec
+            // version stays behind). Track one issue per version rather than one
+            // per day — matching on the version prefix, not the whole title, so a
+            // maintainer renaming the issue doesn't silently start a duplicate.
+            const open = await github.paginate(github.rest.issues.listForRepo, {
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `${version}: codegen gate failed — manual seam needed`,
-              body: [
-                `The vendored spec bumped to **${version}**, but the codegen gate`,
-                '(lint / build / test / `generate --check`) failed — likely a new IR',
-                'shape or a rich-event method that needs a manifest entry.',
-                '',
-                'Run `npm run spec:update && npm run generate` locally, add the seam in',
-                '`tools/codegen/manifest.ts`, and open the bump PR by hand.',
-              ].join('\n'),
-              labels: ['spec', 'manual-seam'],
+              state: 'open',
+              labels: SEAM_LABEL,
+              per_page: 100,
             });
+            const tracked = open.find((issue) =>
+              version
+                ? issue.title.startsWith(`${version}:`)
+                : issue.title === diagnosis.title,
+            );
+
+            const body = [
+              diagnosis.summary,
+              '',
+              `Failing run: ${runUrl}`,
+              '',
+              diagnosis.next,
+            ].join('\n');
+
+            // Comment rather than return silently: a stale issue holding only the
+            // FIRST run's URL is how a recurring failure turns back into noise.
+            if (tracked) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: tracked.number,
+                body: `Still failing — ${runUrl}`,
+              });
+              core.info(`Already tracked by #${tracked.number}; commented the new run.`);
+              return;
+            }
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: diagnosis.title,
+              body: [
+                body,
+                '',
+                'While this issue is open, later failures for the same version comment here',
+                'instead of filing again. The daily run stays red until the bump lands on',
+                '`main` — that red is the reminder, not a separate fault. Closing this without',
+                'landing the bump means tomorrow files a fresh one.',
+              ].join('\n'),
+              labels: ['spec', SEAM_LABEL],
+            });
+            core.notice(`Filed #${issue.data.number}: ${diagnosis.title}`);
