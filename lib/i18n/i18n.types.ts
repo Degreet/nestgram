@@ -60,6 +60,16 @@ interface I18nBaseOptions {
    * output. Off by default (returning the key is a deliberate, safe fallback).
    */
   logMissingKeys?: boolean;
+  /**
+   * Render a missing key as a visible debug marker — `⟨greeting⟩`, plus one
+   * `name: value` line per param the call passed — instead of the bare key, so
+   * an untranslated string is obvious in the chat while developing. Defaults to
+   * `true` only when `NODE_ENV` is `'development'`: it fails closed, so an unset
+   * or misconfigured environment never surfaces the marker in production. Set it
+   * explicitly to override. Independent of {@link logMissingKeys}, which warns
+   * to the logger rather than changing the output.
+   */
+  devMode?: boolean;
 }
 
 /**
@@ -98,4 +108,6 @@ export interface I18nOptions extends I18nBaseOptions {
  */
 export interface ResolvedI18nOptions extends I18nBaseOptions {
   backend: TranslatorBackend;
+  /** Resolved once at boot: the option, else `NODE_ENV === 'development'`. */
+  devMode: boolean;
 }

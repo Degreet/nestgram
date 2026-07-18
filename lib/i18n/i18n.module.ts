@@ -105,7 +105,14 @@ export class I18nModule {
           : (translations as Translations),
       );
 
-    return { ...base, backend: resolvedBackend };
+    return {
+      ...base,
+      backend: resolvedBackend,
+      // Fail closed: markers show only for an explicit development env, so an
+      // unset or misconfigured NODE_ENV never surfaces them in production. Read
+      // once at boot, never on the per-miss hot path.
+      devMode: base.devMode ?? process.env.NODE_ENV === 'development',
+    };
   }
 
   /** A path means the built-in directory loader; anything else is already a source. */

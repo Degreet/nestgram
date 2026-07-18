@@ -12,6 +12,7 @@ function manager(): I18nService {
   return new I18nService({
     backend: new FlatTranslatorBackend(TRANSLATIONS),
     defaultLocale: 'en',
+    devMode: false,
   });
 }
 
