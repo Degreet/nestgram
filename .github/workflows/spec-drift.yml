@@ -39,9 +39,9 @@ jobs:
     env:
       HUSKY: 0
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: 22
           cache: npm
@@ -92,37 +92,101 @@ jobs:
       # timeout is marked failed, so `failure()` still fires and files an issue.
       # A job-level timeout cancels instead, and a cancelled run escalates
       # nothing — the same silent hole in a different shape.
+      # Still ONE step, and `stage` is recorded INSIDE it rather than by splitting
+      # it up: outputs written before a failing exit survive, so the diagnosis is
+      # captured without reintroducing the `skipped`-outcome hole. `|| fail …`
+      # rather than bare commands because the shell runs with `-e`, which would
+      # abort before anything could be recorded.
       - name: Regenerate and gate (lint, build, test, hand-owned drift)
         id: gate
         if: steps.check.outputs.changed == 'true'
         timeout-minutes: 15
         shell: bash
         run: |
-          npm run generate
-          npm run lint
-          npm run build
-          npm test
-          npm run generate -- --check
+          fail() {
+            echo "stage=$1" >> "$GITHUB_OUTPUT"
+            echo "::error::spec-drift gate failed at: $1"
+            exit 1
+          }
 
+          # First, and never gated: the seam report reads only the spec JSON, so
+          # it is the one artifact that survives a codegen crash — which is
+          # exactly the run where a human most needs it.
+          # `--silent`: npm's own `> pkg@ver script` banner goes to stdout and
+          # would otherwise be the first two lines of every PR body.
+          npm run --silent spec:diff > "$RUNNER_TEMP/spec-diff.md" \
+            || fail 'spec:diff (the vendored spec is unreadable)'
+
+          npm run generate \
+            || fail 'generate (codegen crashed — a new IR shape, or a seam the manifest must be taught)'
+          npm run lint  || fail 'lint'
+          npm run build || fail 'build (regenerated types broke hand-owned code)'
+          npm test      || fail 'test'
+          npm run generate -- --check \
+            || fail 'generate --check (self-test invariant, hand-owned drift, or stale output)'
+
+      # Opened whether or not the gate passed — DRAFT when it failed. A failed
+      # gate used to produce nothing at all: no branch, no diff, just an issue
+      # telling a maintainer to redo every mechanical step locally. The bump and
+      # whatever regenerated cleanly are worth having either way; `draft` is what
+      # says "not ready", and the seam report below says what is left to do.
       - name: Open the spec-bump PR
-        if: steps.check.outputs.changed == 'true' && steps.gate.outcome == 'success'
-        uses: peter-evans/create-pull-request@v7
+        id: pr
+        if: always() && steps.check.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7
         with:
           branch: spec/bot-api-bump
+          draft: ${{ steps.gate.outcome != 'success' }}
           commit-message: 'chore(spec): ${{ steps.check.outputs.version }}'
           title: 'chore(spec): ${{ steps.check.outputs.version }}'
           body: |
             Automated vendored-spec bump to **${{ steps.check.outputs.version }}**.
 
-            Regenerated API types, method classes, and the surface snapshot. Lint,
-            build, test, and `generate --check` all passed in CI before this PR
-            was opened.
+            Gate (`generate` / lint / build / test / `generate --check`):
+            **${{ steps.gate.outcome }}**${{ steps.gate.outputs.stage && format(' — failed at `{0}`', steps.gate.outputs.stage) }}.
 
-            Review the codegen manifest seam if a new rich-event method or a new
-            IR shape landed — those need a manual entry the generator can't infer.
+            A draft means the gate failed and this branch is a starting point, not
+            a finished bump: the regenerated output may be partial. The seam
+            report follows in a moment.
           labels: |
             spec
             automated
+
+      # The report is attached by API, never interpolated through the shell: its
+      # text is built from upstream-controlled type and field names, and
+      # `$GITHUB_OUTPUT` is delimiter-injectable. `readFileSync` has no such seam.
+      - name: Attach the seam report to the PR
+        if: always() && steps.pr.outputs.pull-request-number
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
+        with:
+          script: |
+            const { readFileSync } = require('node:fs');
+            const BODY_LIMIT = 60000; // GitHub caps a PR body at 65536.
+
+            let report;
+            try {
+              report = readFileSync(`${process.env.RUNNER_TEMP}/spec-diff.md`, 'utf8');
+            } catch {
+              core.warning('No seam report was produced; leaving the PR body as opened.');
+              return;
+            }
+            if (report.length > BODY_LIMIT) {
+              report = `${report.slice(0, BODY_LIMIT)}\n\n_(truncated — run \`npm run spec:diff\` locally for the rest)_`;
+            }
+
+            const pull_number = Number(process.env.PR_NUMBER);
+            const { data: pr } = await github.rest.pulls.get({
+              ...context.repo,
+              pull_number,
+            });
+            await github.rest.pulls.update({
+              ...context.repo,
+              pull_number,
+              body: `${pr.body}\n\n---\n\n${report}`,
+            });
+            core.notice(`Attached the seam report to #${pull_number}.`);
 
       # Guarded on `failure()`, not on the gate's outcome: anything that fails
       # earlier — `npm ci`, or `spec:update` hitting a network error on an
@@ -131,16 +195,20 @@ jobs:
       # prior step failed, so a step added later is covered too.
       - name: Report the failure
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
           SPEC_VERSION: ${{ steps.check.outputs.version }}
           GATE_OUTCOME: ${{ steps.gate.outcome }}
+          GATE_STAGE: ${{ steps.gate.outputs.stage }}
+          PR_URL: ${{ steps.pr.outputs.pull-request-url }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         with:
           script: |
             const SEAM_LABEL = 'manual-seam';
             const version = process.env.SPEC_VERSION;
             const runUrl = process.env.RUN_URL;
+            const stage = process.env.GATE_STAGE;
+            const prUrl = process.env.PR_URL;
 
             // Diagnose from the gate's own outcome, never from "a version is
             // known". `failure()` deliberately catches steps on either side of
@@ -152,9 +220,10 @@ jobs:
                     title: `${version}: codegen gate failed — manual seam needed`,
                     summary:
                       `The vendored spec bumped to **${version}**, but the codegen gate ` +
-                      '(generate / lint / build / test / hand-owned drift) failed — likely ' +
-                      'a new IR shape or a rich-event method that needs a manifest entry.',
-                    next: 'Run `npm run spec:update && npm run generate` locally, add the seam in `tools/codegen/manifest.ts`, and open the bump PR by hand.',
+                      `failed at \`${stage || 'an unrecorded stage'}\`.`,
+                    next: prUrl
+                      ? `A DRAFT PR carries the bump and whatever regenerated cleanly: ${prUrl}\nIts body holds the seam report — what changed upstream, and which seams that lands on. Fix the seam on that branch and mark it ready.`
+                      : 'No draft PR was opened. Run `npm run spec:update && npm run spec:diff` locally, fix the seam in `tools/codegen/manifest.ts`, and open the bump PR by hand.',
                   }
                 : version
                   ? {
@@ -163,7 +232,9 @@ jobs:
                         `The spec bumped to **${version}** and the codegen gate PASSED — the ` +
                         'regenerated surface is sound. The run failed elsewhere, most likely ' +
                         'opening the PR. This is not a codegen seam.',
-                      next: 'Check the run log, then re-run the workflow or open the bump PR by hand.',
+                      next: prUrl
+                        ? `The PR did open: ${prUrl}. Check the run log for what failed after it.`
+                        : 'Check the run log, then re-run the workflow or open the bump PR by hand.',
                     }
                   : {
                       title: 'spec-drift: the daily run failed before version detection',
@@ -199,16 +270,51 @@ jobs:
               diagnosis.next,
             ].join('\n');
 
-            // Comment rather than return silently: a stale issue holding only the
-            // FIRST run's URL is how a recurring failure turns back into noise.
+            // Already tracked: refresh the issue body IN PLACE and post nothing.
+            //
+            // A daily "still failing" comment is pure noise — the maintainer
+            // already gets the red cron by mail, and a month of them buries the
+            // one comment that might matter. Editing the body notifies nobody,
+            // so the issue stays quiet while still carrying a run link that
+            // works: the first run's logs expire long before a stale bump lands.
+            //
+            // Only the marked block is rewritten, so notes a maintainer adds to
+            // the body survive.
             if (tracked) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: tracked.number,
-                body: `Still failing — ${runUrl}`,
-              });
-              core.info(`Already tracked by #${tracked.number}; commented the new run.`);
+              const START = '<!-- latest-run -->';
+              const END = '<!-- /latest-run -->';
+              const days = Math.max(
+                1,
+                Math.round(
+                  (Date.now() - Date.parse(tracked.created_at)) / 86400000,
+                ),
+              );
+              const block = [
+                START,
+                `_Still failing as of ${new Date().toISOString().slice(0, 10)}` +
+                  ` (day ${days}). Latest run: ${runUrl}_`,
+                END,
+              ].join('\n');
+
+              const body = tracked.body ?? '';
+              const from = body.indexOf(START);
+              const to = body.indexOf(END);
+              const next =
+                from !== -1 && to > from
+                  ? body.slice(0, from) + block + body.slice(to + END.length)
+                  : `${body}\n\n${block}`;
+
+              if (next !== body) {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: tracked.number,
+                  body: next,
+                });
+              }
+              core.info(
+                `Already tracked by #${tracked.number}; refreshed its run link silently.`,
+              );
               return;
             }
 
