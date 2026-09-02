@@ -284,6 +284,22 @@ export class BotService extends GeneratedBotMethods {
     return new MessageStream(this, chat_id, source, options).run();
   }
 
+  /**
+   * End a `canStop` stream running IN THIS PROCESS, as the stop button does.
+   * Returns whether one matched — `false` for a draft this process never
+   * started, or one that already finished.
+   *
+   * The built-in stage calls this for you, so a single-process bot needs
+   * nothing. It is public for the deployment the stage cannot serve: several
+   * instances behind one webhook, where the stop update can be delivered to a
+   * process that is not the one streaming. There, forward the stop yourself —
+   * publish `{chat_id, draft_id}` from your own `@OnMessageGenerationStopped`
+   * and call this on every instance from your subscriber.
+   */
+  stopStream(chat_id: number, draft_id: number): boolean {
+    return MessageStream.stop(this.name, chat_id, draft_id);
+  }
+
   private async fetchFile(
     fileId: string,
     options?: CallOptions,

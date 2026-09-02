@@ -7,4 +7,5 @@ export * from './token-validation';
 export * from './auto-answer';
 export * from './reply-exception';
 export * from './unhandled';
+export * from './message-stop';
 export * from './noop';

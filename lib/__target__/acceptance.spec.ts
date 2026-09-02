@@ -140,7 +140,7 @@ describe('Phase 1 acceptance (booted app)', () => {
   it('discovers @Router providers into the route table — no routers list', () => {
     // 4 listeners across one discovered router (start, hears, refresh, echo),
     // plus the built-in routes: no-op (1), checkbox toggle + clear (2), pagination
-    // nav (2: pagego + pageat).
+    // nav (2: pagego + pageat). The stream stop is a stage, not a route.
     expect(app.get(RouteTable).size).toBe(9);
   });
 

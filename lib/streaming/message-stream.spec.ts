@@ -17,11 +17,14 @@ interface FinalCall {
 }
 
 /** A fake bot recording the two rich-message calls the engine makes. */
+const BOT = 'default';
+
 function fakeBot() {
   const drafts: DraftCall[] = [];
   const finals: FinalCall[] = [];
   const sent = { message_id: 1 } as unknown as Message;
   const bot = {
+    name: BOT,
     sendRichMessageDraft: (
       chat_id: number,
       draft_id: number,
@@ -193,5 +196,117 @@ describe('MessageStream', () => {
     expect((finals[0].options as { reply_markup?: unknown }).reply_markup).toBe(
       reply_markup,
     );
+  });
+
+  describe('canStop', () => {
+    it('draws no stop button unless asked', async () => {
+      const { bot, drafts } = fakeBot();
+
+      await new MessageStream(bot, CHAT, gen(['a']), { throttleMs: 0 }).run();
+
+      expect(
+        (drafts[0].options as { can_stop?: boolean }).can_stop,
+      ).toBeUndefined();
+    });
+
+    it('asks Telegram for the stop button, keeping the partial on screen', async () => {
+      const { bot, drafts } = fakeBot();
+
+      await new MessageStream(bot, CHAT, gen(['a']), {
+        throttleMs: 0,
+        canStop: true,
+      }).run();
+
+      expect(drafts[0].options).toMatchObject({
+        can_stop: true,
+        keep_on_stop: true,
+      });
+    });
+
+    it('stops consuming and persists only what arrived before the press', async () => {
+      const { bot, drafts, finals } = fakeBot();
+      const cancelled = { source: false };
+      const source = (async function* () {
+        try {
+          yield 'first';
+          // The press lands between deltas, where a real one would.
+          MessageStream.stop(BOT, CHAT, drafts[0].draft_id);
+          yield 'second';
+        } finally {
+          cancelled.source = true;
+        }
+      })();
+
+      await new MessageStream(bot, CHAT, source, {
+        throttleMs: 0,
+        canStop: true,
+      }).run();
+
+      expect(finals[0].rich_message).toEqual({ markdown: 'first' });
+      // Breaking the loop runs the generator's `finally` — how a source learns
+      // to cancel the work behind it.
+      expect(cancelled.source).toBe(true);
+    });
+
+    it('reports a draft id that matches no running stream', () => {
+      expect(MessageStream.stop(BOT, CHAT, -1)).toBe(false);
+    });
+
+    it('ignores a stop for the same draft id in another chat', async () => {
+      const { bot, drafts, finals } = fakeBot();
+      const source = (async function* () {
+        yield 'first';
+        // Another chat's user presses stop on THEIR draft, which shares this
+        // id — per-chat numbering plus a per-process counter make that normal.
+        MessageStream.stop(BOT, CHAT + 1, drafts[0].draft_id);
+        yield 'second';
+      })();
+
+      await new MessageStream(bot, CHAT, source, {
+        throttleMs: 0,
+        canStop: true,
+      }).run();
+
+      expect(finals[0].rich_message).toEqual({ markdown: 'firstsecond' });
+    });
+
+    it('does not register a stream nobody can stop', async () => {
+      const { bot, drafts } = fakeBot();
+      const source = (async function* () {
+        yield 'first';
+        // No `canStop`, so this stream is not in the registry at all and the
+        // stop is a no-op — a bot that never opts in stores nothing.
+        expect(MessageStream.stop(BOT, CHAT, drafts[0].draft_id)).toBe(false);
+        yield 'second';
+      })();
+
+      await new MessageStream(bot, CHAT, source, { throttleMs: 0 }).run();
+    });
+
+    it('ignores a stop from another bot in a multi-bot app', async () => {
+      const { bot, drafts, finals } = fakeBot();
+      const source = (async function* () {
+        yield 'first';
+        // The draft counter is shared across bots in one process, so this pair
+        // can genuinely belong to another bot's stream.
+        MessageStream.stop('other-bot', CHAT, drafts[0].draft_id);
+        yield 'second';
+      })();
+
+      await new MessageStream(bot, CHAT, source, {
+        throttleMs: 0,
+        canStop: true,
+      }).run();
+
+      expect(finals[0].rich_message).toEqual({ markdown: 'firstsecond' });
+    });
+
+    it('forgets a stream once it finishes', async () => {
+      const { bot, drafts } = fakeBot();
+
+      await new MessageStream(bot, CHAT, gen(['a']), { throttleMs: 0 }).run();
+
+      expect(MessageStream.stop(BOT, CHAT, drafts[0].draft_id)).toBe(false);
+    });
   });
 });

@@ -3,6 +3,7 @@ import { Logger } from '@nestjs/common';
 import { BotService } from '../../api';
 import { RawUpdate } from '../../events/raw-update.types';
 import { RouteTable } from '../discovery';
+import { StageRegistry } from '../dispatcher/stage-registry';
 import { Route } from '../discovery/route.types';
 import { AllowedUpdatesResolver } from './allowed-updates.resolver';
 import { PollingOptions, PollingUpdateSource } from './polling-update-source';
@@ -33,7 +34,10 @@ function listenerOn(updateType: string): Route {
 }
 
 function resolverFor(routes: Route[] = []): AllowedUpdatesResolver {
-  return new AllowedUpdatesResolver(new RouteTable(routes));
+  return new AllowedUpdatesResolver(
+    new RouteTable(routes),
+    new StageRegistry(),
+  );
 }
 
 /**

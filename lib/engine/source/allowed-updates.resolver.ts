@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { RouteTable } from '../discovery';
 import { UpdateKind } from '../context/update-kind';
+import { StageRegistry } from '../dispatcher/stage-registry';
 
 /**
  * Decides which `allowed_updates` the transport asks Telegram for.
@@ -34,29 +35,71 @@ export class AllowedUpdatesResolver {
 
   private readonly logger = new Logger(AllowedUpdatesResolver.name);
 
-  constructor(private readonly routeTable: RouteTable) {}
+  constructor(
+    private readonly routeTable: RouteTable,
+    private readonly stages: StageRegistry,
+  ) {}
 
   resolve(explicit?: readonly string[]): string[] {
     const listened = this.listenedKinds();
 
     if (explicit) {
       this.warnOnUncoveredKinds(listened, explicit);
+      this.warnOnUncoveredStageKinds(explicit);
       return [...explicit];
     }
 
+    const derived = [
+      ...new Set([...listened, ...this.stages.declaredKinds()]),
+    ].sort();
     this.logger.log(
-      `allowed_updates derived from handlers: [${listened.join(', ')}]`,
+      `allowed_updates derived from handlers: [${derived.join(', ')}]`,
     );
-    return listened;
+    return derived;
   }
 
-  /** Unique update kinds the route table has at least one handler for, sorted. */
+  /**
+   * Unique update kinds the route table has at least one handler for, sorted.
+   * User handlers only — {@link STAGE_KINDS} is added to the derived list but
+   * deliberately kept out of here, since the dead-handler warning below has no
+   * handler to name for a kind nothing routes.
+   */
   private listenedKinds(): string[] {
     const kinds = new Set<string>();
     for (const route of this.routeTable.all()) {
       kinds.add(route.updateType);
     }
     return [...kinds].sort();
+  }
+
+  /**
+   * A stage kind an explicit list omits.
+   *
+   * Separate from the handler warning because there IS no handler to name — the
+   * feature behind the stage just goes quiet. Left out of that loop rather than
+   * folded in so neither message has to hedge about which case it is. The
+   * explicit list itself is never rewritten: taking manual control is the point
+   * of passing one.
+   */
+  private warnOnUncoveredStageKinds(explicit: readonly string[]): void {
+    if (explicit.length === 0) {
+      // Telegram's default set covers every kind a stage consumes today; the
+      // held-back ones are all route-bound.
+      return;
+    }
+    const allowed = new Set(explicit);
+    for (const kind of this.stages.declaredKinds()) {
+      if (allowed.has(kind)) {
+        continue;
+      }
+      this.logger.warn(
+        `allowed_updates does not include '${kind}', which a built-in pipeline ` +
+          'stage consumes — Telegram will never deliver it, so the feature ' +
+          'behind it goes silent (for stopped_message_generation that is the ' +
+          'stop button on a canStop stream). Add it to the list, or drop the ' +
+          'explicit allowed_updates to derive the list automatically.',
+      );
+    }
   }
 
   private warnOnUncoveredKinds(
