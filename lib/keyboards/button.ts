@@ -5,7 +5,6 @@ import type {
 import { CallbackRoutePattern } from '../callback-data';
 import { ButtonStyle, ButtonStyleValue } from './button-style';
 import { CHECKBOX_DEFAULT_MARKERS } from './checkbox.constants';
-import { NOOP_CALLBACK_DATA } from './noop.constants';
 import { RouteParamValues } from './route-params.types';
 
 /**
@@ -126,11 +125,6 @@ export class Button {
     return new Button({ text: label, pay: true });
   }
 
-  /** A dead-end button — pressing it does nothing (a built-in just answers it). */
-  static noop(label: string): Button {
-    return new Button({ text: label, callback_data: NOOP_CALLBACK_DATA });
-  }
-
   /** Adopt a raw Telegram button as a value — for editing an existing keyboard. */
   static from(raw: RawInlineKeyboardButton): Button {
     return new Button({ ...raw });
@@ -156,14 +150,15 @@ export class Button {
   }
 
   /**
-   * The button to show in place of this one when {@link if} hid it — a label (a
-   * dead-end {@link noop}, e.g. `'Sold out'`) or a full replacement `Button`.
+   * The button to show in place of this one when {@link if} hid it — a label,
+   * which becomes a {@link disabled} button (e.g. `'Sold out'`), or a full
+   * replacement `Button`.
    */
   else(fallback: string | Button): Button {
     return new Button(
       this.spec,
       this.hidden,
-      typeof fallback === 'string' ? Button.noop(fallback) : fallback,
+      typeof fallback === 'string' ? Button.disabled(fallback) : fallback,
     );
   }
 
@@ -213,9 +208,6 @@ export class Button {
    * `Button.text('Buy', 'buy/:id', { id }).disabled(!inStock)` is a live buy
    * button when in stock and an inert one when not.
    *
-   * Not the same as {@link noop}, which is a LIVE button whose press the bot
-   * quietly answers: reach for `noop` when the button must still look pressable
-   * (a page indicator), and for this when the action is genuinely unavailable.
    */
   disabled(disabled = true): Button {
     if (!disabled) {

@@ -1,6 +1,5 @@
 import { Button } from './button';
 import { InlineKeyboard } from './inline-keyboard';
-import { NOOP_CALLBACK_DATA } from './noop.constants';
 
 describe('InlineKeyboard — Button sugar', () => {
   describe('.map', () => {
@@ -88,7 +87,7 @@ describe('InlineKeyboard — Button sugar', () => {
 
       expect(markup.inline_keyboard[0]).toEqual([
         { text: 'A', callback_data: 'buy/1' },
-        { text: 'Sold out', callback_data: NOOP_CALLBACK_DATA },
+        { text: 'Sold out', disabled: {} },
       ]);
     });
   });

@@ -72,12 +72,12 @@ decorator, like every rich event. Under the hood `@Action`'s predicate
 pattern, and exposes its named groups to `@Param`. No regex capture, no
 `split(':')`, no magic string repeated across three files.
 
-| `@Action(...)`         | Matches                                  |
-| ---------------------- | ---------------------------------------- |
-| `@Action('refresh')`   | `callback_data === 'refresh'` (exact)    |
-| `@Action('buy/:id')`   | a route template; `@Param('id')` reads it |
-| `@Action(/^legacy:/)`  | a regex; groups go to `@Param`, the array to `@Matches` |
-| `@Action()`            | any callback query                        |
+| `@Action(...)`        | Matches                                                 |
+| --------------------- | ------------------------------------------------------- |
+| `@Action('refresh')`  | `callback_data === 'refresh'` (exact)                   |
+| `@Action('buy/:id')`  | a route template; `@Param('id')` reads it               |
+| `@Action(/^legacy:/)` | a regex; groups go to `@Param`, the array to `@Matches` |
+| `@Action()`           | any callback query                                      |
 
 For a one-off button you can interpolate the value yourself —
 `` .text('Buy', `buy/${id}`) `` — terser, but it skips the parameter check and
@@ -92,12 +92,12 @@ Every callback query must be answered, or the user stares at a spinning button
 for up to a minute. `query.answer()` does it — backed by `answerCallbackQuery`,
 which Telegram allows exactly once per query.
 
-| Call                                     | Effect                              |
-| ---------------------------------------- | ----------------------------------- |
-| `query.answer()`                         | stop the spinner, no toast          |
-| `query.answer('Saved!')`                 | a toast above the chat              |
-| `query.answer('Saved!', { show_alert: true })` | a modal alert                |
-| `query.alert('Saved!')`                  | shortcut for the `show_alert` form  |
+| Call                                           | Effect                             |
+| ---------------------------------------------- | ---------------------------------- |
+| `query.answer()`                               | stop the spinner, no toast         |
+| `query.answer('Saved!')`                       | a toast above the chat             |
+| `query.answer('Saved!', { show_alert: true })` | a modal alert                      |
+| `query.alert('Saved!')`                        | shortcut for the `show_alert` form |
 
 You rarely have to remember this. The **auto-answer built-in**
 (`AutoAnswerCallbackInterceptor`) is a global Nest interceptor that fires after
@@ -121,11 +121,11 @@ returned keyboard or untargeted edit command acts on the **callback message** �
 the `ResultHandler` fills in `chat_id`/`message_id` from the update, so you never
 plumb them by hand. Three return shapes, increasing in how much they change:
 
-| Return value                          | Edits                                   |
-| ------------------------------------- | --------------------------------------- |
-| `new InlineKeyboard()...`             | the message's reply markup only         |
-| `new EditMessageText(...)` (untargeted) | the text (and markup, if set)         |
-| `new EditMessageMedia(...)` (untargeted) | the media                            |
+| Return value                             | Edits                           |
+| ---------------------------------------- | ------------------------------- |
+| `new InlineKeyboard()...`                | the message's reply markup only |
+| `new EditMessageText(...)` (untargeted)  | the text (and markup, if set)   |
+| `new EditMessageMedia(...)` (untargeted) | the media                       |
 
 Return a keyboard to swap the buttons and leave the text alone:
 
@@ -171,11 +171,14 @@ export class PaginateRouter {
   paginate(query: CallbackQuery, @Param('n', ParseIntPipe) page: number) {
     const keyboard = new InlineKeyboard()
       .text('◀', 'page/:n', { n: page - 1 })
-      .text(`${page}`, 'noop')
+      .text(`${page}`, 'page/:n', { n: page })
       .text('▶', 'page/:n', { n: page + 1 });
 
     // No chat_id/message_id — auto-targets the callback message.
-    return new EditMessageText({ text: `Page ${page}`, reply_markup: keyboard });
+    return new EditMessageText({
+      text: `Page ${page}`,
+      reply_markup: keyboard,
+    });
   }
 }
 ```
@@ -204,7 +207,9 @@ export class RefreshRouter {
     }
 
     await query.message.editText(`Page ${page}`, {
-      reply_markup: new InlineKeyboard().text('Reload', 'refresh/:n', { n: page }),
+      reply_markup: new InlineKeyboard().text('Reload', 'refresh/:n', {
+        n: page,
+      }),
     });
     return query.answer('Reloaded');
   }
@@ -220,13 +225,16 @@ request. An edit you target yourself (`query.message.editText`) raises the API
 error as usual.
 :::
 
-## The reserved no-op segment
+## Buttons with nothing to route
 
-A dummy button — a page counter, a section header — should stop its own spinner
-and nothing more. `Button.noop()` (and `.else('label')` in the keyboard builder)
-emits the reserved `callback_data` `__nestgram_noop__`, and a built-in handler
-matches it, answers the query, and returns. That reserved value is off-limits as
-your own route; everything else is yours.
+A dummy button — a page counter, a section header — has no action, so give it
+none: `Button.disabled(label)` (and a string `.else('label')`) renders it inert,
+and Telegram never sends a callback at all. No route to write, no spinner to
+stop.
+
+If you do want a live button that the bot answers silently, that is an ordinary
+`@Action` route with an empty handler — your route string, your handler, nothing
+reserved by the framework.
 
 A button whose `callback_data` matches **no** `@Action` route logs a
 **dead-button** warning when pressed, so a typo in a route surfaces in

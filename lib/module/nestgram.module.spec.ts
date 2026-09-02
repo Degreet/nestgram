@@ -96,9 +96,9 @@ describe('NestgramModule (integration)', () => {
     });
 
     const table = app.get(RouteTable);
-    // 2 user routes + 5 built-ins: no-op, checkbox toggle + clear, pagination
-    // nav (pagego + pageat). The stream stop is a stage, not a route.
-    expect(table.size).toBe(7);
+    // 2 user routes + 4 built-ins: checkbox toggle + clear, pagination nav
+    // (pagego + pageat). The stream stop is a stage, not a route.
+    expect(table.size).toBe(6);
     expect(table.ofType('message')).toHaveLength(1);
 
     const dispatcher = app.get(UpdateDispatcher);
@@ -143,8 +143,8 @@ describe('NestgramModule (integration)', () => {
     });
 
     // The only place GreetRouter is named is the providers array; forRoot got
-    // no routers list, yet the route table still found it (2 user + 5 built-in).
-    expect(app.get(RouteTable).size).toBe(7);
+    // no routers list, yet the route table still found it (2 user + 4 built-in).
+    expect(app.get(RouteTable).size).toBe(6);
 
     await app.close();
   });
@@ -180,8 +180,8 @@ describe('NestgramModule.forRootAsync (integration)', () => {
 
     // Token resolved via the injected config factory reached the transport.
     expect(app.get(BotService).token).toBe('ASYNC_TOKEN');
-    // Engine still wired: discovery built the route table (1 user + 5 built-in).
-    expect(app.get(RouteTable).size).toBe(6);
+    // Engine still wired: discovery built the route table (1 user + 4 built-in).
+    expect(app.get(RouteTable).size).toBe(5);
 
     await app.close();
   });
@@ -256,9 +256,9 @@ describe('stacked listener decorators (integration)', () => {
     const router = app.get(MultiRouter);
 
     // The one method binds to message + callback_query; the callback_query side
-    // also carries the 5 built-in callback routes (no-op, checkbox toggle + clear, pagego + pageat).
+    // also carries the 4 built-in callback routes (checkbox toggle + clear, pagego + pageat).
     expect(table.ofType('message')).toHaveLength(1);
-    expect(table.ofType('callback_query')).toHaveLength(6);
+    expect(table.ofType('callback_query')).toHaveLength(5);
 
     await dispatcher.dispatch(messageUpdate(1, 'hi'));
     expect(router.hits).toEqual(['hit']);

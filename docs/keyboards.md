@@ -72,7 +72,7 @@ The kinds without a shortcut (a pay button, a login button) are reachable throug
 A button is also a first-class value: `Button`. Every Bot API inline-button kind
 has a static constructor — `Button.text`, `Button.url`, `Button.webApp`,
 `Button.switchInline`, `Button.copyText`, `Button.loginUrl`, `Button.pay`,
-`Button.noop` — and the value carries the same callback-route argument as the
+`Button.disabled` — and the value carries the same callback-route argument as the
 fluent method:
 
 :::code[button-examples.ts]
@@ -250,19 +250,8 @@ export function catalogKeyboard(products: Product[]): InlineKeyboard {
 
 :::
 
-Do not confuse it with `Button.noop()`, which predates this: before Bot API 10.3
-there was no disabled button, so a dead-end callback was the only way to fake
-one. `noop` is **live** — it looks pressable, the tap reaches the bot, and a
-built-in quietly answers it. Now that Telegram has the real thing, pick by what
-you want the user to feel:
-
-| You want                                        | Use             |
-| ----------------------------------------------- | --------------- |
-| The action is unavailable right now             | `.disabled()`   |
-| The button is decorative but should look normal | `Button.noop()` |
-
-A page counter in a paginated keyboard is the classic `noop`; an out-of-stock
-product is the classic `.disabled()`.
+This is also what a string `.else()` produces: `.if(inStock).else('Sold out')`
+shows a live buy button or an inert one, with no route to write either way.
 
 :::note
 `disabled` is a button **type**, not a flag — the Bot API allows exactly one of

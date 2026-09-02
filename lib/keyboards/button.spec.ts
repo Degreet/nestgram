@@ -1,5 +1,4 @@
 import { Button } from './button';
-import { NOOP_CALLBACK_DATA } from './noop.constants';
 
 describe('Button', () => {
   describe('constructors map to the Bot API button shape', () => {
@@ -105,7 +104,7 @@ describe('Button', () => {
     });
   });
 
-  describe('conditional (.if / .else) and noop', () => {
+  describe('conditional (.if / .else)', () => {
     const buy = Button.text('Buy', 'buy/:id', { id: 1 });
 
     it('resolve() returns the button itself when .if(true)', () => {
@@ -121,10 +120,10 @@ describe('Button', () => {
       expect(buy.if(false).resolve()).toBeNull();
     });
 
-    it('.else(label) yields a noop dead-end button when hidden', () => {
+    it('.else(label) yields a disabled button when hidden', () => {
       expect(buy.if(false).else('Sold out').resolve()?.toJSON()).toEqual({
         text: 'Sold out',
-        callback_data: NOOP_CALLBACK_DATA,
+        disabled: {},
       });
     });
 
@@ -135,13 +134,6 @@ describe('Button', () => {
 
     it('an unhidden button ignores its .else()', () => {
       expect(buy.if(true).else('Sold out').resolve()?.label).toBe('Buy');
-    });
-
-    it('Button.noop(label) is a dead-end button', () => {
-      expect(Button.noop('Nothing').toJSON()).toEqual({
-        text: 'Nothing',
-        callback_data: NOOP_CALLBACK_DATA,
-      });
     });
   });
 
@@ -187,12 +179,10 @@ describe('Button', () => {
       });
     });
 
-    it('is not noop — no callback_data at all, live or reserved', () => {
-      const button = Button.disabled('Sold out').toJSON();
-      expect(button.callback_data).toBeUndefined();
-      expect(Button.noop('Page 2/7').toJSON().callback_data).toBe(
-        NOOP_CALLBACK_DATA,
-      );
+    it('carries no callback_data — nothing reaches the bot', () => {
+      expect(
+        Button.disabled('Sold out').toJSON().callback_data,
+      ).toBeUndefined();
     });
   });
 });
