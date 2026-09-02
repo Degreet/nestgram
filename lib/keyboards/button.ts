@@ -198,6 +198,58 @@ export class Button {
     return this.withStyle(ButtonStyle.Danger);
   }
 
+  /**
+   * A copy Telegram renders inert — pressing it does nothing, client-side, with
+   * no round trip.
+   *
+   * `disabled` is a button TYPE, not a flag: the spec allows exactly one of
+   * `url` / `callback_data` / `disabled` / … per button, and Telegram silently
+   * drops the field when a second one is present. So this REPLACES whatever the
+   * button did, keeping only what the spec permits alongside a type (`text`,
+   * `style`, `icon_custom_emoji_id`). A disabled button has no action by
+   * definition, which is what makes that safe.
+   *
+   * Takes a condition so it composes like {@link if} —
+   * `Button.text('Buy', 'buy/:id', { id }).disabled(!inStock)` is a live buy
+   * button when in stock and an inert one when not.
+   *
+   * Not the same as {@link noop}, which is a LIVE button whose press the bot
+   * quietly answers: reach for `noop` when the button must still look pressable
+   * (a page indicator), and for this when the action is genuinely unavailable.
+   */
+  disabled(disabled = true): Button {
+    if (!disabled) {
+      return this;
+    }
+    return new Button(
+      { ...Button.typeless(this.spec), disabled: {} },
+      this.hidden,
+      this.fallback,
+    );
+  }
+
+  /** A button that is inert from the start, with no action to strip. */
+  static disabled(label: string): Button {
+    return new Button({ text: label, disabled: {} });
+  }
+
+  /**
+   * The parts of a button that are NOT its type — everything a new type may be
+   * paired with. Spec: "Exactly one of the fields other than text,
+   * icon_custom_emoji_id, and style must be used to specify the type".
+   */
+  private static typeless(
+    spec: RawInlineKeyboardButton,
+  ): RawInlineKeyboardButton {
+    return {
+      text: spec.text,
+      ...(spec.style !== undefined && { style: spec.style }),
+      ...(spec.icon_custom_emoji_id !== undefined && {
+        icon_custom_emoji_id: spec.icon_custom_emoji_id,
+      }),
+    };
+  }
+
   /** A fresh copy of the raw button — what the keyboard serializes. */
   toJSON(): RawInlineKeyboardButton {
     return { ...this.spec };

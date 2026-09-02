@@ -84,6 +84,7 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
 
   private readonly checkboxSections: CheckboxSection[] = [];
   private paginated = false;
+  private forceReplyFlag = false;
   /** Index where the current (not-yet-paginated) section begins — each `paginate()`
    * consumes the rows from here to the end, so several sections paginate apart. */
   private sectionStart = 0;
@@ -444,6 +445,9 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
   static from(markup: RawInlineKeyboardMarkup): InlineKeyboard {
     const keyboard = new InlineKeyboard();
     keyboard.adopt(markup.inline_keyboard);
+    // Carried over so a re-send of an adopted keyboard keeps the flag. Telegram
+    // freezes it on an edit, so this only shows on a fresh send.
+    keyboard.forceReplyFlag = markup.force_reply ?? false;
     return keyboard;
   }
 
@@ -511,10 +515,57 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
     return this;
   }
 
+  /**
+   * Render the just-added button inert — the postfix twin of
+   * {@link Button.disabled}, so `.text(...).disabled(!inStock)` reads like
+   * `.text(...).danger()`.
+   *
+   * Strips the button's action, because `disabled` IS the button's type: the
+   * spec allows exactly one per button, and Telegram drops the field when a
+   * second one is present. Presentation only, so check in the handler too.
+   */
+  disabled(disabled = true): this {
+    if (!disabled) {
+      return this;
+    }
+    return this.patchLastButton((button) => {
+      for (const key of Object.keys(button)) {
+        if (!InlineKeyboard.KEEPS_WITH_TYPE.has(key)) {
+          delete button[key as keyof RawInlineKeyboardButton];
+        }
+      }
+      button.disabled = {};
+    });
+  }
+
+  /** What a button may carry alongside its type (spec: InlineKeyboardButton). */
+  private static readonly KEEPS_WITH_TYPE: ReadonlySet<string> = new Set([
+    'text',
+    'style',
+    'icon_custom_emoji_id',
+  ]);
+
+  /**
+   * Also open the reply interface, as if the user had tapped reply — so the
+   * next message they send is a reply to this one. Pairs with a keyboard that
+   * asks for free-form input alongside its buttons.
+   */
+  forceReply(): this {
+    this.forceReplyFlag = true;
+    return this;
+  }
+
   toJSON(): RawInlineKeyboardMarkup {
+    return {
+      inline_keyboard: this.renderRows(),
+      ...(this.forceReplyFlag && { force_reply: true }),
+    };
+  }
+
+  private renderRows(): RawInlineKeyboardButton[][] {
     const own = this.filledRows;
     if (this.checkboxSections.length === 0) {
-      return { inline_keyboard: own };
+      return own;
     }
     // Splice each section's freshly-rendered rows in at the position it was
     // declared, in declaration order (a stable sort by `at`). Several groups thus
@@ -532,7 +583,7 @@ export class InlineKeyboard extends KeyboardBuilder<RawInlineKeyboardButton> {
     while (row < own.length) {
       result.push(own[row++]);
     }
-    return { inline_keyboard: result };
+    return result;
   }
 
   /** Re-render one checkbox section: read its selection, build, then paginate if asked. */

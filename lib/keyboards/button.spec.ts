@@ -144,4 +144,55 @@ describe('Button', () => {
       });
     });
   });
+
+  describe('.disabled()', () => {
+    const buy = Button.text('Buy', 'buy/:id', { id: 1 });
+
+    it('marks the button inert for Telegram', () => {
+      expect(buy.disabled().toJSON().disabled).toEqual({});
+    });
+
+    // `disabled` is a button TYPE, and the spec allows exactly one per button.
+    // Leaving `callback_data` beside it makes Telegram drop `disabled` — the
+    // button renders live. This is the assertion that pins the whole design.
+    it('strips the action, because disabled IS the type', () => {
+      expect(buy.disabled().toJSON()).toEqual({
+        text: 'Buy',
+        disabled: {},
+      });
+    });
+
+    it('keeps what may accompany a type: text, style', () => {
+      expect(buy.danger().disabled().toJSON()).toEqual({
+        text: 'Buy',
+        style: 'danger',
+        disabled: {},
+      });
+    });
+
+    it('takes a condition, so it composes like .if()', () => {
+      expect(buy.disabled(false).toJSON()).toEqual(buy.toJSON());
+    });
+
+    it('leaves the original untouched', () => {
+      buy.disabled();
+      expect(buy.toJSON().disabled).toBeUndefined();
+      expect(buy.toJSON().callback_data).toBe('buy/1');
+    });
+
+    it('Button.disabled(label) needs no action to strip', () => {
+      expect(Button.disabled('Sold out').toJSON()).toEqual({
+        text: 'Sold out',
+        disabled: {},
+      });
+    });
+
+    it('is not noop — no callback_data at all, live or reserved', () => {
+      const button = Button.disabled('Sold out').toJSON();
+      expect(button.callback_data).toBeUndefined();
+      expect(Button.noop('Page 2/7').toJSON().callback_data).toBe(
+        NOOP_CALLBACK_DATA,
+      );
+    });
+  });
 });
