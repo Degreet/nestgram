@@ -211,7 +211,7 @@ function applyDiscriminator(fields: IrField[], spec: SpecField[]): void {
 }
 
 function lowerObject(name: string, object: SpecType): IrObject {
-  const description = object.description.join('\n');
+  const description = (object.description ?? []).join('\n');
   if (object.subtypes && object.subtypes.length > 0) {
     // Subtypes are a type-token list exactly like `types`/`returns`: usually all
     // object names, but `RichText` mixes in `'String'` and `'Array of RichText'`,
@@ -258,7 +258,7 @@ export function buildIr(spec: BotApiSpec): Ir {
         args,
         returnType: lowerTypes(method.returns),
         maybeMultipart: args.some((arg) => typeReferencesInputFile(arg.type)),
-        description: method.description.join('\n'),
+        description: (method.description ?? []).join('\n'),
         documentationLink: method.href,
       };
     })
