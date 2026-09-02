@@ -76,7 +76,11 @@ describe('Message actions', () => {
     }).answerEphemeral('only you');
     expect(calls[0]).toEqual({
       method: 'sendMessage',
-      args: [-100, 'only you', { receiver_user_id: 42 }],
+      args: [
+        -100,
+        'only you',
+        { ephemeral_message_parameters: { receiver_user_id: 42 } },
+      ],
     });
   });
 
@@ -247,7 +251,7 @@ describe('Message actions', () => {
     ephemeralMessage(bot).editEphemeral('edited', { parse_mode: 'HTML' });
     expect(calls[0]).toEqual({
       method: 'editEphemeralMessageText',
-      args: [-100, 42, 555, 'edited', { parse_mode: 'HTML' }],
+      args: [-100, 42, 555, { parse_mode: 'HTML', text: 'edited' }],
     });
   });
 
@@ -415,7 +419,13 @@ describe('CallbackQuery actions', () => {
       args: [
         -100,
         'only you see this',
-        { receiver_user_id: 42, callback_query_id: 'cb1' },
+        {
+          ephemeral_message_parameters: {
+            receiver_user_id: 42,
+            callback_query_id: 'cb1',
+            replace_callback_query_message: undefined,
+          },
+        },
       ],
     });
   });
@@ -449,7 +459,14 @@ describe('CallbackQuery actions', () => {
       args: [
         -100,
         'hi',
-        { parse_mode: 'HTML', receiver_user_id: 42, callback_query_id: 'cb1' },
+        {
+          parse_mode: 'HTML',
+          ephemeral_message_parameters: {
+            receiver_user_id: 42,
+            callback_query_id: 'cb1',
+            replace_callback_query_message: undefined,
+          },
+        },
       ],
     });
   });

@@ -25,3 +25,5 @@ export * from './business-connection';
 export * from './business-messages-deleted';
 export * from './paid-media-purchased';
 export * from './bot-subscription-updated';
+export * from './managed-bot-updated';
+export * from './message-generation-stopped';

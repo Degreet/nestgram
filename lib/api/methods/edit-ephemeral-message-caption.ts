@@ -12,6 +12,7 @@ export interface EditEphemeralMessageCaptionOptions {
   caption?: string;
   parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
+  show_caption_above_media?: boolean;
   reply_markup?: RawInlineKeyboardMarkup | { toJSON(): unknown };
 }
 

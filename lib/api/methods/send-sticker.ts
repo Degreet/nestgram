@@ -2,6 +2,7 @@ import { ApiMethod } from './api-method';
 import { hasInputFile } from '../form-data';
 import type { InputFile } from '../input-file';
 import type {
+  RawEphemeralMessageParameters,
   RawForceReply,
   RawInlineKeyboardMarkup,
   RawMessage,
@@ -16,8 +17,7 @@ export interface SendStickerOptions {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  receiver_user_id?: number;
-  callback_query_id?: string;
+  ephemeral_message_parameters?: RawEphemeralMessageParameters;
   sticker: InputFile | string;
   emoji?: string;
   disable_notification?: boolean;

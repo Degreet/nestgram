@@ -5,5 +5,5 @@
  */
 export const GENERATED_SURFACE = {
   methods: 185,
-  objects: 388,
+  objects: 400,
 } as const;

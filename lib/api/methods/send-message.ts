@@ -2,6 +2,7 @@ import { ApiMethod } from './api-method';
 import { Message } from '../../events';
 import type { BotService } from '../bot.service';
 import type {
+  RawEphemeralMessageParameters,
   RawForceReply,
   RawInlineKeyboardMarkup,
   RawLinkPreviewOptions,
@@ -19,8 +20,7 @@ export interface SendMessageOptions {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  receiver_user_id?: number;
-  callback_query_id?: string;
+  ephemeral_message_parameters?: RawEphemeralMessageParameters;
   text: string;
   parse_mode?: ParseModeValue;
   entities?: RawMessageEntity[];

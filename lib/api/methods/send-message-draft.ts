@@ -9,6 +9,8 @@ export interface SendMessageDraftOptions {
   text?: string;
   parse_mode?: ParseModeValue;
   entities?: RawMessageEntity[];
+  can_stop?: boolean;
+  keep_on_stop?: boolean;
 }
 
 /**

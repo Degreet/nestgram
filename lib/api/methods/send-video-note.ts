@@ -2,6 +2,7 @@ import { ApiMethod } from './api-method';
 import { hasInputFile } from '../form-data';
 import type { InputFile } from '../input-file';
 import type {
+  RawEphemeralMessageParameters,
   RawForceReply,
   RawInlineKeyboardMarkup,
   RawMessage,
@@ -16,8 +17,7 @@ export interface SendVideoNoteOptions {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  receiver_user_id?: number;
-  callback_query_id?: string;
+  ephemeral_message_parameters?: RawEphemeralMessageParameters;
   video_note: InputFile | string;
   duration?: number;
   length?: number;
@@ -37,7 +37,7 @@ export interface SendVideoNoteOptions {
 }
 
 /**
- * As of v.4.0, Telegram clients support rounded square MPEG4 videos of up to 1 minute long. Use this method to send video messages. On success, the sent Message is returned.
+ * Use this method to send a rounded square MPEG4 video of up to 1 minute long. On success, the sent Message is returned.
  * @see https://core.telegram.org/bots/api#sendvideonote
  */
 export class SendVideoNote extends ApiMethod<SendVideoNoteOptions, RawMessage> {

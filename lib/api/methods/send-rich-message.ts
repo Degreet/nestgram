@@ -3,6 +3,7 @@ import { Message } from '../../events';
 import type { BotService } from '../bot.service';
 import { hasInputFile } from '../form-data';
 import type {
+  RawEphemeralMessageParameters,
   RawForceReply,
   RawInlineKeyboardMarkup,
   RawInputRichMessage,
@@ -18,6 +19,7 @@ export interface SendRichMessageOptions {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
+  ephemeral_message_parameters?: RawEphemeralMessageParameters;
   rich_message: RawInputRichMessage;
   disable_notification?: boolean;
   protect_content?: boolean;

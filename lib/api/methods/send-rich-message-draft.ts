@@ -7,6 +7,8 @@ export interface SendRichMessageDraftOptions {
   message_thread_id?: number;
   draft_id: number;
   rich_message: RawInputRichMessage;
+  can_stop?: boolean;
+  keep_on_stop?: boolean;
 }
 
 /**
