@@ -64,7 +64,8 @@
     "spec:update": "ts-node --project tools/codegen/tsconfig.json tools/codegen/spec-update.ts",
     "prepare": "husky",
     "verify:package": "node -e \"const p=require('./package.json'),fs=require('fs');for(const f of [p.main,p.types])if(!fs.existsSync(f))throw new Error('package entry missing: '+f+' - built dist layout is wrong, see rootDir in tsconfig.build.json');require('./'+p.main);console.log('package entry ok:',p.main)\"",
-    "prepublishOnly": "npm run lint && npm run build && npm run test && npm run generate -- --check && npm run verify:package"
+    "prepublishOnly": "npm run lint && npm run build && npm run test && npm run generate -- --check && npm run verify:package",
+    "spec:diff": "ts-node --project tools/codegen/tsconfig.json tools/codegen/spec-diff.ts"
   },
   "devDependencies": {
     "@fluent/bundle": "^0.19.1",
