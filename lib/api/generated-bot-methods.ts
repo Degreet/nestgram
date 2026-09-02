@@ -674,7 +674,7 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success.
+   * Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_ids is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success.
    * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
    * @param from_chat_id Unique identifier for the chat where the original message was sent (or username of the target bot, supergroup or channel in the format @username)
    * @param message_id Message identifier in the chat specified in from_chat_id
@@ -696,7 +696,7 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an Array of MessageId of the sent messages is returned.
+   * Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_ids is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an Array of MessageId of the sent messages is returned.
    * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
    * @param from_chat_id Unique identifier for the chat where the original messages were sent (or username of the target bot, supergroup or channel in the format @username)
    * @param message_ids A JSON-serialized list of 1-100 identifiers of messages in the chat from_chat_id to copy. The identifiers must be specified in a strictly increasing order.
@@ -1208,7 +1208,7 @@ export abstract class GeneratedBotMethods {
    * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
    * @param receiver_user_id Identifier of the user who received the message
    * @param ephemeral_message_id Identifier of the ephemeral message to edit
-   * @param media A JSON-serialized object for the new media content of the message. A new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL.
+   * @param media A JSON-serialized object for the new media content of the message
    * @see https://core.telegram.org/bots/api#editephemeralmessagemedia
    */
   editEphemeralMessageMedia(
@@ -1267,22 +1267,20 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to edit an ephemeral text message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned.
+   * Use this method to edit an ephemeral text or rich message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
    * @param receiver_user_id Identifier of the user who received the message
    * @param ephemeral_message_id Identifier of the ephemeral message to edit
-   * @param text New text of the message, 1-4096 characters after entity parsing
    * @see https://core.telegram.org/bots/api#editephemeralmessagetext
    */
   editEphemeralMessageText(
     chat_id: EditEphemeralMessageTextOptions['chat_id'],
     receiver_user_id: EditEphemeralMessageTextOptions['receiver_user_id'],
     ephemeral_message_id: EditEphemeralMessageTextOptions['ephemeral_message_id'],
-    text: EditEphemeralMessageTextOptions['text'],
     callOptions?: MethodOptions<
       Omit<
         EditEphemeralMessageTextOptions,
-        'chat_id' | 'receiver_user_id' | 'ephemeral_message_id' | 'text'
+        'chat_id' | 'receiver_user_id' | 'ephemeral_message_id'
       >
     >,
   ) {
@@ -1292,7 +1290,6 @@ export abstract class GeneratedBotMethods {
         chat_id,
         receiver_user_id,
         ephemeral_message_id,
-        text,
         ...rest,
       }),
       { token, signal },
@@ -2968,7 +2965,7 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to stream a partial message to a user while the message is being generated. Note that the streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is finalized, you must call sendMessage with the complete message to persist it in the user's chat. Returns True on success.
    * @param chat_id Unique identifier for the target private chat
-   * @param draft_id Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are animated.
+   * @param draft_id Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are animated. Otherwise, the draft is replaced without animation.
    * @see https://core.telegram.org/bots/api#sendmessagedraft
    */
   sendMessageDraft(
@@ -3070,8 +3067,8 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to stream a partial rich message to a user while the message is being generated. Note that the streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is finalized, you must call sendRichMessage with the complete message to persist it in the user's chat. Returns True on success.
    * @param chat_id Unique identifier for the target private chat
-   * @param draft_id Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are animated.
-   * @param rich_message The partial message to be streamed. Direct upload of new files isn't supported.
+   * @param draft_id Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are animated. Otherwise, the draft is replaced without animation.
+   * @param rich_message The partial message to be streamed. Direct upload of new files and explicit upload of files by a URL isn't supported.
    * @see https://core.telegram.org/bots/api#sendrichmessagedraft
    */
   sendRichMessageDraft(
@@ -3157,7 +3154,7 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * As of v.4.0, Telegram clients support rounded square MPEG4 videos of up to 1 minute long. Use this method to send video messages. On success, the sent Message is returned.
+   * Use this method to send a rounded square MPEG4 video of up to 1 minute long. On success, the sent Message is returned.
    * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
    * @param video_note Video note to send. Pass a file_id as String to send a video note that exists on the Telegram servers (recommended) or upload a new video using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files. Sending video notes by a URL is currently unsupported.
    * @see https://core.telegram.org/bots/api#sendvideonote

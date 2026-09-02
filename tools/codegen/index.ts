@@ -1,8 +1,11 @@
 /**
- * Generator orchestrator. `npm run generate` runs the full emission (wired in a
- * later step); `--self-test` runs the resolver/IR assertion harness OUTSIDE
- * jest (jest's rootDir is `lib`, and the suite's baseline count must stay
- * stable), so the foundation is verifiable before any code is emitted.
+ * Generator orchestrator. `npm run generate` runs the full emission; `--check`
+ * is the gate — it runs the assertion harness, then the hand-owned drift report,
+ * then the staleness diff, in that order (an invariant failure explains a stale
+ * diff, never the reverse). `--self-test` runs the harness alone.
+ *
+ * The harness lives here rather than in jest because jest's rootDir is `lib` and
+ * the suite's baseline count must stay stable.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -15,7 +18,12 @@ import { emitSurfaceFile } from './emit-surface';
 import { emitTypesFile } from './emit-types';
 import { formatTs } from './format';
 import { buildIr, Ir, IrType } from './ir';
-import { HAND_OWNED_DECLARATIONS } from './manifest';
+import {
+  enumLiteralEntries,
+  HAND_OWNED_DECLARATIONS,
+  namedTypeEntries,
+  namedTypeModule,
+} from './manifest';
 import { loadSpec } from './spec-loader';
 import { GENERATED_SURFACE } from './surface.generated';
 import { irTypeToTs } from './type-resolver';
@@ -123,6 +131,19 @@ function selfTest(): void {
       `generated Update is missing UpdateKind field '${kind}'`,
     );
   }
+  // And the reverse, which is the direction a Bot API release actually breaks:
+  // a new update field the engine cannot route is invisible to every other
+  // check here, since nothing that is never emitted can go stale. Name it, so a
+  // spec bump reports `stopped_message_generation` instead of passing quietly
+  // and dropping those updates at runtime.
+  const known: ReadonlySet<string> = new Set<string>(Object.values(UpdateKind));
+  for (const field of updateFields) {
+    assert(
+      field === 'update_id' || known.has(field),
+      `spec Update has field '${field}' with no UpdateKind — add it to the ` +
+        `enum, KIND_ORDER, a rich event and an @On… decorator`,
+    );
+  }
 
   // Naming: method → class → file.
   const sendMessage = ir.methods.find((m) => m.name === 'sendMessage');
@@ -224,9 +245,176 @@ function selfTest(): void {
     }
   }
 
+  assertEnumTablesMatchProse(ir);
+  assertReadmeNamesTheVendoredVersion();
+  assertNoFieldShadowsTheBotHandle(ir);
+
   process.stdout.write(
     `self-test OK — ${ir.objects.length} objects, ${ir.methods.length} methods\n`,
   );
+}
+
+/**
+ * The name rich events hold their `BotService` under, which the spec must never
+ * also use as a field name.
+ */
+const BOT_HANDLE_MEMBER = 'botService';
+
+/**
+ * No spec field may be called `botService`.
+ *
+ * Rich events are built by `Object.assign(this, raw)` over an instance that
+ * already holds the bot handle, so a spec field sharing its name replaces a live
+ * `BotService` with wire data at runtime — silently, and only for that one event.
+ * Bot API 10.3 nearly did it: `ManagedBotUpdated.bot` is why the handle is no
+ * longer called `bot`. This is the guard that makes the next one a failed gate
+ * instead of a production mystery.
+ */
+function assertNoFieldShadowsTheBotHandle(ir: Ir): void {
+  for (const object of ir.objects) {
+    if (object.kind !== 'interface') {
+      continue;
+    }
+    for (const field of object.fields) {
+      assert(
+        field.name !== BOT_HANDLE_MEMBER,
+        `spec field ${object.name}.${field.name} collides with the rich-event ` +
+          `bot handle — Object.assign would overwrite it. Rename the handle in ` +
+          `lib/events/rich-event.ts (and this constant) before regenerating.`,
+      );
+    }
+  }
+}
+
+/**
+ * The README's "tracks Telegram (Bot API X.Y)" claim against the spec actually
+ * vendored. Prose, so nothing else can catch it: the claim is a number a human
+ * typed, and every bump is a chance to leave it behind — quietly telling readers
+ * the framework tracks a version it does not.
+ */
+function assertReadmeNamesTheVendoredVersion(): void {
+  const { botApiVersion } = JSON.parse(
+    readFileSync(resolve(__dirname, 'spec', 'spec-version.json'), 'utf8'),
+  ) as { botApiVersion: string };
+  const readme = readFileSync(resolve(process.cwd(), README_FILE), 'utf8');
+  // The claim wraps across lines, so match on the number, not the whole phrase.
+  const claimed = /tracks Telegram \(Bot API\s+([\d.]+)\)/.exec(
+    readme.replace(/\s+/g, ' '),
+  );
+  assert(claimed !== null, 'README states which Bot API version it tracks');
+  assert(
+    claimed === null || botApiVersion === `Bot API ${claimed[1]}`,
+    `README says it tracks Bot API ${claimed?.[1]}, but the vendored spec is ` +
+      `${botApiVersion} — update the README`,
+  );
+}
+
+/** The `"quoted"` values in a field's prose — how Telegram spells an enum. */
+function quotedLiterals(prose: string): Set<string> {
+  return new Set([...prose.matchAll(/"([^"]+)"/g)].map((match) => match[1]));
+}
+
+/** A spec field's description, addressed as `<owner>.<field>`; null if absent. */
+function specFieldProse(ir: Ir, key: string): string | null {
+  const separator = key.indexOf('.');
+  const owner = key.slice(0, separator);
+  const name = key.slice(separator + 1);
+  const object = ir.objectsByName.get(owner);
+  const fields =
+    object?.kind === 'interface'
+      ? object.fields
+      : ir.methods.find((method) => method.name === owner)?.args;
+  return fields?.find((field) => field.name === name)?.description ?? null;
+}
+
+/** A hand-written file parsed for reading, addressed from the repo root. */
+function parseHandOwned(file: string): ts.SourceFile {
+  const path = resolve(process.cwd(), file);
+  return ts.createSourceFile(
+    path,
+    readFileSync(path, 'utf8'),
+    ts.ScriptTarget.Latest,
+    true,
+  );
+}
+
+/** Every string-valued enum member declared in a hand-owned module. */
+function declaredEnumValues(file: string): Set<string> {
+  const source = parseHandOwned(file);
+  const values = new Set<string>();
+  for (const statement of source.statements) {
+    if (!ts.isEnumDeclaration(statement)) {
+      continue;
+    }
+    for (const member of statement.members) {
+      if (member.initializer && ts.isStringLiteral(member.initializer)) {
+        values.add(member.initializer.text);
+      }
+    }
+  }
+  return values;
+}
+
+function assertSameLiterals(
+  declared: Set<string>,
+  prose: Set<string>,
+  label: string,
+): void {
+  const missing = [...prose].filter((value) => !declared.has(value));
+  const extra = [...declared].filter((value) => !prose.has(value));
+  assert(
+    missing.length === 0 && extra.length === 0,
+    `${label} has drifted from the spec prose —` +
+      (missing.length > 0 ? ` missing ${missing.join(', ')};` : '') +
+      (extra.length > 0 ? ` no longer in the spec: ${extra.join(', ')};` : '') +
+      ' reconcile the table with the field description',
+  );
+}
+
+/**
+ * Enum tables against the prose they were transcribed from.
+ *
+ * These literals are hand-copied out of a sentence like `Must be one of "danger"
+ * (red), "success" (green) or "primary" (blue)`. When Telegram adds a value the
+ * sentence grows but nothing else does: the emitted union is still valid TS, the
+ * output still matches its own regeneration, and the staleness guard stays green
+ * while the framework quietly rejects a value the API accepts. Re-reading the
+ * prose is the only thing that catches it.
+ *
+ * `*.<field>` keys are skipped: they are owner-agnostic by design, and their
+ * prose (`parse_mode` → "See formatting options") enumerates nothing to compare.
+ */
+function assertEnumTablesMatchProse(ir: Ir): void {
+  for (const [key, literals] of enumLiteralEntries()) {
+    if (key.startsWith('*.')) {
+      continue;
+    }
+    const prose = specFieldProse(ir, key);
+    assert(prose !== null, `enum table entry '${key}' matches no spec field`);
+    if (prose !== null) {
+      assertSameLiterals(new Set(literals), quotedLiterals(prose), key);
+    }
+  }
+
+  for (const [key, typeName] of namedTypeEntries()) {
+    if (key.startsWith('*.')) {
+      continue;
+    }
+    const prose = specFieldProse(ir, key);
+    assert(prose !== null, `named type entry '${key}' matches no spec field`);
+    if (prose !== null) {
+      // NAMED_TYPE_MODULES paths are relative to the generated types file.
+      const file = `${join(
+        dirname(CANONICAL_TYPES_FILE),
+        namedTypeModule(typeName),
+      )}.ts`;
+      assertSameLiterals(
+        declaredEnumValues(file),
+        quotedLiterals(prose),
+        `${typeName} (${file}), promoted at ${key},`,
+      );
+    }
+  }
 }
 
 function parseFlagValue(name: string): string | undefined {
@@ -234,6 +422,9 @@ function parseFlagValue(name: string): string | undefined {
   const found = process.argv.find((arg) => arg.startsWith(prefix));
   return found ? found.slice(prefix.length) : undefined;
 }
+
+/** Where the version claim the gate checks lives. */
+const README_FILE = 'README.md';
 
 const CANONICAL_METHODS_DIR = 'lib/api/methods';
 const CANONICAL_TYPES_FILE = 'lib/events/raw-update.types.ts';
@@ -318,14 +509,7 @@ function writeFiles(files: Map<string, string>): void {
 
 /** The property names declared by `interface <name>` in a hand-written file. */
 function declaredFieldNames(file: string, name: string): Set<string> | null {
-  const path = resolve(process.cwd(), file);
-  const source = ts.createSourceFile(
-    path,
-    readFileSync(path, 'utf8'),
-    ts.ScriptTarget.Latest,
-    true,
-  );
-  for (const statement of source.statements) {
+  for (const statement of parseHandOwned(file).statements) {
     if (ts.isInterfaceDeclaration(statement) && statement.name.text === name) {
       const names = statement.members
         .filter(ts.isPropertySignature)
@@ -449,6 +633,10 @@ function main(): void {
   ]);
   const drift = handOwnedDrift(buildIr(loadSpec()));
   if (process.argv.includes('--check')) {
+    // The invariants a diff can't see. `checkFiles` only proves the output
+    // matches its own regeneration, which stays true while the surface silently
+    // loses an update kind or an enum value — so assert before comparing.
+    selfTest();
     if (drift.length > 0) {
       process.stderr.write(
         `Hand-owned declarations have drifted from the spec — edit them by hand ` +
@@ -473,8 +661,13 @@ function main(): void {
 try {
   main();
 } catch (error) {
+  // The stack, not just the message: this catch is what an unattended cron
+  // reports, and a bare `Cannot read properties of undefined` names neither the
+  // offending spec entry nor the line that tripped on it.
   process.stderr.write(
-    `${error instanceof Error ? error.message : String(error)}\n`,
+    `${
+      error instanceof Error ? error.stack ?? error.message : String(error)
+    }\n`,
   );
   process.exitCode = 1;
 }

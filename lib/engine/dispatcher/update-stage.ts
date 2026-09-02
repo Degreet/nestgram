@@ -28,6 +28,18 @@ export interface UpdateStageOptions {
    * {@link DEFAULT_STAGE_ORDER} (after the built-ins); ties keep discovery order.
    */
   order?: number;
+  /**
+   * Update kinds this stage CONSUMES, for `allowed_updates`.
+   *
+   * The derived list is built from the route table, and a stage owns no route —
+   * so a stage that acts on a kind nothing else routes would never see it:
+   * Telegram is never asked for it. Declaring it here puts it in the derived
+   * list, which is how the stop-generation built-in gets delivered at all.
+   *
+   * Only for a kind your stage handles that no handler binds to; a kind some
+   * `@On*` already covers needs nothing here.
+   */
+  kinds?: readonly string[];
 }
 
 /** Default order for a user stage — after the framework's built-in stages. */
@@ -49,10 +61,15 @@ export enum BuiltinStageOrder {
   PaginationCursors = 26,
   Fsm = 30,
   Scenes = 40,
+  // Ends a stream whose stop button was pressed. Seeds nothing on the ambient
+  // rail, so it runs last among the built-ins — it only needs to land before
+  // the user's own handler for the same update.
+  MessageStop = 50,
 }
 
 interface StageMetadata {
   order: number;
+  kinds: readonly string[];
 }
 
 /**
@@ -73,6 +90,7 @@ export const UpdateStage = (
   return (target) => {
     const metadata: StageMetadata = {
       order: options.order ?? DEFAULT_STAGE_ORDER,
+      kinds: options.kinds ?? [],
     };
     Reflect.defineMetadata(Metadata.UPDATE_STAGE, metadata, target);
   };
@@ -80,9 +98,16 @@ export const UpdateStage = (
 
 /** The declared run order of an `@UpdateStage` class, or `undefined` if it isn't one. */
 export function stageOrderOf(target: object): number | undefined {
-  const metadata: StageMetadata | undefined = Reflect.getMetadata(
-    Metadata.UPDATE_STAGE,
-    target,
-  );
-  return metadata?.order;
+  return stageMetadataOf(target)?.order;
+}
+
+/** The update kinds an `@UpdateStage` class declares it consumes. */
+export function stageKindsOf(target: object): readonly string[] {
+  return stageMetadataOf(target)?.kinds ?? [];
+}
+
+function stageMetadataOf(target: object): StageMetadata | undefined {
+  return Reflect.getMetadata(Metadata.UPDATE_STAGE, target) as
+    | StageMetadata
+    | undefined;
 }

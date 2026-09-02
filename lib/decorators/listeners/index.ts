@@ -38,6 +38,8 @@ export * from './on-pre-checkout-query.decorator';
 export * from './on-purchased-paid-media.decorator';
 export * from './on-removed-chat-boost.decorator';
 export * from './on-shipping-query.decorator';
+export * from './on-managed-bot.decorator';
+export * from './on-message-generation-stopped.decorator';
 export * from './on-subscription.decorator';
 export * from './on-unhandled.decorator';
 export * from './on-checkbox-done.decorator';

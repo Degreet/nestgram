@@ -21,7 +21,8 @@ export interface SpecField {
 export interface SpecMethod {
   name: string;
   href: string;
-  description: string[];
+  /** Absent when the docs page carries no prose for it (see {@link SpecType}). */
+  description?: string[];
   /** Possible return type tokens; multiple entries form a union. */
   returns: string[];
   /** Absent for parameterless methods. */
@@ -31,7 +32,12 @@ export interface SpecMethod {
 export interface SpecType {
   name: string;
   href: string;
-  description: string[];
+  /**
+   * Absent when the docs page carries no prose paragraph — `EphemeralMessageParameters`
+   * puts its heading directly against the field table. A faithful scrape of a
+   * description-less class, not a broken one, so the generator must tolerate it.
+   */
+  description?: string[];
   /** Present for concrete objects (→ a TS interface). */
   fields?: SpecField[];
   /** Present for abstract unions (→ a TS union alias of the members). */

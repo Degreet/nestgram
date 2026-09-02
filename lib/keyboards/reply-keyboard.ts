@@ -29,6 +29,7 @@ export class ReplyKeyboard extends KeyboardBuilder<RawKeyboardButton> {
   private oneTimeKeyboard = false;
   private persistentKeyboard = false;
   private selectiveFlag = false;
+  private forceReplyFlag = false;
   private placeholderText?: string;
 
   /** A plain text button (sends its label as a message when pressed). */
@@ -97,6 +98,15 @@ export class ReplyKeyboard extends KeyboardBuilder<RawKeyboardButton> {
     return this;
   }
 
+  /**
+   * Also open the reply interface, so the user's next message is a reply to the
+   * one carrying this keyboard.
+   */
+  forceReply(): this {
+    this.forceReplyFlag = true;
+    return this;
+  }
+
   /** Grey placeholder in the input field while the keyboard is shown. */
   placeholder(text: string): this {
     this.placeholderText = text;
@@ -110,6 +120,7 @@ export class ReplyKeyboard extends KeyboardBuilder<RawKeyboardButton> {
       ...(this.oneTimeKeyboard && { one_time_keyboard: true }),
       ...(this.persistentKeyboard && { is_persistent: true }),
       ...(this.selectiveFlag && { selective: true }),
+      ...(this.forceReplyFlag && { force_reply: true }),
       ...(this.placeholderText && {
         input_field_placeholder: this.placeholderText,
       }),

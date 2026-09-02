@@ -5,6 +5,7 @@ import { BotService } from '../../api';
 import { WebhookOptions } from '../../module/nestgram-module.types';
 import { RawUpdate } from '../../events/raw-update.types';
 import { RouteTable } from '../discovery';
+import { StageRegistry } from '../dispatcher/stage-registry';
 import { Route } from '../discovery/route.types';
 import { AllowedUpdatesResolver } from './allowed-updates.resolver';
 
@@ -24,7 +25,7 @@ function make(
   const source = new WebhookUpdateSource(
     bot,
     webhook,
-    new AllowedUpdatesResolver(new RouteTable(routes)),
+    new AllowedUpdatesResolver(new RouteTable(routes), new StageRegistry()),
   );
   return { source, setWebhook, deleteWebhook };
 }
@@ -124,7 +125,7 @@ describe('WebhookUpdateSource', () => {
     const named = new WebhookUpdateSource(
       { token: 't' } as unknown as BotService,
       { url: 'https://x/h' },
-      new AllowedUpdatesResolver(new RouteTable([])),
+      new AllowedUpdatesResolver(new RouteTable([]), new StageRegistry()),
       'sales',
     );
     expect(named.name).toBe('sales');

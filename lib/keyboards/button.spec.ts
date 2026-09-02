@@ -1,5 +1,4 @@
 import { Button } from './button';
-import { NOOP_CALLBACK_DATA } from './noop.constants';
 
 describe('Button', () => {
   describe('constructors map to the Bot API button shape', () => {
@@ -105,7 +104,7 @@ describe('Button', () => {
     });
   });
 
-  describe('conditional (.if / .else) and noop', () => {
+  describe('conditional (.if / .else)', () => {
     const buy = Button.text('Buy', 'buy/:id', { id: 1 });
 
     it('resolve() returns the button itself when .if(true)', () => {
@@ -121,10 +120,10 @@ describe('Button', () => {
       expect(buy.if(false).resolve()).toBeNull();
     });
 
-    it('.else(label) yields a noop dead-end button when hidden', () => {
+    it('.else(label) yields a disabled button when hidden', () => {
       expect(buy.if(false).else('Sold out').resolve()?.toJSON()).toEqual({
         text: 'Sold out',
-        callback_data: NOOP_CALLBACK_DATA,
+        disabled: {},
       });
     });
 
@@ -136,12 +135,54 @@ describe('Button', () => {
     it('an unhidden button ignores its .else()', () => {
       expect(buy.if(true).else('Sold out').resolve()?.label).toBe('Buy');
     });
+  });
 
-    it('Button.noop(label) is a dead-end button', () => {
-      expect(Button.noop('Nothing').toJSON()).toEqual({
-        text: 'Nothing',
-        callback_data: NOOP_CALLBACK_DATA,
+  describe('.disabled()', () => {
+    const buy = Button.text('Buy', 'buy/:id', { id: 1 });
+
+    it('marks the button inert for Telegram', () => {
+      expect(buy.disabled().toJSON().disabled).toEqual({});
+    });
+
+    // `disabled` is a button TYPE, and the spec allows exactly one per button.
+    // Leaving `callback_data` beside it makes Telegram drop `disabled` — the
+    // button renders live. This is the assertion that pins the whole design.
+    it('strips the action, because disabled IS the type', () => {
+      expect(buy.disabled().toJSON()).toEqual({
+        text: 'Buy',
+        disabled: {},
       });
+    });
+
+    it('keeps what may accompany a type: text, style', () => {
+      expect(buy.danger().disabled().toJSON()).toEqual({
+        text: 'Buy',
+        style: 'danger',
+        disabled: {},
+      });
+    });
+
+    it('takes a condition, so it composes like .if()', () => {
+      expect(buy.disabled(false).toJSON()).toEqual(buy.toJSON());
+    });
+
+    it('leaves the original untouched', () => {
+      buy.disabled();
+      expect(buy.toJSON().disabled).toBeUndefined();
+      expect(buy.toJSON().callback_data).toBe('buy/1');
+    });
+
+    it('Button.disabled(label) needs no action to strip', () => {
+      expect(Button.disabled('Sold out').toJSON()).toEqual({
+        text: 'Sold out',
+        disabled: {},
+      });
+    });
+
+    it('carries no callback_data — nothing reaches the bot', () => {
+      expect(
+        Button.disabled('Sold out').toJSON().callback_data,
+      ).toBeUndefined();
     });
   });
 });

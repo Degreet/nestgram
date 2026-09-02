@@ -1,6 +1,6 @@
 import { Injectable, Optional } from '@nestjs/common';
 
-import { UpdateStage } from './update-stage';
+import { stageKindsOf, UpdateStage } from './update-stage';
 
 /**
  * The boot-time pipeline-stage registry — the {@link UpdateStage} counterpart of
@@ -29,6 +29,22 @@ export class StageRegistry {
   /** All stages, in run order. */
   all(): readonly UpdateStage[] {
     return this.stages;
+  }
+
+  /**
+   * Every update kind the registered stages declare they consume, de-duplicated.
+   *
+   * A stage owns no route, so these are invisible to the route table — this is
+   * what lets `allowed_updates` still ask Telegram for them.
+   */
+  declaredKinds(): string[] {
+    const kinds = new Set<string>();
+    for (const stage of this.stages) {
+      for (const kind of stageKindsOf(stage.constructor)) {
+        kinds.add(kind);
+      }
+    }
+    return [...kinds];
   }
 
   get size(): number {

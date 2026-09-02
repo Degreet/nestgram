@@ -1,6 +1,5 @@
 import { Button } from './button';
 import { InlineKeyboard } from './inline-keyboard';
-import { NOOP_CALLBACK_DATA } from './noop.constants';
 
 describe('InlineKeyboard — Button sugar', () => {
   describe('.map', () => {
@@ -88,7 +87,7 @@ describe('InlineKeyboard — Button sugar', () => {
 
       expect(markup.inline_keyboard[0]).toEqual([
         { text: 'A', callback_data: 'buy/1' },
-        { text: 'Sold out', callback_data: NOOP_CALLBACK_DATA },
+        { text: 'Sold out', disabled: {} },
       ]);
     });
   });
@@ -159,6 +158,64 @@ describe('InlineKeyboard — Button sugar', () => {
         { text: 'Here', switch_inline_query_current_chat: '' },
         { text: 'Copy', copy_text: { text: 'CODE' } },
       ]);
+    });
+  });
+
+  describe('.disabled() postfix', () => {
+    it('marks the just-added button, like the colour verbs do', () => {
+      const markup = new InlineKeyboard()
+        .text('Buy', 'buy')
+        .disabled()
+        .text('Ok', 'ok')
+        .split(1)
+        .toJSON();
+
+      expect(markup.inline_keyboard[0][0].disabled).toEqual({});
+      expect(markup.inline_keyboard[1][0].disabled).toBeUndefined();
+    });
+
+    // Same rule as the value object: one type per button, or Telegram drops it.
+    it('strips the action and keeps the style', () => {
+      const markup = new InlineKeyboard()
+        .text('Buy', 'buy')
+        .danger()
+        .disabled()
+        .toJSON();
+
+      expect(markup.inline_keyboard[0][0]).toEqual({
+        text: 'Buy',
+        style: 'danger',
+        disabled: {},
+      });
+    });
+
+    it('takes a condition, leaving the button alone when false', () => {
+      const markup = new InlineKeyboard()
+        .text('Buy', 'buy')
+        .disabled(false)
+        .toJSON();
+
+      expect(markup.inline_keyboard[0][0]).toEqual({
+        text: 'Buy',
+        callback_data: 'buy',
+      });
+    });
+  });
+
+  describe('.forceReply()', () => {
+    it('is absent unless asked for', () => {
+      expect(new InlineKeyboard().text('Hi', 'hi').toJSON().force_reply).toBe(
+        undefined,
+      );
+    });
+
+    it('rides along with the buttons', () => {
+      const markup = new InlineKeyboard()
+        .text('Hi', 'hi')
+        .forceReply()
+        .toJSON();
+      expect(markup.force_reply).toBe(true);
+      expect(markup.inline_keyboard[0]).toHaveLength(1);
     });
   });
 });

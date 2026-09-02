@@ -14,7 +14,7 @@ export class InlineQuery extends RichEvent {
     options: MethodOptions<AnswerInlineQueryOptions> = {},
   ) {
     const { token, signal, ...rest } = options;
-    return this.bot.call(
+    return this.botService.call(
       new AnswerInlineQuery({ ...rest, inline_query_id: this.id, results }),
       { token, signal } satisfies CallOptions,
     );

@@ -1,8 +1,8 @@
 {
-  "botApiVersion": "Bot API 10.2",
-  "releaseDate": "July 14, 2026",
+  "botApiVersion": "Bot API 10.3",
+  "releaseDate": "August 24, 2026",
   "methods": 185,
-  "objects": 388,
+  "objects": 400,
   "source": "https://raw.githubusercontent.com/PaulSonOfLars/telegram-bot-api-spec/main/api.min.json",
-  "sha1": "be366ada9a8d58a719c08c272aac7474defe8ec3"
+  "sha1": "4ef06bf2380b1745c6aeb40fee2a36d33575ac33"
 }

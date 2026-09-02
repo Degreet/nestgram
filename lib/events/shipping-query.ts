@@ -14,7 +14,7 @@ export interface ShippingQuery extends RawShippingQuery {}
 export class ShippingQuery extends RichEvent {
   answer(ok: boolean, options: MethodOptions<AnswerShippingQueryOptions> = {}) {
     const { token, signal, ...rest } = options;
-    return this.bot.call(
+    return this.botService.call(
       new AnswerShippingQuery({ ...rest, shipping_query_id: this.id, ok }),
       { token, signal } satisfies CallOptions,
     );

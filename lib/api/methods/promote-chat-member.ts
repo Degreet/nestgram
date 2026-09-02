@@ -20,6 +20,7 @@ export interface PromoteChatMemberOptions {
   can_manage_topics?: boolean;
   can_manage_direct_messages?: boolean;
   can_manage_tags?: boolean;
+  can_send_welcome_messages?: boolean;
 }
 
 /**

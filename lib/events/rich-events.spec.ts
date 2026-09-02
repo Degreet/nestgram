@@ -7,6 +7,8 @@ import { BotSubscriptionUpdated } from './bot-subscription-updated';
 import { ChatJoinRequest } from './chat-join-request';
 import { ChatMemberUpdated } from './chat-member-updated';
 import { InlineQuery } from './inline-query';
+import { ManagedBotUpdated } from './managed-bot-updated';
+import { MessageGenerationStopped } from './message-generation-stopped';
 import { Poll } from './poll';
 
 interface RecordedCall {
@@ -66,6 +68,28 @@ describe('Rich events', () => {
     expect(event).toBeInstanceOf(BotSubscriptionUpdated);
     expect(event.invoice_payload).toBe('sub_monthly');
     expect(event.state).toBe('active');
+  });
+
+  it('builds ManagedBotUpdated for a managed_bot update', () => {
+    const event = build(
+      UpdateKind.ManagedBot,
+      { user: { id: 7 }, bot: { id: 8, is_bot: true } },
+      fakeBot([]),
+    ) as ManagedBotUpdated;
+    expect(event).toBeInstanceOf(ManagedBotUpdated);
+    expect(event.user.id).toBe(7);
+    expect(event.bot.id).toBe(8);
+  });
+
+  it('builds MessageGenerationStopped for a stopped_message_generation update', () => {
+    const event = build(
+      UpdateKind.MessageGenerationStopped,
+      { chat: { id: -100, type: 'supergroup' }, draft_id: 9 },
+      fakeBot([]),
+    ) as MessageGenerationStopped;
+    expect(event).toBeInstanceOf(MessageGenerationStopped);
+    expect(event.draft_id).toBe(9);
+    expect(event.chat.id).toBe(-100);
   });
 
   it('InlineQuery.answer calls answerInlineQuery with the query id', async () => {

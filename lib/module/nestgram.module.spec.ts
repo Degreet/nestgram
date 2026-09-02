@@ -7,6 +7,7 @@ import { Bot } from '../decorators/params/bot.decorator';
 import { Command } from '../decorators/listeners/command.decorator';
 import { OnMessage } from '../decorators/listeners/on-message.decorator';
 import { OnCallbackQuery } from '../decorators/listeners/on-callback-query.decorator';
+import { OnMessageGenerationStopped } from '../decorators/listeners/on-message-generation-stopped.decorator';
 import { Router } from '../decorators/injectable/router.decorator';
 import { Sender } from '../decorators/params/sender.decorator';
 import { Args } from '../decorators/params/args.decorator';
@@ -31,6 +32,7 @@ import {
 } from '../engine/source';
 import { QueuedUpdateSource } from '../engine/queue';
 import { NestgramModule } from './nestgram.module';
+import { MessageStream } from '../streaming/message-stream';
 
 const originalFetch = global.fetch;
 
@@ -50,11 +52,26 @@ class GreetRouter {
   }
 }
 
+/**
+ * A user's own handler for the kind the framework's stream-stop built-in also
+ * consumes. Both must run: routing is first-match-wins, so if the built-in were
+ * a `@Router` instead of a stage, one of the two would silently lose.
+ */
+@Router()
+class UserStopRouter {
+  stops: number[] = [];
+
+  @OnMessageGenerationStopped()
+  onStop(update: { draft_id: number }): void {
+    this.stops.push(update.draft_id);
+  }
+}
+
 // The documented bootstrap shape: a plain Nest module importing NestgramModule.
 // `polling` is omitted so no transport starts — no network during the test.
 @Module({
   imports: [NestgramModule.forRoot({ token: 'TEST' })],
-  providers: [GreetRouter],
+  providers: [GreetRouter, UserStopRouter],
 })
 class AppModule {}
 
@@ -79,7 +96,8 @@ describe('NestgramModule (integration)', () => {
     });
 
     const table = app.get(RouteTable);
-    // 1 user route + 5 built-ins: no-op, checkbox toggle + clear, pagination nav (pagego + pageat).
+    // 2 user routes + 4 built-ins: checkbox toggle + clear, pagination nav
+    // (pagego + pageat). The stream stop is a stage, not a route.
     expect(table.size).toBe(6);
     expect(table.ofType('message')).toHaveLength(1);
 
@@ -94,13 +112,38 @@ describe('NestgramModule (integration)', () => {
     await app.close();
   });
 
+  it('runs the stream-stop built-in AND the user handler for the same update', async () => {
+    const app = await NestFactory.createApplicationContext(AppModule, {
+      logger: false,
+    });
+    const dispatcher = app.get(UpdateDispatcher);
+    const stopRouter = app.get(UserStopRouter);
+    const stop = jest.spyOn(MessageStream, 'stop').mockReturnValue(false);
+
+    await dispatcher.dispatch({
+      update_id: 2,
+      stopped_message_generation: {
+        chat: { id: 1, type: 'private' },
+        draft_id: 42,
+      },
+    } as unknown as RawUpdate);
+
+    // The built-in is a stage, so it never competes for the route: it ended the
+    // stream AND the user's handler still matched.
+    expect(stop).toHaveBeenCalledWith('default', 1, 42);
+    expect(stopRouter.stops).toEqual([42]);
+
+    stop.mockRestore();
+    await app.close();
+  });
+
   it('does not require a routers array in forRoot (discovery handles it)', async () => {
     const app = await NestFactory.createApplicationContext(AppModule, {
       logger: false,
     });
 
     // The only place GreetRouter is named is the providers array; forRoot got
-    // no routers list, yet the route table still found it (1 user + 5 built-in).
+    // no routers list, yet the route table still found it (2 user + 4 built-in).
     expect(app.get(RouteTable).size).toBe(6);
 
     await app.close();
@@ -137,8 +180,8 @@ describe('NestgramModule.forRootAsync (integration)', () => {
 
     // Token resolved via the injected config factory reached the transport.
     expect(app.get(BotService).token).toBe('ASYNC_TOKEN');
-    // Engine still wired: discovery built the route table (1 user + 5 built-in).
-    expect(app.get(RouteTable).size).toBe(6);
+    // Engine still wired: discovery built the route table (1 user + 4 built-in).
+    expect(app.get(RouteTable).size).toBe(5);
 
     await app.close();
   });
@@ -213,9 +256,9 @@ describe('stacked listener decorators (integration)', () => {
     const router = app.get(MultiRouter);
 
     // The one method binds to message + callback_query; the callback_query side
-    // also carries the 5 built-in callback routes (no-op, checkbox toggle + clear, pagego + pageat).
+    // also carries the 4 built-in callback routes (checkbox toggle + clear, pagego + pageat).
     expect(table.ofType('message')).toHaveLength(1);
-    expect(table.ofType('callback_query')).toHaveLength(6);
+    expect(table.ofType('callback_query')).toHaveLength(5);
 
     await dispatcher.dispatch(messageUpdate(1, 'hi'));
     expect(router.hits).toEqual(['hit']);

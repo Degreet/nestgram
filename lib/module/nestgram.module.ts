@@ -39,7 +39,7 @@ import {
 import { AutoAnswerCallbackInterceptor } from '../builtins/auto-answer';
 import { ReplyExceptionFilter } from '../builtins/reply-exception';
 import { DeadButtonWarner } from '../builtins/unhandled';
-import { NoopButtonHandler } from '../builtins/noop';
+import { MessageStopStage } from '../builtins/message-stop';
 import { CheckboxRouter } from '../builtins/checkbox';
 import { PaginationRouter } from '../builtins/pagination';
 import { KeyboardStateService, KeyboardStateStage } from '../keyboards/state';
@@ -174,9 +174,10 @@ export class NestgramModule {
     // `@Router` discovered like any other) — public and toggleable via
     // `warnUnhandledCallbacks`, so nothing here is privileged.
     DeadButtonWarner,
-    // Handles the reserved no-op route behind `Button.noop()`/`.else('label')`,
-    // so a dead-end button is answered (not warned). A plain `@Router`/`@Action`.
-    NoopButtonHandler,
+    // Ends the live stream a user pressed stop on, matching the update back to
+    // it by chat + draft id. A stage, not a router: it must not compete with the
+    // user's own @OnMessageGenerationStopped handler for the same update.
+    MessageStopStage,
     // Drives every `InlineKeyboard.checkboxes(...)` group — resolves the keyboard
     // by id, applies the tapped selection change, re-renders in place. A plain
     // public `@Router`/`@Action`, dormant until a `checkbox/...` callback arrives.

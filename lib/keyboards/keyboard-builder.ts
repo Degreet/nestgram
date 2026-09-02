@@ -138,12 +138,23 @@ export abstract class KeyboardBuilder<TButton extends StyleableButton> {
     return all.filter((row) => row.length > 0).map((row) => [...row]);
   }
 
-  private style(style: ButtonStyleValue): this {
+  /**
+   * Amend the just-added button in place — what every postfix verb is built on.
+   * `protected` so a subclass can add verbs for its own button kind (only inline
+   * buttons can be disabled) without reaching into `pending` itself.
+   */
+  protected patchLastButton(patch: (button: TButton) => void): this {
     const last = this.pending[this.pending.length - 1];
     if (last !== undefined) {
-      last.style = style;
+      patch(last);
     }
     return this;
+  }
+
+  private style(style: ButtonStyleValue): this {
+    return this.patchLastButton((button) => {
+      button.style = style;
+    });
   }
 
   private flushInto(perRow: number): void {

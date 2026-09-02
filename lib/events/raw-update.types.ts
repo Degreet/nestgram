@@ -283,6 +283,7 @@ export interface RawChatAdministratorRights {
   can_manage_topics?: boolean;
   can_manage_direct_messages?: boolean;
   can_manage_tags?: boolean;
+  can_send_welcome_messages: boolean;
 }
 
 export interface RawChatBackground {
@@ -449,6 +450,7 @@ export interface RawChatMemberAdministrator {
   can_manage_topics?: boolean;
   can_manage_direct_messages?: boolean;
   can_manage_tags?: boolean;
+  can_send_welcome_messages: boolean;
   custom_title?: string;
 }
 
@@ -599,6 +601,10 @@ export interface RawCommunityChatAdded {
   community: RawCommunity;
 }
 
+export interface RawCommunityChatJoined {
+  community: RawCommunity;
+}
+
 export type RawCommunityChatRemoved = Record<string, never>;
 
 export interface RawContact {
@@ -628,6 +634,8 @@ export interface RawDirectMessagesTopic {
   user?: User;
 }
 
+export type RawDisabledButton = Record<string, never>;
+
 export interface RawDocument {
   file_id: string;
   file_unique_id: string;
@@ -654,6 +662,12 @@ export interface RawEncryptedPassportElement {
   selfie?: RawPassportFile;
   translation?: RawPassportFile[];
   hash: string;
+}
+
+export interface RawEphemeralMessageParameters {
+  receiver_user_id: number;
+  callback_query_id?: string;
+  replace_callback_query_message?: boolean;
 }
 
 export interface RawExternalReplyInfo {
@@ -838,10 +852,12 @@ export interface RawInlineKeyboardButton {
   copy_text?: RawCopyTextButton;
   callback_game?: RawCallbackGame;
   pay?: boolean;
+  disabled?: RawDisabledButton;
 }
 
 export interface RawInlineKeyboardMarkup {
   inline_keyboard: RawInlineKeyboardButton[][];
+  force_reply?: boolean;
 }
 
 export interface RawInlineQuery {
@@ -1354,14 +1370,17 @@ export type RawInputRichBlock =
   | RawInputRichBlockAnchor
   | RawInputRichBlockList
   | RawInputRichBlockBlockQuotation
+  | RawInputRichBlockExpandableBlockQuotation
   | RawInputRichBlockPullQuotation
   | RawInputRichBlockCollage
   | RawInputRichBlockSlideshow
   | RawInputRichBlockTable
   | RawInputRichBlockDetails
   | RawInputRichBlockMap
+  | RawInputRichBlockButtons
   | RawInputRichBlockAnimation
   | RawInputRichBlockAudio
+  | RawInputRichBlockDocument
   | RawInputRichBlockPhoto
   | RawInputRichBlockVideo
   | RawInputRichBlockVoiceNote
@@ -1390,6 +1409,12 @@ export interface RawInputRichBlockBlockQuotation {
   credit?: RawRichText;
 }
 
+export interface RawInputRichBlockButtons {
+  type: 'buttons';
+  buttons: RawRichMessageButton[];
+  align?: 'left' | 'center' | 'right' | (string & Record<never, never>);
+}
+
 export interface RawInputRichBlockCollage {
   type: 'collage';
   blocks: RawInputRichBlock[];
@@ -1405,6 +1430,18 @@ export interface RawInputRichBlockDetails {
 
 export interface RawInputRichBlockDivider {
   type: 'divider';
+}
+
+export interface RawInputRichBlockDocument {
+  type: 'document';
+  document: InputMediaDocument;
+  caption?: RawRichBlockCaption;
+}
+
+export interface RawInputRichBlockExpandableBlockQuotation {
+  type: 'expandable_blockquote';
+  text: RawRichText;
+  credit?: RawRichText;
 }
 
 export interface RawInputRichBlockFooter {
@@ -1428,9 +1465,9 @@ export interface RawInputRichBlockListItem {
 export interface RawInputRichBlockMap {
   type: 'map';
   location: RawLocation;
-  zoom: number;
-  width: number;
-  height: number;
+  zoom?: number;
+  width?: number;
+  height?: number;
   caption?: RawRichBlockCaption;
 }
 
@@ -1479,6 +1516,7 @@ export interface RawInputRichBlockTable {
   cells: RawRichBlockTableCell[][];
   is_bordered?: boolean;
   is_striped?: boolean;
+  is_compact?: boolean;
   caption?: RawRichText;
 }
 
@@ -1517,6 +1555,7 @@ export interface RawInputRichMessageMedia {
   media:
     | InputMediaAnimation
     | InputMediaAudio
+    | InputMediaDocument
     | InputMediaPhoto
     | InputMediaVideo
     | RawInputMediaVoiceNote;
@@ -1801,6 +1840,7 @@ export interface RawMessage {
   checklist_tasks_done?: RawChecklistTasksDone;
   checklist_tasks_added?: RawChecklistTasksAdded;
   community_chat_added?: RawCommunityChatAdded;
+  community_chat_joined?: RawCommunityChatJoined;
   community_chat_removed?: RawCommunityChatRemoved;
   direct_message_price_changed?: RawDirectMessagePriceChanged;
   forum_topic_created?: RawForumTopicCreated;
@@ -1844,6 +1884,12 @@ export interface RawMessageEntity {
   custom_emoji_id?: string;
   unix_time?: number;
   date_time_format?: string;
+}
+
+export interface RawMessageGenerationStopped {
+  chat: RawChat;
+  message_thread_id?: number;
+  draft_id: number;
 }
 
 export interface RawMessageId {
@@ -2216,6 +2262,7 @@ export interface RawReplyKeyboardMarkup {
   one_time_keyboard?: boolean;
   input_field_placeholder?: string;
   selective?: boolean;
+  force_reply?: boolean;
 }
 
 export interface RawReplyKeyboardRemove {
@@ -2270,14 +2317,17 @@ export type RawRichBlock =
   | RawRichBlockAnchor
   | RawRichBlockList
   | RawRichBlockBlockQuotation
+  | RawRichBlockExpandableBlockQuotation
   | RawRichBlockPullQuotation
   | RawRichBlockCollage
   | RawRichBlockSlideshow
   | RawRichBlockTable
   | RawRichBlockDetails
   | RawRichBlockMap
+  | RawRichBlockButtons
   | RawRichBlockAnimation
   | RawRichBlockAudio
+  | RawRichBlockDocument
   | RawRichBlockPhoto
   | RawRichBlockVideo
   | RawRichBlockVoiceNote
@@ -2307,6 +2357,12 @@ export interface RawRichBlockBlockQuotation {
   credit?: RawRichText;
 }
 
+export interface RawRichBlockButtons {
+  type: 'buttons';
+  buttons: RawRichMessageButton[];
+  align?: 'left' | 'center' | 'right' | (string & Record<never, never>);
+}
+
 export interface RawRichBlockCaption {
   text: RawRichText;
   credit?: RawRichText;
@@ -2327,6 +2383,18 @@ export interface RawRichBlockDetails {
 
 export interface RawRichBlockDivider {
   type: 'divider';
+}
+
+export interface RawRichBlockDocument {
+  type: 'document';
+  document: RawDocument;
+  caption?: RawRichBlockCaption;
+}
+
+export interface RawRichBlockExpandableBlockQuotation {
+  type: 'expandable_blockquote';
+  text: RawRichText;
+  credit?: RawRichText;
 }
 
 export interface RawRichBlockFooter {
@@ -2403,6 +2471,7 @@ export interface RawRichBlockTable {
   cells: RawRichBlockTableCell[][];
   is_bordered?: boolean;
   is_striped?: boolean;
+  is_compact?: boolean;
   caption?: RawRichText;
 }
 
@@ -2438,6 +2507,20 @@ export interface RawRichMessage {
   is_rtl?: boolean;
 }
 
+export interface RawRichMessageButton {
+  text: RawRichText;
+  style?: 'danger' | 'success' | 'primary' | 'link';
+  url?: string;
+  callback_data?: string;
+  web_app?: RawWebAppInfo;
+  login_url?: RawLoginUrl;
+  switch_inline_query?: string;
+  switch_inline_query_current_chat?: string;
+  switch_inline_query_chosen_chat?: RawSwitchInlineQueryChosenChat;
+  copy_text?: RawCopyTextButton;
+  disabled?: RawDisabledButton;
+}
+
 export type RawRichText =
   | string
   | RawRichText[]
@@ -2462,6 +2545,7 @@ export type RawRichText =
   | RawRichTextHashtag
   | RawRichTextCashtag
   | RawRichTextBotCommand
+  | RawRichTextButton
   | RawRichTextAnchor
   | RawRichTextAnchorLink
   | RawRichTextReference
@@ -2493,6 +2577,11 @@ export interface RawRichTextBotCommand {
   type: 'bot_command';
   text: RawRichText;
   bot_command: string;
+}
+
+export interface RawRichTextButton {
+  type: 'button';
+  button: RawRichMessageButton;
 }
 
 export interface RawRichTextCashtag {
@@ -2910,6 +2999,9 @@ export interface RawUniqueGiftColors {
 export interface RawUniqueGiftInfo {
   gift: RawUniqueGift;
   origin: string;
+  text?: string;
+  entities?: RawMessageEntity[];
+  is_private?: boolean;
   last_resale_currency?: string;
   last_resale_amount?: number;
   owned_gift_id?: string;
@@ -2958,6 +3050,7 @@ export interface RawUpdate {
   removed_chat_boost?: RawChatBoostRemoved;
   managed_bot?: RawManagedBotUpdated;
   subscription?: RawBotSubscriptionUpdated;
+  stopped_message_generation?: RawMessageGenerationStopped;
 }
 
 export interface RawUserChatBoosts {

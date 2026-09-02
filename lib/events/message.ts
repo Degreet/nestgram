@@ -211,7 +211,7 @@ export class Message extends TelegramObject {
   answerEphemeral(
     text: string,
     options?: MethodOptions<
-      Omit<SendMessageOptions, 'receiver_user_id' | 'callback_query_id'>
+      Omit<SendMessageOptions, 'ephemeral_message_parameters'>
     >,
   ) {
     this.assertNotGuest('answerEphemeral');
@@ -223,7 +223,7 @@ export class Message extends TelegramObject {
     }
     return this.botService.sendMessage(this.chat.id, text, {
       ...options,
-      receiver_user_id: this.from.id,
+      ephemeral_message_parameters: { receiver_user_id: this.from.id },
     });
   }
 
@@ -499,7 +499,8 @@ export class Message extends TelegramObject {
   }
 
   /**
-   * Whether this is an ephemeral message (one sent with `receiver_user_id`,
+   * Whether this is an ephemeral message (one sent with
+   * `ephemeral_message_parameters`,
    * visible to a single user in a group). Such a message has no real
    * `message_id` — it's `0` — so the normal edit/delete methods don't apply;
    * use {@link editEphemeral} / {@link deleteEphemeral}, which address it by
@@ -529,8 +530,7 @@ export class Message extends TelegramObject {
       target.chatId,
       target.receiverId,
       target.ephemeralId,
-      text,
-      options,
+      { ...options, text },
     );
   }
 
@@ -561,7 +561,8 @@ export class Message extends TelegramObject {
     ) {
       throw new NestgramError(
         `message.${action}() is only valid on an ephemeral message — one sent ` +
-          'with receiver_user_id (it carries ephemeral_message_id + receiver_user).',
+          'with ephemeral_message_parameters (it carries ephemeral_message_id ' +
+          '+ receiver_user).',
       );
     }
     return {

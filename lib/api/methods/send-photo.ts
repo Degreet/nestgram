@@ -4,6 +4,7 @@ import type { BotService } from '../bot.service';
 import { hasInputFile } from '../form-data';
 import type { InputFile } from '../input-file';
 import type {
+  RawEphemeralMessageParameters,
   RawForceReply,
   RawInlineKeyboardMarkup,
   RawMessage,
@@ -20,8 +21,7 @@ export interface SendPhotoOptions {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  receiver_user_id?: number;
-  callback_query_id?: string;
+  ephemeral_message_parameters?: RawEphemeralMessageParameters;
   photo: InputFile | string;
   caption?: string;
   parse_mode?: ParseModeValue;

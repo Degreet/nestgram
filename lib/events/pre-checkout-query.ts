@@ -17,7 +17,7 @@ export class PreCheckoutQuery extends RichEvent {
     options: MethodOptions<AnswerPreCheckoutQueryOptions> = {},
   ) {
     const { token, signal, ...rest } = options;
-    return this.bot.call(
+    return this.botService.call(
       new AnswerPreCheckoutQuery({
         ...rest,
         pre_checkout_query_id: this.id,

@@ -4,6 +4,7 @@ import { BotService } from '../../api';
 import { getWebhookSourceToken } from '../../providers';
 import type { NestgramModuleOptions } from '../../module/nestgram-module.types';
 import { RouteTable } from '../discovery';
+import { StageRegistry } from '../dispatcher/stage-registry';
 import { QueuedUpdateSource } from '../queue';
 import { AllowedUpdatesResolver } from './allowed-updates.resolver';
 import { BotSourceFactory } from './bot-source.factory';
@@ -20,7 +21,7 @@ function factory(
   options: NestgramModuleOptions = {},
 ): BotSourceFactory {
   return new BotSourceFactory(
-    new AllowedUpdatesResolver(new RouteTable([])),
+    new AllowedUpdatesResolver(new RouteTable([]), new StageRegistry()),
     moduleRef ?? ({ get: jest.fn() } as unknown as ModuleRef),
     options,
   );

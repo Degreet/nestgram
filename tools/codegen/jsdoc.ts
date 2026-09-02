@@ -5,7 +5,12 @@
  */
 import { IrMethod } from './ir';
 
-/** Neutralize `*​/` so a spec description can't close the doc comment early. */
+/**
+ * Neutralize `*​/` so spec text can't close the doc comment early and leave the
+ * rest of itself as executable TypeScript. `loadSpec` already refuses such a
+ * spec; this is the second lock, because the cost of being wrong here is code
+ * execution in an unattended regeneration.
+ */
 export function sanitize(text: string): string {
   return (text ?? '').replace(/\*\//g, '*\\/').trim();
 }
@@ -24,7 +29,7 @@ export function classJsdoc(method: IrMethod): string {
     );
   }
   if (method.documentationLink) {
-    lines.push(` * @see ${method.documentationLink}`);
+    lines.push(` * @see ${sanitize(method.documentationLink)}`);
   }
   return lines.length > 0 ? `/**\n${lines.join('\n')}\n */\n` : '';
 }

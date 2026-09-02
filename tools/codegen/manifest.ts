@@ -136,6 +136,8 @@ export function overrideFieldType(
 const CHAT_TYPES = ['private', 'group', 'supergroup', 'channel'];
 const STICKER_FORMATS = ['static', 'animated', 'video'];
 const THUMB_MIME_TYPES = ['image/jpeg', 'image/gif', 'video/mp4'];
+const RICH_BUTTON_STYLES = ['danger', 'success', 'primary', 'link'];
+const BUTTON_ALIGNMENTS = ['left', 'center', 'right'];
 
 /**
  * CLOSED enums — the value is exactly one of these literals. Only list a field
@@ -154,6 +156,10 @@ const ENUM_LITERALS: Readonly<Record<string, readonly string[]>> = {
   'uploadStickerFile.sticker_format': STICKER_FORMATS,
   'InlineQueryResultGif.thumbnail_mime_type': THUMB_MIME_TYPES,
   'InlineQueryResultMpeg4Gif.thumbnail_mime_type': THUMB_MIME_TYPES,
+  // Not ButtonStyleValue: a rich button also allows 'link', which a keyboard
+  // button does not, so promoting it to the shared named type would either drop
+  // 'link' or wrongly widen every InlineKeyboardButton.
+  'RichMessageButton.style': RICH_BUTTON_STYLES,
 };
 
 /**
@@ -165,6 +171,8 @@ const ENUM_LITERALS: Readonly<Record<string, readonly string[]>> = {
  */
 const OPEN_ENUM_LITERALS: Readonly<Record<string, readonly string[]>> = {
   'BotSubscriptionUpdated.state': ['canceled', 'active', 'failed'],
+  'RichBlockButtons.align': BUTTON_ALIGNMENTS,
+  'InputRichBlockButtons.align': BUTTON_ALIGNMENTS,
 };
 
 // A field in both tables would silently resolve CLOSED (enumLiterals checks
@@ -239,6 +247,27 @@ export function namedTypeModule(typeName: string): string {
     );
   }
   return module;
+}
+
+/**
+ * Every enum entry, closed and open alike, as `['<owner>.<field>', literals]`.
+ * Both tables, because an open union's known values go stale exactly like a
+ * closed one's — only the fallback differs. Consumed by the generator's gate,
+ * which re-reads each field's spec prose and fails when the sets diverge.
+ */
+export function enumLiteralEntries(): readonly (readonly [
+  string,
+  readonly string[],
+])[] {
+  return [
+    ...Object.entries(ENUM_LITERALS),
+    ...Object.entries(OPEN_ENUM_LITERALS),
+  ];
+}
+
+/** Every named-type promotion, as `['<owner>.<field>', typeName]` pairs. */
+export function namedTypeEntries(): readonly (readonly [string, string])[] {
+  return Object.entries(NAMED_TYPES);
 }
 
 // --- BotService method generation --------------------------------------------

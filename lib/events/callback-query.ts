@@ -70,8 +70,15 @@ export class CallbackQuery extends TelegramObject {
   answerEphemeral(
     text: string,
     options?: MethodOptions<
-      Omit<SendMessageOptions, 'receiver_user_id' | 'callback_query_id'>
-    >,
+      Omit<SendMessageOptions, 'ephemeral_message_parameters'>
+    > & {
+      /**
+       * Show the ephemeral message in PLACE OF the message the button was on,
+       * rather than as a new one below it. Telegram rejects it for a query that
+       * came from an ephemeral message — edit those with `editEphemeral()`.
+       */
+      replace_callback_query_message?: boolean;
+    },
   ) {
     if (!this.message) {
       throw new NestgramError(
@@ -79,10 +86,16 @@ export class CallbackQuery extends TelegramObject {
           'but this is an inline-mode query (no attached chat message).',
       );
     }
+    // The two identity fields are ours to derive; only the replace policy is
+    // the caller's, so it is offered flat instead of exposing the whole object.
+    const { replace_callback_query_message, ...rest } = options ?? {};
     return this.botService.sendMessage(this.message.chat.id, text, {
-      ...options,
-      receiver_user_id: this.from.id,
-      callback_query_id: this.id,
+      ...rest,
+      ephemeral_message_parameters: {
+        receiver_user_id: this.from.id,
+        callback_query_id: this.id,
+        replace_callback_query_message,
+      },
     });
   }
 }

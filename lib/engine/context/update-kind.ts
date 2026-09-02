@@ -36,6 +36,8 @@ export enum UpdateKind {
   ChatBoost = 'chat_boost',
   RemovedChatBoost = 'removed_chat_boost',
   Subscription = 'subscription',
+  ManagedBot = 'managed_bot',
+  MessageGenerationStopped = 'stopped_message_generation',
 }
 
 /**
@@ -75,6 +77,8 @@ const KIND_ORDER: readonly UpdateKind[] = [
   UpdateKind.ChatBoost,
   UpdateKind.RemovedChatBoost,
   UpdateKind.Subscription,
+  UpdateKind.ManagedBot,
+  UpdateKind.MessageGenerationStopped,
 ];
 
 const KNOWN_KINDS: ReadonlySet<string> = new Set<string>(

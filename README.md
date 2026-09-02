@@ -104,7 +104,7 @@ most of them toggleable interceptors you could have written yourself.
   pagination, multi-select and edit-in-place, without hand-managing
   `callback_data`.
 - **Always current, generated.** The entire typed API tracks Telegram (Bot API
-  10.2), generated from a daily re-scrape of the official docs and CI-guarded
+  10.3), generated from a daily re-scrape of the official docs and CI-guarded
   against drift — so it never rots.
 - **Building blocks for real flows.** Sessions (memory/Redis), ambient
   `t()`/`locale()` i18n without threading a `ctx` through every service, and an

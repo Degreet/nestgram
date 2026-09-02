@@ -31,27 +31,27 @@ export class TelegramFile {
   file_unique_id!: string;
   file_size?: number;
 
-  constructor(protected readonly bot: BotService, raw: RawFileBase) {
+  constructor(protected readonly botService: BotService, raw: RawFileBase) {
     Object.assign(this, raw);
   }
 
   /** Resolve a fresh, temporary download URL for this file. */
   getLink(signal?: AbortSignal): Promise<string> {
-    return this.bot.fileLink(this.file_id, { signal });
+    return this.botService.fileLink(this.file_id, { signal });
   }
 
   /** Open the file as a readable stream (preferred for large files). */
   stream(options?: DownloadOptions): Promise<Readable> {
-    return this.bot.fileStream(this.file_id, options);
+    return this.botService.fileStream(this.file_id, options);
   }
 
   /** Read the whole file into a Buffer. */
   buffer(options?: DownloadOptions): Promise<Buffer> {
-    return this.bot.fileBuffer(this.file_id, options);
+    return this.botService.fileBuffer(this.file_id, options);
   }
 
   /** Stream the file to a local path. */
   save(destinationPath: string, options?: DownloadOptions): Promise<void> {
-    return this.bot.download(this.file_id, destinationPath, options);
+    return this.botService.download(this.file_id, destinationPath, options);
   }
 }

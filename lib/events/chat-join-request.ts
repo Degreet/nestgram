@@ -10,7 +10,7 @@ export interface ChatJoinRequest extends RawChatJoinRequest {}
 @UpdateType('chat_join_request')
 export class ChatJoinRequest extends RichEvent {
   approve(options: CallOptions = {}) {
-    return this.bot.call(
+    return this.botService.call(
       new ApproveChatJoinRequest({
         chat_id: this.chat.id,
         user_id: this.from.id,
@@ -20,7 +20,7 @@ export class ChatJoinRequest extends RichEvent {
   }
 
   decline(options: CallOptions = {}) {
-    return this.bot.call(
+    return this.botService.call(
       new DeclineChatJoinRequest({
         chat_id: this.chat.id,
         user_id: this.from.id,
