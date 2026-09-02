@@ -135,9 +135,124 @@ export function overrideFieldType(
  */
 const CHAT_TYPES = ['private', 'group', 'supergroup', 'channel'];
 const STICKER_FORMATS = ['static', 'animated', 'video'];
+const STICKER_TYPES = ['regular', 'mask', 'custom_emoji'];
 const THUMB_MIME_TYPES = ['image/jpeg', 'image/gif', 'video/mp4'];
 const RICH_BUTTON_STYLES = ['danger', 'success', 'primary', 'link'];
-const BUTTON_ALIGNMENTS = ['left', 'center', 'right'];
+const HORIZONTAL_ALIGNMENTS = ['left', 'center', 'right'];
+const VERTICAL_ALIGNMENTS = ['top', 'middle', 'bottom'];
+const ORDERED_LIST_LABELS = ['a', 'A', 'i', 'I', '1'];
+/** Telegram Stars and TON — every currency a suggested post or a gift is priced in. */
+const POST_CURRENCIES = ['XTR', 'TON'];
+
+/**
+ * Every emoji Telegram currently accepts as a reaction. Transcribed from prose
+ * like every other entry here, and checked against it by the gate — which
+ * compares sets, so the doc order kept below is for the reader, not a contract.
+ */
+const REACTION_EMOJI = [
+  '❤',
+  '👍',
+  '👎',
+  '🔥',
+  '🥰',
+  '👏',
+  '😁',
+  '🤔',
+  '🤯',
+  '😱',
+  '🤬',
+  '😢',
+  '🎉',
+  '🤩',
+  '🤮',
+  '💩',
+  '🙏',
+  '👌',
+  '🕊',
+  '🤡',
+  '🥱',
+  '🥴',
+  '😍',
+  '🐳',
+  '❤‍🔥',
+  '🌚',
+  '🌭',
+  '💯',
+  '🤣',
+  '⚡',
+  '🍌',
+  '🏆',
+  '💔',
+  '🤨',
+  '😐',
+  '🍓',
+  '🍾',
+  '💋',
+  '🖕',
+  '😈',
+  '😴',
+  '😭',
+  '🤓',
+  '👻',
+  '👨‍💻',
+  '👀',
+  '🎃',
+  '🙈',
+  '😇',
+  '😨',
+  '🤝',
+  '✍',
+  '🤗',
+  '🫡',
+  '🎅',
+  '🎄',
+  '☃',
+  '💅',
+  '🤪',
+  '🗿',
+  '🆒',
+  '💘',
+  '🙉',
+  '🦄',
+  '😘',
+  '💊',
+  '🙊',
+  '😎',
+  '👾',
+  '🤷‍♂',
+  '🤷',
+  '🤷‍♀',
+  '😡',
+];
+
+// Telegram Passport sections. Each error class accepts only the subset it can
+// describe, which is why these are several lists and not one: a `front_side`
+// error is meaningless for a utility bill, and the type should say so.
+const IDENTITY_DOCUMENTS = [
+  'passport',
+  'driver_license',
+  'identity_card',
+  'internal_passport',
+];
+const PERSONAL_DOCUMENTS = [
+  ...IDENTITY_DOCUMENTS,
+  'personal_details',
+  'address',
+];
+const ADDRESS_DOCUMENTS = [
+  'utility_bill',
+  'bank_statement',
+  'rental_agreement',
+  'passport_registration',
+  'temporary_registration',
+];
+const TRANSLATABLE_DOCUMENTS = [...IDENTITY_DOCUMENTS, ...ADDRESS_DOCUMENTS];
+const PASSPORT_ELEMENTS = [
+  ...PERSONAL_DOCUMENTS,
+  ...ADDRESS_DOCUMENTS,
+  'phone_number',
+  'email',
+];
 
 /**
  * CLOSED enums — the value is exactly one of these literals. Only list a field
@@ -160,6 +275,38 @@ const ENUM_LITERALS: Readonly<Record<string, readonly string[]>> = {
   // button does not, so promoting it to the shared named type would either drop
   // 'link' or wrongly widen every InlineKeyboardButton.
   'RichMessageButton.style': RICH_BUTTON_STYLES,
+  'createNewStickerSet.sticker_type': STICKER_TYPES,
+  'InlineQueryResultDocument.mime_type': ['application/pdf', 'application/zip'],
+  // Reachable inbound through Sticker.mask_position, so closing it needs the
+  // stability argument: these four face points have not moved since masks
+  // shipped, and a face has no fifth part to add.
+  'MaskPosition.point': ['forehead', 'eyes', 'mouth', 'chin'],
+  // Closed in both directions, including the inbound half: the prose carries no
+  // "currently", and `a | A | i | I | 1` is exactly HTML's `<ol type>` set, so
+  // Telegram adopted a vocabulary that was already fixed elsewhere rather than
+  // opening one of its own. (Its siblings RichBlockButtons.align and
+  // RichBlockTableCell.align/valign ARE hedged — those stay open below.)
+  'InputRichBlockListItem.type': ORDERED_LIST_LABELS,
+  'RichBlockListItem.type': ORDERED_LIST_LABELS,
+  // Inbound, and closed for the same reason Chat.type above is: the four chat
+  // kinds are the most settled vocabulary in the API. 'sender' is the one extra
+  // an inline query reports — the sender's own private chat, which Chat.type
+  // never names.
+  'InlineQuery.chat_type': ['sender', ...CHAT_TYPES],
+  // Telegram Passport, inbound: closed on stability alone. The set has not moved
+  // since Passport shipped, which is the only argument that licenses closing a
+  // field we READ — the risk here is a union falsely claiming exhaustiveness.
+  'EncryptedPassportElement.type': PASSPORT_ELEMENTS,
+  // The rest are outbound, passed to setPassportDataErrors, where the risk runs
+  // the other way: a wrong string costs a silently rejected error report.
+  'PassportElementErrorDataField.type': PERSONAL_DOCUMENTS,
+  'PassportElementErrorFrontSide.type': IDENTITY_DOCUMENTS,
+  'PassportElementErrorReverseSide.type': ['driver_license', 'identity_card'],
+  'PassportElementErrorSelfie.type': IDENTITY_DOCUMENTS,
+  'PassportElementErrorFile.type': ADDRESS_DOCUMENTS,
+  'PassportElementErrorFiles.type': ADDRESS_DOCUMENTS,
+  'PassportElementErrorTranslationFile.type': TRANSLATABLE_DOCUMENTS,
+  'PassportElementErrorTranslationFiles.type': TRANSLATABLE_DOCUMENTS,
 };
 
 /**
@@ -171,8 +318,64 @@ const ENUM_LITERALS: Readonly<Record<string, readonly string[]>> = {
  */
 const OPEN_ENUM_LITERALS: Readonly<Record<string, readonly string[]>> = {
   'BotSubscriptionUpdated.state': ['canceled', 'active', 'failed'],
-  'RichBlockButtons.align': BUTTON_ALIGNMENTS,
-  'InputRichBlockButtons.align': BUTTON_ALIGNMENTS,
+  'RichBlockButtons.align': HORIZONTAL_ALIGNMENTS,
+  'InputRichBlockButtons.align': HORIZONTAL_ALIGNMENTS,
+  'RichBlockTableCell.align': HORIZONTAL_ALIGNMENTS,
+  'RichBlockTableCell.valign': VERTICAL_ALIGNMENTS,
+  // Not the EntityType in lib/engine/matching: that names only the entities the
+  // listeners route on, deliberately omitting the formatting ones. Promoting to
+  // it would drop 'bold' and its neighbours from the wire type.
+  'MessageEntity.type': [
+    'mention',
+    'hashtag',
+    'cashtag',
+    'bot_command',
+    'url',
+    'email',
+    'phone_number',
+    'bold',
+    'italic',
+    'underline',
+    'strikethrough',
+    'spoiler',
+    'blockquote',
+    'expandable_blockquote',
+    'code',
+    'pre',
+    'text_link',
+    'text_mention',
+    'custom_emoji',
+    'date_time',
+  ],
+  // The outbound half (sendPoll.type) is closed above: Telegram hedges what it
+  // may SEND, not what it accepts.
+  'Poll.type': ['regular', 'quiz'],
+  'Sticker.type': STICKER_TYPES,
+  'StickerSet.sticker_type': STICKER_TYPES,
+  // Long, and worth it: message.react() takes its argument from this union, so
+  // an author gets the whole reaction set as autocomplete instead of guessing.
+  // Open, so an emoji Telegram adds before we regenerate still type-checks.
+  'ReactionTypeEmoji.emoji': REACTION_EMOJI,
+  'SuggestedPostInfo.state': ['pending', 'approved', 'declined'],
+  'SuggestedPostPaid.currency': POST_CURRENCIES,
+  'SuggestedPostPrice.currency': POST_CURRENCIES,
+  'SuggestedPostRefunded.reason': ['post_deleted', 'payment_refunded'],
+  'TransactionPartnerUser.transaction_type': [
+    'invoice_payment',
+    'paid_media_payment',
+    'gift_purchase',
+    'premium_purchase',
+    'business_account_transfer',
+  ],
+  'UniqueGiftInfo.last_resale_currency': POST_CURRENCIES,
+  'UniqueGiftInfo.origin': [
+    'upgrade',
+    'transfer',
+    'resale',
+    'gifted_upgrade',
+    'offer',
+  ],
+  'UniqueGiftModel.rarity': ['uncommon', 'rare', 'epic', 'legendary'],
 };
 
 // A field in both tables would silently resolve CLOSED (enumLiterals checks
