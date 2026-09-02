@@ -24,6 +24,7 @@ import {
   namedTypeEntries,
   namedTypeModule,
 } from './manifest';
+import { ProseEnums } from './prose-enums';
 import { loadSpec } from './spec-loader';
 import { GENERATED_SURFACE } from './surface.generated';
 import { irTypeToTs } from './type-resolver';
@@ -246,12 +247,43 @@ function selfTest(): void {
   }
 
   assertEnumTablesMatchProse(ir);
+  assertClaimedFieldsAreNeverProposed(ir);
   assertReadmeNamesTheVendoredVersion();
   assertNoFieldShadowsTheBotHandle(ir);
 
   process.stdout.write(
     `self-test OK — ${ir.objects.length} objects, ${ir.methods.length} methods\n`,
   );
+}
+
+/**
+ * Nothing the manifest already claims may come back as an unclaimed candidate.
+ *
+ * `ProseEnums.candidates` decides "unclaimed" by looking at the lowered IR, on
+ * the assumption that a field the manifest claims never lowers to a bare
+ * `string`. That assumption is the whole basis of the bump report's proposals.
+ * If a resolver change ever broke it, the report would quietly start asking a
+ * maintainer to declare fields that are already declared — advice that reads
+ * exactly like the real thing.
+ */
+function assertClaimedFieldsAreNeverProposed(ir: Ir): void {
+  const everyOwner = new Set([
+    ...ir.objects.map((object) => object.name),
+    ...ir.methods.map((method) => method.name),
+  ]);
+  const proposed = new Set(
+    ProseEnums.candidates(ir, everyOwner).map(
+      (candidate) => `${candidate.owner}.${candidate.field}`,
+    ),
+  );
+  for (const [key] of enumLiteralEntries()) {
+    assert(
+      !proposed.has(key),
+      `enum table entry '${key}' is also proposed as unclaimed — the lowered ` +
+        `IR no longer reflects what the manifest claims, so the bump report ` +
+        `will ask for fields that already exist`,
+    );
+  }
 }
 
 /**
@@ -307,11 +339,6 @@ function assertReadmeNamesTheVendoredVersion(): void {
     `README says it tracks Bot API ${claimed?.[1]}, but the vendored spec is ` +
       `${botApiVersion} — update the README`,
   );
-}
-
-/** The `"quoted"` values in a field's prose — how Telegram spells an enum. */
-function quotedLiterals(prose: string): Set<string> {
-  return new Set([...prose.matchAll(/"([^"]+)"/g)].map((match) => match[1]));
 }
 
 /** A spec field's description, addressed as `<owner>.<field>`; null if absent. */
@@ -392,7 +419,7 @@ function assertEnumTablesMatchProse(ir: Ir): void {
     const prose = specFieldProse(ir, key);
     assert(prose !== null, `enum table entry '${key}' matches no spec field`);
     if (prose !== null) {
-      assertSameLiterals(new Set(literals), quotedLiterals(prose), key);
+      assertSameLiterals(new Set(literals), ProseEnums.literalsIn(prose), key);
     }
   }
 
@@ -410,7 +437,7 @@ function assertEnumTablesMatchProse(ir: Ir): void {
       )}.ts`;
       assertSameLiterals(
         declaredEnumValues(file),
-        quotedLiterals(prose),
+        ProseEnums.literalsIn(prose),
         `${typeName} (${file}), promoted at ${key},`,
       );
     }
