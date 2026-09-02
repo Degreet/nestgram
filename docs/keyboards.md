@@ -55,14 +55,14 @@ the button.
 
 Beyond `.text()` and `.url()`, the everyday button kinds have fluent shortcuts:
 
-| Method                            | Button                                          |
-| --------------------------------- | ----------------------------------------------- |
-| `.text(label, route)`             | callback button — press sends `route` back       |
-| `.url(label, url)`                | opens the link                                  |
-| `.webApp(label, url)`             | opens the Mini App at `url`                      |
-| `.switchInline(label, query?)`    | switch to inline mode in another chat            |
-| `.switchInlineCurrent(label, q?)` | switch to inline mode in the current chat        |
-| `.copyText(label, text)`          | copies `text` to the clipboard                   |
+| Method                            | Button                                     |
+| --------------------------------- | ------------------------------------------ |
+| `.text(label, route)`             | callback button — press sends `route` back |
+| `.url(label, url)`                | opens the link                             |
+| `.webApp(label, url)`             | opens the Mini App at `url`                |
+| `.switchInline(label, query?)`    | switch to inline mode in another chat      |
+| `.switchInlineCurrent(label, q?)` | switch to inline mode in the current chat  |
+| `.copyText(label, text)`          | copies `text` to the clipboard             |
 
 The kinds without a shortcut (a pay button, a login button) are reachable through
 `.add(...)` and the `Button` value object — see [Dynamic keyboards](#dynamic-keyboards).
@@ -120,12 +120,12 @@ export function catalogKeyboard(products: Product[]): InlineKeyboard {
 
 Buttons accumulate, then a layout method arranges the batch:
 
-| Method            | Lays the accumulated buttons out as…                       |
-| ----------------- | ---------------------------------------------------------- |
-| `.split(n)`       | rows of `n` (`.map(...).split(2)` ≡ `.text().text().split(2)`) |
-| `.spread()`       | one button per row (`.split(1)`)                            |
-| `.row(...btns)`   | a single row (any buttons passed are added first)          |
-| `.group(build)`   | a block of rows from a sub-builder — for an irregular section |
+| Method          | Lays the accumulated buttons out as…                           |
+| --------------- | -------------------------------------------------------------- |
+| `.split(n)`     | rows of `n` (`.map(...).split(2)` ≡ `.text().text().split(2)`) |
+| `.spread()`     | one button per row (`.split(1)`)                               |
+| `.row(...btns)` | a single row (any buttons passed are added first)              |
+| `.group(build)` | a block of rows from a sub-builder — for an irregular section  |
 
 `.add(...buttons)` is the universal inlet: it takes `Button` values straight into
 the current row, so the kinds without a fluent shortcut are reachable —
@@ -219,6 +219,87 @@ A `Button` value styles the same way and returns a new value —
 `.add()` too. The same `.primary()`/`.success()`/`.danger()` modifiers work on a
 `ReplyKeyboard`.
 
+## Disabled buttons
+
+A `.disabled()` button is greyed out and unpressable — Telegram enforces it on
+the client, so no callback is ever sent. It takes a condition, which is what
+makes it useful inside `.map()`:
+
+:::code[catalog.keyboard.ts]{mark="7"}
+
+```ts
+import { Button, InlineKeyboard } from 'nestgram';
+
+interface Product {
+  id: number;
+  name: string;
+  inStock: boolean;
+}
+
+export function catalogKeyboard(products: Product[]): InlineKeyboard {
+  return new InlineKeyboard()
+    .map(products, (product) =>
+      // In stock: a live buy button. Out of stock: inert, no callback_data.
+      Button.text(product.name, 'buy/:id', { id: product.id }).disabled(
+        !product.inStock,
+      ),
+    )
+    .split(2);
+}
+```
+
+:::
+
+Do not confuse it with `Button.noop()`, which predates this: before Bot API 10.3
+there was no disabled button, so a dead-end callback was the only way to fake
+one. `noop` is **live** — it looks pressable, the tap reaches the bot, and a
+built-in quietly answers it. Now that Telegram has the real thing, pick by what
+you want the user to feel:
+
+| You want                                        | Use             |
+| ----------------------------------------------- | --------------- |
+| The action is unavailable right now             | `.disabled()`   |
+| The button is decorative but should look normal | `Button.noop()` |
+
+A page counter in a paginated keyboard is the classic `noop`; an out-of-stock
+product is the classic `.disabled()`.
+
+:::note
+`disabled` is a button **type**, not a flag — the Bot API allows exactly one of
+`url` / `callback_data` / `disabled` / … per button. So `.disabled()` replaces
+whatever the button did, keeping only `text` and `style`. That is not a
+limitation: a disabled button has no action by definition. (Send both and
+Telegram silently drops `disabled`, rendering the button live.)
+:::
+
+:::caution
+`.disabled()` is presentation, not authorization — **always check in the handler
+too**. Enforcement is client-side, so a client older than Bot API 10.3 renders
+the button live, as does a keyboard that was already on screen when the stock ran
+out. Treat it like a greyed-out button in a web form: a hint, never a gate.
+:::
+
+## Asking for a written reply
+
+`.forceReply()` opens Telegram's reply interface along with the keyboard, so the
+user's next message arrives as a reply to yours. It works on both keyboard kinds
+and is a terminal flag, like `.resize()`:
+
+:::code[question.keyboard.ts]
+
+```ts
+import { InlineKeyboard } from 'nestgram';
+
+export function questionKeyboard(): InlineKeyboard {
+  return new InlineKeyboard().text('Skip', 'skip').forceReply();
+}
+```
+
+:::
+
+Useful when a message asks something with both quick answers and a free-form
+one — the buttons handle the first, the reply box the second.
+
 ## Editing a keyboard in place
 
 Often you already have a keyboard — the one on the message a button press came
@@ -253,14 +334,14 @@ The matcher is the load-bearing part. A **concrete** route (`toggle/3`) addresse
 one button; a **template** (`toggle/:id`) addresses every button that fits, with
 the captured params handed to the patch. The full set of addressing methods:
 
-| Method                              | Addresses a button by…                            |
-| ----------------------------------- | ------------------------------------------------- |
-| `.setText(matcher, text)`           | route or predicate → relabel                      |
-| `.update(matcher, patch)`           | route or predicate → arbitrary patch              |
-| `.replaceText(oldText, newText)`    | current visible text → relabel                    |
-| `.remove(matcher)`                  | route or predicate → drop, collapsing empty rows  |
-| `.updateAt(row, col, patch)`        | grid position → patch                             |
-| `.removeAt(row, col)`               | grid position → drop                              |
+| Method                           | Addresses a button by…                           |
+| -------------------------------- | ------------------------------------------------ |
+| `.setText(matcher, text)`        | route or predicate → relabel                     |
+| `.update(matcher, patch)`        | route or predicate → arbitrary patch             |
+| `.replaceText(oldText, newText)` | current visible text → relabel                   |
+| `.remove(matcher)`               | route or predicate → drop, collapsing empty rows |
+| `.updateAt(row, col, patch)`     | grid position → patch                            |
+| `.removeAt(row, col)`            | grid position → drop                             |
 
 A predicate matcher is a `(button: Button) => boolean`, so
 `.update((b) => b.label === 'Old', …)` addresses by anything the `Button` exposes.
@@ -303,13 +384,13 @@ Beyond plain `.text()`, there is a method per Bot API reply-button kind —
 `.requestUsers()`, `.requestChat()`. The keyboard-level flags are named for
 discoverability but map exactly onto the Telegram markup options:
 
-| Method            | Telegram option            |
-| ----------------- | -------------------------- |
-| `.resize()`       | `resize_keyboard`          |
-| `.oneTime()`      | `one_time_keyboard`        |
-| `.persistent()`   | `is_persistent`            |
-| `.selective()`    | `selective`                |
-| `.placeholder(t)` | `input_field_placeholder`  |
+| Method            | Telegram option           |
+| ----------------- | ------------------------- |
+| `.resize()`       | `resize_keyboard`         |
+| `.oneTime()`      | `one_time_keyboard`       |
+| `.persistent()`   | `is_persistent`           |
+| `.selective()`    | `selective`               |
+| `.placeholder(t)` | `input_field_placeholder` |
 
 To take a reply keyboard away again, return `new RemoveKeyboard()` as the
 `reply_markup`:

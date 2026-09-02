@@ -75,17 +75,155 @@ concatenation — regardless of how the animation was throttled along the way.
 
 `StreamOptions` extends the `sendRichMessage` finalize options (reply target,
 keyboard, `token`/`signal`…), which apply to the **persisted** message rather
-than the draft frames, plus two streaming knobs:
+than the draft frames, plus the streaming knobs:
 
 | Option       | Type                   | Default      | Meaning                                   |
 | ------------ | ---------------------- | ------------ | ----------------------------------------- |
 | `format`     | `'markdown' \| 'html'` | `'markdown'` | Dialect the deltas are written in         |
 | `throttleMs` | `number`               | `~1000`      | Minimum gap between animated draft frames |
+| `canStop`    | `boolean`              | `false`      | Show the user a button to stop generation |
 
 Streaming coalesces to the latest text and pushes at most one frame per
 `throttleMs`, so a fast token stream never floods — or queues behind — the send
 throttler. The `format` values are the same [rich-message](/rich-messages)
 dialects, since a draft frame _is_ a rich message.
+
+## Letting the user stop it
+
+`canStop: true` draws Telegram's own stop button on the animated draft. Pressing
+it ends the stream: the framework stops consuming your source and persists
+whatever text had arrived, so the user keeps the partial answer instead of losing
+it (Telegram discards the draft itself).
+
+:::code[assistant.router.ts]
+
+```ts
+import { Router, OnMessage, Message } from 'nestgram';
+
+@Router()
+export class AssistantRouter {
+  @OnMessage()
+  chat(message: Message) {
+    return message.answerStream(llm(message.text ?? ''), { canStop: true });
+  }
+}
+```
+
+:::
+
+Nothing else to wire — a built-in stage receives the stop update and matches it
+back to the running stream by its chat and draft id. The derived
+`allowed_updates` requests that kind for you; if you set
+[an explicit list](/update-types#what-telegram-actually-sends) it must include
+`'stopped_message_generation'`, and Nestgram warns at boot if it doesn't.
+
+The one thing worth knowing is how your **source** is cancelled. The framework
+stops iterating, which runs the generator's `finally` — so put your cleanup
+there and the work behind the stream really does stop:
+
+:::code[source.ts]
+
+```ts
+// Whatever your LLM SDK returns: an async iterable you can also abort.
+declare function completion(prompt: string): AsyncIterable<string> & {
+  abort(): void;
+};
+
+async function* tokens(prompt: string): AsyncIterable<string> {
+  const call = completion(prompt);
+  try {
+    yield* call;
+  } finally {
+    // Runs whether the stream finished or the user stopped it.
+    call.abort();
+  }
+}
+```
+
+:::
+
+Without a `finally` your generator is simply abandoned: the message is still
+finalized correctly, but the upstream request keeps burning tokens.
+
+The stop is checked between deltas, so it lands when your source next yields — a
+source stalled on a slow request finishes that request first. In practice that
+is one token's latency.
+
+:::note
+What a user sees on the way there can look like the stop was ignored. Draft
+frames are **coalesced**: each one carries the whole text so far, not one token,
+and they go out at most once per `throttleMs`. So the first frame shows one
+token and later frames add several at a time — reading as "it sped up". Then the
+draft is replaced by the real message the instant the stream ends, which reads as
+one last burst. Nothing is generated after the press: the final message holds
+exactly the text the last frame did.
+:::
+
+### Running several instances
+
+The stream and the stop update meet **in memory**, keyed by chat and draft id, so
+the process that started a stream is the only one that can end it. One process,
+or polling: nothing to do.
+
+Behind a load balancer it matters. The stop can be delivered to an instance that
+is not streaming, which then has nothing to end — the user presses stop and the
+full answer arrives anyway. The framework tells you rather than hiding it: the
+first unmatched stop logs a warning naming this cause, once.
+
+Two ways out. Route a chat's updates to the same instance (sticky sessions on
+`chat.id`) and the built-in keeps working as-is. Or forward the stop yourself —
+`bot.stopStream(chat_id, draft_id)` is the same call the built-in makes, public
+for exactly this:
+
+:::code[stop-fanout.router.ts]
+
+```ts
+import {
+  Router,
+  OnMessageGenerationStopped,
+  InjectBot,
+  BotService,
+} from 'nestgram';
+import type { MessageGenerationStopped } from 'nestgram';
+
+declare const bus: {
+  publish(channel: string, payload: string): Promise<void>;
+  subscribe(channel: string, onMessage: (payload: string) => void): void;
+};
+
+@Router()
+export class StopFanoutRouter {
+  constructor(@InjectBot() private readonly bot: BotService) {
+    // Every instance listens; the one holding the stream ends it, the rest
+    // return false and do nothing.
+    bus.subscribe('stream:stop', (payload) => {
+      const { chat_id, draft_id } = JSON.parse(payload) as {
+        chat_id: number;
+        draft_id: number;
+      };
+      this.bot.stopStream(chat_id, draft_id);
+    });
+  }
+
+  @OnMessageGenerationStopped()
+  fanOut(update: MessageGenerationStopped) {
+    return bus.publish(
+      'stream:stop',
+      JSON.stringify({ chat_id: update.chat.id, draft_id: update.draft_id }),
+    );
+  }
+}
+```
+
+:::
+
+Your handler and the built-in both run — the built-in is a stage, not a route, so
+it never competes for the update.
+
+:::note
+Registration is opt-in: a stream started without `canStop` is never tracked, so a
+bot that doesn't use the feature holds nothing in memory for it.
+:::
 
 ## Private chats only
 

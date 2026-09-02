@@ -62,33 +62,35 @@ update type is visible the moment it arrives, not a phantom you debug later.
 Every kind in the `UpdateKind` whitelist has an `@On*` decorator. The first
 parameter is the event class in the **Event** column.
 
-| Decorator                     | Event                         | Update field                |
-| ----------------------------- | ----------------------------- | --------------------------- |
-| `@OnMessage()`                | `Message`                     | `message`                   |
-| `@OnEditedMessage()`          | `Message`                     | `edited_message`            |
-| `@OnChannelPost()`            | `Message`                     | `channel_post`              |
-| `@OnEditedChannelPost()`      | `Message`                     | `edited_channel_post`       |
-| `@OnBusinessConnection()`     | `BusinessConnection`          | `business_connection`       |
-| `@OnBusinessMessage()`        | `Message`                     | `business_message`          |
-| `@OnEditedBusinessMessage()`  | `Message`                     | `edited_business_message`   |
-| `@OnDeletedBusinessMessage()` | `BusinessMessagesDeleted`     | `deleted_business_messages` |
-| `@OnGuestMessage()`           | `Message`                     | `guest_message`             |
-| `@OnMessageReaction()`        | `MessageReactionUpdated`      | `message_reaction`          |
-| `@OnMessageReactionCount()`   | `MessageReactionCountUpdated` | `message_reaction_count`    |
-| `@OnInlineQuery()`            | `InlineQuery`                 | `inline_query`              |
-| `@OnChosenInlineResult()`     | `ChosenInlineResult`          | `chosen_inline_result`      |
-| `@OnCallbackQuery()`          | `CallbackQuery`               | `callback_query`            |
-| `@OnShippingQuery()`          | `ShippingQuery`               | `shipping_query`            |
-| `@OnPreCheckoutQuery()`       | `PreCheckoutQuery`            | `pre_checkout_query`        |
-| `@OnPurchasedPaidMedia()`     | `PaidMediaPurchased`          | `purchased_paid_media`      |
-| `@OnPoll()`                   | `Poll`                        | `poll`                      |
-| `@OnPollAnswer()`             | `PollAnswer`                  | `poll_answer`               |
-| `@OnMyChatMember()`           | `ChatMemberUpdated`           | `my_chat_member`            |
-| `@OnChatMember()`             | `ChatMemberUpdated`           | `chat_member`               |
-| `@OnChatJoinRequest()`        | `ChatJoinRequest`             | `chat_join_request`         |
-| `@OnChatBoost()`              | `ChatBoostUpdated`            | `chat_boost`                |
-| `@OnRemovedChatBoost()`       | `ChatBoostRemoved`            | `removed_chat_boost`        |
-| `@OnSubscription()`           | `BotSubscriptionUpdated`      | `subscription`              |
+| Decorator                       | Event                         | Update field                 |
+| ------------------------------- | ----------------------------- | ---------------------------- |
+| `@OnMessage()`                  | `Message`                     | `message`                    |
+| `@OnEditedMessage()`            | `Message`                     | `edited_message`             |
+| `@OnChannelPost()`              | `Message`                     | `channel_post`               |
+| `@OnEditedChannelPost()`        | `Message`                     | `edited_channel_post`        |
+| `@OnBusinessConnection()`       | `BusinessConnection`          | `business_connection`        |
+| `@OnBusinessMessage()`          | `Message`                     | `business_message`           |
+| `@OnEditedBusinessMessage()`    | `Message`                     | `edited_business_message`    |
+| `@OnDeletedBusinessMessage()`   | `BusinessMessagesDeleted`     | `deleted_business_messages`  |
+| `@OnGuestMessage()`             | `Message`                     | `guest_message`              |
+| `@OnMessageReaction()`          | `MessageReactionUpdated`      | `message_reaction`           |
+| `@OnMessageReactionCount()`     | `MessageReactionCountUpdated` | `message_reaction_count`     |
+| `@OnInlineQuery()`              | `InlineQuery`                 | `inline_query`               |
+| `@OnChosenInlineResult()`       | `ChosenInlineResult`          | `chosen_inline_result`       |
+| `@OnCallbackQuery()`            | `CallbackQuery`               | `callback_query`             |
+| `@OnShippingQuery()`            | `ShippingQuery`               | `shipping_query`             |
+| `@OnPreCheckoutQuery()`         | `PreCheckoutQuery`            | `pre_checkout_query`         |
+| `@OnPurchasedPaidMedia()`       | `PaidMediaPurchased`          | `purchased_paid_media`       |
+| `@OnPoll()`                     | `Poll`                        | `poll`                       |
+| `@OnPollAnswer()`               | `PollAnswer`                  | `poll_answer`                |
+| `@OnMyChatMember()`             | `ChatMemberUpdated`           | `my_chat_member`             |
+| `@OnChatMember()`               | `ChatMemberUpdated`           | `chat_member`                |
+| `@OnChatJoinRequest()`          | `ChatJoinRequest`             | `chat_join_request`          |
+| `@OnChatBoost()`                | `ChatBoostUpdated`            | `chat_boost`                 |
+| `@OnRemovedChatBoost()`         | `ChatBoostRemoved`            | `removed_chat_boost`         |
+| `@OnSubscription()`             | `BotSubscriptionUpdated`      | `subscription`               |
+| `@OnManagedBot()`               | `ManagedBotUpdated`           | `managed_bot`                |
+| `@OnMessageGenerationStopped()` | `MessageGenerationStopped`    | `stopped_message_generation` |
 
 :::note
 `@On*` is the raw kind binding. For the common cases there's sugar layered on
@@ -198,5 +200,18 @@ a production mystery.
 An empty list (`allowed_updates: []`) means Telegram's _default_ set —
 everything except `chat_member`, `message_reaction` and `message_reaction_count` —
 not "nothing".
+
+:::
+
+:::caution
+A few kinds are consumed by the framework itself through a stage rather than a
+route, so no `@On*` reveals them and the derived list adds them for you. Today
+that is `stopped_message_generation`, behind
+[stoppable streams](/streaming#letting-the-user-stop-it).
+
+An explicit list is passed through **untouched** — that is the point of it — so
+those additions do not happen. Nestgram warns at boot when an explicit list omits
+one, naming the kind and what goes quiet; add it to the list, or drop the
+explicit list to derive it automatically.
 
 :::

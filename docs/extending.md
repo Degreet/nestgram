@@ -22,12 +22,12 @@ your interceptor / source == the framework's interceptor / source
 
 ## The four seams
 
-| Seam                       | What you plug in                  | Wired via                                       |
-| -------------------------- | --------------------------------- | ----------------------------------------------- |
-| Outbound API calls         | an `ApiInterceptor`               | `apiInterceptors: [...]`                         |
-| Update ingestion           | an `UpdateSource`                 | `source: (ctx) => …`                            |
-| Inbound handler pipeline   | a Nest guard / interceptor / pipe | `@UseGuards(...)`, `@UseInterceptors(...)`       |
-| Route selection            | a `RoutePredicate`                | passed to a listener — see [custom predicates](/docs/custom-predicates) |
+| Seam                     | What you plug in                  | Wired via                                                               |
+| ------------------------ | --------------------------------- | ----------------------------------------------------------------------- |
+| Outbound API calls       | an `ApiInterceptor`               | `apiInterceptors: [...]`                                                |
+| Update ingestion         | an `UpdateSource`                 | `source: (ctx) => …`                                                    |
+| Inbound handler pipeline | a Nest guard / interceptor / pipe | `@UseGuards(...)`, `@UseInterceptors(...)`                              |
+| Route selection          | a `RoutePredicate`                | passed to a listener — see [custom predicates](/docs/custom-predicates) |
 
 The inbound pipeline is plain Nest — nothing Nestgram-specific to learn. This
 page is about the two seams that are ours: the outbound `ApiInterceptor` onion
@@ -53,11 +53,7 @@ to.
 ```ts
 import { Injectable } from '@nestjs/common';
 import type { Observable } from 'rxjs';
-import {
-  ApiInterceptor,
-  ApiExecutionContext,
-  ApiCallHandler,
-} from 'nestgram';
+import { ApiInterceptor, ApiExecutionContext, ApiCallHandler } from 'nestgram';
 
 /** Appends a footer to every outgoing text send. */
 @Injectable()
@@ -222,8 +218,7 @@ import { KafkaService } from './kafka.service';
     NestgramModule.forRoot({
       token: process.env.BOT_TOKEN!,
       // No polling/webhook → ctx.default is undefined; you own delivery.
-      source: ({ bot, get }) =>
-        new KafkaUpdateSource(get(KafkaService), bot),
+      source: ({ bot, get }) => new KafkaUpdateSource(get(KafkaService), bot),
     }),
   ],
 })
@@ -239,11 +234,11 @@ engine never started — so leaving it registered silently drops updates. Drop t
 controller and register your own receiver that forwards into your source.
 :::
 
-| You want to…                         | Return from `source`                          |
-| ------------------------------------ | --------------------------------------------- |
-| Add a layer (trace, batch, filter)   | a decorator holding `ctx.default`             |
-| Pull from a different transport      | your own `UpdateSource`, ignoring `ctx.default` |
-| Branch per bot in a multi-bot app    | inspect `ctx.bot.name`, then wrap or replace  |
+| You want to…                       | Return from `source`                            |
+| ---------------------------------- | ----------------------------------------------- |
+| Add a layer (trace, batch, filter) | a decorator holding `ctx.default`               |
+| Pull from a different transport    | your own `UpdateSource`, ignoring `ctx.default` |
+| Branch per bot in a multi-bot app  | inspect `ctx.bot.name`, then wrap or replace    |
 
 Whatever the factory returns is still wrapped in the default update queue
 (per-chat FIFO + bounded concurrency) unless you set `updateQueue: false`. The
@@ -302,17 +297,79 @@ This same channel is how the built-in auto-answer works, with no special access:
 `AutoAnswerCallbackInterceptor` reads `query.isAnswered` after the handler runs.
 You could write that interceptor with the same public API.
 
+## Add a pipeline stage
+
+A **stage** runs on every update, before matching — where the framework itself
+resolves the locale, loads the session, and recovers keyboard state. Yours is a
+provider marked `@UpdateStage`, discovered like any other:
+
+:::code[analytics.stage.ts]
+
+```ts
+import { Injectable } from '@nestjs/common';
+import { TelegramExecutionContext, UpdateStage } from 'nestgram';
+
+declare const metrics: { count(name: string): void };
+
+@Injectable()
+@UpdateStage({ order: 50 })
+export class AnalyticsStage implements UpdateStage {
+  apply(ctx: TelegramExecutionContext): void {
+    metrics.count(`update.${ctx.kind ?? 'unknown'}`);
+  }
+}
+```
+
+:::
+
+Stages differ from routes in the way that matters here: **every** stage runs,
+while routes are first-match-wins. So a stage never competes with a handler for
+an update — which is exactly why a built-in that reacts to a whole update kind is
+a stage and not a `@Router`.
+
+That creates one wrinkle the framework hands you a lever for. `allowed_updates`
+is derived from the **route table**, and a stage owns no route — so a stage
+acting on a kind nothing else routes would never see it, because Telegram is
+never asked for it. Declare the kind and it joins the derived list:
+
+:::code[receipts.stage.ts]
+
+```ts
+import { Injectable } from '@nestjs/common';
+import { TelegramExecutionContext, UpdateKind, UpdateStage } from 'nestgram';
+
+@Injectable()
+@UpdateStage({ order: 50, kinds: [UpdateKind.MessageReaction] })
+export class ReactionAuditStage implements UpdateStage {
+  apply(ctx: TelegramExecutionContext): void {
+    // Runs for reactions even though no @OnMessageReaction() handler exists.
+  }
+}
+```
+
+:::
+
+Only needed for a kind no `@On*` already binds — anything a handler covers is
+requested anyway. This is the same primitive the stop-generation built-in uses;
+there is no privileged path.
+
+:::note
+An explicit `allowed_updates` is passed through untouched, so declared kinds are
+**not** added to it. Nestgram warns at boot when an explicit list omits one,
+naming the kind.
+:::
+
 ## Swap a built-in
 
 Because the built-ins are public interceptors, replacing one is "turn it off,
 register yours."
 
-| Built-in           | Turn it off with                              | Then add your own              |
-| ------------------ | --------------------------------------------- | ------------------------------ |
-| Auto-answer        | `autoAnswerCallbackQueries: false` (or `@NoAutoAnswer()` per handler) | a `NestInterceptor`            |
-| Default parse mode | omit `parseMode`                              | an `ApiInterceptor`            |
-| Throttler          | `throttle: false`                             | `throttler: MyThrottler`       |
-| Update queue       | `updateQueue: false`                          | a wrapping `UpdateSource`      |
+| Built-in           | Turn it off with                                                      | Then add your own         |
+| ------------------ | --------------------------------------------------------------------- | ------------------------- |
+| Auto-answer        | `autoAnswerCallbackQueries: false` (or `@NoAutoAnswer()` per handler) | a `NestInterceptor`       |
+| Default parse mode | omit `parseMode`                                                      | an `ApiInterceptor`       |
+| Throttler          | `throttle: false`                                                     | `throttler: MyThrottler`  |
+| Update queue       | `updateQueue: false`                                                  | a wrapping `UpdateSource` |
 
 The `throttler` option is typed `Type<ApiInterceptor>` — your replacement is an
 ordinary outbound interceptor, registered innermost where the default one ran.
