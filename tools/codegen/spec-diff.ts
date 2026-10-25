@@ -21,6 +21,8 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import type { Ir } from './ir';
+import { ProseEnums } from './prose-enums';
 import { BotApiSpec, SpecField, SpecMethod, SpecType } from './spec.types';
 
 const SPEC_PATH = 'tools/codegen/spec/api.min.json';
@@ -94,8 +96,10 @@ class SpecDiff {
       );
     }
 
-    this.section(lines, 'Methods', this.namesDiff('methods'));
-    this.section(lines, 'Types', this.namesDiff('types'));
+    const methods = this.namesDiff('methods');
+    const types = this.namesDiff('types');
+    this.section(lines, 'Methods', methods);
+    this.section(lines, 'Types', types);
 
     const fields = [
       ...this.fieldChanges(this.before.types, this.after.types),
@@ -117,6 +121,15 @@ class SpecDiff {
         }
       }
     }
+    this.enumCandidates(
+      lines,
+      new Set([
+        ...methods.added,
+        ...types.added,
+        ...fields.map((change) => change.owner),
+        ...this.reworded(),
+      ]),
+    );
     lines.push('', SpecDiff.SEAMS);
     return `${lines.join('\n')}\n`;
   }
@@ -129,12 +142,81 @@ class SpecDiff {
   private static readonly SEAMS = [
     '### Seams to check by hand',
     '',
-    '- A new `"one of …"` prose enum → `ENUM_LITERALS` (closed) or `OPEN_ENUM_LITERALS` (hedged, inbound).',
+    '- Each line under "Possible enums" above → `ENUM_LITERALS` (closed) or `OPEN_ENUM_LITERALS` (hedged), or neither when the prose only reads like an enum. Which table is a judgment call: the hedge is a hint, not the answer.',
+    '- A prose enum that the list MISSED → the same two tables. It reads quoted values out of a sentence, so a field that names its values without quoting them (`sendChatAction.action`) can never appear there.',
     '- A new method returning `Message` → `METHOD_OVERRIDES` (return type + `wrap()`).',
     '- A method gaining an object alternative to a string field → `FORCED_POSITIONAL_CONTENT`.',
     '- A new `Update` field → `UpdateKind`, `KIND_ORDER`, a rich event, an `@On…` decorator.',
     '- A removed or renamed field on a hand-owned type → the gate reports it; edit the file by hand.',
   ].join('\n');
+
+  /**
+   * Fields in this bump that read like an enum and are still typed `string`.
+   *
+   * Scoped to the owners this diff already reports as new or changed. Unscoped,
+   * the same thirty-odd lines would print on every bump until nobody reads them;
+   * scoped, every line is about something that actually moved.
+   *
+   * A proposal, never a finding. Swept across Bot API 10.3 it named 31 fields,
+   * 30 real and one that only reads like an enum — so each line is a question
+   * for a maintainer, and picking the closed or the open table is the judgment
+   * the emitter is designed not to make on its own.
+   *
+   * Lowering the IR here reads a spec that has NOT been through `loadSpec`,
+   * because this report must survive the run where the spec is itself why the
+   * generator refused. A lowering failure therefore degrades to a note: on that
+   * run the rest of the diff is the part a maintainer needs.
+   */
+  private enumCandidates(lines: string[], owners: ReadonlySet<string>): void {
+    if (lines[lines.length - 1] !== '') {
+      lines.push('');
+    }
+    lines.push('### Possible enums among the changed fields', '');
+    let ir: Ir;
+    try {
+      // Required here, not imported: `ir.ts` reaches `manifest.ts`, which throws
+      // while being loaded if its enum tables disagree. At the top of the file
+      // that throw escapes this catch and the report dies with it — exactly on
+      // the mid-bump run where a maintainer is editing the manifest and wants
+      // the checklist back.
+      const { buildIr } = require('./ir') as typeof import('./ir');
+      ir = buildIr(this.after);
+    } catch (error) {
+      lines.push(
+        `_Could not lower the spec to look — ${SpecDiff.code(
+          error instanceof Error ? error.message : String(error),
+        )}_`,
+      );
+      return;
+    }
+    const candidates = ProseEnums.candidates(ir, owners);
+    if (candidates.length === 0) {
+      lines.push('_None._');
+      return;
+    }
+    for (const candidate of candidates) {
+      const hedge = candidate.hedged ? 'hedged "currently"' : 'no hedge';
+      lines.push(
+        `- ${SpecDiff.code(`${candidate.owner}.${candidate.field}`)} ` +
+          `(${hedge}): ${SpecDiff.values(candidate.literals)}`,
+      );
+    }
+  }
+
+  /**
+   * A candidate's values, capped: one field carries every reaction emoji
+   * Telegram allows, and a checklist line is for recognising a set, not holding
+   * it.
+   */
+  private static values(literals: readonly string[]): string {
+    const shown = literals.slice(0, SpecDiff.MAX_LITERALS).map(SpecDiff.code);
+    const hidden = literals.length - shown.length;
+    return hidden > 0
+      ? `${shown.join(', ')} (+${hidden} more)`
+      : shown.join(', ');
+  }
+
+  private static readonly MAX_LITERALS = 12;
 
   private section(lines: string[], title: string, diff: NamesDiff): void {
     lines.push(`### ${title}`, '');
@@ -157,6 +239,34 @@ class SpecDiff {
       );
     }
     lines.push('');
+  }
+
+  /**
+   * Owners where a field kept its name and type but had its prose rewritten.
+   *
+   * The one blind spot between this report and the generator's gate. A field
+   * that gains a value set in prose alone is structurally unchanged, so nothing
+   * above reports it; and being unclaimed by the manifest, the gate has no entry
+   * to check it against either. It feeds the enum proposals only — a reworded
+   * sentence is not a spec change worth listing as one.
+   */
+  private reworded(): string[] {
+    const owners: string[] = [];
+    for (const key of ['types', 'methods'] as const) {
+      const after: Record<string, SpecType | SpecMethod> = this.after[key];
+      for (const [owner, entry] of Object.entries(after)) {
+        const was = SpecDiff.byName(this.before[key][owner]?.fields);
+        const reworded = (entry.fields ?? []).some(
+          (field) =>
+            was.has(field.name) &&
+            was.get(field.name)?.description !== field.description,
+        );
+        if (reworded) {
+          owners.push(owner);
+        }
+      }
+    }
+    return owners;
   }
 
   private namesDiff(key: 'methods' | 'types'): NamesDiff {

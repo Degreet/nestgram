@@ -13,7 +13,9 @@ export type MessageEntity = RawMessageEntity & { text: string };
  * kind matches), or a `type` paired with the exact `text` the entity must span
  * (e.g. `{ type: 'mention', text: '@my_bot' }`).
  */
-export type EntityQuery = string | { type: string; text: string };
+export type EntityQuery =
+  | RawMessageEntity['type']
+  | { type: RawMessageEntity['type']; text: string };
 
 /** The text (or caption) fields an entity can be sliced out of. */
 type EntityCarrier = Pick<
@@ -30,7 +32,7 @@ type EntityCarrier = Pick<
  */
 export function messageEntities(
   message: EntityCarrier,
-  type?: string,
+  type?: RawMessageEntity['type'],
 ): MessageEntity[] {
   const sources: [string | undefined, RawMessageEntity[] | undefined][] = [
     [message.text, message.entities],

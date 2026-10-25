@@ -652,7 +652,20 @@ export interface RawEncryptedCredentials {
 }
 
 export interface RawEncryptedPassportElement {
-  type: string;
+  type:
+    | 'passport'
+    | 'driver_license'
+    | 'identity_card'
+    | 'internal_passport'
+    | 'personal_details'
+    | 'address'
+    | 'utility_bill'
+    | 'bank_statement'
+    | 'rental_agreement'
+    | 'passport_registration'
+    | 'temporary_registration'
+    | 'phone_number'
+    | 'email';
   data?: string;
   phone_number?: string;
   email?: string;
@@ -865,7 +878,7 @@ export interface RawInlineQuery {
   from: User;
   query: string;
   offset: string;
-  chat_type?: string;
+  chat_type?: 'sender' | 'private' | 'group' | 'supergroup' | 'channel';
   location?: RawLocation;
 }
 
@@ -1038,7 +1051,7 @@ export interface RawInlineQueryResultDocument {
   parse_mode?: ParseModeValue;
   caption_entities?: RawMessageEntity[];
   document_url: string;
-  mime_type: string;
+  mime_type: 'application/pdf' | 'application/zip';
   description?: string;
   reply_markup?: RawInlineKeyboardMarkup;
   input_message_content?: RawInputMessageContent;
@@ -1459,7 +1472,7 @@ export interface RawInputRichBlockListItem {
   has_checkbox?: boolean;
   is_checked?: boolean;
   value?: number;
-  type?: string;
+  type?: 'a' | 'A' | 'i' | 'I' | '1';
 }
 
 export interface RawInputRichBlockMap {
@@ -1720,7 +1733,7 @@ export interface RawManagedBotUpdated {
 }
 
 export interface RawMaskPosition {
-  point: string;
+  point: 'forehead' | 'eyes' | 'mouth' | 'chin';
   x_shift: number;
   y_shift: number;
   scale: number;
@@ -1875,7 +1888,28 @@ export interface RawMessageAutoDeleteTimerChanged {
 }
 
 export interface RawMessageEntity {
-  type: string;
+  type:
+    | 'mention'
+    | 'hashtag'
+    | 'cashtag'
+    | 'bot_command'
+    | 'url'
+    | 'email'
+    | 'phone_number'
+    | 'bold'
+    | 'italic'
+    | 'underline'
+    | 'strikethrough'
+    | 'spoiler'
+    | 'blockquote'
+    | 'expandable_blockquote'
+    | 'code'
+    | 'pre'
+    | 'text_link'
+    | 'text_mention'
+    | 'custom_emoji'
+    | 'date_time'
+    | (string & Record<never, never>);
   offset: number;
   length: number;
   url?: string;
@@ -2051,7 +2085,13 @@ export type RawPassportElementError =
 
 export interface RawPassportElementErrorDataField {
   source: 'data';
-  type: string;
+  type:
+    | 'passport'
+    | 'driver_license'
+    | 'identity_card'
+    | 'internal_passport'
+    | 'personal_details'
+    | 'address';
   field_name: string;
   data_hash: string;
   message: string;
@@ -2059,49 +2099,77 @@ export interface RawPassportElementErrorDataField {
 
 export interface RawPassportElementErrorFile {
   source: 'file';
-  type: string;
+  type:
+    | 'utility_bill'
+    | 'bank_statement'
+    | 'rental_agreement'
+    | 'passport_registration'
+    | 'temporary_registration';
   file_hash: string;
   message: string;
 }
 
 export interface RawPassportElementErrorFiles {
   source: 'files';
-  type: string;
+  type:
+    | 'utility_bill'
+    | 'bank_statement'
+    | 'rental_agreement'
+    | 'passport_registration'
+    | 'temporary_registration';
   file_hashes: string[];
   message: string;
 }
 
 export interface RawPassportElementErrorFrontSide {
   source: 'front_side';
-  type: string;
+  type: 'passport' | 'driver_license' | 'identity_card' | 'internal_passport';
   file_hash: string;
   message: string;
 }
 
 export interface RawPassportElementErrorReverseSide {
   source: 'reverse_side';
-  type: string;
+  type: 'driver_license' | 'identity_card';
   file_hash: string;
   message: string;
 }
 
 export interface RawPassportElementErrorSelfie {
   source: 'selfie';
-  type: string;
+  type: 'passport' | 'driver_license' | 'identity_card' | 'internal_passport';
   file_hash: string;
   message: string;
 }
 
 export interface RawPassportElementErrorTranslationFile {
   source: 'translation_file';
-  type: string;
+  type:
+    | 'passport'
+    | 'driver_license'
+    | 'identity_card'
+    | 'internal_passport'
+    | 'utility_bill'
+    | 'bank_statement'
+    | 'rental_agreement'
+    | 'passport_registration'
+    | 'temporary_registration';
   file_hash: string;
   message: string;
 }
 
 export interface RawPassportElementErrorTranslationFiles {
   source: 'translation_files';
-  type: string;
+  type:
+    | 'passport'
+    | 'driver_license'
+    | 'identity_card'
+    | 'internal_passport'
+    | 'utility_bill'
+    | 'bank_statement'
+    | 'rental_agreement'
+    | 'passport_registration'
+    | 'temporary_registration';
   file_hashes: string[];
   message: string;
 }
@@ -2136,7 +2204,7 @@ export interface RawPoll {
   total_voter_count: number;
   is_closed: boolean;
   is_anonymous: boolean;
-  type: string;
+  type: 'regular' | 'quiz' | (string & Record<never, never>);
   allows_multiple_answers: boolean;
   allows_revoting: boolean;
   members_only: boolean;
@@ -2240,7 +2308,81 @@ export interface RawReactionTypeCustomEmoji {
 
 export interface RawReactionTypeEmoji {
   type: 'emoji';
-  emoji: string;
+  emoji:
+    | '❤'
+    | '👍'
+    | '👎'
+    | '🔥'
+    | '🥰'
+    | '👏'
+    | '😁'
+    | '🤔'
+    | '🤯'
+    | '😱'
+    | '🤬'
+    | '😢'
+    | '🎉'
+    | '🤩'
+    | '🤮'
+    | '💩'
+    | '🙏'
+    | '👌'
+    | '🕊'
+    | '🤡'
+    | '🥱'
+    | '🥴'
+    | '😍'
+    | '🐳'
+    | '❤‍🔥'
+    | '🌚'
+    | '🌭'
+    | '💯'
+    | '🤣'
+    | '⚡'
+    | '🍌'
+    | '🏆'
+    | '💔'
+    | '🤨'
+    | '😐'
+    | '🍓'
+    | '🍾'
+    | '💋'
+    | '🖕'
+    | '😈'
+    | '😴'
+    | '😭'
+    | '🤓'
+    | '👻'
+    | '👨‍💻'
+    | '👀'
+    | '🎃'
+    | '🙈'
+    | '😇'
+    | '😨'
+    | '🤝'
+    | '✍'
+    | '🤗'
+    | '🫡'
+    | '🎅'
+    | '🎄'
+    | '☃'
+    | '💅'
+    | '🤪'
+    | '🗿'
+    | '🆒'
+    | '💘'
+    | '🙉'
+    | '🦄'
+    | '😘'
+    | '💊'
+    | '🙊'
+    | '😎'
+    | '👾'
+    | '🤷‍♂'
+    | '🤷'
+    | '🤷‍♀'
+    | '😡'
+    | (string & Record<never, never>);
 }
 
 export interface RawReactionTypePaid {
@@ -2413,7 +2555,7 @@ export interface RawRichBlockListItem {
   has_checkbox?: boolean;
   is_checked?: boolean;
   value?: number;
-  type?: string;
+  type?: 'a' | 'A' | 'i' | 'I' | '1';
 }
 
 export interface RawRichBlockMap {
@@ -2480,8 +2622,8 @@ export interface RawRichBlockTableCell {
   is_header?: boolean;
   colspan?: number;
   rowspan?: number;
-  align: string;
-  valign: string;
+  align: 'left' | 'center' | 'right' | (string & Record<never, never>);
+  valign: 'top' | 'middle' | 'bottom' | (string & Record<never, never>);
 }
 
 export interface RawRichBlockThinking {
@@ -2755,7 +2897,7 @@ export interface RawStarTransactions {
 export interface RawSticker {
   file_id: string;
   file_unique_id: string;
-  type: string;
+  type: 'regular' | 'mask' | 'custom_emoji' | (string & Record<never, never>);
   width: number;
   height: number;
   is_animated: boolean;
@@ -2773,7 +2915,11 @@ export interface RawSticker {
 export interface RawStickerSet {
   name: string;
   title: string;
-  sticker_type: string;
+  sticker_type:
+    | 'regular'
+    | 'mask'
+    | 'custom_emoji'
+    | (string & Record<never, never>);
   stickers: RawSticker[];
   thumbnail?: RawPhotoSize;
 }
@@ -2865,14 +3011,14 @@ export interface RawSuggestedPostDeclined {
 }
 
 export interface RawSuggestedPostInfo {
-  state: string;
+  state: 'pending' | 'approved' | 'declined' | (string & Record<never, never>);
   price?: RawSuggestedPostPrice;
   send_date?: number;
 }
 
 export interface RawSuggestedPostPaid {
   suggested_post_message?: RawMessage;
-  currency: string;
+  currency: 'XTR' | 'TON' | (string & Record<never, never>);
   amount?: number;
   star_amount?: RawStarAmount;
 }
@@ -2883,13 +3029,13 @@ export interface RawSuggestedPostParameters {
 }
 
 export interface RawSuggestedPostPrice {
-  currency: string;
+  currency: 'XTR' | 'TON' | (string & Record<never, never>);
   amount: number;
 }
 
 export interface RawSuggestedPostRefunded {
   suggested_post_message?: RawMessage;
-  reason: string;
+  reason: 'post_deleted' | 'payment_refunded' | (string & Record<never, never>);
 }
 
 export interface RawSwitchInlineQueryChosenChat {
@@ -2948,7 +3094,13 @@ export interface RawTransactionPartnerTelegramApi {
 
 export interface RawTransactionPartnerUser {
   type: 'user';
-  transaction_type: string;
+  transaction_type:
+    | 'invoice_payment'
+    | 'paid_media_payment'
+    | 'gift_purchase'
+    | 'premium_purchase'
+    | 'business_account_transfer'
+    | (string & Record<never, never>);
   user: User;
   affiliate?: RawAffiliateInfo;
   invoice_payload?: string;
@@ -2998,11 +3150,17 @@ export interface RawUniqueGiftColors {
 
 export interface RawUniqueGiftInfo {
   gift: RawUniqueGift;
-  origin: string;
+  origin:
+    | 'upgrade'
+    | 'transfer'
+    | 'resale'
+    | 'gifted_upgrade'
+    | 'offer'
+    | (string & Record<never, never>);
   text?: string;
   entities?: RawMessageEntity[];
   is_private?: boolean;
-  last_resale_currency?: string;
+  last_resale_currency?: 'XTR' | 'TON' | (string & Record<never, never>);
   last_resale_amount?: number;
   owned_gift_id?: string;
   transfer_star_count?: number;
@@ -3013,7 +3171,12 @@ export interface RawUniqueGiftModel {
   name: string;
   sticker: RawSticker;
   rarity_per_mille: number;
-  rarity?: string;
+  rarity?:
+    | 'uncommon'
+    | 'rare'
+    | 'epic'
+    | 'legendary'
+    | (string & Record<never, never>);
 }
 
 export interface RawUniqueGiftSymbol {

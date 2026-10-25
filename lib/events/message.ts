@@ -38,6 +38,7 @@ import type {
   RawInputRichMessage,
   RawMessage,
   RawMessageEntity,
+  RawReactionTypeEmoji,
 } from './raw-update.types';
 import {
   Animation,
@@ -123,7 +124,7 @@ export class Message extends TelegramObject {
    * each with the `text` it spans resolved. Pass a `type` to keep only that
    * kind (`message.entitiesOf('url')`). The object form of `@Entities()`.
    */
-  entitiesOf(type?: string): MessageEntity[] {
+  entitiesOf(type?: RawMessageEntity['type']): MessageEntity[] {
     return messageEntities(this, type);
   }
 
@@ -588,7 +589,10 @@ export class Message extends TelegramObject {
   }
 
   /** React to this message with a single emoji (replaces any existing reaction). */
-  react(emoji: string, options?: MethodOptions<SetMessageReactionOptions>) {
+  react(
+    emoji: RawReactionTypeEmoji['emoji'],
+    options?: MethodOptions<SetMessageReactionOptions>,
+  ) {
     this.assertNotEphemeral('react');
     return this.botService.setMessageReaction(this.chat.id, this.message_id, {
       reaction: [{ type: Message.EMOJI_REACTION_TYPE, emoji }],
