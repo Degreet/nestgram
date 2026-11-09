@@ -16,7 +16,7 @@ import type { ParseModeValue } from '../parse-mode';
 
 export interface SendAnimationOptions {
   business_connection_id?: string;
-  chat_id: number | string;
+  chat_id?: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   ephemeral_message_parameters?: RawEphemeralMessageParameters;

@@ -1,8 +1,11 @@
 import { ApiMethod } from './api-method';
+import type { RawMessageEntity } from '../../events/raw-update.types';
 
 export interface VerifyChatOptions {
   chat_id: number | string;
   custom_description?: string;
+  custom_description_parse_mode?: string;
+  custom_description_entities?: RawMessageEntity[];
 }
 
 /**

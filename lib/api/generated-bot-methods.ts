@@ -19,6 +19,8 @@ import {
   AnswerShippingQueryOptions,
   AnswerWebAppQuery,
   AnswerWebAppQueryOptions,
+  AnswerWidgetQuery,
+  AnswerWidgetQueryOptions,
   ApproveChatJoinRequest,
   ApproveChatJoinRequestOptions,
   ApproveSuggestedPost,
@@ -54,6 +56,8 @@ import {
   DeclineSuggestedPostOptions,
   DeleteAllMessageReactions,
   DeleteAllMessageReactionsOptions,
+  DeleteBusinessAccountGift,
+  DeleteBusinessAccountGiftOptions,
   DeleteBusinessMessages,
   DeleteBusinessMessagesOptions,
   DeleteChatPhoto,
@@ -108,6 +112,10 @@ import {
   EditMessageReplyMarkupOptions,
   EditMessageText,
   EditMessageTextOptions,
+  EditMessageWidgetData,
+  EditMessageWidgetDataOptions,
+  EditSharedWidgetData,
+  EditSharedWidgetDataOptions,
   EditStory,
   EditStoryOptions,
   EditUserStarSubscription,
@@ -137,6 +145,7 @@ import {
   GetChatMenuButton,
   GetChatMenuButtonOptions,
   GetChatOptions,
+  GetChatShareThemeBackdrops,
   GetCustomEmojiStickers,
   GetCustomEmojiStickersOptions,
   GetForumTopicIconStickers,
@@ -161,6 +170,8 @@ import {
   GetStarTransactionsOptions,
   GetStickerSet,
   GetStickerSetOptions,
+  GetUniqueGift,
+  GetUniqueGiftOptions,
   GetUpdates,
   GetUpdatesOptions,
   GetUserChatBoosts,
@@ -258,6 +269,8 @@ import {
   SendRichMessageDraft,
   SendRichMessageDraftOptions,
   SendRichMessageOptions,
+  SendSharedWidget,
+  SendSharedWidgetOptions,
   SendSticker,
   SendStickerOptions,
   SendVenue,
@@ -268,6 +281,8 @@ import {
   SendVideoOptions,
   SendVoice,
   SendVoiceOptions,
+  SendWidget,
+  SendWidgetOptions,
   SetBusinessAccountBio,
   SetBusinessAccountBioOptions,
   SetBusinessAccountGiftSettings,
@@ -534,6 +549,24 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
+   * Use this method to send an answer to a query from a widget. The query must be answered within 15 seconds. The answer is received only by the widget that sent the query and doesn't change data of the widget; use editMessageWidgetData or editSharedWidgetData to change it. On success, True is returned.
+   * @param widget_query_id Unique identifier for the query to be answered
+   * @see https://core.telegram.org/bots/api#answerwidgetquery
+   */
+  answerWidgetQuery(
+    widget_query_id: AnswerWidgetQueryOptions['widget_query_id'],
+    callOptions?: MethodOptions<
+      Omit<AnswerWidgetQueryOptions, 'widget_query_id'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new AnswerWidgetQuery({ widget_query_id, ...rest }), {
+      token,
+      signal,
+    });
+  }
+
+  /**
    * Use this method to approve a chat join request. The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right. Returns True on success.
    * @param chat_id Unique identifier for the target chat or username of the target channel in the format @username
    * @param user_id Unique identifier of the target user
@@ -674,9 +707,9 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_ids is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
-   * @param from_chat_id Unique identifier for the chat where the original message was sent (or username of the target bot, supergroup or channel in the format @username)
+   * Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, invoice messages, and widget messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_ids is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username
+   * @param from_chat_id Unique identifier for the chat where the original message was sent (or username of the target bot, supergroup, or channel in the format @username)
    * @param message_id Message identifier in the chat specified in from_chat_id
    * @see https://core.telegram.org/bots/api#copymessage
    */
@@ -696,9 +729,9 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_ids is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an Array of MessageId of the sent messages is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
-   * @param from_chat_id Unique identifier for the chat where the original messages were sent (or username of the target bot, supergroup or channel in the format @username)
+   * Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, invoice messages, and widget messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_ids is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an Array of MessageId of the sent messages is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username
+   * @param from_chat_id Unique identifier for the chat where the original messages were sent (or username of the target bot, supergroup, or channel in the format @username)
    * @param message_ids A JSON-serialized list of 1-100 identifiers of messages in the chat from_chat_id to copy. The identifiers must be specified in a strictly increasing order.
    * @see https://core.telegram.org/bots/api#copymessages
    */
@@ -764,7 +797,7 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to create a topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator right. Returns information about the created topic as a ForumTopic object.
+   * Use this method to create a topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator right. In the case of a private chat, a link to the topic can be created in the format https://t.me/<bot_username>/<message_thread_id>; the link opens the topic only for the user. Returns information about the created topic as a ForumTopic object.
    * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
    * @param name Topic name, 1-128 characters
    * @see https://core.telegram.org/bots/api#createforumtopic
@@ -903,6 +936,28 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
+   * Deletes a regular gift owned by a managed business account without receiving Telegram Stars for it. Requires the can_convert_gifts_to_stars business bot right. The gift can be deleted only if it isn't limited (the field total_count of the Gift is omitted) and wasn't refunded. Returns True on success.
+   * @param business_connection_id Unique identifier of the business connection
+   * @param owned_gift_id Unique identifier of the regular gift that should be deleted
+   * @see https://core.telegram.org/bots/api#deletebusinessaccountgift
+   */
+  deleteBusinessAccountGift(
+    business_connection_id: DeleteBusinessAccountGiftOptions['business_connection_id'],
+    owned_gift_id: DeleteBusinessAccountGiftOptions['owned_gift_id'],
+    callOptions?: CallOptions,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new DeleteBusinessAccountGift({
+        business_connection_id,
+        owned_gift_id,
+        ...rest,
+      }),
+      { token, signal },
+    );
+  }
+
+  /**
    * Delete messages on behalf of a business account. Requires the can_delete_sent_messages business bot right to delete messages sent by the bot itself, or the can_delete_all_messages business bot right to delete any message. Returns True on success.
    * @param business_connection_id Unique identifier of the business connection on behalf of which to delete the messages
    * @param message_ids A JSON-serialized list of 1-100 identifiers of messages to delete. All messages must be from the same chat. See deleteMessage for limitations on which messages can be deleted.
@@ -1011,7 +1066,7 @@ export abstract class GeneratedBotMethods {
    * - If the bot has can_delete_messages administrator right in a supergroup or a channel, it can delete any message there.
    * - If the bot has can_manage_direct_messages administrator right in a channel, it can delete any message in the corresponding direct messages chat.
    * Returns True on success.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username
    * @param message_id Identifier of the message to delete
    * @see https://core.telegram.org/bots/api#deletemessage
    */
@@ -1049,7 +1104,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to delete multiple messages simultaneously. If some of the specified messages can't be found, they are skipped. Returns True on success.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username
    * @param message_ids A JSON-serialized list of 1-100 identifiers of messages to delete. See deleteMessage for limitations on which messages can be deleted.
    * @see https://core.telegram.org/bots/api#deletemessages
    */
@@ -1722,6 +1777,100 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
+   * Use this method to edit data of a widget in a message sent by the bot or via the bot (for inline bots). Public data of a shared widget can be changed at most once per second. On success, True is returned.
+   * @see https://core.telegram.org/bots/api#editmessagewidgetdata
+   */
+  editMessageWidgetData(
+    chat_id: NonNullable<EditMessageWidgetDataOptions['chat_id']>,
+    message_id: NonNullable<EditMessageWidgetDataOptions['message_id']>,
+    options?: MethodOptions<
+      Omit<
+        EditMessageWidgetDataOptions,
+        'chat_id' | 'message_id' | 'inline_message_id'
+      >
+    >,
+  ): Promise<ResultOf<EditMessageWidgetData>>;
+  editMessageWidgetData(
+    inline_message_id: NonNullable<
+      EditMessageWidgetDataOptions['inline_message_id']
+    >,
+    options?: MethodOptions<
+      Omit<
+        EditMessageWidgetDataOptions,
+        'chat_id' | 'message_id' | 'inline_message_id'
+      >
+    >,
+  ): Promise<ResultOf<EditMessageWidgetData>>;
+  editMessageWidgetData(
+    target:
+      | NonNullable<EditMessageWidgetDataOptions['chat_id']>
+      | NonNullable<EditMessageWidgetDataOptions['inline_message_id']>,
+    second?:
+      | NonNullable<EditMessageWidgetDataOptions['message_id']>
+      | MethodOptions<
+          Omit<
+            EditMessageWidgetDataOptions,
+            'chat_id' | 'message_id' | 'inline_message_id'
+          >
+        >,
+    chatOptions?: MethodOptions<
+      Omit<
+        EditMessageWidgetDataOptions,
+        'chat_id' | 'message_id' | 'inline_message_id'
+      >
+    >,
+  ): Promise<ResultOf<EditMessageWidgetData>> {
+    // A numeric 2nd arg is message_id → the chat-based overload; otherwise inline.
+    if (typeof second === 'number') {
+      const { token, signal, ...rest } = chatOptions ?? {};
+      return this.call(
+        new EditMessageWidgetData({
+          chat_id: target,
+          message_id: second,
+          ...rest,
+        }),
+        { token, signal },
+      );
+    }
+    const { token, signal, ...rest } =
+      (second as MethodOptions<
+        Omit<
+          EditMessageWidgetDataOptions,
+          'chat_id' | 'message_id' | 'inline_message_id'
+        >
+      >) ?? {};
+    return this.call(
+      new EditMessageWidgetData({
+        inline_message_id: target as NonNullable<
+          EditMessageWidgetDataOptions['inline_message_id']
+        >,
+        ...rest,
+      }),
+      { token, signal },
+    );
+  }
+
+  /**
+   * Use this method to edit public data of a shared widget created by the bot. A shared widget can be edited at most once per second. On success, True is returned.
+   * @param widget_id Unique identifier of the shared widget
+   * @param public_data New public data of the widget, 0-1024 bytes; pass an empty string to remove the public data
+   * @see https://core.telegram.org/bots/api#editsharedwidgetdata
+   */
+  editSharedWidgetData(
+    widget_id: EditSharedWidgetDataOptions['widget_id'],
+    public_data: EditSharedWidgetDataOptions['public_data'],
+    callOptions?: MethodOptions<
+      Omit<EditSharedWidgetDataOptions, 'widget_id' | 'public_data'>
+    >,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(
+      new EditSharedWidgetData({ widget_id, public_data, ...rest }),
+      { token, signal },
+    );
+  }
+
+  /**
    * Edits a story previously posted by the bot on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns Story on success.
    * @param business_connection_id Unique identifier of the business connection
    * @param story_id Unique identifier of the story to edit
@@ -1786,8 +1935,8 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to forward messages of any kind. Service messages and messages with protected content can't be forwarded. On success, the sent Message is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
-   * @param from_chat_id Unique identifier for the chat where the original message was sent (or username of the target bot, supergroup or channel in the format @username)
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username
+   * @param from_chat_id Unique identifier for the chat where the original message was sent (or username of the target bot, supergroup, or channel in the format @username)
    * @param message_id Message identifier in the chat specified in from_chat_id
    * @see https://core.telegram.org/bots/api#forwardmessage
    */
@@ -1808,8 +1957,8 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to forward multiple messages of any kind. If some of the specified messages can't be found or forwarded, they are skipped. Service messages and messages with protected content can't be forwarded. Album grouping is kept for forwarded messages. On success, an Array of MessageId of the sent messages is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
-   * @param from_chat_id Unique identifier for the chat where the original messages were sent (or username of the target bot, supergroup or channel in the format @username)
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username
+   * @param from_chat_id Unique identifier for the chat where the original messages were sent (or username of the target bot, supergroup, or channel in the format @username)
    * @param message_ids A JSON-serialized list of 1-100 identifiers of messages in the chat from_chat_id to forward. The identifiers must be specified in a strictly increasing order.
    * @see https://core.telegram.org/bots/api#forwardmessages
    */
@@ -1969,6 +2118,14 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
+   * Use this method to get the list of backdrops, which can be used as the background of a theme of the screen for sharing a link to a user or a chat. Requires no parameters. Returns a ChatShareThemeBackdrops object.
+   * @see https://core.telegram.org/bots/api#getchatsharethemebackdrops
+   */
+  getChatShareThemeBackdrops(callOptions?: CallOptions) {
+    return this.call(new GetChatShareThemeBackdrops(), callOptions);
+  }
+
+  /**
    * Use this method to get information about custom emoji stickers by their identifiers. Returns an Array of Sticker objects.
    * @param custom_emoji_ids A JSON-serialized list of custom emoji identifiers. At most 200 custom emoji identifiers can be specified.
    * @see https://core.telegram.org/bots/api#getcustomemojistickers
@@ -2117,6 +2274,16 @@ export abstract class GeneratedBotMethods {
   getStickerSet(name: GetStickerSetOptions['name'], callOptions?: CallOptions) {
     const { token, signal, ...rest } = callOptions ?? {};
     return this.call(new GetStickerSet({ name, ...rest }), { token, signal });
+  }
+
+  /**
+   * Use this method to get information about a unique gift by its name. Returns a UniqueGift object on success.
+   * @param name Unique name of the gift
+   * @see https://core.telegram.org/bots/api#getuniquegift
+   */
+  getUniqueGift(name: GetUniqueGiftOptions['name'], callOptions?: CallOptions) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new GetUniqueGift({ name, ...rest }), { token, signal });
   }
 
   /**
@@ -2643,19 +2810,15 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to send animation files (GIF or H.264/MPEG-4 AVC video without sound). On success, the sent Message is returned. Bots can currently send animation files of up to 50 MB in size, this limit may be changed in the future.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
    * @param animation Animation to send. Pass a file_id as String to send an animation that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get an animation from the Internet, or upload a new animation using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
    * @see https://core.telegram.org/bots/api#sendanimation
    */
   sendAnimation(
-    chat_id: SendAnimationOptions['chat_id'],
     animation: SendAnimationOptions['animation'],
-    callOptions?: MethodOptions<
-      Omit<SendAnimationOptions, 'chat_id' | 'animation'>
-    >,
+    callOptions?: MethodOptions<Omit<SendAnimationOptions, 'animation'>>,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendAnimation({ chat_id, animation, ...rest }), {
+    return this.call(new SendAnimation({ animation, ...rest }), {
       token,
       signal,
     });
@@ -2664,20 +2827,15 @@ export abstract class GeneratedBotMethods {
   /**
    * Use this method to send audio files, if you want Telegram clients to display them in the music player. Your audio must be in the .MP3 or .M4A format. On success, the sent Message is returned. Bots can currently send audio files of up to 50 MB in size, this limit may be changed in the future.
    * For sending voice messages, use the sendVoice method instead.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
    * @param audio Audio file to send. Pass a file_id as String to send an audio file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get an audio file from the Internet, or upload a new one using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
    * @see https://core.telegram.org/bots/api#sendaudio
    */
   sendAudio(
-    chat_id: SendAudioOptions['chat_id'],
     audio: SendAudioOptions['audio'],
-    callOptions?: MethodOptions<Omit<SendAudioOptions, 'chat_id' | 'audio'>>,
+    callOptions?: MethodOptions<Omit<SendAudioOptions, 'audio'>>,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendAudio({ chat_id, audio, ...rest }), {
-      token,
-      signal,
-    });
+    return this.call(new SendAudio({ audio, ...rest }), { token, signal });
   }
 
   /**
@@ -2755,29 +2913,27 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to send phone contacts. On success, the sent Message is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
    * @param phone_number Contact's phone number
    * @param first_name Contact's first name
    * @see https://core.telegram.org/bots/api#sendcontact
    */
   sendContact(
-    chat_id: SendContactOptions['chat_id'],
     phone_number: SendContactOptions['phone_number'],
     first_name: SendContactOptions['first_name'],
     callOptions?: MethodOptions<
-      Omit<SendContactOptions, 'chat_id' | 'phone_number' | 'first_name'>
+      Omit<SendContactOptions, 'phone_number' | 'first_name'>
     >,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new SendContact({ chat_id, phone_number, first_name, ...rest }),
-      { token, signal },
-    );
+    return this.call(new SendContact({ phone_number, first_name, ...rest }), {
+      token,
+      signal,
+    });
   }
 
   /**
    * Use this method to send an animated emoji that will display a random value. On success, the sent Message is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username
    * @see https://core.telegram.org/bots/api#senddice
    */
   sendDice(
@@ -2790,19 +2946,15 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to send general files. On success, the sent Message is returned. Bots can currently send files of any type of up to 50 MB in size, this limit may be changed in the future.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
    * @param document File to send. Pass a file_id as String to send a file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
    * @see https://core.telegram.org/bots/api#senddocument
    */
   sendDocument(
-    chat_id: SendDocumentOptions['chat_id'],
     document: SendDocumentOptions['document'],
-    callOptions?: MethodOptions<
-      Omit<SendDocumentOptions, 'chat_id' | 'document'>
-    >,
+    callOptions?: MethodOptions<Omit<SendDocumentOptions, 'document'>>,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendDocument({ chat_id, document, ...rest }), {
+    return this.call(new SendDocument({ document, ...rest }), {
       token,
       signal,
     });
@@ -2843,7 +2995,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to send invoices. On success, the sent Message is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username
    * @param title Product name, 1-32 characters
    * @param description Product description, 1-255 characters
    * @param payload Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use it for your internal processes.
@@ -2882,51 +3034,47 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to send live photos. On success, the sent Message is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target channel (in the format @channelusername)
    * @param live_photo Live photo video to send. The video must be no longer than 10 seconds and must not exceed 10 MB in size. Pass a file_id as String to send a video that exists on the Telegram servers (recommended) or upload a new video using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files. Sending live photos by a URL is currently unsupported.
    * @param photo The static photo to send. Pass a file_id as String to send a photo that exists on the Telegram servers (recommended) or upload a new video using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files. Sending live photos by a URL is currently unsupported.
    * @see https://core.telegram.org/bots/api#sendlivephoto
    */
   sendLivePhoto(
-    chat_id: SendLivePhotoOptions['chat_id'],
     live_photo: SendLivePhotoOptions['live_photo'],
     photo: SendLivePhotoOptions['photo'],
     callOptions?: MethodOptions<
-      Omit<SendLivePhotoOptions, 'chat_id' | 'live_photo' | 'photo'>
+      Omit<SendLivePhotoOptions, 'live_photo' | 'photo'>
     >,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new SendLivePhoto({ chat_id, live_photo, photo, ...rest }),
-      { token, signal },
-    );
+    return this.call(new SendLivePhoto({ live_photo, photo, ...rest }), {
+      token,
+      signal,
+    });
   }
 
   /**
    * Use this method to send point on the map. On success, the sent Message is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
    * @param latitude Latitude of the location
    * @param longitude Longitude of the location
    * @see https://core.telegram.org/bots/api#sendlocation
    */
   sendLocation(
-    chat_id: SendLocationOptions['chat_id'],
     latitude: SendLocationOptions['latitude'],
     longitude: SendLocationOptions['longitude'],
     callOptions?: MethodOptions<
-      Omit<SendLocationOptions, 'chat_id' | 'latitude' | 'longitude'>
+      Omit<SendLocationOptions, 'latitude' | 'longitude'>
     >,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(
-      new SendLocation({ chat_id, latitude, longitude, ...rest }),
-      { token, signal },
-    );
+    return this.call(new SendLocation({ latitude, longitude, ...rest }), {
+      token,
+      signal,
+    });
   }
 
   /**
    * Use this method to send a group of photos, live photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an Array of Message objects that were sent is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username
    * @param media A JSON-serialized Array describing messages to be sent, must include 2-10 items
    * @see https://core.telegram.org/bots/api#sendmediagroup
    */
@@ -2946,20 +3094,15 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to send text messages. On success, the sent Message is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
    * @param text Text of the message to be sent, 1-4096 characters after entities parsing
    * @see https://core.telegram.org/bots/api#sendmessage
    */
   sendMessage(
-    chat_id: SendMessageOptions['chat_id'],
     text: SendMessageOptions['text'],
-    callOptions?: MethodOptions<Omit<SendMessageOptions, 'chat_id' | 'text'>>,
+    callOptions?: MethodOptions<Omit<SendMessageOptions, 'text'>>,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendMessage({ chat_id, text, ...rest }), {
-      token,
-      signal,
-    });
+    return this.call(new SendMessage({ text, ...rest }), { token, signal });
   }
 
   /**
@@ -2984,7 +3127,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to send paid media. On success, the sent Message is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username. If the chat is a channel, all Telegram Star proceeds from this media will be credited to the chat's balance. Otherwise, they will be credited to the bot's balance.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username. If the chat is a channel, all Telegram Star proceeds from this media will be credited to the chat's balance. Otherwise, they will be credited to the bot's balance.
    * @param star_count The number of Telegram Stars that must be paid to buy access to the media; 1-25000
    * @param media A JSON-serialized Array describing the media to be sent; up to 10 items
    * @see https://core.telegram.org/bots/api#sendpaidmedia
@@ -3006,25 +3149,20 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to send photos. On success, the sent Message is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
    * @param photo Photo to send. Pass a file_id as String to send a photo that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a photo from the Internet, or upload a new photo using multipart/form-data. The photo must be at most 10 MB in size. The photo's width and height must not exceed 10000 in total. Width and height ratio must be at most 20. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
    * @see https://core.telegram.org/bots/api#sendphoto
    */
   sendPhoto(
-    chat_id: SendPhotoOptions['chat_id'],
     photo: SendPhotoOptions['photo'],
-    callOptions?: MethodOptions<Omit<SendPhotoOptions, 'chat_id' | 'photo'>>,
+    callOptions?: MethodOptions<Omit<SendPhotoOptions, 'photo'>>,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendPhoto({ chat_id, photo, ...rest }), {
-      token,
-      signal,
-    });
+    return this.call(new SendPhoto({ photo, ...rest }), { token, signal });
   }
 
   /**
    * Use this method to send a native poll. On success, the sent Message is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username. Polls can't be sent to channel direct messages chats.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username. Polls can't be sent to channel direct messages chats.
    * @param question Poll question, 1-300 characters
    * @param options A JSON-serialized list of 1-12 answer options
    * @see https://core.telegram.org/bots/api#sendpoll
@@ -3046,19 +3184,15 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to send rich messages. If the message contains a block with a media element, then the bot must have the right to send the media to the chat. On success, the sent Message is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
    * @param rich_message The message to be sent
    * @see https://core.telegram.org/bots/api#sendrichmessage
    */
   sendRichMessage(
-    chat_id: SendRichMessageOptions['chat_id'],
     rich_message: SendRichMessageOptions['rich_message'],
-    callOptions?: MethodOptions<
-      Omit<SendRichMessageOptions, 'chat_id' | 'rich_message'>
-    >,
+    callOptions?: MethodOptions<Omit<SendRichMessageOptions, 'rich_message'>>,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendRichMessage({ chat_id, rich_message, ...rest }), {
+    return this.call(new SendRichMessage({ rich_message, ...rest }), {
       token,
       signal,
     });
@@ -3087,28 +3221,40 @@ export abstract class GeneratedBotMethods {
   }
 
   /**
-   * Use this method to send static .WEBP, animated .TGS, or video .WEBM stickers. On success, the sent Message is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
-   * @param sticker Sticker to send. Pass a file_id as String to send a file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a .WEBP sticker from the Internet, or upload a new .WEBP, .TGS, or .WEBM sticker using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files. Video and animated stickers can't be sent via an HTTP URL.
-   * @see https://core.telegram.org/bots/api#sendsticker
+   * Use this method to send again a shared widget created by the bot. Currently, in the production environment, widgets can be sent only to private chats, and sent widgets automatically have protected content and therefore can't be forwarded. On success, the sent Message is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @param widget_id Unique identifier of the shared widget
+   * @see https://core.telegram.org/bots/api#sendsharedwidget
    */
-  sendSticker(
-    chat_id: SendStickerOptions['chat_id'],
-    sticker: SendStickerOptions['sticker'],
+  sendSharedWidget(
+    chat_id: SendSharedWidgetOptions['chat_id'],
+    widget_id: SendSharedWidgetOptions['widget_id'],
     callOptions?: MethodOptions<
-      Omit<SendStickerOptions, 'chat_id' | 'sticker'>
+      Omit<SendSharedWidgetOptions, 'chat_id' | 'widget_id'>
     >,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendSticker({ chat_id, sticker, ...rest }), {
+    return this.call(new SendSharedWidget({ chat_id, widget_id, ...rest }), {
       token,
       signal,
     });
   }
 
   /**
+   * Use this method to send static .WEBP, animated .TGS, or video .WEBM stickers. On success, the sent Message is returned.
+   * @param sticker Sticker to send. Pass a file_id as String to send a file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a .WEBP sticker from the Internet, or upload a new .WEBP, .TGS, or .WEBM sticker using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files. Video and animated stickers can't be sent via an HTTP URL.
+   * @see https://core.telegram.org/bots/api#sendsticker
+   */
+  sendSticker(
+    sticker: SendStickerOptions['sticker'],
+    callOptions?: MethodOptions<Omit<SendStickerOptions, 'sticker'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SendSticker({ sticker, ...rest }), { token, signal });
+  }
+
+  /**
    * Use this method to send information about a venue. On success, the sent Message is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
    * @param latitude Latitude of the venue
    * @param longitude Longitude of the venue
    * @param title Name of the venue
@@ -3116,58 +3262,45 @@ export abstract class GeneratedBotMethods {
    * @see https://core.telegram.org/bots/api#sendvenue
    */
   sendVenue(
-    chat_id: SendVenueOptions['chat_id'],
     latitude: SendVenueOptions['latitude'],
     longitude: SendVenueOptions['longitude'],
     title: SendVenueOptions['title'],
     address: SendVenueOptions['address'],
     callOptions?: MethodOptions<
-      Omit<
-        SendVenueOptions,
-        'chat_id' | 'latitude' | 'longitude' | 'title' | 'address'
-      >
+      Omit<SendVenueOptions, 'latitude' | 'longitude' | 'title' | 'address'>
     >,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
     return this.call(
-      new SendVenue({ chat_id, latitude, longitude, title, address, ...rest }),
+      new SendVenue({ latitude, longitude, title, address, ...rest }),
       { token, signal },
     );
   }
 
   /**
    * Use this method to send video files, Telegram clients support MPEG4 videos (other formats may be sent as Document). On success, the sent Message is returned. Bots can currently send video files of up to 50 MB in size, this limit may be changed in the future.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
    * @param video Video to send. Pass a file_id as String to send a video that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a video from the Internet, or upload a new video using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
    * @see https://core.telegram.org/bots/api#sendvideo
    */
   sendVideo(
-    chat_id: SendVideoOptions['chat_id'],
     video: SendVideoOptions['video'],
-    callOptions?: MethodOptions<Omit<SendVideoOptions, 'chat_id' | 'video'>>,
+    callOptions?: MethodOptions<Omit<SendVideoOptions, 'video'>>,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendVideo({ chat_id, video, ...rest }), {
-      token,
-      signal,
-    });
+    return this.call(new SendVideo({ video, ...rest }), { token, signal });
   }
 
   /**
    * Use this method to send a rounded square MPEG4 video of up to 1 minute long. On success, the sent Message is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
    * @param video_note Video note to send. Pass a file_id as String to send a video note that exists on the Telegram servers (recommended) or upload a new video using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files. Sending video notes by a URL is currently unsupported.
    * @see https://core.telegram.org/bots/api#sendvideonote
    */
   sendVideoNote(
-    chat_id: SendVideoNoteOptions['chat_id'],
     video_note: SendVideoNoteOptions['video_note'],
-    callOptions?: MethodOptions<
-      Omit<SendVideoNoteOptions, 'chat_id' | 'video_note'>
-    >,
+    callOptions?: MethodOptions<Omit<SendVideoNoteOptions, 'video_note'>>,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendVideoNote({ chat_id, video_note, ...rest }), {
+    return this.call(new SendVideoNote({ video_note, ...rest }), {
       token,
       signal,
     });
@@ -3175,17 +3308,30 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to send audio files, if you want Telegram clients to display the file as a playable voice message. For this to work, your audio must be in an .OGG file encoded with OPUS, or in .MP3 format, or in .M4A format (other formats may be sent as Audio or Document). On success, the sent Message is returned. Bots can currently send voice messages of up to 50 MB in size, this limit may be changed in the future.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
    * @param voice Audio file to send. Pass a file_id as String to send a file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
    * @see https://core.telegram.org/bots/api#sendvoice
    */
   sendVoice(
-    chat_id: SendVoiceOptions['chat_id'],
     voice: SendVoiceOptions['voice'],
-    callOptions?: MethodOptions<Omit<SendVoiceOptions, 'chat_id' | 'voice'>>,
+    callOptions?: MethodOptions<Omit<SendVoiceOptions, 'voice'>>,
   ) {
     const { token, signal, ...rest } = callOptions ?? {};
-    return this.call(new SendVoice({ chat_id, voice, ...rest }), {
+    return this.call(new SendVoice({ voice, ...rest }), { token, signal });
+  }
+
+  /**
+   * Use this method to send a message with an HTML widget. Currently, in the production environment, widgets can be sent only to private chats, and sent widgets automatically have protected content and therefore can't be forwarded. On success, the sent Message is returned.
+   * @param chat_id Unique identifier for the target chat or username of the target supergroup in the format @username
+   * @param html HTML code of the widget, 1-32768 bytes. The code must not exceed 4096 bytes when compressed by zlib with the maximum compression level.
+   * @see https://core.telegram.org/bots/api#sendwidget
+   */
+  sendWidget(
+    chat_id: SendWidgetOptions['chat_id'],
+    html: SendWidgetOptions['html'],
+    callOptions?: MethodOptions<Omit<SendWidgetOptions, 'chat_id' | 'html'>>,
+  ) {
+    const { token, signal, ...rest } = callOptions ?? {};
+    return this.call(new SendWidget({ chat_id, html, ...rest }), {
       token,
       signal,
     });
@@ -3515,7 +3661,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to change the chosen reactions on a message. Service messages of some types can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. Bots can't use paid reactions. Returns True on success.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username
    * @param message_id Identifier of the target message. If the message belongs to a media group, the reaction is set to the first non-deleted message in the group instead.
    * @see https://core.telegram.org/bots/api#setmessagereaction
    */
@@ -3841,7 +3987,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Use this method to stop a poll which was sent by the bot. On success, the stopped Poll is returned.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username
    * @param message_id Identifier of the original message with the poll
    * @see https://core.telegram.org/bots/api#stoppoll
    */
@@ -4073,7 +4219,7 @@ export abstract class GeneratedBotMethods {
 
   /**
    * Verifies a chat on behalf of the organization which is represented by the bot. Returns True on success.
-   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username. Channel direct messages chats can't be verified.
+   * @param chat_id Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username. Channel direct messages chats can't be verified.
    * @see https://core.telegram.org/bots/api#verifychat
    */
   verifyChat(
