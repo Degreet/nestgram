@@ -1,8 +1,11 @@
 import { ApiMethod } from './api-method';
+import type { RawMessageEntity } from '../../events/raw-update.types';
 
 export interface VerifyUserOptions {
   user_id: number;
   custom_description?: string;
+  custom_description_parse_mode?: string;
+  custom_description_entities?: RawMessageEntity[];
 }
 
 /**

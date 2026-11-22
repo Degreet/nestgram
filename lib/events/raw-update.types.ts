@@ -45,6 +45,15 @@ export interface RawAnimation {
   file_size?: number;
 }
 
+export interface RawAreaPosition {
+  x_percentage: number;
+  y_percentage: number;
+  width_percentage: number;
+  height_percentage: number;
+  rotation_angle: number;
+  corner_radius_percentage: number;
+}
+
 export interface RawAudio {
   file_id: string;
   file_unique_id: string;
@@ -173,6 +182,27 @@ export interface RawBotCommandScopeDefault {
 
 export interface RawBotDescription {
   description: string;
+}
+
+export interface RawBotFullInfo {
+  id: number;
+  is_bot: boolean;
+  first_name: string;
+  username?: string;
+  active_usernames?: string[];
+  can_join_groups: boolean;
+  can_read_all_group_messages: boolean;
+  supports_guest_queries: boolean;
+  supports_inline_queries: boolean;
+  inline_query_placeholder?: string;
+  needs_inline_query_location: boolean;
+  can_connect_to_business: boolean;
+  has_main_web_app: boolean;
+  has_topics_enabled: boolean;
+  allows_users_to_create_topics: boolean;
+  has_topic_sidebar: boolean;
+  can_manage_bots: boolean;
+  supports_join_request_queries: boolean;
 }
 
 export interface RawBotName {
@@ -390,6 +420,8 @@ export interface RawChatFullInfo {
   paid_message_star_count?: number;
   guard_bot?: User;
   community?: RawCommunity;
+  ton_wallet_card?: RawTonWalletCard;
+  share_theme?: RawChatShareTheme;
 }
 
 export interface RawChatInviteLink {
@@ -556,6 +588,31 @@ export interface RawChatShared {
   photo?: RawPhotoSize[];
 }
 
+export type RawChatShareTheme =
+  | RawChatShareThemeEmoji
+  | RawChatShareThemeUniqueGift;
+
+export interface RawChatShareThemeBackdrop {
+  id: number;
+  name: string;
+  colors: RawUniqueGiftBackdropColors;
+}
+
+export interface RawChatShareThemeBackdrops {
+  backdrops: RawChatShareThemeBackdrop[];
+}
+
+export interface RawChatShareThemeEmoji {
+  type: 'emoji';
+  emojis: RawEmojiType[];
+  background_backdrop_id?: number;
+}
+
+export interface RawChatShareThemeUniqueGift {
+  type: 'unique_gift';
+  gift: RawUniqueGift;
+}
+
 export interface RawChecklist {
   title: string;
   title_entities?: RawMessageEntity[];
@@ -645,6 +702,18 @@ export interface RawDocument {
   file_size?: number;
 }
 
+export type RawEmojiType = RawEmojiTypeEmoji | RawEmojiTypeCustomEmoji;
+
+export interface RawEmojiTypeCustomEmoji {
+  type: 'custom_emoji';
+  custom_emoji_id: string;
+}
+
+export interface RawEmojiTypeEmoji {
+  type: 'emoji';
+  emoji: string;
+}
+
 export interface RawEncryptedCredentials {
   data: string;
   hash: string;
@@ -678,7 +747,7 @@ export interface RawEncryptedPassportElement {
 }
 
 export interface RawEphemeralMessageParameters {
-  receiver_user_id: number;
+  receiver_user_id?: number;
   callback_query_id?: string;
   replace_callback_query_message?: boolean;
 }
@@ -699,6 +768,7 @@ export interface RawExternalReplyInfo {
   video?: RawVideo;
   video_note?: RawVideoNote;
   voice?: RawVoice;
+  widget?: RawWidget;
   has_media_spoiler?: boolean;
   checklist?: RawChecklist;
   contact?: RawContact;
@@ -1301,7 +1371,9 @@ export type RawInputMessageContent =
   | RawInputLocationMessageContent
   | RawInputVenueMessageContent
   | RawInputContactMessageContent
-  | RawInputInvoiceMessageContent;
+  | RawInputInvoiceMessageContent
+  | RawInputWidgetMessageContent
+  | RawInputSharedWidgetMessageContent;
 
 export type RawInputPaidMedia =
   | RawInputPaidMediaLivePhoto
@@ -1453,7 +1525,7 @@ export interface RawInputRichBlockDocument {
 
 export interface RawInputRichBlockExpandableBlockQuotation {
   type: 'expandable_blockquote';
-  text: RawRichText;
+  blocks: RawInputRichBlock[];
   credit?: RawRichText;
 }
 
@@ -1574,6 +1646,15 @@ export interface RawInputRichMessageMedia {
     | RawInputMediaVoiceNote;
 }
 
+export interface RawInputSharedWidgetMessageContent {
+  widget_id: string;
+  chat_data?: string;
+  caption?: string;
+  parse_mode?: ParseModeValue;
+  caption_entities?: RawMessageEntity[];
+  show_caption_above_media?: boolean;
+}
+
 export interface RawInputSticker {
   sticker: string | InputFile;
   format: 'static' | 'animated' | 'video';
@@ -1615,6 +1696,20 @@ export interface RawInputVenueMessageContent {
   foursquare_type?: string;
   google_place_id?: string;
   google_place_type?: string;
+}
+
+export interface RawInputWidgetMessageContent {
+  html: string;
+  width?: number;
+  height?: number;
+  public_data?: string;
+  chat_data?: string;
+  caption?: string;
+  parse_mode?: ParseModeValue;
+  caption_entities?: RawMessageEntity[];
+  show_caption_above_media?: boolean;
+  allow_queries?: boolean;
+  is_shared?: boolean;
 }
 
 export interface RawInvoice {
@@ -1811,6 +1906,7 @@ export interface RawMessage {
   video?: RawVideo;
   video_note?: RawVideoNote;
   voice?: RawVoice;
+  widget?: RawWidget;
   caption?: string;
   caption_entities?: RawMessageEntity[];
   show_caption_above_media?: boolean;
@@ -1868,6 +1964,7 @@ export interface RawMessage {
   giveaway_completed?: RawGiveawayCompleted;
   managed_bot_created?: RawManagedBotCreated;
   paid_message_price_changed?: RawPaidMessagePriceChanged;
+  paid_messages_waived?: RawPaidMessagesWaived;
   poll_option_added?: RawPollOptionAdded;
   poll_option_deleted?: RawPollOptionDeleted;
   suggested_post_approved?: RawSuggestedPostApproved;
@@ -1875,6 +1972,7 @@ export interface RawMessage {
   suggested_post_declined?: RawSuggestedPostDeclined;
   suggested_post_paid?: RawSuggestedPostPaid;
   suggested_post_refunded?: RawSuggestedPostRefunded;
+  ton_wallet_transfer?: RawTonWalletTransfer;
   video_chat_scheduled?: RawVideoChatScheduled;
   video_chat_started?: RawVideoChatStarted;
   video_chat_ended?: RawVideoChatEnded;
@@ -2066,6 +2164,8 @@ export interface RawPaidMediaVideo {
 export interface RawPaidMessagePriceChanged {
   paid_message_star_count: number;
 }
+
+export type RawPaidMessagesWaived = Record<string, never>;
 
 export interface RawPassportData {
   data: RawEncryptedPassportElement[];
@@ -2420,6 +2520,7 @@ export interface RawReplyParameters {
   quote?: string;
   quote_parse_mode?: string;
   quote_entities?: RawMessageEntity[];
+  quote_rich_texts?: RawRichText[];
   quote_position?: number;
   checklist_task_id?: number;
   poll_option_id?: string;
@@ -2535,7 +2636,7 @@ export interface RawRichBlockDocument {
 
 export interface RawRichBlockExpandableBlockQuotation {
   type: 'expandable_blockquote';
-  text: RawRichText;
+  blocks: RawRichBlock[];
   credit?: RawRichText;
 }
 
@@ -2683,6 +2784,7 @@ export type RawRichText =
   | RawRichTextEmailAddress
   | RawRichTextPhoneNumber
   | RawRichTextBankCardNumber
+  | RawRichTextTonAddress
   | RawRichTextMention
   | RawRichTextHashtag
   | RawRichTextCashtag
@@ -2827,6 +2929,12 @@ export interface RawRichTextTextMention {
   user: User;
 }
 
+export interface RawRichTextTonAddress {
+  type: 'ton_address';
+  text: RawRichText;
+  address: string;
+}
+
 export interface RawRichTextUnderline {
   type: 'underline';
   text: RawRichText;
@@ -2852,6 +2960,14 @@ export interface RawSharedUser {
   last_name?: string;
   username?: string;
   photo?: RawPhotoSize[];
+}
+
+export interface RawSharedWidgetQuery {
+  id: string;
+  from: User;
+  type: RawWidgetQueryType;
+  data: string;
+  widget_id: string;
 }
 
 export interface RawShippingAddress {
@@ -2930,17 +3046,8 @@ export interface RawStory {
 }
 
 export interface RawStoryArea {
-  position: RawStoryAreaPosition;
+  position: RawAreaPosition;
   type: RawStoryAreaType;
-}
-
-export interface RawStoryAreaPosition {
-  x_percentage: number;
-  y_percentage: number;
-  width_percentage: number;
-  height_percentage: number;
-  rotation_angle: number;
-  corner_radius_percentage: number;
 }
 
 export type RawStoryAreaType =
@@ -3049,8 +3156,43 @@ export interface RawSwitchInlineQueryChosenChat {
 export interface RawTextQuote {
   text: string;
   entities?: RawMessageEntity[];
+  rich_texts?: RawRichText[];
   position: number;
   is_manual?: boolean;
+}
+
+export interface RawTonNft {
+  address: string;
+  collection_address?: string;
+  index: string;
+  name: string;
+  description: string;
+  attributes?: RawTonNftAttribute[];
+  gift?: RawUniqueGift;
+}
+
+export interface RawTonNftAttribute {
+  trait_type: string;
+  value: string;
+}
+
+export interface RawTonWalletCard {
+  address: string;
+  amount: string;
+  stickers: RawTonWalletCardSticker[];
+  background_nft_address?: string;
+}
+
+export interface RawTonWalletCardSticker {
+  position: RawAreaPosition;
+  nft: RawTonNft;
+}
+
+export interface RawTonWalletTransfer {
+  transaction_id: string;
+  peer_address: string;
+  amount: string;
+  comment?: string;
 }
 
 export type RawTransactionPartner =
@@ -3201,6 +3343,8 @@ export interface RawUpdate {
   inline_query?: RawInlineQuery;
   chosen_inline_result?: RawChosenInlineResult;
   callback_query?: RawCallbackQuery;
+  widget_query?: RawWidgetQuery;
+  shared_widget_query?: RawSharedWidgetQuery;
   shipping_query?: RawShippingQuery;
   pre_checkout_query?: RawPreCheckoutQuery;
   purchased_paid_media?: RawPaidMediaPurchased;
@@ -3328,8 +3472,60 @@ export interface RawWebhookInfo {
   allowed_updates?: string[];
 }
 
+export interface RawWidget {
+  id?: string;
+  width?: number;
+  height?: number;
+  html: string;
+  public_data?: string;
+  chat_data?: string;
+}
+
+export interface RawWidgetQuery {
+  id: string;
+  from: User;
+  chat?: RawChat;
+  message_id?: number;
+  inline_message_id?: string;
+  chat_instance: string;
+  chat_type?: string;
+  type: RawWidgetQueryType;
+  data: string;
+  widget_id?: string;
+}
+
+export type RawWidgetQueryType =
+  | RawWidgetQueryTypeData
+  | RawWidgetQueryTypeSignData
+  | RawWidgetQueryTypeSentTransaction;
+
+export interface RawWidgetQueryTypeData {
+  type: 'data';
+  wallet_card?: RawTonWalletCard;
+}
+
+export interface RawWidgetQueryTypeSentTransaction {
+  type: 'sent_transaction';
+  wallet: RawWidgetQueryWallet;
+  msg_hash: string;
+}
+
+export interface RawWidgetQueryTypeSignData {
+  type: 'sign_data';
+  wallet: RawWidgetQueryWallet;
+  sign_data: string;
+}
+
+export interface RawWidgetQueryWallet {
+  address: string;
+  amount: string;
+  public_key?: string;
+  state_init?: string;
+}
+
 export interface RawWriteAccessAllowed {
   from_request?: boolean;
   web_app_name?: string;
   from_attachment_menu?: boolean;
+  inviter?: User;
 }
